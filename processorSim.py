@@ -96,6 +96,63 @@ def run(processor_file, program_file):
     processor description file.
 
     """
+    proc_desc, isa = _read_processor(processor_file)
+    prog = _read_program(program_file)
+    _print_sim_res(_simulate(_compile(prog, isa), proc_desc))
+
+
+def _compile(prog, isa):
+    """Compile the program using the given instruction set.
+
+    `prog` is the program to compile.
+    `isa` is the instruction set.
+    The function validates and translates the given program into a
+    sequence that can be directly fed into a processor understanding the
+    given instruction set and returns that sequence.
+
+    """
+    pass
+
+
+def _print_sim_res(sim_res):
+    """Print the simulation result.
+
+    `sim_res` is the simulation result.
+
+    """
+    pass
+
+
+def _read_processor(proc_file):
+    """Read the processor description from the given file.
+
+    `proc_file` is the file containing the processor description.
+    The function constructs necessary processing structures from the
+    given processor description file. It returns a tuple of the
+    processor description and the supported instruction set.
+
+    """
+    return None, None
+
+
+def _read_program(prog_file):
+    """Read the program stored in the given file.
+
+    `prog_file` is the file containing the program.
+    The function returns the program instructions.
+
+    """
+    pass
+
+
+def _simulate(program, processor):
+    """Run the given program on the processor.
+
+    `program` is the program to run.
+    `processor` is the processor to run the program on.
+    The function returns the pipeline diagram.
+
+    """
     pass
 
 
