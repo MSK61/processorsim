@@ -52,7 +52,7 @@ _PROG_OPT_VAR = "prog_file"  # variable to receive the program file
 
 def process_command_line(argv):
     """
-    Return a 2-tuple: (settings object, args list).
+    Return args object.
     `argv` is a list of arguments, or `None` for ``sys.argv[1:]``.
     """
     if argv is None:
