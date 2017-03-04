@@ -10,19 +10,20 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 ############################################################
 #
 # Copyright 2017 Mohammed El-Afifi
+# This file is part of processorSIM.
 #
-# This program is free software: you can redistribute it and/or modify
+# processorSIM is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 #
-# This program is distributed in the hope that it will be useful,
+# processorSIM is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public
-# License along with this program.  If not, see
+# License along with processorSIM.  If not, see
 # <http://www.gnu.org/licenses/>.
 #
 # program:      processor simulator
@@ -42,7 +43,9 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 ############################################################
 
+import compiler
 import itertools
+import processor
 import sys
 import argparse
 # command-line option variables
@@ -98,61 +101,15 @@ def run(processor_file, program_file):
     processor description file.
 
     """
-    proc_desc, isa = _read_processor(processor_file)
-    prog = _read_program(program_file)
-    _print_sim_res(_simulate(_compile(prog, isa), proc_desc))
-
-
-def _compile(prog, isa):
-    """Compile the program using the given instruction set.
-
-    `prog` is the program to compile.
-    `isa` is the instruction set.
-    The function validates and translates the given program into a
-    sequence that can be directly fed into a processor understanding the
-    given instruction set and returns that sequence.
-
-    """
-    pass
+    proc_desc, isa = processor.read_processor(processor_file)
+    prog = compiler.read_program(program_file)
+    _print_sim_res(processor.simulate(compiler.compile(prog, isa), proc_desc))
 
 
 def _print_sim_res(sim_res):
     """Print the simulation result.
 
     `sim_res` is the simulation result.
-
-    """
-    pass
-
-
-def _read_processor(proc_file):
-    """Read the processor description from the given file.
-
-    `proc_file` is the file containing the processor description.
-    The function constructs necessary processing structures from the
-    given processor description file. It returns a tuple of the
-    processor description and the supported instruction set.
-
-    """
-    return None, None
-
-
-def _read_program(prog_file):
-    """Read the program stored in the given file.
-
-    `prog_file` is the file containing the program.
-    The function returns the program instructions.
-
-    """
-    pass
-
-
-def _simulate(program, processor):
-    """Run the given program on the processor.
-
-    `program` is the program to run.
-    `processor` is the processor to run the program on.
-    The function returns the pipeline diagram.
 
     """
     pass
