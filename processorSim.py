@@ -80,9 +80,11 @@ def process_command_line(argv):
 
 def main(argv=None):
     args = process_command_line(argv)
-    run_args = itertools.imap(
+    processor_file, program_file = \
+                                   itertools.imap(
         lambda opt: getattr(args, opt), [_PROC_OPT_VAR, _PROG_OPT_VAR])
-    run(*run_args)
+    with processor_file, program_file:
+        run(processor_file, program_file)
     return 0        # success
 
 
