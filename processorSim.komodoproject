@@ -2,5 +2,16 @@
 <!-- Komodo Project File - DO NOT EDIT -->
 <project id="50e74ad3-cbcc-4ded-8a7e-9db0adbf6ed4" kpf_version="5" name="processorSim.komodoproject">
 <preference-set idref="50e74ad3-cbcc-4ded-8a7e-9db0adbf6ed4" id="project" preftype="project">
+  <long id="prefs_version">1</long>
+<preference-set id="unittest-configs">
+<preference-set id="{c237a957-ea0f-4e72-be84-cadb572bf12c}">
+  <string id="command">python -m pytest --tb short --color no -vr a</string>
+  <string id="handler">pytest</string>
+  <string id="name">processorSim</string>
+  <string id="parser">pytest</string>
+  <string relative="path" id="path">test</string>
+  <string id="saveTo">project</string>
+</preference-set>
+</preference-set>
 </preference-set>
 </project>
