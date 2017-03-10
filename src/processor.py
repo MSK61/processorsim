@@ -42,7 +42,7 @@
 def read_processor(proc_file):
     """Read the processor description from the given file.
 
-    `proc_file` is the file containing the processor description.
+    `proc_file` is the YAML file containing the processor description.
     The function constructs necessary processing structures from the
     given processor description file. It returns a tuple of the
     processor description and the supported instruction set.
