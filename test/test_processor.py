@@ -41,6 +41,7 @@
 
 import src_importer
 import unittest
+import yaml
 src_importer.add_src_path()
 import processor_utils
 
@@ -54,7 +55,9 @@ class ProcDescTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        pass
+        with open("data/singleUnitProcessor.yaml") as proc_file:
+            self.assertEqual(processor_utils.load_proc_desc(yaml.load(
+                proc_file)), [processor_utils.FuncUnit("fullSys", 1, [], [])])
 
 def main():
     """entry point for running test in this module"""

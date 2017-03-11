@@ -38,3 +38,85 @@
 # notes:        This is a private program.
 #
 ############################################################
+
+class FuncUnit:
+
+    """Processing functional unit"""
+
+    def __init__(self, name, width, capabilities, preds):
+        """Create a functional unit.
+
+        `self` is this functional unit.
+        `name` is the unit name.
+        `width` is the unit capacity.
+        `capabilities` is the list of capabilities of instructions
+                       supported by this unit.
+        `preds` is the list of units whose outputs are connected to the
+                input of this unit.
+
+        """
+        self._name = name
+        self._width = width
+        self._capabilities = frozenset(capabilities)
+        self._preds = frozenset(preds)
+
+    def __eq__(self, other):
+        """Compare the equality of two functional units.
+
+        `self` is this functional unit.
+        `other` is this functional unit.
+
+        """
+        return self._name == other.name and self._width == other.width and \
+                           self._capabilities == other.capabilities and \
+                           self._preds == other.predecessors
+
+    @property
+    def capabilities(self):
+        """Unit capabilities
+
+        `self` is this functional unit.
+
+        """
+        return self._capabilities
+
+    @property
+    def name(self):
+        """Unit name
+
+        `self` is this functional unit.
+
+        """
+        return self._name
+
+    @property
+    def predecessors(self):
+        """Unit name
+
+        `self` is this functional unit.
+
+        """
+        return self._preds
+
+    @property
+    def width(self):
+        """Unit width
+
+        `self` is this functional unit.
+
+        """
+        return self._width
+
+
+def load_proc_desc(raw_desc):
+    """Transform the given raw description into a processor one.
+
+    `raw_desc` is the raw description to extract a processor from.
+    The function returns a list of the functional units constituting the
+    processor. The order of the list dictates that the predecessor units
+    of a unit always succeed the unit.
+
+    """
+    unit_sect = "units"
+    return [FuncUnit(raw_desc[unit_sect][0]["name"],
+                     raw_desc[unit_sect][0]["width"], [], [])]
