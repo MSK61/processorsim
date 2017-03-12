@@ -1,0 +1,7 @@
+units:
+    - name: input
+      width: 1
+    - name: output
+      width: 1
+dataPath:
+    - [input, output]

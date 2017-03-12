@@ -44,11 +44,10 @@ def read_processor(proc_file):
 
     `proc_file` is the YAML file containing the processor description.
     The function constructs necessary processing structures from the
-    given processor description file. It returns a tuple of the
-    processor description and the supported instruction set.
+    given processor description file. It returns a processor description.
 
     """
-    return None, None
+    return None
 
 
 def simulate(program, processor):

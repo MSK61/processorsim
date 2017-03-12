@@ -49,6 +49,5 @@ def add_src_path():
     may be imported in test modules.
 
     """
-    test_dir = os.path.dirname(__file__)
     src_dir = "src"
-    sys.path.append(os.path.join(os.path.dirname(test_dir), src_dir))
+    sys.path.append(os.path.join(os.path.pardir, src_dir))

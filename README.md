@@ -5,3 +5,4 @@ prerequisites
 -------------
 
 - PyYAML
+- NetworkX

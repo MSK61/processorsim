@@ -101,9 +101,10 @@ def run(processor_file, program_file):
     processor description file.
 
     """
-    proc_desc, isa = processor.read_processor(processor_file)
+    proc_desc = processor.read_processor(processor_file)
     prog = compiler.read_program(program_file)
-    _print_sim_res(processor.simulate(compiler.compile(prog, isa), proc_desc))
+    _print_sim_res(processor.simulate(compiler.compile(prog, proc_desc.isa),
+                                      proc_desc.hw_desc))
 
 
 def _print_sim_res(sim_res):
