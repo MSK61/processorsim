@@ -39,14 +39,12 @@
 #
 ############################################################
 
-from itertools import imap
 from os.path import join
 import src_importer
 import unittest
 from yaml import load
 src_importer.add_src_path()
-import processor_utils
-from processor_utils import load_proc_desc
+from processor_utils import FuncUnit, load_proc_desc, UnitModel
 
 class ProcDescTest(unittest.TestCase):
 
@@ -60,14 +58,11 @@ class ProcDescTest(unittest.TestCase):
         `self` is this test case.
 
         """
+        in_unit = UnitModel("input", 1, [])
         in_file = "twoConnectedUnitsProcessor.yaml"
         with open(join(self._DATA_DIR_NAME, in_file)) as proc_file:
-            proc_desc = load_proc_desc(load(proc_file))
-        unit_idx_map = dict(imap(lambda entry: (entry[1].model.name, entry[0]),
-                                 enumerate(proc_desc)))
-        self.assertEqual(
-            frozenset(imap(lambda unit: unit_idx_map[unit.name],
-                           proc_desc[0].predecessors)), frozenset([1]))
+            self.assertEqual(load_proc_desc(load(proc_file)), [FuncUnit(
+                UnitModel("output", 1, []), [in_unit]), FuncUnit(in_unit, [])])
 
     def test_single_functional_unit_processor(self):
         """Test loading a single function unit processor.
@@ -77,9 +72,8 @@ class ProcDescTest(unittest.TestCase):
         """
         in_file = "singleUnitProcessor.yaml"
         with open(join(self._DATA_DIR_NAME, in_file)) as proc_file:
-            self.assertEqual(
-                load_proc_desc(load(proc_file)), [processor_utils.FuncUnit(
-                    processor_utils.UnitModel("fullSys", 1, []), [ ])])
+            self.assertEqual(load_proc_desc(load(proc_file)),
+                             [FuncUnit(UnitModel("fullSys", 1, []), [])])
 
 def main():
     """entry point for running test in this module"""

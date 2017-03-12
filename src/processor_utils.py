@@ -134,6 +134,14 @@ class UnitModel(object):
         """
         return not self == other
 
+    def __hash__(self):
+        """Calculate the hash of this functional unit model.
+
+        `self` is this functional unit model.
+
+        """
+        return hash(self._name)
+
     @property
     def capabilities(self):
         """Unit model capabilities
