@@ -179,18 +179,10 @@ def load_proc_desc(raw_desc):
     of a unit always succeed the unit.
 
     """
-    rev_flow_graph = networkx.DiGraph()
     unit_sect = "units"
-    rev_flow_graph.add_nodes_from(
-        imap(lambda unit: unit[_UNIT_NAME_ATTR], raw_desc[unit_sect]))
     data_path_sect = "dataPath"
-    rev_flow_graph.add_edges_from(
-        imap(_get_rev_edge, raw_desc[data_path_sect]))
-    unit_map = dict(imap(_get_unit_entry, raw_desc[unit_sect]))
-    return \
-        map(lambda name:
-        FuncUnit(unit_map[name], _get_preds(rev_flow_graph, name, unit_map)),
-        networkx.topological_sort(rev_flow_graph))
+    return _post_order(_create_graph(
+        raw_desc[unit_sect], raw_desc[data_path_sect]), raw_desc[unit_sect])
 
 
 def _get_preds(processor, unit, unit_map):
@@ -225,3 +217,34 @@ def _get_unit_entry(unit_desc):
     attrs = imap(lambda attr: unit_desc[attr], [_UNIT_NAME_ATTR, "width"])
     return \
         unit_desc[_UNIT_NAME_ATTR], UnitModel(*(itertools.chain(attrs, [[]])))
+
+
+def _create_graph(units, links):
+    """Create a data flow graph for a processor.
+
+    `units` is the processor functional units.
+    `links` is the connections between the functional units.
+    The function returns a directed graph representing the reverse data
+    flow through the processor functional units.
+
+    """
+    rev_flow_graph = networkx.DiGraph()
+    rev_flow_graph.add_nodes_from(
+        imap(lambda unit: unit[_UNIT_NAME_ATTR], units))
+    rev_flow_graph.add_edges_from(imap(_get_rev_edge, links))
+    return rev_flow_graph
+
+
+def _post_order(graph, units):
+    """Create a post-order for the given processor.
+
+    `graph` is the processor.
+    `units` is the processor functional units.
+    The function returns a list of the processor functional units in
+    post-order.
+
+    """
+    unit_map = dict(imap(_get_unit_entry, units))
+    return map(lambda name:
+        FuncUnit(unit_map[name], _get_preds(graph, name, unit_map)),
+        networkx.topological_sort(graph))
