@@ -41,11 +41,10 @@
 
 from os.path import join
 import src_importer
-import unittest
-import yaml
-src_importer.add_src_path()
 import processor_utils
 from processor_utils import UnitModel
+import unittest
+import yaml
 
 class _UnitNode:
 

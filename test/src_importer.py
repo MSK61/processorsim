@@ -42,7 +42,7 @@
 import os
 import sys
 
-def add_src_path():
+def _add_src_path():
     """Add the source path to the python search path.
 
     The function prepares the test environment so that source modules
@@ -51,3 +51,5 @@ def add_src_path():
     """
     src_dir = "src"
     sys.path.append(os.path.join(os.path.pardir, src_dir))
+
+_add_src_path()

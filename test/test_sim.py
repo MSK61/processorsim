@@ -40,10 +40,9 @@
 ############################################################
 
 import src_importer
-import unittest
-src_importer.add_src_path()
 import compiler
 import processor
+import unittest
 
 class SimTest(unittest.TestCase):
 

@@ -40,9 +40,8 @@
 ############################################################
 
 import src_importer
-import unittest
-src_importer.add_src_path()
 import compiler
+import unittest
 
 class ProgLoadTest(unittest.TestCase):
 
