@@ -89,7 +89,7 @@ class FuncUnit(object):
 
     @property
     def predecessors(self):
-        """Unit name
+        """Predecessor units of this functional unit
 
         `self` is this functional unit.
 

@@ -54,7 +54,7 @@ def compile(prog, isa):
 def read_program(prog_file):
     """Read the program stored in the given file.
 
-    `prog_file` is the YAML file containing the program.
+    `prog_file` is the file containing the assembly program.
     The function returns the program instructions.
 
     """
