@@ -44,59 +44,6 @@ from itertools import imap
 import networkx
 _UNIT_NAME_ATTR = "name"
 
-class FuncUnit(object):
-
-    """Processing functional unit"""
-
-    def __init__(self, model, preds):
-        """Create a functional unit.
-
-        `self` is this functional unit.
-        `model` is the unit model.
-        `preds` is the list of units whose outputs are connected to the
-                input of this unit.
-
-        """
-        self._model = model
-        self._preds = frozenset(preds)
-
-    def __eq__(self, other):
-        """Test if the two functional units are identical.
-
-        `self` is this functional unit.
-        `other` is the other functional unit.
-
-        """
-        return self._model == other.model and self._preds == other.predecessors
-
-    def __ne__(self, other):
-        """Test if the two functional units are different.
-
-        `self` is this functional unit.
-        `other` is the other functional unit.
-
-        """
-        return not self == other
-
-    @property
-    def model(self):
-        """Model of this functional unit
-
-        `self` is this functional unit.
-
-        """
-        return self._model
-
-    @property
-    def predecessors(self):
-        """Predecessor units of this functional unit
-
-        `self` is this functional unit.
-
-        """
-        return self._preds
-
-
 class UnitModel(object):
 
     """Functional unit model"""
@@ -168,6 +115,41 @@ class UnitModel(object):
 
         """
         return self._width
+
+
+class _FuncUnit(object):
+
+    """Processing functional unit"""
+
+    def __init__(self, model, preds):
+        """Create a functional unit.
+
+        `self` is this functional unit.
+        `model` is the unit model.
+        `preds` is the list of units whose outputs are connected to the
+                input of this unit.
+
+        """
+        self._model = model
+        self._preds = frozenset(preds)
+
+    @property
+    def model(self):
+        """Model of this functional unit
+
+        `self` is this functional unit.
+
+        """
+        return self._model
+
+    @property
+    def predecessors(self):
+        """Predecessor units of this functional unit
+
+        `self` is this functional unit.
+
+        """
+        return self._preds
 
 
 def load_proc_desc(raw_desc):
@@ -246,5 +228,5 @@ def _post_order(graph, units):
     """
     unit_map = dict(imap(_get_unit_entry, units))
     return map(lambda name:
-        FuncUnit(unit_map[name], _get_preds(graph, name, unit_map)),
+        _FuncUnit(unit_map[name], _get_preds(graph, name, unit_map)),
         networkx.topological_sort(graph))

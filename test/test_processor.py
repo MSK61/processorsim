@@ -42,15 +42,66 @@
 from os.path import join
 import src_importer
 import unittest
-from yaml import load
+import yaml
 src_importer.add_src_path()
-from processor_utils import FuncUnit, load_proc_desc, UnitModel
+import processor_utils
+from processor_utils import UnitModel
+
+class _UnitNode:
+
+    """Functional unit node information"""
+
+    def __init__(self, model, preds):
+        """Set functional unit node information.
+
+        `self` is this functional unit node.
+        `model` is the unit model.
+        `preds` is the number of predecessor nodes.
+
+        """
+        self._model = model
+        self._preds = preds
+
+    def __eq__(self, other):
+        """Test if the two functional unit nodes are identical.
+
+        `self` is this functional unit node.
+        `other` is the other functional unit node.
+
+        """
+        return self._model == other.model and self._preds == other.predecessors
+
+    def __ne__(self, other):
+        """Test if the two functional unit nodes are different.
+
+        `self` is this functional unit node.
+        `other` is the other functional unit node.
+
+        """
+        return not self == other
+
+    @property
+    def model(self):
+        """Model of this functional unit node
+
+        `self` is this functional unit node.
+
+        """
+        return self._model
+
+    @property
+    def predecessors(self):
+        """Number of predecessor nodes for this functional unit node
+
+        `self` is this functional unit node.
+
+        """
+        return self._preds
+
 
 class ProcDescTest(unittest.TestCase):
 
     """Test case for loading processor description"""
-
-    _DATA_DIR_NAME = "data"
 
     def test_processor_with_two_connected_functional_units(self):
         """Test loading a processor with two functional units.
@@ -58,11 +109,13 @@ class ProcDescTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        in_unit = UnitModel("input", 1, [])
         in_file = "twoConnectedUnitsProcessor.yaml"
-        with open(join(self._DATA_DIR_NAME, in_file)) as proc_file:
-            self.assertEqual(load_proc_desc(load(proc_file)), [FuncUnit(
-                UnitModel("output", 1, []), [in_unit]), FuncUnit(in_unit, [])])
+        proc_desc = self._read_file(in_file)
+        self.assertSequenceEqual(
+            [_UnitNode(UnitModel("output", 1, []), 1), _UnitNode(UnitModel(
+                "input", 1, []), 0)], map(self._create_node, proc_desc))
+        self.assertIs(
+            iter(proc_desc[0].predecessors).next(), proc_desc[1].model)
 
     def test_single_functional_unit_processor(self):
         """Test loading a single function unit processor.
@@ -71,9 +124,30 @@ class ProcDescTest(unittest.TestCase):
 
         """
         in_file = "singleUnitProcessor.yaml"
-        with open(join(self._DATA_DIR_NAME, in_file)) as proc_file:
-            self.assertEqual(load_proc_desc(load(proc_file)),
-                             [FuncUnit(UnitModel("fullSys", 1, []), [])])
+        proc_desc = self._read_file(in_file)
+        self.assertEqual(len(proc_desc), 1)
+        self.assertEqual(proc_desc[0].model, UnitModel("fullSys", 1, []))
+        self.assertEqual(len(proc_desc[0].predecessors), 0)
+
+    @staticmethod
+    def _create_node(unit):
+        """Create an information node for the given unit.
+
+        `unit` is the unit to transform to a node.
+
+        """
+        return _UnitNode(unit.model, len(unit.predecessors))
+
+    @staticmethod
+    def _read_file(file_name):
+        """Read a processor description file.
+
+        `file_name` is the processor description file name.
+
+        """
+        data_dir = "data"
+        with open(join(data_dir, file_name)) as proc_file:
+            return processor_utils.load_proc_desc(yaml.load(proc_file))
 
 def main():
     """entry point for running test in this module"""
