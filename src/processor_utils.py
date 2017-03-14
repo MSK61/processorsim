@@ -197,8 +197,8 @@ def _get_unit_entry(unit_desc):
 
     """
     attrs = imap(lambda attr: unit_desc[attr], [_UNIT_NAME_ATTR, "width"])
-    return \
-        unit_desc[_UNIT_NAME_ATTR], UnitModel(*(itertools.chain(attrs, [[]])))
+    return unit_desc[_UNIT_NAME_ATTR], \
+        UnitModel(*(itertools.chain(attrs, [[]])))
 
 
 def _create_graph(units, links):
