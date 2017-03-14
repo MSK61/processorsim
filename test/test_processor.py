@@ -125,7 +125,7 @@ class ProcDescTest(unittest.TestCase):
         in_file = "singleUnitProcessor.yaml"
         proc_desc = self._read_file(in_file)
         self.assertEqual(len(proc_desc), 1)
-        self.assertEqual(proc_desc[0].model, UnitModel("fullSys", 1, []))
+        self.assertEqual(proc_desc[0].model, UnitModel("fullSys", 1, ["ALU"]))
         self.assertEqual(len(proc_desc[0].predecessors), 0)
 
     @staticmethod
