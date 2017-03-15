@@ -128,6 +128,17 @@ class ProcDescTest(unittest.TestCase):
         self.assertEqual(proc_desc[0].model, UnitModel("fullSys", 1, ["ALU"]))
         self.assertEqual(len(proc_desc[0].predecessors), 0)
 
+    def test_two_units_with_same_name_and_case(self):
+        """Test loading two units with the same name(and same case).
+
+        `self` is this test case.
+
+        """
+        in_file = "twoUnitsWithSameNameAndCase.yaml"
+        with self.assertRaises(processor_utils.DupElemError) as exChk:
+            self._read_file(in_file)
+        self.assertEqual(exChk.exception.element, "fullSys")
+
     @staticmethod
     def _create_node(unit):
         """Create an information node for the given unit.

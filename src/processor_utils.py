@@ -44,6 +44,31 @@ from itertools import imap
 import networkx
 _UNIT_NAME_ATTR = "name"
 
+class DupElemError(RuntimeError):
+
+    """Duplicate set element error"""
+
+    def __init__(self, elem, msg):
+        """Create a duplicate element error.
+
+        `self` is this duplicate element error.
+        `elem` is the duplicate element.
+        `msg` is the error description.
+
+        """
+        RuntimeError.__init__(self, msg + ": " + elem)
+        self._elem = elem
+
+    @property
+    def element(self):
+        """Duplicate element
+
+        `self` is this duplicate element error.
+
+        """
+        return self._elem
+
+
 class UnitModel(object):
 
     """Functional unit model"""
@@ -200,6 +225,22 @@ def _get_unit_entry(unit_desc):
         unit_desc[attr], [_UNIT_NAME_ATTR, "width", "capabilities"])))
 
 
+def _add_unit(processor, unit):
+    """Add a functional unit to a processor.
+
+    `processor` is the processor to add the unit to.
+    `unit` is the functional unit to add.
+    The function raises a DupElemError if a unit with the same name was
+    previously added to the processor.
+
+    """
+    nodes = processor.number_of_nodes()
+    processor.add_node(unit)
+
+    if processor.number_of_nodes() == nodes:
+        raise DupElemError(unit, "Functional unit added twice")
+
+
 def _create_graph(units, links):
     """Create a data flow graph for a processor.
 
@@ -210,8 +251,10 @@ def _create_graph(units, links):
 
     """
     rev_flow_graph = networkx.DiGraph()
-    rev_flow_graph.add_nodes_from(
-        imap(lambda unit: unit[_UNIT_NAME_ATTR], units))
+
+    for cur_unit in units:
+        _add_unit(rev_flow_graph, cur_unit[_UNIT_NAME_ATTR])
+
     rev_flow_graph.add_edges_from(imap(_get_rev_edge, links))
     return rev_flow_graph
 
