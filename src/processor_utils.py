@@ -48,15 +48,16 @@ class DupElemError(RuntimeError):
 
     """Duplicate set element error"""
 
-    def __init__(self, elem, msg):
+    def __init__(self, msg_tmpl, elem):
         """Create a duplicate element error.
 
         `self` is this duplicate element error.
+        `msg_tmpl` is the error format message taking the duplicate
+                   element as a parameter.
         `elem` is the duplicate element.
-        `msg` is the error description.
 
         """
-        RuntimeError.__init__(self, msg + ": " + elem)
+        RuntimeError.__init__(self, msg_tmpl.format(elem))
         self._elem = elem
 
     @property
@@ -238,7 +239,7 @@ def _add_unit(processor, unit):
     processor.add_node(unit)
 
     if processor.number_of_nodes() == nodes:
-        raise DupElemError(unit, "Functional unit added twice")
+        raise DupElemError("Functional unit {} added twice", unit)
 
 
 def _create_graph(units, links):
