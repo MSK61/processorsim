@@ -48,26 +48,42 @@ class DupElemError(RuntimeError):
 
     """Duplicate set element error"""
 
-    def __init__(self, msg_tmpl, elem):
+    # parameter indices in format message
+    OLD_ELEM_IDX = 0
+
+    NEW_ELEM_IDX = 1
+
+    def __init__(self, msg_tmpl, old_elem, new_elem):
         """Create a duplicate element error.
 
         `self` is this duplicate element error.
-        `msg_tmpl` is the error format message taking the duplicate
-                   element as a parameter.
-        `elem` is the duplicate element.
+        `msg_tmpl` is the error format message taking in order the old
+                   and new elements as positional parameters.
+        `old_elem` is the element already existing.
+        `new_elem` is the element just discovered.
 
         """
-        RuntimeError.__init__(self, msg_tmpl.format(elem))
-        self._elem = elem
+        RuntimeError.__init__(self, msg_tmpl.format(new_elem, old_elem))
+        self._old_elem = old_elem
+        self._new_elem = new_elem
 
     @property
-    def element(self):
-        """Duplicate element
+    def new_element(self):
+        """Duplicate element just discovered
 
         `self` is this duplicate element error.
 
         """
-        return self._elem
+        return self._new_elem
+
+    @property
+    def old_element(self):
+        """Element added before
+
+        `self` is this duplicate element error.
+
+        """
+        return self._old_elem
 
 
 class UnitModel(object):
@@ -226,11 +242,17 @@ def _add_unit(processor, unit, unit_registry):
     previously added to the processor.
 
     """
-    if unit in unit_registry:
-        raise DupElemError("Functional unit {} added twice", unit)
+    lower_case_unit = unit.lower()
+    first_name = unit_registry.get(lower_case_unit)
+
+    if first_name is not None:
+        raise DupElemError(
+            "Functional unit {{{}}} previously added as {{{}}}".format(
+                DupElemError.NEW_ELEM_IDX, DupElemError.OLD_ELEM_IDX),
+            first_name, unit)
 
     processor.add_node(unit)
-    unit_registry.add(unit)
+    unit_registry[lower_case_unit] = unit
 
 
 def _create_graph(units, links):
@@ -243,7 +265,7 @@ def _create_graph(units, links):
 
     """
     flow_graph = networkx.DiGraph()
-    unit_registry = set()
+    unit_registry = {}
 
     for cur_unit in units:
         _add_unit(flow_graph, cur_unit[_UNIT_NAME_ATTR], unit_registry)

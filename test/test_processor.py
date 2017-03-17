@@ -42,7 +42,7 @@
 from os.path import join
 import src_importer
 import processor_utils
-from processor_utils import UnitModel
+from processor_utils import DupElemError, UnitModel
 import unittest
 import yaml
 
@@ -135,9 +135,22 @@ class ProcDescTest(unittest.TestCase):
 
         """
         in_file = "twoUnitsWithSameNameAndCase.yaml"
-        with self.assertRaises(processor_utils.DupElemError) as exChk:
+        with self.assertRaises(DupElemError) as exChk:
             self._read_file(in_file)
-        self.assertEqual(exChk.exception.element, "fullSys")
+        self.assertEqual(exChk.exception.old_element, "fullSys")
+        self.assertEqual(exChk.exception.new_element, "fullSys")
+
+    def test_two_units_with_same_name_and_different_case(self):
+        """Test loading two units with the same name and different case.
+
+        `self` is this test case.
+
+        """
+        in_file = "twoUnitsWithSameNameAndDifferentCase.yaml"
+        with self.assertRaises(DupElemError) as exChk:
+            self._read_file(in_file)
+        self.assertEqual(exChk.exception.old_element, "fullSys")
+        self.assertEqual(exChk.exception.new_element, "FULLsYS")
 
     @staticmethod
     def _create_node(unit):
