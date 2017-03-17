@@ -3,6 +3,7 @@ units:
       width: 1
       capabilities: []
     - name: fullSys
-      width: 1
-      capabilities: []
+      width: 2
+      capabilities:
+        - ALU
 dataPath: []
