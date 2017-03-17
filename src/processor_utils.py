@@ -202,17 +202,7 @@ def _get_preds(processor, unit, unit_map):
     The function returns an iterable of predecessor units.
 
     """
-    return imap(lambda succ: unit_map[succ], processor.successors(unit))
-
-
-def _get_rev_edge(edge):
-    """Create the reverse edge of the given one.
-
-    `edge` is the edge to reverse.
-    The function returns a tuple representing the reverse edge.
-
-    """
-    return tuple(reversed(edge))
+    return imap(lambda pred: unit_map[pred], processor.predecessors(unit))
 
 
 def _get_unit_entry(unit_desc):
@@ -252,14 +242,14 @@ def _create_graph(units, links):
     flow through the processor functional units.
 
     """
-    rev_flow_graph = networkx.DiGraph()
+    flow_graph = networkx.DiGraph()
     unit_registry = set()
 
     for cur_unit in units:
-        _add_unit(rev_flow_graph, cur_unit[_UNIT_NAME_ATTR], unit_registry)
+        _add_unit(flow_graph, cur_unit[_UNIT_NAME_ATTR], unit_registry)
 
-    rev_flow_graph.add_edges_from(imap(_get_rev_edge, links))
-    return rev_flow_graph
+    flow_graph.add_edges_from(links)
+    return flow_graph
 
 
 def _post_order(graph, units):
@@ -272,6 +262,6 @@ def _post_order(graph, units):
 
     """
     unit_map = dict(imap(_get_unit_entry, units))
-    return map(lambda name:
-        _FuncUnit(unit_map[name], _get_preds(graph, name, unit_map)),
-        networkx.topological_sort(graph))
+    return map(
+        lambda name: _FuncUnit(unit_map[name], _get_preds(
+            graph, name, unit_map)), networkx.dfs_postorder_nodes(graph))
