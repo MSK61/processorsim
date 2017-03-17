@@ -226,20 +226,21 @@ def _get_unit_entry(unit_desc):
         unit_desc[attr], [_UNIT_NAME_ATTR, "width", "capabilities"])))
 
 
-def _add_unit(processor, unit):
+def _add_unit(processor, unit, unit_registry):
     """Add a functional unit to a processor.
 
     `processor` is the processor to add the unit to.
     `unit` is the functional unit to add.
+    `unit_registry` is the store of previously added units.
     The function raises a DupElemError if a unit with the same name was
     previously added to the processor.
 
     """
-    nodes = processor.number_of_nodes()
-    processor.add_node(unit)
-
-    if processor.number_of_nodes() == nodes:
+    if unit in unit_registry:
         raise DupElemError("Functional unit {} added twice", unit)
+
+    processor.add_node(unit)
+    unit_registry.add(unit)
 
 
 def _create_graph(units, links):
@@ -252,9 +253,10 @@ def _create_graph(units, links):
 
     """
     rev_flow_graph = networkx.DiGraph()
+    unit_registry = set()
 
     for cur_unit in units:
-        _add_unit(rev_flow_graph, cur_unit[_UNIT_NAME_ATTR])
+        _add_unit(rev_flow_graph, cur_unit[_UNIT_NAME_ATTR], unit_registry)
 
     rev_flow_graph.add_edges_from(imap(_get_rev_edge, links))
     return rev_flow_graph
