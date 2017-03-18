@@ -164,7 +164,7 @@ class TestProcDesc:
 
 def main():
     """entry point for running test in this module"""
-    pytest.main()
+    pytest.main(__file__)
 
 if __name__ == '__main__':
     main()
