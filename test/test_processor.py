@@ -39,7 +39,7 @@
 #
 ############################################################
 
-from os.path import join
+import os.path
 import src_importer
 import processor_utils
 from processor_utils import UnitModel
@@ -159,7 +159,7 @@ class TestProcDesc:
 
         """
         data_dir = "data"
-        with open(join(data_dir, file_name)) as proc_file:
+        with open(os.path.join(data_dir, file_name)) as proc_file:
             return processor_utils.load_proc_desc(yaml.load(proc_file))
 
 def main():
