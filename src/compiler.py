@@ -33,6 +33,8 @@
 #
 # environment:  Komodo IDE, version 10.2.0 build 89833, python 2.7.13,
 #               Fedora release 25 (Twenty Five)
+# environment:  Komodo IDE, version 10.2.0 build 89833, python 2.7.13,
+#               Fedora release 25 (Twenty Five)
 #
 # notes:        This is a private program.
 #
