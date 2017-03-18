@@ -6,3 +6,4 @@ prerequisites
 
 - PyYAML
 - NetworkX
+- pytest(for testing only)

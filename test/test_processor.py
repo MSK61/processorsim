@@ -42,8 +42,8 @@
 from os.path import join
 import src_importer
 import processor_utils
-from processor_utils import DupElemError, UnitModel
-import unittest
+from processor_utils import UnitModel
+import pytest
 import yaml
 
 class _UnitNode:
@@ -98,7 +98,7 @@ class _UnitNode:
         return self._preds
 
 
-class ProcDescTest(unittest.TestCase):
+class TestProcDesc:
 
     """Test case for loading processor description"""
 
@@ -110,11 +110,9 @@ class ProcDescTest(unittest.TestCase):
         """
         in_file = "twoConnectedUnitsProcessor.yaml"
         proc_desc = self._read_file(in_file)
-        self.assertSequenceEqual(
-            [_UnitNode(UnitModel("output", 1, []), 1), _UnitNode(UnitModel(
-                "input", 1, []), 0)], map(self._create_node, proc_desc))
-        self.assertIs(
-            iter(proc_desc[0].predecessors).next(), proc_desc[1].model)
+        assert [_UnitNode(UnitModel("output", 1, []), 1), _UnitNode(
+            UnitModel("input", 1, []), 0)] == map(self._create_node, proc_desc)
+        assert iter(proc_desc[0].predecessors).next() is proc_desc[1].model
 
     def test_single_functional_unit_processor(self):
         """Test loading a single function unit processor.
@@ -124,33 +122,25 @@ class ProcDescTest(unittest.TestCase):
         """
         in_file = "singleUnitProcessor.yaml"
         proc_desc = self._read_file(in_file)
-        self.assertEqual(len(proc_desc), 1)
-        self.assertEqual(proc_desc[0].model, UnitModel("fullSys", 1, ["ALU"]))
-        self.assertEqual(len(proc_desc[0].predecessors), 0)
+        assert len(proc_desc) == 1
+        assert proc_desc[0].model == UnitModel("fullSys", 1, ["ALU"])
+        assert len(proc_desc[0].predecessors) == 0
 
-    def test_two_units_with_same_name_and_case(self):
-        """Test loading two units with the same name(and same case).
-
-        `self` is this test case.
-
-        """
-        in_file = "twoUnitsWithSameNameAndCase.yaml"
-        with self.assertRaises(DupElemError) as exChk:
-            self._read_file(in_file)
-        self.assertEqual(exChk.exception.old_element, "fullSys")
-        self.assertEqual(exChk.exception.new_element, "fullSys")
-
-    def test_two_units_with_same_name_and_different_case(self):
-        """Test loading two units with the same name and different case.
+    @pytest.mark.parametrize(
+        "in_file, dup_unit", [("twoUnitsWithSameNameAndCase.yaml", "fullSys"),
+            ("twoUnitsWithSameNameAndDifferentCase.yaml", "FULLsYS")])
+    def test_two_units_with_same_name(self, in_file, dup_unit):
+        """Test loading two units with the same name.
 
         `self` is this test case.
+        `in_file` is the processor description file.
+        `dup_unit` is the duplicate unit.
 
         """
-        in_file = "twoUnitsWithSameNameAndDifferentCase.yaml"
-        with self.assertRaises(DupElemError) as exChk:
-            self._read_file(in_file)
-        self.assertEqual(exChk.exception.old_element, "fullSys")
-        self.assertEqual(exChk.exception.new_element, "FULLsYS")
+        exChk = pytest.raises(
+            processor_utils.DupElemError, self._read_file, in_file)
+        assert exChk.value.old_element == "fullSys"
+        assert exChk.value.new_element == dup_unit
 
     @staticmethod
     def _create_node(unit):
@@ -174,7 +164,7 @@ class ProcDescTest(unittest.TestCase):
 
 def main():
     """entry point for running test in this module"""
-    unittest.main()
+    pytest.main()
 
 if __name__ == '__main__':
     main()
