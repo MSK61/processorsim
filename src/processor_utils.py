@@ -195,6 +195,39 @@ class _FuncUnit(object):
         return self._preds
 
 
+class _NoCaseStrSet:
+
+    """Case-insensitive string set"""
+
+    def __init__(self):
+        """Create a case-insensitive string set.
+
+        `self` is this functional unit.
+
+        """
+        self._std_form_map = {}
+
+    def get(self, elem):
+        """Retrieve the string in this set matching the given element.
+
+        `self` is this string set.
+        `elem` is the string to look up in this set.
+        The function returns the string in this set that matches the
+        given string, or None if no such string exists.
+
+        """
+        return self._std_form_map.get(elem.lower())
+
+    def add(self, elem):
+        """Add the given string to this set.
+
+        `self` is this string set.
+        `elem` is the string to add.
+
+        """
+        self._std_form_map[elem.lower()] = elem
+
+
 def load_proc_desc(raw_desc):
     """Transform the given raw description into a processor one.
 
@@ -243,8 +276,7 @@ def _add_unit(processor, unit, unit_registry):
     previously added to the processor.
 
     """
-    lower_case_unit = unit.lower()
-    first_name = unit_registry.get(lower_case_unit)
+    first_name = unit_registry.get(unit)
 
     if first_name is not None:
         raise DupElemError(
@@ -253,7 +285,7 @@ def _add_unit(processor, unit, unit_registry):
             first_name, unit)
 
     processor.add_node(unit)
-    unit_registry[lower_case_unit] = unit
+    unit_registry.add(unit)
 
 
 def _create_graph(units, links):
@@ -266,7 +298,7 @@ def _create_graph(units, links):
 
     """
     flow_graph = networkx.DiGraph()
-    unit_registry = {}
+    unit_registry = _NoCaseStrSet()
 
     for cur_unit in units:
         _add_unit(flow_graph, cur_unit[_UNIT_NAME_ATTR], unit_registry)
