@@ -48,7 +48,7 @@ from processor_utils import UnitModel
 import pytest
 import yaml
 
-class _UnitNode:
+class _UnitNode(object):
 
     """Functional unit node information"""
 
