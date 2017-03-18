@@ -41,7 +41,6 @@
 #
 ############################################################
 
-import itertools
 from itertools import imap
 import networkx
 _UNIT_NAME_ATTR = "name"
