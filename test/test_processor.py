@@ -46,6 +46,7 @@ import src_importer
 import processor_utils
 from processor_utils import UnitModel
 import pytest
+from pytest import raises
 import yaml
 
 class _UnitNode(object):
@@ -104,6 +105,16 @@ class TestProcDesc:
 
     """Test case for loading processor description"""
 
+    def test_edge_with_unknown_unit(self):
+        """Test loading an edge involving an unknown unit.
+
+        `self` is this test case.
+
+        """
+        in_file = "edgeWithUnknownUnit.yaml"
+        assert raises(processor_utils.ElemError, self._read_file,
+                      in_file).value.element == "input"
+
     def test_processor_with_two_connected_functional_units(self):
         """Test loading a processor with two functional units.
 
@@ -139,8 +150,7 @@ class TestProcDesc:
         `dup_unit` is the duplicate unit.
 
         """
-        exChk = pytest.raises(
-            processor_utils.DupElemError, self._read_file, in_file)
+        exChk = raises(processor_utils.DupElemError, self._read_file, in_file)
         assert exChk.value.old_element == "fullSys"
         assert exChk.value.new_element == dup_unit
 

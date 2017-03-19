@@ -87,6 +87,32 @@ class DupElemError(RuntimeError):
         return self._old_elem
 
 
+class ElemError(RuntimeError):
+
+    """Unknown set element error"""
+
+    def __init__(self, msg_tmpl, elem):
+        """Create an unknown element error.
+
+        `self` is this unknown element error.
+        `msg_tmpl` is the error format message taking the unknown element as a
+                   positional argument.
+        `elem` is the unknown element.
+
+        """
+        RuntimeError.__init__(self, msg_tmpl.format(elem))
+        self._elem = elem
+
+    @property
+    def element(self):
+        """Unknown element
+
+        `self` is this unknown element error.
+
+        """
+        return self._elem
+
+
 class UnitModel(object):
 
     """Functional unit model"""
@@ -266,6 +292,33 @@ def _get_unit_entry(unit_desc):
         unit_desc[attr], [_UNIT_NAME_ATTR, "width", "capabilities"])))
 
 
+def _get_unit_name(unit, unit_registry):
+    """Return a validated unit name.
+
+    `unit` is the name of the unit to validate.
+    `unit_registry` is the store of defined units.
+    The function raises an ElemError if no unit exists with this name,
+    otherwise returns the validated unit name.
+
+    """
+    std_name = unit_registry.get(unit)
+
+    if std_name is None:
+        raise ElemError("Undefined functional unit {}", unit)
+
+    return std_name
+
+
+def _add_edge(processor, edge):
+    """Add an edge to a processor.
+
+    `processor` is the processor to add the edge to.
+    `edge` is the edge to add.
+
+    """
+    processor.add_edge(*edge)
+
+
 def _add_unit(processor, unit, unit_registry):
     """Add a functional unit to a processor.
 
@@ -303,7 +356,11 @@ def _create_graph(units, links):
     for cur_unit in units:
         _add_unit(flow_graph, cur_unit[_UNIT_NAME_ATTR], unit_registry)
 
-    flow_graph.add_edges_from(links)
+    for cur_link in links:
+        _add_edge(
+            flow_graph,
+            map(lambda unit: _get_unit_name(unit, unit_registry), cur_link))
+
     return flow_graph
 
 
