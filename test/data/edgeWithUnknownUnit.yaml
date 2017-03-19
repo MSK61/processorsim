@@ -1,7 +1,6 @@
 units:
     - name: fullSys
       width: 1
-      capabilities:
-        - ALU
+      capabilities: []
 dataPath:
     - [input, fullSys]
