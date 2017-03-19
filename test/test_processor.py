@@ -105,7 +105,7 @@ class TestProcDesc:
 
     """Test case for loading processor description"""
 
-    def test_edge_with_unknown_unit(self):
+    def test_edge_with_unknown_unit_raises_ElemError(self):
         """Test loading an edge involving an unknown unit.
 
         `self` is this test case.
@@ -142,7 +142,8 @@ class TestProcDesc:
     @pytest.mark.parametrize(
         "in_file, dup_unit", [("twoUnitsWithSameNameAndCase.yaml", "fullSys"),
             ("twoUnitsWithSameNameAndDifferentCase.yaml", "FULLsYS")])
-    def test_two_units_with_same_name(self, in_file, dup_unit):
+    def test_two_units_with_same_name_raise_DupElemError(
+        self, in_file, dup_unit):
         """Test loading two units with the same name.
 
         `self` is this test case.
