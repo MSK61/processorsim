@@ -41,6 +41,7 @@
 #
 ############################################################
 
+import itertools
 import os.path
 import src_importer
 import processor_utils
@@ -113,8 +114,9 @@ class TestProcDesc:
 
         """
         in_file = "edgeWithUnknownUnit.yaml"
-        assert raises(processor_utils.ElemError, self._read_file,
-                      in_file).value.element == "input"
+        exChk = raises(processor_utils.ElemError, self._read_file, in_file)
+        assert exChk.value.element == "input"
+        assert exChk.value.element in str(exChk.value)
 
     @mark.parametrize("in_file, bad_edge", [("emptyEdge.yaml", []),
         ("3UnitEdge.yaml", ["input", "middle", "output"])])
@@ -127,8 +129,9 @@ class TestProcDesc:
         `bad_edge` is the bad edge.
 
         """
-        assert raises(processor_utils.BadEdgeError, self._read_file,
-                      in_file).value.edge == bad_edge
+        exChk = raises(processor_utils.BadEdgeError, self._read_file, in_file)
+        assert exChk.value.edge == bad_edge
+        assert str(bad_edge) in str(exChk.value)
 
     @mark.parametrize(
         "in_file", ["twoConnectedUnitsProcessor.yaml",
@@ -155,7 +158,7 @@ class TestProcDesc:
         proc_desc = self._read_file(in_file)
         assert len(proc_desc) == 1
         assert proc_desc[0].model == UnitModel("fullSys", 1, ["ALU"])
-        assert len(proc_desc[0].predecessors) == 0
+        assert not proc_desc[0].predecessors
 
     @mark.parametrize(
         "in_file, dup_unit", [("twoUnitsWithSameNameAndCase.yaml", "fullSys"),
@@ -170,8 +173,10 @@ class TestProcDesc:
 
         """
         exChk = raises(processor_utils.DupElemError, self._read_file, in_file)
-        assert exChk.value.old_element == "fullSys"
-        assert exChk.value.new_element == dup_unit
+        elems = exChk.value.old_element, exChk.value.new_element
+        assert elems == ("fullSys", dup_unit)
+        assert all(
+            itertools.imap(lambda elem: elem in str(exChk.value), elems))
 
     @staticmethod
     def _create_node(unit):
