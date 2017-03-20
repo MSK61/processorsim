@@ -130,13 +130,16 @@ class TestProcDesc:
         assert raises(processor_utils.BadEdgeError, self._read_file,
                       in_file).value.edge == bad_edge
 
-    def test_processor_with_two_connected_functional_units(self):
+    @mark.parametrize(
+        "in_file", ["twoConnectedUnitsProcessor.yaml",
+                    "edgeWithUnitNamesInCaseDifferentFromDefinition.yaml"])
+    def test_processor_with_two_connected_functional_units(self, in_file):
         """Test loading a processor with two functional units.
 
         `self` is this test case.
+        `in_file` is the processor description file.
 
         """
-        in_file = "twoConnectedUnitsProcessor.yaml"
         proc_desc = self._read_file(in_file)
         assert [_UnitNode(UnitModel("output", 1, []), 1), _UnitNode(
             UnitModel("input", 1, []), 0)] == map(self._create_node, proc_desc)
