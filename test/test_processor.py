@@ -47,6 +47,7 @@ import processor_utils
 from processor_utils import UnitModel
 import pytest
 from pytest import raises
+from pytest import mark
 import yaml
 
 class _UnitNode(object):
@@ -115,6 +116,20 @@ class TestProcDesc:
         assert raises(processor_utils.ElemError, self._read_file,
                       in_file).value.element == "input"
 
+    @mark.parametrize("in_file, bad_edge", [("emptyEdge.yaml", []),
+        ("3UnitEdge.yaml", ["input", "middle", "output"])])
+    def test_edge_with_wrong_number_of_units_raises_BadEdgeError(
+        self, in_file, bad_edge):
+        """Test loading an edge with wrong number of units.
+
+        `self` is this test case.
+        `in_file` is the processor description file.
+        `bad_edge` is the bad edge.
+
+        """
+        assert raises(processor_utils.BadEdgeError, self._read_file,
+                      in_file).value.edge == bad_edge
+
     def test_processor_with_two_connected_functional_units(self):
         """Test loading a processor with two functional units.
 
@@ -139,7 +154,7 @@ class TestProcDesc:
         assert proc_desc[0].model == UnitModel("fullSys", 1, ["ALU"])
         assert len(proc_desc[0].predecessors) == 0
 
-    @pytest.mark.parametrize(
+    @mark.parametrize(
         "in_file, dup_unit", [("twoUnitsWithSameNameAndCase.yaml", "fullSys"),
             ("twoUnitsWithSameNameAndDifferentCase.yaml", "FULLsYS")])
     def test_two_units_with_same_name_raise_DupElemError(

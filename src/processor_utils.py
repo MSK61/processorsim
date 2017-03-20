@@ -45,6 +45,32 @@ from itertools import imap
 import networkx
 _UNIT_NAME_ATTR = "name"
 
+class BadEdgeError(RuntimeError):
+
+    """Bad edge error"""
+
+    def __init__(self, msg_tmpl, edge):
+        """Create a bad edge error.
+
+        `self` is this bad edge error.
+        `msg_tmpl` is the error format message taking the bad edge as a
+                   positional argument.
+        `edge` is the bad edge.
+
+        """
+        RuntimeError.__init__(self, msg_tmpl.format(edge))
+        self._edge = edge
+
+    @property
+    def edge(self):
+        """Bad edge
+
+        `self` is this bad edge error.
+
+        """
+        return self._edge
+
+
 class DupElemError(RuntimeError):
 
     """Duplicate set element error"""
@@ -309,13 +335,22 @@ def _get_unit_name(unit, unit_registry):
     return std_name
 
 
-def _add_edge(processor, edge):
+def _add_edge(processor, edge, unit_registry):
     """Add an edge to a processor.
 
     `processor` is the processor to add the edge to.
     `edge` is the edge to add.
+    `unit_registry` is the store of defined units.
+    The function raises a BadEdgeError if the edge doesn't connect
+    exactly two units.
 
     """
+    good_edge_len = 2
+    if len(edge) != good_edge_len:
+        raise BadEdgeError(
+            "Edge {} doesn't connect exactly 2 functional units.", edge)
+
+    edge = map(lambda unit: _get_unit_name(unit, unit_registry), edge)
     processor.add_edge(*edge)
 
 
@@ -357,9 +392,7 @@ def _create_graph(units, links):
         _add_unit(flow_graph, cur_unit[_UNIT_NAME_ATTR], unit_registry)
 
     for cur_link in links:
-        _add_edge(
-            flow_graph,
-            map(lambda unit: _get_unit_name(unit, unit_registry), cur_link))
+        _add_edge(flow_graph, cur_link, unit_registry)
 
     return flow_graph
 
