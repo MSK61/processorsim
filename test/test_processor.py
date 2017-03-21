@@ -113,8 +113,8 @@ class TestProcDesc:
         `self` is this test case.
 
         """
-        in_file = "edgeWithUnknownUnit.yaml"
-        exChk = raises(processor_utils.ElemError, self._read_file, in_file)
+        exChk = raises(processor_utils.ElemError, self._read_file,
+                       "edgeWithUnknownUnit.yaml")
         assert exChk.value.element == "input"
         assert exChk.value.element in str(exChk.value)
 
@@ -151,8 +151,7 @@ class TestProcDesc:
         `self` is this test case.
 
         """
-        in_file = "singleUnitProcessor.yaml"
-        proc_desc = self._read_file(in_file)
+        proc_desc = self._read_file("singleUnitProcessor.yaml")
         assert len(proc_desc) == 1
         assert proc_desc[0].model == UnitModel("fullSys", 1, ["ALU"])
         assert not proc_desc[0].predecessors
@@ -163,10 +162,9 @@ class TestProcDesc:
         `self` is this test case.
 
         """
-        in_file = "twoEdgesWithSameUnitNamesAndCase.yaml"
-        warn_mock = "logging.warning"
-        with mock.patch(warn_mock) as warn_mock:
-            self._chk_two_units(self._read_file(in_file))
+        with mock.patch("logging.warning") as warn_mock:
+            self._chk_two_units(
+                self._read_file("twoEdgesWithSameUnitNamesAndCase.yaml"))
         assert warn_mock.call_args
         assert str(["input", "output"]) in warn_mock.call_args[0][0].format(
             *(warn_mock.call_args[0][1 :]), **(warn_mock.call_args[1]))
