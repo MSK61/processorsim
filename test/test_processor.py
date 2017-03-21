@@ -41,7 +41,7 @@
 #
 ############################################################
 
-import itertools
+from itertools import imap
 import mock
 import os.path
 import pytest
@@ -156,18 +156,22 @@ class TestProcDesc:
         assert proc_desc[0].model == UnitModel("fullSys", 1, ["ALU"])
         assert not proc_desc[0].predecessors
 
-    def test_two_edges_with_same_unit_names_and_case_are_detected(self):
-        """Test loading two edges with the same unit names and case.
+    @mark.parametrize(
+        "in_file, edges",
+        [("twoEdgesWithSameUnitNamesAndCase.yaml", [["input", "output"]]),
+            ("twoEdgesWithSameUnitNamesAndLowerThenUpperCase.yaml",
+             [["input", "output"], ["INPUT", "OUTPUT"]])])
+    def test_two_identical_edges_are_detected(self, in_file, edges):
+        """Test loading two identical edges with the same units.
 
         `self` is this test case.
+        `in_file` is the processor description file.
+        `edges` are the identical edges.
 
         """
         with mock.patch("logging.warning") as warn_mock:
-            self._chk_two_units(
-                self._read_file("twoEdgesWithSameUnitNamesAndCase.yaml"))
-        assert warn_mock.call_args
-        assert str(["input", "output"]) in warn_mock.call_args[0][0].format(
-            *(warn_mock.call_args[0][1 :]), **(warn_mock.call_args[1]))
+            self._chk_two_units(self._read_file(in_file))
+        self._chk_edge_warn(edges, warn_mock)
 
     @mark.parametrize(
         "in_file, dup_unit", [("twoUnitsWithSameNameAndCase.yaml", "fullSys"),
@@ -184,8 +188,22 @@ class TestProcDesc:
         exChk = raises(processor_utils.DupElemError, self._read_file, in_file)
         elems = exChk.value.old_element, exChk.value.new_element
         assert elems == ("fullSys", dup_unit)
-        assert all(
-            itertools.imap(lambda elem: elem in str(exChk.value), elems))
+        assert all(imap(lambda elem: elem in str(exChk.value), elems))
+
+    @staticmethod
+    def _chk_edge_warn(edges, warn_mock):
+        """Verify edges in a warning message.
+
+        `edges` are the edges to assess.
+        `warn_mock` is the warning function mock.
+        The method asserts that all edges exist in the constructed warning
+        message.
+
+        """
+        assert warn_mock.call_args
+        warn_msg = warn_mock.call_args[0][0].format(
+            *(warn_mock.call_args[0][1 :]), **(warn_mock.call_args[1]))
+        assert all(imap(lambda edge: str(edge) in warn_msg, edges))
 
     @staticmethod
     def _chk_two_units(processor):

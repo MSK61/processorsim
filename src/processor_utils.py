@@ -352,12 +352,13 @@ def _add_edge(processor, edge, unit_registry):
         raise BadEdgeError(
             "Edge {} doesn't connect exactly 2 functional units.", edge)
 
-    edge = map(lambda unit: _get_unit_name(unit, unit_registry), edge)
+    std_edge = map(lambda unit: _get_unit_name(unit, unit_registry), edge)
 
-    if processor.has_edge(*edge):
-        logging.warning("Edge {} previously added, ignoring...", edge)
+    if processor.has_edge(*std_edge):
+        logging.warning(
+            "Edge {} previously added as {}, ignoring...", edge, std_edge)
 
-    processor.add_edge(*edge)
+    processor.add_edge(*std_edge)
 
 
 def _add_unit(processor, unit, unit_registry):
