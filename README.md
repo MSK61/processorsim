@@ -4,6 +4,12 @@ program execution simulator on processors
 prerequisites
 -------------
 
+### development/run-time requirements
+
 - PyYAML
 - NetworkX
-- pytest(for testing only)
+
+### testing requirements
+
+- pytest
+- mock

@@ -42,6 +42,7 @@
 ############################################################
 
 from itertools import imap
+import logging
 import networkx
 _UNIT_NAME_ATTR = "name"
 
@@ -264,8 +265,8 @@ class _NoCaseStrSet:
 
         `self` is this string set.
         `elem` is the string to look up in this set.
-        The function returns the string in this set that matches the
-        given string, or None if no such string exists.
+        The method returns the string in this set that matches the given
+        string, or None if no such string exists.
 
         """
         return self._std_form_map.get(elem.lower())
@@ -346,11 +347,16 @@ def _add_edge(processor, edge, unit_registry):
 
     """
     good_edge_len = 2
+
     if len(edge) != good_edge_len:
         raise BadEdgeError(
             "Edge {} doesn't connect exactly 2 functional units.", edge)
 
     edge = map(lambda unit: _get_unit_name(unit, unit_registry), edge)
+
+    if processor.has_edge(*edge):
+        logging.warning("Edge {} previously added, ignoring...", edge)
+
     processor.add_edge(*edge)
 
 

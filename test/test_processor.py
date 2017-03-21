@@ -42,13 +42,13 @@
 ############################################################
 
 import itertools
+import mock
 import os.path
-import src_importer
+import pytest
+from pytest import mark, raises
+import test_env
 import processor_utils
 from processor_utils import UnitModel
-import pytest
-from pytest import raises
-from pytest import mark
 import yaml
 
 class _UnitNode(object):
@@ -143,10 +143,7 @@ class TestProcDesc:
         `in_file` is the processor description file.
 
         """
-        proc_desc = self._read_file(in_file)
-        assert [_UnitNode(UnitModel("output", 1, []), 1), _UnitNode(
-            UnitModel("input", 1, []), 0)] == map(self._create_node, proc_desc)
-        assert iter(proc_desc[0].predecessors).next() is proc_desc[1].model
+        self._chk_two_units(self._read_file(in_file))
 
     def test_single_functional_unit_processor(self):
         """Test loading a single function unit processor.
@@ -159,6 +156,20 @@ class TestProcDesc:
         assert len(proc_desc) == 1
         assert proc_desc[0].model == UnitModel("fullSys", 1, ["ALU"])
         assert not proc_desc[0].predecessors
+
+    def test_two_edges_with_same_unit_names_and_case_are_detected(self):
+        """Test loading two edges with the same unit names and case.
+
+        `self` is this test case.
+
+        """
+        in_file = "twoEdgesWithSameUnitNamesAndCase.yaml"
+        warn_mock = "logging.warning"
+        with mock.patch(warn_mock) as warn_mock:
+            self._chk_two_units(self._read_file(in_file))
+        assert warn_mock.call_args
+        assert str(["input", "output"]) in warn_mock.call_args[0][0].format(
+            *(warn_mock.call_args[0][1 :]), **(warn_mock.call_args[1]))
 
     @mark.parametrize(
         "in_file, dup_unit", [("twoUnitsWithSameNameAndCase.yaml", "fullSys"),
@@ -177,6 +188,19 @@ class TestProcDesc:
         assert elems == ("fullSys", dup_unit)
         assert all(
             itertools.imap(lambda elem: elem in str(exChk.value), elems))
+
+    @staticmethod
+    def _chk_two_units(processor):
+        """Verify a two-unit processor.
+
+        `processor` is the two-unit processor to assess.
+        The method asserts the order and descriptions of units and links
+        among them.
+
+        """
+        assert [_UnitNode(UnitModel("output", 1, []), 1), _UnitNode(UnitModel(
+            "input", 1, []), 0)] == map(TestProcDesc._create_node, processor)
+        assert iter(processor[0].predecessors).next() is processor[1].model
 
     @staticmethod
     def _create_node(unit):

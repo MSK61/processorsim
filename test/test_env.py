@@ -23,12 +23,12 @@
 #
 # program:      processor simulator
 #
-# file:         src_importer.py
+# file:         test_env.py
 #
-# function:     source importing services
+# function:     test environment initialization
 #
-# description:  prepares for importing source modules inside the test
-#               environment
+# description:  initializes logging and prepares for importing source
+#               modules inside the test environment
 #
 # author:       Mohammed El-Afifi (ME)
 #
@@ -41,6 +41,7 @@
 #
 ############################################################
 
+import logging
 import os
 import sys
 
@@ -54,4 +55,10 @@ def _add_src_path():
     src_dir = "src"
     sys.path.append(os.path.join(os.path.pardir, src_dir))
 
-_add_src_path()
+
+def _init():
+    """Initialize the test environment."""
+    _add_src_path()
+    logging.basicConfig(level=logging.INFO)
+
+_init()

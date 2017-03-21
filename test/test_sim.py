@@ -41,7 +41,7 @@
 #
 ############################################################
 
-import src_importer
+import test_env
 import compiler
 import processor
 import unittest

@@ -47,6 +47,7 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 
 import compiler
 import itertools
+import logging
 import processor
 import sys
 import argparse
@@ -85,6 +86,7 @@ def process_command_line(argv):
 
 def main(argv=None):
     args = process_command_line(argv)
+    logging.basicConfig(level=logging.INFO)
     processor_file, program_file = \
                                    itertools.imap(
         lambda opt: getattr(args, opt), [_PROC_OPT_VAR, _PROG_OPT_VAR])
