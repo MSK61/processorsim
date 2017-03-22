@@ -156,11 +156,13 @@ class TestProcDesc:
         assert proc_desc[0].model == UnitModel("fullSys", 1, ["ALU"])
         assert not proc_desc[0].predecessors
 
-    @mark.parametrize(
-        "in_file, edges",
-        [("twoEdgesWithSameUnitNamesAndCase.yaml", [["input", "output"]]),
-            ("twoEdgesWithSameUnitNamesAndLowerThenUpperCase.yaml",
-             [["input", "output"], ["INPUT", "OUTPUT"]])])
+    @mark.parametrize("in_file, edges",
+                      [("twoEdgesWithSameUnitNamesAndCase.yaml",
+                        [["input", "output"]]),
+                        ("twoEdgesWithSameUnitNamesAndLowerThenUpperCase.yaml",
+                         [["input", "output"], ["INPUT", "OUTPUT"]]),
+                        ("twoEdgesWithSameUnitNamesAndUpperThenLowerCase.yaml",
+                         [["INPUT", "OUTPUT"], ["input", "output"]])])
     def test_two_identical_edges_are_detected(self, in_file, edges):
         """Test loading two identical edges with the same units.
 

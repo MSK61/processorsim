@@ -336,14 +336,16 @@ def _get_unit_name(unit, unit_registry):
     return std_name
 
 
-def _add_edge(processor, edge, unit_registry):
+def _add_edge(processor, edge, unit_registry, edge_registry):
     """Add an edge to a processor.
 
     `processor` is the processor to add the edge to.
     `edge` is the edge to add.
     `unit_registry` is the store of defined units.
+    `edge_registry` is the store of previously added edges.
     The function raises a BadEdgeError if the edge doesn't connect
-    exactly two units.
+    exactly two units and an ElemError if an undefined unit is
+    encountered.
 
     """
     good_edge_len = 2
@@ -352,13 +354,16 @@ def _add_edge(processor, edge, unit_registry):
         raise BadEdgeError(
             "Edge {} doesn't connect exactly 2 functional units.", edge)
 
-    std_edge = map(lambda unit: _get_unit_name(unit, unit_registry), edge)
+    std_edge = tuple(
+        imap(lambda unit: _get_unit_name(unit, unit_registry), edge))
+    old_edge = edge_registry.get(std_edge)
 
-    if processor.has_edge(*std_edge):
+    if old_edge is not None:
         logging.warning(
-            "Edge {} previously added as {}, ignoring...", edge, std_edge)
+            "Edge {} previously added as {}, ignoring...", edge, old_edge)
 
     processor.add_edge(*std_edge)
+    edge_registry[std_edge] = edge
 
 
 def _add_unit(processor, unit, unit_registry):
@@ -371,13 +376,13 @@ def _add_unit(processor, unit, unit_registry):
     previously added to the processor.
 
     """
-    first_name = unit_registry.get(unit)
+    old_name = unit_registry.get(unit)
 
-    if first_name is not None:
+    if old_name is not None:
         raise DupElemError(
             "Functional unit {{{}}} previously added as {{{}}}".format(
                 DupElemError.NEW_ELEM_IDX, DupElemError.OLD_ELEM_IDX),
-            first_name, unit)
+            old_name, unit)
 
     processor.add_node(unit)
     unit_registry.add(unit)
@@ -394,12 +399,13 @@ def _create_graph(units, links):
     """
     flow_graph = networkx.DiGraph()
     unit_registry = _NoCaseStrSet()
+    edge_registry = {}
 
     for cur_unit in units:
         _add_unit(flow_graph, cur_unit[_UNIT_NAME_ATTR], unit_registry)
 
     for cur_link in links:
-        _add_edge(flow_graph, cur_link, unit_registry)
+        _add_edge(flow_graph, cur_link, unit_registry, edge_registry)
 
     return flow_graph
 
