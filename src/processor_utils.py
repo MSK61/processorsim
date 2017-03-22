@@ -248,6 +248,58 @@ class _FuncUnit(object):
         return self._preds
 
 
+class _NoCaseEdgeSet:
+
+    """Case-insensitive edge set"""
+
+    def __init__(self, unit_registry):
+        """Create a case-insensitive edge set.
+
+        `self` is this edge set.
+        `unit_registry` is the store of defined units.
+
+        """
+        self._unit_reg = unit_registry
+        self._std_form_map = {}
+
+    def get(self, edge):
+        """Retrieve the edge in this set matching the given edge.
+
+        `self` is this edge set.
+        `edge` is the edge to look up in this set.
+        The method returns the edge in this set that matches the given
+        edge, or None if no such edge exists.
+
+        """
+        edge = imap(self._get_unit_name, edge)
+        return self._std_form_map.get(tuple(edge))
+
+    def add(self, edge):
+        """Add the given edge to this set.
+
+        `self` is this edge set.
+        `edge` is the edge to add.
+
+        """
+        self._std_form_map[tuple(imap(self._unit_reg.get, edge))] = edge
+
+    def _get_unit_name(self, unit):
+        """Return a validated unit name.
+
+        `self` is this edge set.
+        `unit` is the name of the unit to validate.
+        The method raises an ElemError if no unit exists with this name,
+        otherwise returns the validated unit name.
+
+        """
+        std_name = self._unit_reg.get(unit)
+
+        if std_name is None:
+            raise ElemError("Undefined functional unit {}", unit)
+
+        return std_name
+
+
 class _NoCaseStrSet:
 
     """Case-insensitive string set"""
@@ -255,7 +307,7 @@ class _NoCaseStrSet:
     def __init__(self):
         """Create a case-insensitive string set.
 
-        `self` is this functional unit.
+        `self` is this string set.
 
         """
         self._std_form_map = {}
@@ -319,23 +371,6 @@ def _get_unit_entry(unit_desc):
         unit_desc[attr], [_UNIT_NAME_ATTR, "width", "capabilities"])))
 
 
-def _get_unit_name(unit, unit_registry):
-    """Return a validated unit name.
-
-    `unit` is the name of the unit to validate.
-    `unit_registry` is the store of defined units.
-    The function raises an ElemError if no unit exists with this name,
-    otherwise returns the validated unit name.
-
-    """
-    std_name = unit_registry.get(unit)
-
-    if std_name is None:
-        raise ElemError("Undefined functional unit {}", unit)
-
-    return std_name
-
-
 def _add_edge(processor, edge, unit_registry, edge_registry):
     """Add an edge to a processor.
 
@@ -354,16 +389,14 @@ def _add_edge(processor, edge, unit_registry, edge_registry):
         raise BadEdgeError(
             "Edge {} doesn't connect exactly 2 functional units.", edge)
 
-    std_edge = tuple(
-        imap(lambda unit: _get_unit_name(unit, unit_registry), edge))
-    old_edge = edge_registry.get(std_edge)
+    old_edge = edge_registry.get(edge)
 
     if old_edge is not None:
         logging.warning(
             "Edge {} previously added as {}, ignoring...", edge, old_edge)
 
-    processor.add_edge(*std_edge)
-    edge_registry[std_edge] = edge
+    processor.add_edge(*(imap(unit_registry.get, edge)))
+    edge_registry.add(edge)
 
 
 def _add_unit(processor, unit, unit_registry):
@@ -399,7 +432,7 @@ def _create_graph(units, links):
     """
     flow_graph = networkx.DiGraph()
     unit_registry = _NoCaseStrSet()
-    edge_registry = {}
+    edge_registry = _NoCaseEdgeSet(unit_registry)
 
     for cur_unit in units:
         _add_unit(flow_graph, cur_unit[_UNIT_NAME_ATTR], unit_registry)
