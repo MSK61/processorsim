@@ -122,8 +122,8 @@ class ElemError(RuntimeError):
         """Create an unknown element error.
 
         `self` is this unknown element error.
-        `msg_tmpl` is the error format message taking the unknown element as a
-                   positional argument.
+        `msg_tmpl` is the error format message taking the unknown
+                   element as a positional argument.
         `elem` is the unknown element.
 
         """
@@ -248,89 +248,39 @@ class _FuncUnit(object):
         return self._preds
 
 
-class _NoCaseEdgeSet:
+class _IndexedSet:
 
-    """Case-insensitive edge set"""
+    """Indexed set"""
 
-    def __init__(self, unit_registry):
-        """Create a case-insensitive edge set.
+    def __init__(self, index_func):
+        """Create an indexed set.
 
-        `self` is this edge set.
-        `unit_registry` is the store of defined units.
-
-        """
-        self._unit_reg = unit_registry
-        self._std_form_map = {}
-
-    def get(self, edge):
-        """Retrieve the edge in this set matching the given edge.
-
-        `self` is this edge set.
-        `edge` is the edge to look up in this set.
-        The method returns the edge in this set that matches the given
-        edge, or None if no such edge exists.
+        `self` is this set.
+        `index_func` is the index calculation function.
 
         """
-        edge = imap(self._get_unit_name, edge)
-        return self._std_form_map.get(tuple(edge))
-
-    def add(self, edge):
-        """Add the given edge to this set.
-
-        `self` is this edge set.
-        `edge` is the edge to add.
-
-        """
-        self._std_form_map[tuple(imap(self._unit_reg.get, edge))] = edge
-
-    def _get_unit_name(self, unit):
-        """Return a validated unit name.
-
-        `self` is this edge set.
-        `unit` is the name of the unit to validate.
-        The method raises an ElemError if no unit exists with this name,
-        otherwise returns the validated unit name.
-
-        """
-        std_name = self._unit_reg.get(unit)
-
-        if std_name is None:
-            raise ElemError("Undefined functional unit {}", unit)
-
-        return std_name
-
-
-class _NoCaseStrSet:
-
-    """Case-insensitive string set"""
-
-    def __init__(self):
-        """Create a case-insensitive string set.
-
-        `self` is this string set.
-
-        """
+        self._index_func = index_func
         self._std_form_map = {}
 
     def get(self, elem):
-        """Retrieve the string in this set matching the given element.
+        """Retrieve the elem in this set matching the given one.
 
-        `self` is this string set.
-        `elem` is the string to look up in this set.
-        The method returns the string in this set that matches the given
-        string, or None if no such string exists.
+        `self` is this set.
+        `elem` is the element to look up in this set.
+        The method returns the element in this set that matches the
+        given one, or None if none exists.
 
         """
-        return self._std_form_map.get(elem.lower())
+        return self._std_form_map.get(self._index_func(elem))
 
     def add(self, elem):
-        """Add the given string to this set.
+        """Add the given element to this set.
 
-        `self` is this string set.
-        `elem` is the string to add.
+        `self` is this set.
+        `elem` is the element to add.
 
         """
-        self._std_form_map[elem.lower()] = elem
+        self._std_form_map[self._index_func(elem)] = elem
 
 
 def load_proc_desc(raw_desc):
@@ -360,6 +310,18 @@ def _get_preds(processor, unit, unit_map):
     return imap(lambda pred: unit_map[pred], processor.predecessors(unit))
 
 
+def _get_std_edge(edge, unit_registry):
+    """Return a validated edge.
+
+    `edge` is the edge to validate.
+    `unit_registry` is the store of defined units.
+    The function raises an ElemError if an undefined unit is
+    encountered.
+
+    """
+    return imap(lambda unit: _get_unit_name(unit, unit_registry), edge)
+
+
 def _get_unit_entry(unit_desc):
     """Create a unit map entry from the given description.
 
@@ -369,6 +331,23 @@ def _get_unit_entry(unit_desc):
     """
     return unit_desc[_UNIT_NAME_ATTR], UnitModel(*(imap(lambda attr:
         unit_desc[attr], [_UNIT_NAME_ATTR, "width", "capabilities"])))
+
+
+def _get_unit_name(unit, unit_registry):
+    """Return a validated unit name.
+
+    `unit` is the name of the unit to validate.
+    `unit_registry` is the store of defined units.
+    The function raises an ElemError if no unit exists with this name,
+    otherwise returns the validated unit name.
+
+    """
+    std_name = unit_registry.get(unit)
+
+    if std_name is None:
+        raise ElemError("Undefined functional unit {}", unit)
+
+    return std_name
 
 
 def _add_edge(processor, edge, unit_registry, edge_registry):
@@ -431,8 +410,9 @@ def _create_graph(units, links):
 
     """
     flow_graph = networkx.DiGraph()
-    unit_registry = _NoCaseStrSet()
-    edge_registry = _NoCaseEdgeSet(unit_registry)
+    unit_registry = _IndexedSet(str.lower)
+    edge_registry = _IndexedSet(
+        lambda edge: tuple(_get_std_edge(edge, unit_registry)))
 
     for cur_unit in units:
         _add_unit(flow_graph, cur_unit[_UNIT_NAME_ATTR], unit_registry)
