@@ -368,13 +368,13 @@ def _add_edge(processor, edge, unit_registry, edge_registry):
         raise BadEdgeError(
             "Edge {} doesn't connect exactly 2 functional units.", edge)
 
+    processor.add_edge(*(_get_std_edge(edge, unit_registry)))
     old_edge = edge_registry.get(edge)
 
     if old_edge is not None:
         logging.warning(
             "Edge {} previously added as {}, ignoring...", edge, old_edge)
 
-    processor.add_edge(*(imap(unit_registry.get, edge)))
     edge_registry.add(edge)
 
 
@@ -412,7 +412,7 @@ def _create_graph(units, links):
     flow_graph = networkx.DiGraph()
     unit_registry = _IndexedSet(str.lower)
     edge_registry = _IndexedSet(
-        lambda edge: tuple(_get_std_edge(edge, unit_registry)))
+        lambda edge: tuple(imap(unit_registry.get, edge)))
 
     for cur_unit in units:
         _add_unit(flow_graph, cur_unit[_UNIT_NAME_ATTR], unit_registry)
