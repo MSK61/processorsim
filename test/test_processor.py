@@ -43,6 +43,7 @@
 
 from itertools import imap
 import mock
+import networkx
 import os.path
 import pytest
 from pytest import mark, raises
@@ -80,6 +81,18 @@ class TestProcDesc:
         exChk = raises(processor_utils.BadEdgeError, self._read_file, in_file)
         assert exChk.value.edge == bad_edge
         assert str(bad_edge) in str(exChk.value)
+
+    @mark.parametrize("in_file", [
+        "selfNodeProcessor.yaml", "bidirectionalEdgeProcessor.yaml",
+        "bigLoopProcessor.yaml"])
+    def test_loop_raises_NetworkXUnfeasible(self, in_file):
+        """Test loading a processor with a loop.
+
+        `self` is this test case.
+        `in_file` is the processor description file.
+
+        """
+        raises(networkx.NetworkXUnfeasible, self._read_file, in_file)
 
     @mark.parametrize(
         "in_file", ["twoConnectedUnitsProcessor.yaml",

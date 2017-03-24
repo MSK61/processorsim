@@ -446,6 +446,6 @@ def _post_order(graph, units):
 
     """
     unit_map = dict(imap(_get_unit_entry, units))
-    return map(
-        lambda name: FuncUnit(unit_map[name], _get_preds(
-            graph, name, unit_map)), networkx.dfs_postorder_nodes(graph))
+    return map(lambda name:
+        FuncUnit(unit_map[name], _get_preds(graph, name, unit_map)),
+        networkx.topological_sort(graph, reverse=True))
