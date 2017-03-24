@@ -52,9 +52,9 @@ import processor_utils
 from processor_utils import FuncUnit, UnitModel
 import yaml
 
-class TestProcDesc:
+class TestEdge:
 
-    """Test case for loading processor description"""
+    """Test case for loading edges"""
 
     def test_edge_with_unknown_unit_raises_ElemError(self):
         """Test loading an edge involving an unknown unit.
@@ -62,8 +62,8 @@ class TestProcDesc:
         `self` is this test case.
 
         """
-        exChk = raises(processor_utils.ElemError, self._read_file,
-                       "edgeWithUnknownUnit.yaml")
+        exChk = raises(
+            processor_utils.ElemError, _read_file, "edgeWithUnknownUnit.yaml")
         assert exChk.value.element == "input"
         assert exChk.value.element in str(exChk.value)
 
@@ -78,44 +78,9 @@ class TestProcDesc:
         `bad_edge` is the bad edge.
 
         """
-        exChk = raises(processor_utils.BadEdgeError, self._read_file, in_file)
+        exChk = raises(processor_utils.BadEdgeError, _read_file, in_file)
         assert exChk.value.edge == bad_edge
         assert str(bad_edge) in str(exChk.value)
-
-    @mark.parametrize("in_file", [
-        "selfNodeProcessor.yaml", "bidirectionalEdgeProcessor.yaml",
-        "bigLoopProcessor.yaml"])
-    def test_loop_raises_NetworkXUnfeasible(self, in_file):
-        """Test loading a processor with a loop.
-
-        `self` is this test case.
-        `in_file` is the processor description file.
-
-        """
-        raises(networkx.NetworkXUnfeasible, self._read_file, in_file)
-
-    @mark.parametrize(
-        "in_file", ["twoConnectedUnitsProcessor.yaml",
-                    "edgeWithUnitNamesInCaseDifferentFromDefinition.yaml"])
-    def test_processor_with_two_connected_functional_units(self, in_file):
-        """Test loading a processor with two functional units.
-
-        `self` is this test case.
-        `in_file` is the processor description file.
-
-        """
-        self._chk_two_units(self._read_file(in_file))
-
-    def test_single_functional_unit_processor(self):
-        """Test loading a single function unit processor.
-
-        `self` is this test case.
-
-        """
-        proc_desc = self._read_file("singleUnitProcessor.yaml")
-        assert len(proc_desc) == 1
-        assert proc_desc[0].model == UnitModel("fullSys", 1, ["ALU"])
-        assert not proc_desc[0].predecessors
 
     @mark.parametrize("in_file, edges",
                       [("twoEdgesWithSameUnitNamesAndCase.yaml",
@@ -133,25 +98,8 @@ class TestProcDesc:
 
         """
         with mock.patch("logging.warning") as warn_mock:
-            self._chk_two_units(self._read_file(in_file))
+            _chk_two_units(_read_file(in_file))
         self._chk_edge_warn(edges, warn_mock)
-
-    @mark.parametrize(
-        "in_file, dup_unit", [("twoUnitsWithSameNameAndCase.yaml", "fullSys"),
-            ("twoUnitsWithSameNameAndDifferentCase.yaml", "FULLsYS")])
-    def test_two_units_with_same_name_raise_DupElemError(
-        self, in_file, dup_unit):
-        """Test loading two units with the same name.
-
-        `self` is this test case.
-        `in_file` is the processor description file.
-        `dup_unit` is the duplicate unit.
-
-        """
-        exChk = raises(processor_utils.DupElemError, self._read_file, in_file)
-        elems = exChk.value.old_element, exChk.value.new_element
-        assert elems == ("fullSys", dup_unit)
-        assert all(imap(lambda elem: elem in str(exChk.value), elems))
 
     @staticmethod
     def _chk_edge_warn(edges, warn_mock):
@@ -168,33 +116,96 @@ class TestProcDesc:
             *(warn_mock.call_args[0][1 :]), **(warn_mock.call_args[1]))
         assert all(imap(lambda edge: str(edge) in warn_msg, edges))
 
-    @staticmethod
-    def _chk_two_units(processor):
-        """Verify a two-unit processor.
 
-        `processor` is the two-unit processor to assess.
-        The method asserts the order and descriptions of units and links
-        among them.
+class TestLoop:
 
-        """
-        assert len(processor) == 2
-        assert processor == [FuncUnit(UnitModel("output", 1, []), [
-            processor[1].model]), FuncUnit(UnitModel("input", 1, []), [])]
+    """Test case for loading processors with loops"""
 
-    @staticmethod
-    def _read_file(file_name):
-        """Read a processor description file.
+    @mark.parametrize("in_file", [
+        "selfNodeProcessor.yaml", "bidirectionalEdgeProcessor.yaml",
+        "bigLoopProcessor.yaml"])
+    def test_loop_raises_NetworkXUnfeasible(self, in_file):
+        """Test loading a processor with a loop.
 
-        `file_name` is the processor description file name.
+        `self` is this test case.
+        `in_file` is the processor description file.
 
         """
-        data_dir = "data"
-        with open(os.path.join(data_dir, file_name)) as proc_file:
-            return processor_utils.load_proc_desc(yaml.load(proc_file))
+        raises(networkx.NetworkXUnfeasible, _read_file, in_file)
+
+
+class TestUnits:
+
+    """Test case for loading processor units"""
+
+    @mark.parametrize(
+        "in_file", ["twoConnectedUnitsProcessor.yaml",
+                    "edgeWithUnitNamesInCaseDifferentFromDefinition.yaml"])
+    def test_processor_with_two_connected_functional_units(self, in_file):
+        """Test loading a processor with two functional units.
+
+        `self` is this test case.
+        `in_file` is the processor description file.
+
+        """
+        _chk_two_units(_read_file(in_file))
+
+    def test_single_functional_unit_processor(self):
+        """Test loading a single function unit processor.
+
+        `self` is this test case.
+
+        """
+        proc_desc = _read_file("singleUnitProcessor.yaml")
+        assert len(proc_desc) == 1
+        assert proc_desc[0].model == UnitModel("fullSys", 1, ["ALU"])
+        assert not proc_desc[0].predecessors
+
+    @mark.parametrize(
+        "in_file, dup_unit", [("twoUnitsWithSameNameAndCase.yaml", "fullSys"),
+            ("twoUnitsWithSameNameAndDifferentCase.yaml", "FULLsYS")])
+    def test_two_units_with_same_name_raise_DupElemError(
+        self, in_file, dup_unit):
+        """Test loading two units with the same name.
+
+        `self` is this test case.
+        `in_file` is the processor description file.
+        `dup_unit` is the duplicate unit.
+
+        """
+        exChk = raises(processor_utils.DupElemError, _read_file, in_file)
+        elems = exChk.value.old_element, exChk.value.new_element
+        assert elems == ("fullSys", dup_unit)
+        assert all(imap(lambda elem: elem in str(exChk.value), elems))
 
 def main():
     """entry point for running test in this module"""
     pytest.main(__file__)
+
+
+def _chk_two_units(processor):
+    """Verify a two-unit processor.
+
+    `processor` is the two-unit processor to assess.
+    The function asserts the order and descriptions of units and links
+    among them.
+
+    """
+    assert len(processor) == 2
+    assert processor == [FuncUnit(UnitModel("output", 1, []), [
+        processor[1].model]), FuncUnit(UnitModel("input", 1, []), [])]
+
+
+def _read_file(file_name):
+    """Read a processor description file.
+
+    `file_name` is the processor description file name.
+
+    """
+    data_dir = "data"
+    with open(os.path.join(data_dir, file_name)) as proc_file:
+        return processor_utils.load_proc_desc(yaml.load(proc_file))
+
 
 if __name__ == '__main__':
     main()
