@@ -169,6 +169,15 @@ class FuncUnit(object):
         all(imap(lambda pred, other_pred: pred is other_pred,
                  sorted(self._preds), sorted(other.predecessors)))
 
+    def __ne__(self, other):
+        """Test if the two functional units are different.
+
+        `self` is this functional unit.
+        `other` is the other functional unit.
+
+        """
+        return not self == other
+
     @property
     def model(self):
         """Model of this functional unit
