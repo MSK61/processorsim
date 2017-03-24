@@ -48,60 +48,8 @@ import pytest
 from pytest import mark, raises
 import test_env
 import processor_utils
-from processor_utils import UnitModel
+from processor_utils import FuncUnit, UnitModel
 import yaml
-
-class _UnitNode(object):
-
-    """Functional unit node information"""
-
-    def __init__(self, model, preds):
-        """Set functional unit node information.
-
-        `self` is this functional unit node.
-        `model` is the unit model.
-        `preds` is the number of predecessor nodes.
-
-        """
-        self._model = model
-        self._preds = preds
-
-    def __eq__(self, other):
-        """Test if the two functional unit nodes are identical.
-
-        `self` is this functional unit node.
-        `other` is the other functional unit node.
-
-        """
-        return self._model == other.model and self._preds == other.predecessors
-
-    def __ne__(self, other):
-        """Test if the two functional unit nodes are different.
-
-        `self` is this functional unit node.
-        `other` is the other functional unit node.
-
-        """
-        return not self == other
-
-    @property
-    def model(self):
-        """Model of this functional unit node
-
-        `self` is this functional unit node.
-
-        """
-        return self._model
-
-    @property
-    def predecessors(self):
-        """Number of predecessor nodes for this functional unit node
-
-        `self` is this functional unit node.
-
-        """
-        return self._preds
-
 
 class TestProcDesc:
 
@@ -216,18 +164,9 @@ class TestProcDesc:
         among them.
 
         """
-        assert [_UnitNode(UnitModel("output", 1, []), 1), _UnitNode(UnitModel(
-            "input", 1, []), 0)] == map(TestProcDesc._create_node, processor)
-        assert iter(processor[0].predecessors).next() is processor[1].model
-
-    @staticmethod
-    def _create_node(unit):
-        """Create an information node for the given unit.
-
-        `unit` is the unit to transform to a node.
-
-        """
-        return _UnitNode(unit.model, len(unit.predecessors))
+        assert len(processor) == 2
+        assert processor == [FuncUnit(UnitModel("output", 1, []), [
+            processor[1].model]), FuncUnit(UnitModel("input", 1, []), [])]
 
     @staticmethod
     def _read_file(file_name):

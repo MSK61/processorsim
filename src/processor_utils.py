@@ -46,6 +46,7 @@ import logging
 import networkx
 _UNIT_NAME_ATTR = "name"
 
+# exception types
 class BadEdgeError(RuntimeError):
 
     """Bad edge error"""
@@ -140,6 +141,53 @@ class ElemError(RuntimeError):
         return self._elem
 
 
+class FuncUnit(object):
+
+    """Processing functional unit"""
+
+    def __init__(self, model, preds):
+        """Create a functional unit.
+
+        `self` is this functional unit.
+        `model` is the unit model.
+        `preds` is the list of units whose outputs are connected to the
+                input of this unit.
+
+        """
+        self._model = model
+        self._preds = frozenset(preds)
+
+    def __eq__(self, other):
+        """Test if the two functional units are identical.
+
+        `self` is this functional unit.
+        `other` is the other functional unit.
+
+        """
+        return self._model == other.model and len(self._preds) == \
+        len(other.predecessors) and \
+        all(imap(lambda pred, other_pred: pred is other_pred,
+                 sorted(self._preds), sorted(other.predecessors)))
+
+    @property
+    def model(self):
+        """Model of this functional unit
+
+        `self` is this functional unit.
+
+        """
+        return self._model
+
+    @property
+    def predecessors(self):
+        """Predecessor units of this functional unit
+
+        `self` is this functional unit.
+
+        """
+        return self._preds
+
+
 class UnitModel(object):
 
     """Functional unit model"""
@@ -211,41 +259,6 @@ class UnitModel(object):
 
         """
         return self._width
-
-
-class _FuncUnit(object):
-
-    """Processing functional unit"""
-
-    def __init__(self, model, preds):
-        """Create a functional unit.
-
-        `self` is this functional unit.
-        `model` is the unit model.
-        `preds` is the list of units whose outputs are connected to the
-                input of this unit.
-
-        """
-        self._model = model
-        self._preds = frozenset(preds)
-
-    @property
-    def model(self):
-        """Model of this functional unit
-
-        `self` is this functional unit.
-
-        """
-        return self._model
-
-    @property
-    def predecessors(self):
-        """Predecessor units of this functional unit
-
-        `self` is this functional unit.
-
-        """
-        return self._preds
 
 
 class _IndexedSet:
@@ -434,5 +447,5 @@ def _post_order(graph, units):
     """
     unit_map = dict(imap(_get_unit_entry, units))
     return map(
-        lambda name: _FuncUnit(unit_map[name], _get_preds(
+        lambda name: FuncUnit(unit_map[name], _get_preds(
             graph, name, unit_map)), networkx.dfs_postorder_nodes(graph))
