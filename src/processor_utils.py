@@ -92,7 +92,7 @@ class DupElemError(RuntimeError):
         `new_elem` is the element just discovered.
 
         """
-        RuntimeError.__init__(self, msg_tmpl.format(new_elem, old_elem))
+        RuntimeError.__init__(self, msg_tmpl.format(old_elem, new_elem))
         self._old_elem = old_elem
         self._new_elem = new_elem
 

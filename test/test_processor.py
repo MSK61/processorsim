@@ -229,9 +229,12 @@ class TestUnits:
 
         """
         exChk = raises(processor_utils.DupElemError, _read_file, in_file)
-        elems = exChk.value.old_element, exChk.value.new_element
-        assert elems == ("fullSys", dup_unit)
-        assert all(imap(lambda elem: elem in str(exChk.value), elems))
+        assert (exChk.value.old_element, exChk.value.new_element) == (
+            "fullSys", dup_unit)
+        exStr = str(exChk.value)
+        new_elem_idx = exStr.find(exChk.value.new_element)
+        assert new_elem_idx >= 0
+        assert exStr.find(exChk.value.old_element, new_elem_idx + 1) >= 0
 
     @classmethod
     def _assert_edges(cls, processor, unit_idx, predecessors, index_map):
