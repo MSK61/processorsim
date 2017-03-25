@@ -213,10 +213,8 @@ class TestUnits:
         `self` is this test case.
 
         """
-        proc_desc = _read_file("singleUnitProcessor.yaml")
-        assert len(proc_desc) == 1
-        assert proc_desc[0].model == UnitModel("fullSys", 1, ["ALU"])
-        assert not proc_desc[0].predecessors
+        assert _read_file("singleUnitProcessor.yaml") == \
+        [FuncUnit(UnitModel("fullSys", 1, ["ALU"]), [])]
 
     @mark.parametrize(
         "in_file, dup_unit", [("twoUnitsWithSameNameAndCase.yaml", "fullSys"),
