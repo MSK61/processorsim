@@ -52,7 +52,7 @@ import processor_utils
 from processor_utils import FuncUnit, UnitModel
 import yaml
 
-class TestEdge:
+class TestEdges:
 
     """Test case for loading edges"""
 
