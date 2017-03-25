@@ -41,7 +41,7 @@
 #
 ############################################################
 
-from itertools import imap
+from itertools import imap, izip
 import mock
 import networkx
 import os.path
@@ -134,9 +134,66 @@ class TestLoop:
         raises(networkx.NetworkXUnfeasible, _read_file, in_file)
 
 
+class _UnitNode(object):
+
+    """Functional unit node information"""
+
+    def __init__(self, model, preds):
+        """Set functional unit node information.
+
+        `self` is this functional unit node.
+        `model` is the unit model.
+        `preds` are the predecessor nodes.
+
+        """
+        self._model = model
+        self._preds = tuple(preds)
+
+    @property
+    def model(self):
+        """Model of this functional unit node
+
+        `self` is this functional unit node.
+
+        """
+        return self._model
+
+    @property
+    def predecessors(self):
+        """Predecessor nodes for this functional unit node
+
+        `self` is this functional unit node.
+
+        """
+        return self._preds
+
+
 class TestUnits:
 
     """Test case for loading processor units"""
+
+    def test_processor_with_four_connected_functional_units(self):
+        """Test loading a processor with four functional units.
+
+        `self` is this test case.
+
+        """
+        proc_desc = _read_file("4ConnectedUnitsProcessor.yaml")
+        sorted_indices = sorted(
+            xrange(len(proc_desc)), key=lambda idx: proc_desc[idx].model.name)
+        exp_units = [_UnitNode(UnitModel("input", 1, []), []),
+                     _UnitNode(UnitModel("middle", 1, []), ["input"]),
+                     _UnitNode(UnitModel("output 1", 1, []), ["input"]),
+                     _UnitNode(UnitModel("output 2", 1, []), ["middle"])]
+        assert map(lambda idx: proc_desc[idx].model, sorted_indices) == \
+        map(lambda unit: unit.model, exp_units)
+        index_map = dict(imap(lambda entry: (entry[1].model.name, entry[0]),
+                              enumerate(proc_desc)))
+        chk_entries = izip(sorted_indices, exp_units)
+
+        for cur_idx, cur_unit in chk_entries:
+            self._assert_edges(
+                proc_desc, cur_idx, cur_unit.predecessors, index_map)
 
     @mark.parametrize(
         "in_file", ["twoConnectedUnitsProcessor.yaml",
@@ -177,6 +234,38 @@ class TestUnits:
         elems = exChk.value.old_element, exChk.value.new_element
         assert elems == ("fullSys", dup_unit)
         assert all(imap(lambda elem: elem in str(exChk.value), elems))
+
+    @classmethod
+    def _assert_edges(cls, processor, unit_idx, predecessors, index_map):
+        """Verify edges to predecessors of a unit.
+
+        `cls` is this class.
+        `processor` is the processor assess whose edges.
+        `unit_idx` is the unit index.
+        `predecessors` are the names of predecessor units.
+        `index_map` is the mapping from unit names to indices.
+
+        """
+        assert len(processor[unit_idx].predecessors) == len(predecessors)
+        pred_units = izip(sorted(processor[unit_idx].predecessors,
+                                 key=lambda unit: unit.name), predecessors)
+
+        for actual_pred, exp_pred in pred_units:
+            cls._assert_pred(
+                processor, actual_pred, index_map[exp_pred], unit_idx)
+
+    @staticmethod
+    def _assert_pred(processor, actual_pred, exp_pred, unit_idx):
+        """Verify a predecessor.
+
+        `processor` is the processor containing all units.
+        `actual_pred` is the actual predecessor unit.
+        `exp_pred` is the expected predecessor unit index.
+        `unit_idx` is the unit index.
+
+        """
+        assert exp_pred > unit_idx
+        assert actual_pred is processor[exp_pred].model
 
 def main():
     """entry point for running test in this module"""
