@@ -185,8 +185,8 @@ class TestUnits:
                      _UnitNode(UnitModel("middle", 1, []), ["input"]),
                      _UnitNode(UnitModel("output 1", 1, []), ["input"]),
                      _UnitNode(UnitModel("output 2", 1, []), ["middle"])]
-        assert map(lambda idx: proc_desc[idx].model, sorted_indices) == \
-        map(lambda unit: unit.model, exp_units)
+        assert map(lambda idx: proc_desc[idx].model, sorted_indices) == map(
+            lambda unit: unit.model, exp_units)
         index_map = dict(imap(lambda entry: (entry[1].model.name, entry[0]),
                               enumerate(proc_desc)))
         chk_entries = izip(sorted_indices, exp_units)
@@ -213,8 +213,8 @@ class TestUnits:
         `self` is this test case.
 
         """
-        assert _read_file("singleUnitProcessor.yaml") == \
-        [FuncUnit(UnitModel("fullSys", 1, ["ALU"]), [])]
+        assert _read_file("singleUnitProcessor.yaml") == [
+            FuncUnit(UnitModel("fullSys", 1, ["ALU"]), [])]
 
     @mark.parametrize(
         "in_file, dup_unit", [("twoUnitsWithSameNameAndCase.yaml", "fullSys"),

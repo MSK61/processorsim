@@ -164,9 +164,9 @@ class FuncUnit(object):
         `other` is the other functional unit.
 
         """
-        return self._model == other.model and len(self._preds) == \
-        len(other.predecessors) and \
-        all(imap(lambda pred, other_pred: pred is other_pred,
+        return self._model == other.model and len(self._preds) == len(
+            other.predecessors) and all(
+            imap(lambda pred, other_pred: pred is other_pred,
                  sorted(self._preds), sorted(other.predecessors)))
 
     def __ne__(self, other):
