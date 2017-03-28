@@ -52,6 +52,37 @@ import processor_utils
 from processor_utils import FuncUnit, UnitModel
 import yaml
 
+class _VerifyPoint:
+
+    """Verification point"""
+
+    def __init__(self, real_val, exp_val):
+        """Create a verification point.
+
+        `self` is this verification point.
+        `real_val` is the actual value.
+        `exp_val` is the expected value.
+        The constructor asserts that the real and expected values match.
+
+        """
+        assert real_val == exp_val
+        self._value = exp_val
+
+    def check(self, error_msg, start_index):
+        """Check that the error message contains the associated value.
+
+        `self` is this verification point.
+        `error_msg` is the error message to be checked.
+        `start_index` is the index to start searching at.
+        The method returns the index of the associated value in the
+        given error message after the specified index.
+
+        """
+        start_index = error_msg.find(str(self._value), start_index + 1)
+        assert start_index >= 0
+        return start_index
+
+
 class TestEdges:
 
     """Test case for loading edges"""
@@ -64,8 +95,7 @@ class TestEdges:
         """
         exChk = raises(
             processor_utils.ElemError, _read_file, "edgeWithUnknownUnit.yaml")
-        assert exChk.value.element == "input"
-        assert exChk.value.element in str(exChk.value)
+        _chk_error([_VerifyPoint(exChk.value.element, "input")], exChk.value)
 
     @mark.parametrize("in_file, bad_edge", [("emptyEdge.yaml", []),
         ("3UnitEdge.yaml", ["input", "middle", "output"])])
@@ -79,8 +109,7 @@ class TestEdges:
 
         """
         exChk = raises(processor_utils.BadEdgeError, _read_file, in_file)
-        assert exChk.value.edge == bad_edge
-        assert str(bad_edge) in str(exChk.value)
+        _chk_error([_VerifyPoint(exChk.value.edge, bad_edge)], exChk.value)
 
     @mark.parametrize("in_file, edges",
                       [("twoEdgesWithSameUnitNamesAndCase.yaml",
@@ -107,8 +136,8 @@ class TestEdges:
 
         `edges` are the edges to assess.
         `warn_mock` is the warning function mock.
-        The method asserts that all edges exist in the constructed warning
-        message.
+        The method asserts that all edges exist in the constructed
+        warning message.
 
         """
         assert warn_mock.call_args
@@ -132,6 +161,22 @@ class TestLoop:
 
         """
         raises(networkx.NetworkXUnfeasible, _read_file, in_file)
+
+
+class TestWidth:
+
+    """Test case for checking data path width"""
+
+    def test_width_less_than_input_capacity_raises_TightWidthError(self):
+        """Test a processor with a width less than its input capacity.
+
+        `self` is this test case.
+
+        """
+        exChk = raises(processor_utils.TightWidthError, _read_file,
+                       "twoWideInputOneWideOutputProcessor.yaml")
+        _chk_error([_VerifyPoint(exChk.value.actual_width, 1),
+                    _VerifyPoint(exChk.value.min_width, 2)], exChk.value)
 
 
 class _UnitNode(object):
@@ -229,12 +274,9 @@ class TestUnits:
 
         """
         exChk = raises(processor_utils.DupElemError, _read_file, in_file)
-        assert (exChk.value.old_element, exChk.value.new_element) == (
-            "fullSys", dup_unit)
-        exStr = str(exChk.value)
-        new_elem_idx = exStr.find(exChk.value.new_element)
-        assert new_elem_idx >= 0
-        assert exStr.find(exChk.value.old_element, new_elem_idx + 1) >= 0
+        _chk_error(
+            [_VerifyPoint(exChk.value.new_element, dup_unit),
+             _VerifyPoint(exChk.value.old_element, "fullSys")], exChk.value)
 
     @classmethod
     def _assert_edges(cls, processor, unit_idx, predecessors, index_map):
@@ -273,6 +315,22 @@ def main():
     pytest.main(__file__)
 
 
+def _chk_error(verify_points, error):
+    """Check the specifications of an error.
+
+    `verify_points` are the verification points to assess.
+    `error` is the error to assess whose message.
+    The function checks the given verification points and that they're
+    contained in the error message.
+
+    """
+    error = str(error)
+    idx = -1
+
+    for cur_point in verify_points:
+        cur_point.check(error, idx)
+
+
 def _chk_two_units(processor):
     """Verify a two-unit processor.
 
@@ -290,6 +348,7 @@ def _read_file(file_name):
     """Read a processor description file.
 
     `file_name` is the processor description file name.
+    The function returns the processor description.
 
     """
     data_dir = "data"

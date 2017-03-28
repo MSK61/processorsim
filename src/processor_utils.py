@@ -41,10 +41,12 @@
 #
 ############################################################
 
-from itertools import imap
+from itertools import ifilter, imap
 import logging
 import networkx
-_UNIT_NAME_ATTR = "name"
+# unit attributes
+_UNIT_NAME_KEY = "name"
+_UNIT_WIDTH_KEY = "width"
 
 # exception types
 class BadEdgeError(RuntimeError):
@@ -139,6 +141,49 @@ class ElemError(RuntimeError):
 
         """
         return self._elem
+
+
+class TightWidthError(RuntimeError):
+
+    """Tight bus width error"""
+
+    # parameter indices in format message
+    REAL_WIDTH_IDX = 0
+
+    MIN_WIDTH_IDX = 1
+
+    def __init__(self, msg_tmpl, actual_width, min_width):
+        """Create a tight bus width error.
+
+        `self` is this width error.
+        `msg_tmpl` is the error format message taking in order the
+                   actual and minimum bus widths as positional
+                   parameters.
+        `actual_width` is the violating width value.
+        `min_width` is the minimum allowed width.
+
+        """
+        RuntimeError.__init__(self, msg_tmpl.format(actual_width, min_width))
+        self._actual_width = actual_width
+        self._min_width = min_width
+
+    @property
+    def actual_width(self):
+        """Violating width
+
+        `self` is this tight bus width error.
+
+        """
+        return self._actual_width
+
+    @property
+    def min_width(self):
+        """Minimum allowed width
+
+        `self` is this tight bus width error.
+
+        """
+        return self._min_width
 
 
 class FuncUnit(object):
@@ -316,8 +361,9 @@ def load_proc_desc(raw_desc):
     """
     unit_sect = "units"
     data_path_sect = "dataPath"
-    return _post_order(_create_graph(
-        raw_desc[unit_sect], raw_desc[data_path_sect]), raw_desc[unit_sect])
+    proc_desc = _create_graph(raw_desc[unit_sect], raw_desc[data_path_sect])
+    _chk_proc_desc(proc_desc)
+    return _post_order(proc_desc, raw_desc[unit_sect])
 
 
 def _get_preds(processor, unit, unit_map):
@@ -351,8 +397,8 @@ def _get_unit_entry(unit_desc):
     The function returns a tuple of the unit name and model.
 
     """
-    return unit_desc[_UNIT_NAME_ATTR], UnitModel(*(imap(lambda attr:
-        unit_desc[attr], [_UNIT_NAME_ATTR, "width", "capabilities"])))
+    return unit_desc[_UNIT_NAME_KEY], UnitModel(*(imap(lambda attr:
+        unit_desc[attr], [_UNIT_NAME_KEY, _UNIT_WIDTH_KEY, "capabilities"])))
 
 
 def _get_unit_name(unit, unit_registry):
@@ -410,16 +456,42 @@ def _add_unit(processor, unit, unit_registry):
     previously added to the processor.
 
     """
-    old_name = unit_registry.get(unit)
+    old_name = unit_registry.get(unit[_UNIT_NAME_KEY])
 
     if old_name is not None:
         raise DupElemError(
             "Functional unit {{{}}} previously added as {{{}}}".format(
                 DupElemError.NEW_ELEM_IDX, DupElemError.OLD_ELEM_IDX),
-            old_name, unit)
+            old_name, unit[_UNIT_NAME_KEY])
 
-    processor.add_node(unit)
-    unit_registry.add(unit)
+    processor.add_node(
+        unit[_UNIT_NAME_KEY], {_UNIT_WIDTH_KEY: unit[_UNIT_WIDTH_KEY]})
+    unit_registry.add(unit[_UNIT_NAME_KEY])
+
+
+def _chk_proc_desc(processor):
+    """Check the given processor.
+
+    `processor` is the processor to check.
+    The function raises a NetworkXUnfeasible if the processor isn't a
+    DAG.
+
+    """
+    if not networkx.is_directed_acyclic_graph(processor):
+        raise networkx.NetworkXUnfeasible()
+
+    out_degrees = processor.out_degree().iteritems()
+    out_width = processor.node[next(imap(lambda entry: entry[0], ifilter(
+        lambda entry: entry[1] == 0, out_degrees)))][_UNIT_WIDTH_KEY]
+    in_degrees = processor.in_degree().iteritems()
+    in_width = processor.node[next(imap(lambda entry: entry[0], ifilter(
+        lambda entry: entry[1] == 0, in_degrees)))][_UNIT_WIDTH_KEY]
+
+    if out_width < in_width:
+        raise TightWidthError(
+            "Input width {{{}}} exceeding minimum width {{{}}}".format(
+                TightWidthError.REAL_WIDTH_IDX, TightWidthError.MIN_WIDTH_IDX),
+            out_width, in_width)
 
 
 def _create_graph(units, links):
@@ -437,7 +509,7 @@ def _create_graph(units, links):
         lambda edge: tuple(imap(unit_registry.get, edge)))
 
     for cur_unit in units:
-        _add_unit(flow_graph, cur_unit[_UNIT_NAME_ATTR], unit_registry)
+        _add_unit(flow_graph, cur_unit, unit_registry)
 
     for cur_link in links:
         _add_edge(flow_graph, cur_link, unit_registry, edge_registry)
@@ -457,4 +529,4 @@ def _post_order(graph, units):
     unit_map = dict(imap(_get_unit_entry, units))
     return map(lambda name:
         FuncUnit(unit_map[name], _get_preds(graph, name, unit_map)),
-        networkx.topological_sort(graph, reverse=True))
+        networkx.dfs_postorder_nodes(graph))
