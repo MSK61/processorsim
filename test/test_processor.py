@@ -167,14 +167,17 @@ class TestWidth:
 
     """Test case for checking data path width"""
 
-    def test_width_less_than_input_capacity_raises_TightWidthError(self):
+    @mark.parametrize("in_file", ["twoWideInputOneWideOutputProcessor.yaml",
+                                  "busTightOnlyInTheMiddleProcessor.yaml"])
+    def test_width_less_than_input_capacity_raises_TightWidthError(
+        self, in_file):
         """Test a processor with a width less than its input capacity.
 
         `self` is this test case.
+        `in_file` is the processor description file.
 
         """
-        exChk = raises(processor_utils.TightWidthError, _read_file,
-                       "twoWideInputOneWideOutputProcessor.yaml")
+        exChk = raises(processor_utils.TightWidthError, _read_file, in_file)
         _chk_error([_VerifyPoint(exChk.value.actual_width, 1),
                     _VerifyPoint(exChk.value.min_width, 2)], exChk.value)
 

@@ -41,7 +41,8 @@
 #
 ############################################################
 
-from itertools import ifilter, imap
+import itertools
+from itertools import imap
 import logging
 import networkx
 # unit attributes
@@ -480,18 +481,18 @@ def _chk_proc_desc(processor):
     if not networkx.is_directed_acyclic_graph(processor):
         raise networkx.NetworkXUnfeasible()
 
-    out_degrees = processor.out_degree().iteritems()
-    out_width = processor.node[next(imap(lambda entry: entry[0], ifilter(
-        lambda entry: entry[1] == 0, out_degrees)))][_UNIT_WIDTH_KEY]
+    min_width = min(imap(
+        lambda attrs: attrs[_UNIT_WIDTH_KEY], processor.node.itervalues()))
     in_degrees = processor.in_degree().iteritems()
-    in_width = processor.node[next(imap(lambda entry: entry[0], ifilter(
-        lambda entry: entry[1] == 0, in_degrees)))][_UNIT_WIDTH_KEY]
+    in_width = processor.node[
+        next(imap(lambda entry: entry[0], itertools.ifilter(
+            lambda entry: entry[1] == 0, in_degrees)))][_UNIT_WIDTH_KEY]
 
-    if out_width < in_width:
+    if min_width < in_width:
         raise TightWidthError(
             "Input width {{{}}} exceeding minimum width {{{}}}".format(
                 TightWidthError.REAL_WIDTH_IDX, TightWidthError.MIN_WIDTH_IDX),
-            out_width, in_width)
+            min_width, in_width)
 
 
 def _create_graph(units, links):
