@@ -197,9 +197,9 @@ class TestEdges:
         assert all(imap(lambda edge: str(edge) in warn_msg, edges))
 
 
-class TestUnits:
+class TestProcessors:
 
-    """Test case for loading processor units"""
+    """Test case for loading valid processors"""
 
     def test_processor_with_four_connected_functional_units(self):
         """Test loading a processor with four functional units.
@@ -245,23 +245,6 @@ class TestUnits:
         assert _read_file("singleUnitProcessor.yaml") == [
             FuncUnit(UnitModel("fullSys", 1, ["ALU"]), [])]
 
-    @mark.parametrize(
-        "in_file, dup_unit", [("twoUnitsWithSameNameAndCase.yaml", "fullSys"),
-            ("twoUnitsWithSameNameAndDifferentCase.yaml", "FULLsYS")])
-    def test_two_units_with_same_name_raise_DupElemError(
-        self, in_file, dup_unit):
-        """Test loading two units with the same name.
-
-        `self` is this test case.
-        `in_file` is the processor description file.
-        `dup_unit` is the duplicate unit.
-
-        """
-        exChk = raises(processor_utils.DupElemError, _read_file, in_file)
-        _chk_error(
-            [_VerifyPoint(exChk.value.new_element, dup_unit),
-             _VerifyPoint(exChk.value.old_element, "fullSys")], exChk.value)
-
     @classmethod
     def _assert_edges(cls, processor, unit_idx, predecessors, index_map):
         """Verify edges to predecessors of a unit.
@@ -293,6 +276,28 @@ class TestUnits:
         """
         assert exp_pred > unit_idx
         assert actual_pred is processor[exp_pred].model
+
+
+class TestUnits:
+
+    """Test case for loading processor units"""
+
+    @mark.parametrize(
+        "in_file, dup_unit", [("twoUnitsWithSameNameAndCase.yaml", "fullSys"),
+            ("twoUnitsWithSameNameAndDifferentCase.yaml", "FULLsYS")])
+    def test_two_units_with_same_name_raise_DupElemError(
+        self, in_file, dup_unit):
+        """Test loading two units with the same name.
+
+        `self` is this test case.
+        `in_file` is the processor description file.
+        `dup_unit` is the duplicate unit.
+
+        """
+        exChk = raises(processor_utils.DupElemError, _read_file, in_file)
+        _chk_error(
+            [_VerifyPoint(exChk.value.new_element, dup_unit),
+             _VerifyPoint(exChk.value.old_element, "fullSys")], exChk.value)
 
 
 class TestWidth:
