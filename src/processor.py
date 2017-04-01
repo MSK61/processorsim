@@ -41,6 +41,27 @@
 #
 ############################################################
 
+class _ProcessorDesc(object):
+
+    """Processor description"""
+
+    @property
+    def hw_desc(self):
+        """Hardware description
+
+        `self` is this processor description.
+
+        """
+
+    @property
+    def isa(self):
+        """Instruction set architecture
+
+        `self` is this processor description.
+
+        """
+
+
 def read_processor(proc_file):
     """Read the processor description from the given file.
 
@@ -49,7 +70,7 @@ def read_processor(proc_file):
     given processor description file. It returns a processor description.
 
     """
-    return None
+    return _ProcessorDesc()
 
 
 def simulate(program, processor):
