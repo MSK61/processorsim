@@ -45,6 +45,8 @@ import itertools
 from itertools import imap
 import logging
 import networkx
+import operator
+from operator import itemgetter
 # unit attributes
 _UNIT_NAME_KEY = "name"
 _UNIT_WIDTH_KEY = "width"
@@ -211,9 +213,8 @@ class FuncUnit(object):
 
         """
         return self._model == other.model and len(self._preds) == len(
-            other.predecessors) and all(
-            imap(lambda pred, other_pred: pred is other_pred,
-                 sorted(self._preds), sorted(other.predecessors)))
+            other.predecessors) and all(imap(
+            operator.is_, sorted(self._preds), sorted(other.predecessors)))
 
     def __ne__(self, other):
         """Test if the two functional units are different.
@@ -362,7 +363,7 @@ def load_proc_desc(raw_desc):
     """
     unit_sect = "units"
     data_path_sect = "dataPath"
-    proc_desc = _create_graph(imap(lambda unit: unit[_UNIT_NAME_KEY], raw_desc[
+    proc_desc = _create_graph(imap(itemgetter(_UNIT_NAME_KEY), raw_desc[
         unit_sect]), raw_desc[data_path_sect])
     _chk_proc_desc(proc_desc, dict(imap(_get_name_width, raw_desc[unit_sect])))
     return _post_order(proc_desc, raw_desc[unit_sect])
@@ -409,8 +410,9 @@ def _get_unit_entry(unit_desc):
     The function returns a tuple of the unit name and model.
 
     """
-    return unit_desc[_UNIT_NAME_KEY], UnitModel(*(imap(lambda attr:
-        unit_desc[attr], [_UNIT_NAME_KEY, _UNIT_WIDTH_KEY, "capabilities"])))
+    return unit_desc[_UNIT_NAME_KEY], UnitModel(
+        *(itemgetter(_UNIT_NAME_KEY, _UNIT_WIDTH_KEY, "capabilities")(
+            unit_desc)))
 
 
 def _get_unit_name(unit, unit_registry):
@@ -494,8 +496,8 @@ def _chk_proc_desc(processor, widths):
 
     min_width = min(widths.itervalues())
     in_degrees = processor.in_degree().iteritems()
-    in_width = widths[next(imap(lambda entry: entry[0], itertools.ifilter(
-        lambda entry: entry[1] == 0, in_degrees)))]
+    in_width = widths[next(imap(itemgetter(0), itertools.ifilterfalse(
+        lambda entry: entry[1], in_degrees)))]
 
     if min_width < in_width:
         raise TightWidthError(
