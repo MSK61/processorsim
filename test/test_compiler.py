@@ -55,7 +55,6 @@ class ProgLoadTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        pass
 
 def main():
     """entry point for running test in this module"""

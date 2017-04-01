@@ -117,7 +117,6 @@ def _print_sim_res(sim_res):
     `sim_res` is the simulation result.
 
     """
-    pass
 
 
 if __name__ == '__main__':

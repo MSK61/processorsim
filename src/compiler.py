@@ -50,7 +50,6 @@ def compile(prog, isa):
     given instruction set and returns that sequence.
 
     """
-    pass
 
 
 def read_program(prog_file):
@@ -60,4 +59,3 @@ def read_program(prog_file):
     The function returns the program instructions.
 
     """
-    pass
