@@ -362,7 +362,8 @@ def load_proc_desc(raw_desc):
     """
     unit_sect = "units"
     data_path_sect = "dataPath"
-    proc_desc = _create_graph(raw_desc[unit_sect], raw_desc[data_path_sect])
+    proc_desc = _create_graph(imap(lambda unit: unit[_UNIT_NAME_KEY], raw_desc[
+        unit_sect]), raw_desc[data_path_sect])
     _chk_proc_desc(proc_desc, dict(imap(_get_name_width, raw_desc[unit_sect])))
     return _post_order(proc_desc, raw_desc[unit_sect])
 
@@ -518,7 +519,7 @@ def _create_graph(units, links):
         lambda edge: tuple(imap(unit_registry.get, edge)))
 
     for cur_unit in units:
-        _add_unit(flow_graph, cur_unit[_UNIT_NAME_KEY], unit_registry)
+        _add_unit(flow_graph, cur_unit, unit_registry)
 
     for cur_link in links:
         _add_edge(flow_graph, cur_link, unit_registry, edge_registry)
