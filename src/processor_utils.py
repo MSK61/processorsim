@@ -363,8 +363,18 @@ def load_proc_desc(raw_desc):
     unit_sect = "units"
     data_path_sect = "dataPath"
     proc_desc = _create_graph(raw_desc[unit_sect], raw_desc[data_path_sect])
-    _chk_proc_desc(proc_desc)
+    _chk_proc_desc(proc_desc, dict(imap(_get_name_width, raw_desc[unit_sect])))
     return _post_order(proc_desc, raw_desc[unit_sect])
+
+
+def _get_name_width(unit_desc):
+    """Create a unit width entry from the given description.
+
+    `unit_desc` is the description to create a unit width entry from.
+    The function returns a tuple of the unit name and width.
+
+    """
+    return unit_desc[_UNIT_NAME_KEY], unit_desc[_UNIT_WIDTH_KEY]
 
 
 def _get_preds(processor, unit, unit_map):
@@ -457,23 +467,23 @@ def _add_unit(processor, unit, unit_registry):
     previously added to the processor.
 
     """
-    old_name = unit_registry.get(unit[_UNIT_NAME_KEY])
+    old_name = unit_registry.get(unit)
 
     if old_name is not None:
         raise DupElemError(
             "Functional unit {{{}}} previously added as {{{}}}".format(
                 DupElemError.NEW_ELEM_IDX, DupElemError.OLD_ELEM_IDX),
-            old_name, unit[_UNIT_NAME_KEY])
+            old_name, unit)
 
-    processor.add_node(
-        unit[_UNIT_NAME_KEY], {_UNIT_WIDTH_KEY: unit[_UNIT_WIDTH_KEY]})
-    unit_registry.add(unit[_UNIT_NAME_KEY])
+    processor.add_node(unit)
+    unit_registry.add(unit)
 
 
-def _chk_proc_desc(processor):
+def _chk_proc_desc(processor, widths):
     """Check the given processor.
 
     `processor` is the processor to check.
+    `widths` are the processor unit capacities.
     The function raises a NetworkXUnfeasible if the processor isn't a
     DAG.
 
@@ -481,12 +491,10 @@ def _chk_proc_desc(processor):
     if not networkx.is_directed_acyclic_graph(processor):
         raise networkx.NetworkXUnfeasible()
 
-    min_width = min(imap(
-        lambda attrs: attrs[_UNIT_WIDTH_KEY], processor.node.itervalues()))
+    min_width = min(widths.itervalues())
     in_degrees = processor.in_degree().iteritems()
-    in_width = processor.node[
-        next(imap(lambda entry: entry[0], itertools.ifilter(
-            lambda entry: entry[1] == 0, in_degrees)))][_UNIT_WIDTH_KEY]
+    in_width = widths[next(imap(lambda entry: entry[0], itertools.ifilter(
+        lambda entry: entry[1] == 0, in_degrees)))]
 
     if min_width < in_width:
         raise TightWidthError(
@@ -510,7 +518,7 @@ def _create_graph(units, links):
         lambda edge: tuple(imap(unit_registry.get, edge)))
 
     for cur_unit in units:
-        _add_unit(flow_graph, cur_unit, unit_registry)
+        _add_unit(flow_graph, cur_unit[_UNIT_NAME_KEY], unit_registry)
 
     for cur_link in links:
         _add_edge(flow_graph, cur_link, unit_registry, edge_registry)
