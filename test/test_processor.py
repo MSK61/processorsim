@@ -52,6 +52,57 @@ import processor_utils
 from processor_utils import FuncUnit, UnitModel
 import yaml
 
+class TestLoop:
+
+    """Test case for loading processors with loops"""
+
+    @mark.parametrize("in_file", [
+        "selfNodeProcessor.yaml", "bidirectionalEdgeProcessor.yaml",
+        "bigLoopProcessor.yaml"])
+    def test_loop_raises_NetworkXUnfeasible(self, in_file):
+        """Test loading a processor with a loop.
+
+        `self` is this test case.
+        `in_file` is the processor description file.
+
+        """
+        raises(networkx.NetworkXUnfeasible, _read_file, in_file)
+
+
+class _UnitNode(object):
+
+    """Functional unit node information"""
+
+    def __init__(self, model, preds):
+        """Set functional unit node information.
+
+        `self` is this functional unit node.
+        `model` is the unit model.
+        `preds` are the predecessor nodes.
+
+        """
+        self._model = model
+        self._preds = tuple(preds)
+
+    @property
+    def model(self):
+        """Model of this functional unit node
+
+        `self` is this functional unit node.
+
+        """
+        return self._model
+
+    @property
+    def predecessors(self):
+        """Predecessor nodes for this functional unit node
+
+        `self` is this functional unit node.
+
+        """
+        return self._preds
+
+
 class _VerifyPoint:
 
     """Verification point"""
@@ -144,76 +195,6 @@ class TestEdges:
         warn_msg = warn_mock.call_args[0][0].format(
             *(warn_mock.call_args[0][1 :]), **(warn_mock.call_args[1]))
         assert all(imap(lambda edge: str(edge) in warn_msg, edges))
-
-
-class TestLoop:
-
-    """Test case for loading processors with loops"""
-
-    @mark.parametrize("in_file", [
-        "selfNodeProcessor.yaml", "bidirectionalEdgeProcessor.yaml",
-        "bigLoopProcessor.yaml"])
-    def test_loop_raises_NetworkXUnfeasible(self, in_file):
-        """Test loading a processor with a loop.
-
-        `self` is this test case.
-        `in_file` is the processor description file.
-
-        """
-        raises(networkx.NetworkXUnfeasible, _read_file, in_file)
-
-
-class TestWidth:
-
-    """Test case for checking data path width"""
-
-    @mark.parametrize("in_file", ["twoWideInputOneWideOutputProcessor.yaml",
-                                  "busTightOnlyInTheMiddleProcessor.yaml"])
-    def test_width_less_than_input_capacity_raises_TightWidthError(
-        self, in_file):
-        """Test a processor with a width less than its input capacity.
-
-        `self` is this test case.
-        `in_file` is the processor description file.
-
-        """
-        exChk = raises(processor_utils.TightWidthError, _read_file, in_file)
-        _chk_error([_VerifyPoint(exChk.value.actual_width, 1),
-                    _VerifyPoint(exChk.value.min_width, 2)], exChk.value)
-
-
-class _UnitNode(object):
-
-    """Functional unit node information"""
-
-    def __init__(self, model, preds):
-        """Set functional unit node information.
-
-        `self` is this functional unit node.
-        `model` is the unit model.
-        `preds` are the predecessor nodes.
-
-        """
-        self._model = model
-        self._preds = tuple(preds)
-
-    @property
-    def model(self):
-        """Model of this functional unit node
-
-        `self` is this functional unit node.
-
-        """
-        return self._model
-
-    @property
-    def predecessors(self):
-        """Predecessor nodes for this functional unit node
-
-        `self` is this functional unit node.
-
-        """
-        return self._preds
 
 
 class TestUnits:
@@ -312,6 +293,25 @@ class TestUnits:
         """
         assert exp_pred > unit_idx
         assert actual_pred is processor[exp_pred].model
+
+
+class TestWidth:
+
+    """Test case for checking data path width"""
+
+    @mark.parametrize("in_file", ["twoWideInputOneWideOutputProcessor.yaml",
+                                  "busTightOnlyInTheMiddleProcessor.yaml"])
+    def test_width_less_than_input_capacity_raises_TightWidthError(
+        self, in_file):
+        """Test a processor with a width less than its input capacity.
+
+        `self` is this test case.
+        `in_file` is the processor description file.
+
+        """
+        exChk = raises(processor_utils.TightWidthError, _read_file, in_file)
+        _chk_error([_VerifyPoint(exChk.value.actual_width, 1),
+                    _VerifyPoint(exChk.value.min_width, 2)], exChk.value)
 
 def main():
     """entry point for running test in this module"""
