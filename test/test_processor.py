@@ -305,7 +305,8 @@ class TestWidth:
     """Test case for checking data path width"""
 
     @mark.parametrize("in_file", ["twoWideInputOneWideOutputProcessor.yaml",
-                                  "busTightOnlyInTheMiddleProcessor.yaml"])
+                                  "busTightOnlyInTheMiddleProcessor.yaml",
+                                  "twoInputOneOutputProcessor.yaml"])
     def test_width_less_than_input_capacity_raises_TightWidthError(
         self, in_file):
         """Test a processor with a width less than its input capacity.

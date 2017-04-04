@@ -41,10 +41,10 @@
 #
 ############################################################
 
-import itertools
-from itertools import imap
+from itertools import ifilterfalse, imap
 import logging
 import networkx
+from networkx import DiGraph
 import operator
 from operator import itemgetter
 # unit attributes
@@ -494,16 +494,78 @@ def _chk_proc_desc(processor, widths):
     if not networkx.is_directed_acyclic_graph(processor):
         raise networkx.NetworkXUnfeasible()
 
-    min_width = min(widths.itervalues())
-    in_degrees = processor.in_degree().iteritems()
-    in_width = widths[next(imap(itemgetter(0), itertools.ifilterfalse(
-        lambda entry: entry[1], in_degrees)))]
+    units = processor.nodes()
+    num_of_units = len(units)
 
-    if min_width < in_width:
-        raise TightWidthError(
-            "Input width {{{}}} exceeding minimum width {{{}}}".format(
-                TightWidthError.REAL_WIDTH_IDX, TightWidthError.MIN_WIDTH_IDX),
-            min_width, in_width)
+    if num_of_units > 1:
+
+        # Create the width analysis graph.
+        units = list(enumerate(units))
+        new_nodes = dict(imap(reversed, units))
+        width_graph = DiGraph(imap(
+            lambda edge: itemgetter(*edge)(new_nodes), processor.edges_iter()))
+        width_graph.add_nodes_from(xrange(num_of_units))
+        widths = dict(imap(
+            lambda unit_entry: (unit_entry[0], widths[unit_entry[1]]), units))
+        # Augment the width graph with unified terminals.
+        in_degrees = width_graph.in_degree().items()
+        in_ports = map(
+            itemgetter(0), ifilterfalse(lambda entry: entry[1], in_degrees))
+
+        if len(in_ports) == 1:
+            in_port = in_ports[0]
+        else:  # multiple input units
+
+            width_graph.add_edges_from(
+                imap(lambda port: (num_of_units, port), in_ports))
+            widths[num_of_units] = sum(itemgetter(*in_ports)(widths))
+            in_degrees.append((num_of_units, 0))
+            in_port = num_of_units
+            num_of_units += 1
+
+        # Split nodes into sink and source nodes.
+        out_degrees = width_graph.out_degree()
+        cap_edges = set()
+
+        for unit, in_deg in in_degrees:
+
+            out_links = width_graph.out_edges(unit)
+
+            # node already having a capping link
+            if in_deg == 1 or out_degrees[unit] == 1:
+
+                if in_deg == 1:
+                    cap_edges.add(next(width_graph.in_edges_iter(unit)))
+
+                if out_degrees[unit] == 1:
+                    cap_edges.add(out_links[0])
+
+            elif in_deg or out_degrees[unit]:  # node needing splitting
+
+                source_node = num_of_units + unit
+                width_graph.add_edge(unit, source_node, capacity=widths[unit])
+                widths[source_node] = widths[unit]
+                # Move outgoing links to the new source node.
+                width_graph.add_edges_from(
+                    imap(lambda edge: (source_node, edge[1]), out_links))
+                width_graph.remove_edges_from(out_links)
+
+        # Fill edge capacities.
+        cap_attr = "capacity"
+
+        for cur_edge in cap_edges:
+            width_graph[cur_edge[0]][cur_edge[1]][cap_attr] = min(
+                itemgetter(*cur_edge)(widths))
+
+        out_ports = ifilterfalse(itemgetter(1), width_graph.out_degree_iter())
+        min_width = networkx.maximum_flow_value(width_graph, in_port, next(
+            imap(lambda entry: entry[0], out_ports)))
+
+        if min_width < widths[in_port]:
+            raise TightWidthError(
+                "Input width {{{}}} exceeding minimum width {{{}}}".format(
+                    TightWidthError.REAL_WIDTH_IDX,
+                    TightWidthError.MIN_WIDTH_IDX), min_width, widths[in_port])
 
 
 def _create_graph(units, links):
@@ -515,7 +577,7 @@ def _create_graph(units, links):
     flow through the processor functional units.
 
     """
-    flow_graph = networkx.DiGraph()
+    flow_graph = DiGraph()
     unit_registry = _IndexedSet(str.lower)
     edge_registry = _IndexedSet(
         lambda edge: tuple(imap(unit_registry.get, edge)))
