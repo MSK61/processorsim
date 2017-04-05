@@ -483,6 +483,38 @@ def _add_unit(processor, unit, unit_registry):
     unit_registry.add(unit)
 
 
+def _aug_terminals(width_graph, widths, degrees, edge_func):
+    """Unify terminals indicated by degrees in the processor.
+
+    `width_graph` is the processor to unify whose terminals.
+    `widths` are the processor unit capacities.
+    `degrees` are the degrees of all units from the terminal side.
+    `edge_func` is the creation function for edges connecting old
+                terminals to the new one. It takes as parameters the old
+                and the new terminals in order and returns the a tuple
+                representing the directed edge between the two.
+    The function tries to connect several terminal into a single new
+    terminal. It returns the unified port of the processor.
+
+    """
+    ports = map(
+        itemgetter(0), ifilterfalse(itemgetter(1), degrees.iteritems()))
+
+    if len(ports) == 1:
+        return ports[0]
+
+    # multiple units
+    unified_port = len(degrees)
+    widths[unified_port] = 0
+
+    for cur_port in ports:
+
+        widths[unified_port] += widths[cur_port]
+        width_graph.add_edge(*(edge_func(cur_port, unified_port)))
+
+    return unified_port
+
+
 def _chk_proc_desc(processor, widths):
     """Check the given processor.
 
@@ -516,57 +548,23 @@ def _chk_proc_desc(processor, widths):
             lambda edge: itemgetter(*edge)(new_nodes), processor.edges_iter()))
         width_graph.add_nodes_from(xrange(num_of_units))
         # Augment the width graph with unified terminals.
-        # Unify inputs.
-        in_degrees = width_graph.in_degree()
-        in_ports = map(
-            itemgetter(0), ifilterfalse(itemgetter(1), in_degrees.iteritems()))
-
-        if len(in_ports) == 1:
-            in_port = in_ports[0]
-        else:  # multiple input units
-
-            new_widths[num_of_units] = 0
-
-            for cur_in_port in in_ports:
-
-                new_widths[num_of_units] += new_widths[cur_in_port]
-                width_graph.add_edge(num_of_units, cur_in_port)
-                in_degrees[cur_in_port] = 1
-
-            in_degrees[num_of_units] = 0
-            in_port = num_of_units
-            num_of_units += 1
-
-        #Unify outputs
-        out_degrees = width_graph.out_degree()
-        out_ports = map(itemgetter(0),
-                        ifilterfalse(itemgetter(1), out_degrees.iteritems()))
-
-        if len(out_ports) == 1:
-            out_port = out_ports[0]
-        else:  # multiple output units
-
-            new_widths[num_of_units] = 0
-
-            for cur_out_port in out_ports:
-
-                new_widths[num_of_units] += new_widths[cur_out_port]
-                width_graph.add_edge(cur_out_port, num_of_units)
-                out_degrees[cur_out_port] = 1
-
-            in_degrees[num_of_units] = len(out_ports)
-            out_degrees[num_of_units] = 0
-            out_port = num_of_units
-            num_of_units += 1
-
+        in_port = _aug_terminals(
+            width_graph, new_widths, width_graph.in_degree(),
+            lambda old_input, new_input: (new_input, old_input))
+        out_port = _aug_terminals(
+            width_graph, new_widths, width_graph.out_degree(),
+            lambda old_output, new_output: (old_output, new_output))
         # Split nodes into sink and source nodes.
+        in_degrees = width_graph.in_degree()
         in_deg_items = in_degrees.items()
+        out_degrees = width_graph.out_degree()
+        ext_base = len(in_degrees)
 
         for unit, in_deg in in_deg_items:
             if in_deg != 1 and out_degrees[unit] != 1 and (
                 in_deg or out_degrees[unit]):
 
-                source_node = num_of_units + unit
+                source_node = ext_base + unit
                 new_widths[source_node] = new_widths[unit]
                 out_links = width_graph.out_edges(unit)
                 width_graph.add_edge(unit, source_node)
