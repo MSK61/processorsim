@@ -201,6 +201,14 @@ class TestProcessors:
 
     """Test case for loading valid processors"""
 
+    def test_processor_with_one_two_wide_input_and_two_one_wide_outputs(self):
+        """Test loading a processor with an input and two outputs.
+
+        `self` is this test case.
+
+        """
+        _read_file("oneInputTwoOutputProcessor.yaml")
+
     def test_processor_with_four_connected_functional_units(self):
         """Test loading a processor with four functional units.
 

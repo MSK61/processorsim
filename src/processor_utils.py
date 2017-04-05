@@ -516,9 +516,10 @@ def _chk_proc_desc(processor, widths):
             lambda edge: itemgetter(*edge)(new_nodes), processor.edges_iter()))
         width_graph.add_nodes_from(xrange(num_of_units))
         # Augment the width graph with unified terminals.
+        # Unify inputs.
         in_degrees = width_graph.in_degree()
-        in_ports = map(itemgetter(0), ifilterfalse(
-            lambda entry: entry[1], in_degrees.iteritems()))
+        in_ports = map(
+            itemgetter(0), ifilterfalse(itemgetter(1), in_degrees.iteritems()))
 
         if len(in_ports) == 1:
             in_port = in_ports[0]
@@ -536,9 +537,30 @@ def _chk_proc_desc(processor, widths):
             in_port = num_of_units
             num_of_units += 1
 
+        #Unify outputs
+        out_degrees = width_graph.out_degree()
+        out_ports = map(itemgetter(0),
+                        ifilterfalse(itemgetter(1), out_degrees.iteritems()))
+
+        if len(out_ports) == 1:
+            out_port = out_ports[0]
+        else:  # multiple output units
+
+            new_widths[num_of_units] = 0
+
+            for cur_out_port in out_ports:
+
+                new_widths[num_of_units] += new_widths[cur_out_port]
+                width_graph.add_edge(cur_out_port, num_of_units)
+                out_degrees[cur_out_port] = 1
+
+            in_degrees[num_of_units] = len(out_ports)
+            out_degrees[num_of_units] = 0
+            out_port = num_of_units
+            num_of_units += 1
+
         # Split nodes into sink and source nodes.
         in_deg_items = in_degrees.items()
-        out_degrees = width_graph.out_degree()
 
         for unit, in_deg in in_deg_items:
             if in_deg != 1 and out_degrees[unit] != 1 and (
@@ -548,6 +570,10 @@ def _chk_proc_desc(processor, widths):
                 new_widths[source_node] = new_widths[unit]
                 out_links = width_graph.out_edges(unit)
                 width_graph.add_edge(unit, source_node)
+                # Update split node degrees.
+                out_degrees[unit] = 1
+                in_degrees[source_node] = 1
+                out_degrees[source_node] = len(out_links)
 
                 # Move outgoing links to the new source node.
                 for cur_link in out_links:
@@ -555,10 +581,8 @@ def _chk_proc_desc(processor, widths):
                     width_graph.add_edge(source_node, cur_link[1])
                     width_graph.remove_edge(*cur_link)
 
-                # Update split node degrees.
-                out_degrees[unit] = 1
-                in_degrees[source_node] = 1
-                out_degrees[source_node] = len(out_links)
+                if out_degrees[source_node] == 0:
+                    out_port = source_node
 
         # Distribute capacities over edges as needed.
         # Collect edges needing to be capped.
@@ -577,9 +601,7 @@ def _chk_proc_desc(processor, widths):
                 itemgetter(*cur_edge)(new_widths))
 
         # Verify the flow volume.
-        out_ports = ifilterfalse(itemgetter(1), width_graph.out_degree_iter())
-        min_width = networkx.maximum_flow_value(width_graph, in_port, next(
-            imap(lambda entry: entry[0], out_ports)))
+        min_width = networkx.maximum_flow_value(width_graph, in_port, out_port)
 
         if min_width < new_widths[in_port]:
             raise TightWidthError(

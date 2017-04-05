@@ -1,0 +1,13 @@
+units:
+    - name: input
+      width: 2
+      capabilities: []
+    - name: output 1
+      width: 1
+      capabilities: []
+    - name: output 2
+      width: 1
+      capabilities: []
+dataPath:
+    - [input, output 1]
+    - [input, output 2]
