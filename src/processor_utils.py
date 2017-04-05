@@ -41,6 +41,7 @@
 #
 ############################################################
 
+import itertools
 from itertools import ifilterfalse, imap
 import logging
 import networkx
@@ -495,6 +496,7 @@ def _chk_proc_desc(processor, widths):
     if not networkx.is_directed_acyclic_graph(processor):
         raise networkx.NetworkXUnfeasible()
 
+    # Check the bus width.
     units = processor.nodes()
     num_of_units = len(units)
 
@@ -560,17 +562,13 @@ def _chk_proc_desc(processor, widths):
 
         # Distribute capacities over edges as needed.
         # Collect edges needing to be capped.
-        cap_edges = set()
-        in_deg_items = in_degrees.iteritems()
-
-        for unit, in_deg in in_deg_items:
-
-            if in_deg == 1:
-                cap_edges.add(next(width_graph.in_edges_iter(unit)))
-
-            if out_degrees[unit] == 1:
-                cap_edges.add(next(width_graph.out_edges_iter(unit)))
-
+        cap_edges = imap(
+            lambda in_deg: next(
+                (width_graph.in_edges_iter if in_deg[1] == 1 else
+                 width_graph.out_edges_iter)(in_deg[0])),
+            itertools.ifilter(lambda in_deg: in_deg[1] == 1 or out_degrees[
+                in_deg[0]] == 1, in_degrees.iteritems()))
+        cap_edges = set(cap_edges)
         # Fill edge capacities.
         cap_attr = "capacity"
 
@@ -578,6 +576,7 @@ def _chk_proc_desc(processor, widths):
             width_graph[cur_edge[0]][cur_edge[1]][cap_attr] = min(
                 itemgetter(*cur_edge)(new_widths))
 
+        # Verify the flow volume.
         out_ports = ifilterfalse(itemgetter(1), width_graph.out_degree_iter())
         min_width = networkx.maximum_flow_value(width_graph, in_port, next(
             imap(lambda entry: entry[0], out_ports)))
