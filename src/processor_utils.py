@@ -500,72 +500,94 @@ def _chk_proc_desc(processor, widths):
     if num_of_units > 1:
 
         # Create the width analysis graph.
-        units = list(enumerate(units))
-        new_nodes = dict(imap(reversed, units))
+        units = enumerate(units)
+        new_nodes = {}
+        new_widths = {}
+
+        for idx, unit in units:
+
+            new_nodes[unit] = idx
+            new_widths[idx] = widths[unit]
+
         width_graph = DiGraph(imap(
             lambda edge: itemgetter(*edge)(new_nodes), processor.edges_iter()))
         width_graph.add_nodes_from(xrange(num_of_units))
-        widths = dict(imap(
-            lambda unit_entry: (unit_entry[0], widths[unit_entry[1]]), units))
         # Augment the width graph with unified terminals.
-        in_degrees = width_graph.in_degree().items()
-        in_ports = map(
-            itemgetter(0), ifilterfalse(lambda entry: entry[1], in_degrees))
+        in_degrees = width_graph.in_degree()
+        in_ports = map(itemgetter(0), ifilterfalse(
+            lambda entry: entry[1], in_degrees.iteritems()))
 
         if len(in_ports) == 1:
             in_port = in_ports[0]
         else:  # multiple input units
 
-            width_graph.add_edges_from(
-                imap(lambda port: (num_of_units, port), in_ports))
-            widths[num_of_units] = sum(itemgetter(*in_ports)(widths))
-            in_degrees.append((num_of_units, 0))
+            new_widths[num_of_units] = 0
+
+            for cur_in_port in in_ports:
+
+                new_widths[num_of_units] += new_widths[cur_in_port]
+                width_graph.add_edge(num_of_units, cur_in_port)
+                in_degrees[cur_in_port] = 1
+
+            in_degrees[num_of_units] = 0
             in_port = num_of_units
             num_of_units += 1
 
         # Split nodes into sink and source nodes.
+        in_deg_items = in_degrees.items()
         out_degrees = width_graph.out_degree()
-        cap_edges = set()
 
-        for unit, in_deg in in_degrees:
-
-            out_links = width_graph.out_edges(unit)
-
-            # node already having a capping link
-            if in_deg == 1 or out_degrees[unit] == 1:
-
-                if in_deg == 1:
-                    cap_edges.add(next(width_graph.in_edges_iter(unit)))
-
-                if out_degrees[unit] == 1:
-                    cap_edges.add(out_links[0])
-
-            elif in_deg or out_degrees[unit]:  # node needing splitting
+        for unit, in_deg in in_deg_items:
+            if in_deg != 1 and out_degrees[unit] != 1 and (
+                in_deg or out_degrees[unit]):
 
                 source_node = num_of_units + unit
-                width_graph.add_edge(unit, source_node, capacity=widths[unit])
-                widths[source_node] = widths[unit]
+                new_widths[source_node] = new_widths[unit]
+                out_links = width_graph.out_edges(unit)
+                width_graph.add_edge(
+                    unit, source_node, capacity=new_widths[unit])
+
                 # Move outgoing links to the new source node.
-                width_graph.add_edges_from(
-                    imap(lambda edge: (source_node, edge[1]), out_links))
-                width_graph.remove_edges_from(out_links)
+                for cur_link in out_links:
+
+                    width_graph.add_edge(source_node, cur_link[1])
+                    width_graph.remove_edge(*cur_link)
+
+                # Update split node degrees.
+                out_degrees[unit] = 1
+                in_degrees[source_node] = 1
+                out_degrees[source_node] = len(out_links)
+
+        # Distribute capacities over edges as needed.
+        # Collect edges needing to be capped.
+        cap_edges = set()
+        in_deg_items = in_degrees.iteritems()
+
+        for unit, in_deg in in_deg_items:
+
+            if in_deg == 1:
+                cap_edges.add(next(width_graph.in_edges_iter(unit)))
+
+            if out_degrees[unit] == 1:
+                cap_edges.add(next(width_graph.out_edges_iter(unit)))
 
         # Fill edge capacities.
         cap_attr = "capacity"
 
         for cur_edge in cap_edges:
             width_graph[cur_edge[0]][cur_edge[1]][cap_attr] = min(
-                itemgetter(*cur_edge)(widths))
+                itemgetter(*cur_edge)(new_widths))
 
         out_ports = ifilterfalse(itemgetter(1), width_graph.out_degree_iter())
         min_width = networkx.maximum_flow_value(width_graph, in_port, next(
             imap(lambda entry: entry[0], out_ports)))
 
-        if min_width < widths[in_port]:
+        if min_width < new_widths[in_port]:
             raise TightWidthError(
                 "Input width {{{}}} exceeding minimum width {{{}}}".format(
                     TightWidthError.REAL_WIDTH_IDX,
-                    TightWidthError.MIN_WIDTH_IDX), min_width, widths[in_port])
+                    TightWidthError.MIN_WIDTH_IDX), min_width,
+                new_widths[in_port])
 
 
 def _create_graph(units, links):
