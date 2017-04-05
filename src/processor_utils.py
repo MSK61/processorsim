@@ -488,7 +488,8 @@ def _chk_proc_desc(processor, widths):
     `processor` is the processor to check.
     `widths` are the processor unit capacities.
     The function raises a NetworkXUnfeasible if the processor isn't a
-    DAG.
+    DAG and a TightWidthError if input width exceeds the minimum bus
+    width.
 
     """
     if not networkx.is_directed_acyclic_graph(processor):
