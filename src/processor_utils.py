@@ -545,8 +545,7 @@ def _chk_proc_desc(processor, widths):
                 source_node = num_of_units + unit
                 new_widths[source_node] = new_widths[unit]
                 out_links = width_graph.out_edges(unit)
-                width_graph.add_edge(
-                    unit, source_node, capacity=new_widths[unit])
+                width_graph.add_edge(unit, source_node)
 
                 # Move outgoing links to the new source node.
                 for cur_link in out_links:
