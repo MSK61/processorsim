@@ -42,7 +42,7 @@
 ############################################################
 
 import itertools
-from itertools import ifilterfalse, imap
+from itertools import imap
 import logging
 import networkx
 from networkx import DiGraph
@@ -494,25 +494,23 @@ def _aug_terminals(width_graph, widths, degrees, edge_func):
                 and the new terminals in order and returns the a tuple
                 representing the directed edge between the two.
     The function tries to connect several terminal into a single new
-    terminal. It returns the unified port of the processor.
+    terminal.
 
     """
-    ports = map(
-        itemgetter(0), ifilterfalse(itemgetter(1), degrees.iteritems()))
+    ports = imap(itemgetter(0), itertools.ifilterfalse(itemgetter(1), degrees))
+    try:
+        ports = itertools.chain([next(ports), next(ports)], ports)
+    except StopIteration:
+        pass
+    else:  # multiple units
 
-    if len(ports) == 1:
-        return ports[0]
+        unified_port = len(widths)
+        widths[unified_port] = 0
 
-    # multiple units
-    unified_port = len(degrees)
-    widths[unified_port] = 0
+        for cur_port in ports:
 
-    for cur_port in ports:
-
-        widths[unified_port] += widths[cur_port]
-        width_graph.add_edge(*(edge_func(cur_port, unified_port)))
-
-    return unified_port
+            widths[unified_port] += widths[cur_port]
+            width_graph.add_edge(*(edge_func(cur_port, unified_port)))
 
 
 def _chk_bus_width(processor, widths):
@@ -543,19 +541,25 @@ def _chk_bus_width(processor, widths):
             lambda edge: itemgetter(*edge)(new_nodes), processor.edges_iter()))
         width_graph.add_nodes_from(xrange(num_of_units))
         # Augment the width graph with unified terminals.
-        in_port = _aug_terminals(
-            width_graph, new_widths, width_graph.in_degree(),
-            lambda old_input, new_input: (new_input, old_input))
-        out_port = _aug_terminals(
-            width_graph, new_widths, width_graph.out_degree(),
-            lambda old_output, new_output: (old_output, new_output))
+        _aug_terminals(width_graph, new_widths, width_graph.in_degree_iter(),
+                       lambda *inputs: reversed(inputs))
+        _aug_terminals(width_graph, new_widths, width_graph.out_degree_iter(),
+                       lambda *outputs: outputs)
         # Split nodes into sink and source nodes.
         in_degrees = width_graph.in_degree()
         in_deg_items = in_degrees.items()
         out_degrees = width_graph.out_degree()
+        out_port = None
         ext_base = len(in_degrees)
 
         for unit, in_deg in in_deg_items:
+
+            if in_deg == 0:
+                in_port = unit
+
+            if out_degrees[unit] == 0:
+                out_port = unit
+
             if in_deg != 1 and out_degrees[unit] != 1 and (
                 in_deg or out_degrees[unit]):
 
