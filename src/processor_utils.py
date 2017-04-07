@@ -365,18 +365,17 @@ class _WidthAnalyzer(object):
         `widths` are the processor unit capacities.
 
         """
+        self._width_graph = DiGraph()
         units = enumerate(processor.nodes_iter())
         new_nodes = {}
-        self._widths = {}
 
         for idx, unit in units:
 
+            self._width_graph.add_node(idx, width=widths[unit])
             new_nodes[unit] = idx
-            self._widths[idx] = widths[unit]
 
-        self._width_graph = DiGraph(imap(
+        self._width_graph.add_edges_from(imap(
             lambda edge: itemgetter(*edge)(new_nodes), processor.edges_iter()))
-        self._width_graph.add_nodes_from(xrange(len(new_nodes)))
 
     def aug_ports(self):
         """Unify the ports in the processor.
@@ -429,7 +428,9 @@ class _WidthAnalyzer(object):
                 in_deg or out_degrees[unit]):
 
                 source_node = ext_base + unit
-                self._widths[source_node] = self._widths[unit]
+                self._width_graph.add_node(
+                    source_node,
+                    width=self._width_graph.node[unit][_UNIT_WIDTH_KEY])
                 out_links = self._width_graph.out_edges(unit)
                 self._width_graph.add_edge(unit, source_node)
 
@@ -460,7 +461,8 @@ class _WidthAnalyzer(object):
 
         for cur_edge in cap_edges:
             self._width_graph[cur_edge[0]][cur_edge[1]][cap_attr] = min(
-                itemgetter(*cur_edge)(self._widths))
+                imap(lambda unit:
+                    self._width_graph.node[unit][_UNIT_WIDTH_KEY], cur_edge))
 
     def _aug_terminals(self, degrees, edge_func):
         """Unify terminals indicated by degrees in the processor.
@@ -482,12 +484,14 @@ class _WidthAnalyzer(object):
             pass
         else:  # multiple units
 
-            unified_port = len(self._widths)
-            self._widths[unified_port] = 0
+            unified_port = self._width_graph.number_of_nodes()
+            self._width_graph.add_node(unified_port, width=0)
 
             for cur_port in ports:
 
-                self._widths[unified_port] += self._widths[cur_port[0]]
+                self._width_graph.node[unified_port][
+                    _UNIT_WIDTH_KEY] += self._width_graph.node[cur_port[0]][
+                    _UNIT_WIDTH_KEY]
                 self._width_graph.add_edge(
                     *(edge_func(cur_port[0], unified_port)))
 
@@ -515,8 +519,8 @@ class _WidthAnalyzer(object):
         `self` is this bus width analyzer.
 
         """
-        return self._widths[
-            self._get_port(self._width_graph.in_degree_iter())[0]]
+        return self._width_graph.node[self._get_port(
+            self._width_graph.in_degree_iter())[0]][_UNIT_WIDTH_KEY]
 
 
 def load_proc_desc(raw_desc):
