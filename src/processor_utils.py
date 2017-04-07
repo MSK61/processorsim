@@ -579,7 +579,7 @@ def _chk_proc_desc(processor, widths):
                     width_graph.add_edge(source_node, cur_link[1])
                     width_graph.remove_edge(*cur_link)
 
-                if out_degrees[source_node] == 0:
+                if out_port == unit:
                     out_port = source_node
 
         # Distribute capacities over edges as needed.
