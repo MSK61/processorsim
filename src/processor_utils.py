@@ -515,20 +515,15 @@ def _aug_terminals(width_graph, widths, degrees, edge_func):
     return unified_port
 
 
-def _chk_proc_desc(processor, widths):
-    """Check the given processor.
+def _chk_bus_width(processor, widths):
+    """Check the given processor bus width.
 
     `processor` is the processor to check.
     `widths` are the processor unit capacities.
-    The function raises a NetworkXUnfeasible if the processor isn't a
-    DAG and a TightWidthError if input width exceeds the minimum bus
-    width.
+    The function raises a TightWidthError if input width exceeds the
+    minimum bus width.
 
     """
-    if not networkx.is_directed_acyclic_graph(processor):
-        raise networkx.NetworkXUnfeasible()
-
-    # Check the bus width.
     units = processor.nodes()
     num_of_units = len(units)
 
@@ -607,6 +602,32 @@ def _chk_proc_desc(processor, widths):
                     TightWidthError.REAL_WIDTH_IDX,
                     TightWidthError.MIN_WIDTH_IDX), min_width,
                 new_widths[in_port])
+
+
+def _chk_cycles(processor):
+    """Check the given processor for cycles.
+
+    `processor` is the processor to check.
+    The function raises a NetworkXUnfeasible if the processor isn't a
+    DAG.
+
+    """
+    if not networkx.is_directed_acyclic_graph(processor):
+        raise networkx.NetworkXUnfeasible()
+
+
+def _chk_proc_desc(processor, widths):
+    """Check the given processor.
+
+    `processor` is the processor to check.
+    `widths` are the processor unit capacities.
+    The function raises a NetworkXUnfeasible if the processor isn't a
+    DAG and a TightWidthError if input width exceeds the minimum bus
+    width.
+
+    """
+    _chk_cycles(processor)
+    _chk_bus_width(processor, widths)
 
 
 def _create_graph(units, links):
