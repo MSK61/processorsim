@@ -357,12 +357,11 @@ class _WidthAnalyzer(object):
 
     """Processor bus width analyzer"""
 
-    def __init__(self, processor, widths):
+    def __init__(self, processor):
         """Create a processor bus width analyzer.
 
         `self` is this bus width analyzer.
         `processor` is the processor of the bus width analyzer.
-        `widths` are the processor unit capacities.
 
         """
         self._width_graph = DiGraph()
@@ -371,7 +370,7 @@ class _WidthAnalyzer(object):
 
         for idx, unit in units:
 
-            self._width_graph.add_node(idx, width=widths[unit])
+            self._width_graph.add_node(idx, processor.node[unit])
             new_nodes[unit] = idx
 
         self._width_graph.add_edges_from(imap(
@@ -547,20 +546,21 @@ def load_proc_desc(raw_desc):
     """
     unit_sect = "units"
     data_path_sect = "dataPath"
-    proc_desc = _create_graph(imap(itemgetter(_UNIT_NAME_KEY), raw_desc[
-        unit_sect]), raw_desc[data_path_sect])
-    _chk_proc_desc(proc_desc, dict(imap(_get_name_width, raw_desc[unit_sect])))
-    return _post_order(proc_desc, raw_desc[unit_sect])
+    proc_desc = _create_graph(raw_desc[unit_sect], raw_desc[data_path_sect])
+    _chk_proc_desc(proc_desc)
+    return _post_order(
+        proc_desc, dict(imap(_get_name_caps, raw_desc[unit_sect])))
 
 
-def _get_name_width(unit_desc):
-    """Create a unit width entry from the given description.
+def _get_name_caps(unit_desc):
+    """Create an entry for a unit and its capabilities.
 
-    `unit_desc` is the description to create a unit width entry from.
-    The function returns a tuple of the unit name and width.
+    `unit_desc` is the description to create a capability entry from.
+    The function returns a tuple of the unit name and its capabilities.
 
     """
-    return unit_desc[_UNIT_NAME_KEY], unit_desc[_UNIT_WIDTH_KEY]
+    unit_caps_key = "capabilities"
+    return unit_desc[_UNIT_NAME_KEY], unit_desc[unit_caps_key]
 
 
 def _get_preds(processor, unit, unit_map):
@@ -587,16 +587,16 @@ def _get_std_edge(edge, unit_registry):
     return imap(lambda unit: _get_unit_name(unit, unit_registry), edge)
 
 
-def _get_unit_entry(unit_desc):
-    """Create a unit map entry from the given description.
+def _get_unit_entry(width, name, capabilities):
+    """Create a unit map entry from the given attributes.
 
-    `unit_desc` is the description to create a unit map entry from.
+    `width` is the unit capacity.
+    `name` is the unit name.
+    `capabilities` are the unit capabilities.
     The function returns a tuple of the unit name and model.
 
     """
-    return unit_desc[_UNIT_NAME_KEY], UnitModel(
-        *(itemgetter(_UNIT_NAME_KEY, _UNIT_WIDTH_KEY, "capabilities")(
-            unit_desc)))
+    return name, UnitModel(name, width, capabilities)
 
 
 def _get_unit_name(unit, unit_registry):
@@ -654,30 +654,29 @@ def _add_unit(processor, unit, unit_registry):
     previously added to the processor.
 
     """
-    old_name = unit_registry.get(unit)
+    old_name = unit_registry.get(unit[_UNIT_NAME_KEY])
 
     if old_name is not None:
         raise DupElemError(
             "Functional unit {{{}}} previously added as {{{}}}".format(
                 DupElemError.NEW_ELEM_IDX, DupElemError.OLD_ELEM_IDX),
-            old_name, unit)
+            old_name, unit[_UNIT_NAME_KEY])
 
-    processor.add_node(unit)
-    unit_registry.add(unit)
+    processor.add_node(unit[_UNIT_NAME_KEY], width=unit[_UNIT_WIDTH_KEY])
+    unit_registry.add(unit[_UNIT_NAME_KEY])
 
 
-def _chk_bus_width(processor, widths):
+def _chk_bus_width(processor):
     """Check the given processor bus width.
 
     `processor` is the processor to check.
-    `widths` are the processor unit capacities.
     The function raises a TightWidthError if input width exceeds the
     minimum bus width.
 
     """
     if processor.number_of_nodes() > 1:
 
-        analyzer = _WidthAnalyzer(processor, widths)
+        analyzer = _WidthAnalyzer(processor)
         analyzer.aug_ports()
         analyzer.split_nodes()
         analyzer.dist_capacities()
@@ -712,18 +711,17 @@ def _chk_flow_vol(min_width, in_width):
             min_width, in_width)
 
 
-def _chk_proc_desc(processor, widths):
+def _chk_proc_desc(processor):
     """Check the given processor.
 
     `processor` is the processor to check.
-    `widths` are the processor unit capacities.
     The function raises a NetworkXUnfeasible if the processor isn't a
     DAG and a TightWidthError if input width exceeds the minimum bus
     width.
 
     """
-    _chk_cycles(processor)
-    _chk_bus_width(processor, widths)
+    for cur_chk in [_chk_cycles, _chk_bus_width]:
+        cur_chk(processor)
 
 
 def _create_graph(units, links):
@@ -749,16 +747,18 @@ def _create_graph(units, links):
     return flow_graph
 
 
-def _post_order(graph, units):
+def _post_order(graph, capabilities):
     """Create a post-order for the given processor.
 
     `graph` is the processor.
-    `units` is the processor functional units.
+    `capabilities` are the capabilities of the functional units.
     The function returns a list of the processor functional units in
     post-order.
 
     """
-    unit_map = dict(imap(_get_unit_entry, units))
+    unit_map = dict(
+        imap(lambda unit_entry: _get_unit_entry(graph.node[unit_entry[0]][
+            _UNIT_WIDTH_KEY], *unit_entry), capabilities.iteritems()))
     return map(lambda name:
         FuncUnit(unit_map[name], _get_preds(graph, name, unit_map)),
         networkx.dfs_postorder_nodes(graph))
