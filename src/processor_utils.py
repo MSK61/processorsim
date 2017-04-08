@@ -381,9 +381,7 @@ def _get_anal_graph(processor):
     new_nodes = {}
 
     for idx, unit in units:
-
-        width_graph.add_node(idx, processor.node[unit])
-        new_nodes[unit] = idx
+        _update_graph(idx, unit, processor, width_graph, new_nodes)
 
     width_graph.add_edges_from(imap(
         lambda edge: itemgetter(*edge)(new_nodes), processor.edges_iter()))
@@ -528,6 +526,19 @@ def _add_unit(processor, unit, unit_registry):
     unit_registry.add(unit[_UNIT_NAME_KEY])
 
 
+def _analyze_width(processor):
+    """Analyze the processor bus width.
+
+    `processor` is the processor to analyze whose width.
+
+    """
+    anal_graph = _get_anal_graph(processor)
+    _aug_ports(anal_graph)
+    _split_nodes(anal_graph)
+    _dist_edge_caps(anal_graph)
+    _chk_flow_vol(_min_width(anal_graph), _in_width(anal_graph))
+
+
 def _aug_ports(graph):
     """Unify the ports in the graph.
 
@@ -560,15 +571,7 @@ def _aug_terminals(graph, degrees, edge_func):
     except StopIteration:  # single unit
         pass
     else:  # multiple units
-
-        unified_port = graph.number_of_nodes()
-        graph.add_node(unified_port, width=0)
-
-        for cur_port in ports:
-
-            graph.node[unified_port][_UNIT_WIDTH_KEY] += graph.node[
-                cur_port[0]][_UNIT_WIDTH_KEY]
-            graph.add_edge(*(edge_func(cur_port[0], unified_port)))
+        _unify_ports(graph, ports, edge_func)
 
 
 def _chk_bus_width(processor):
@@ -580,12 +583,7 @@ def _chk_bus_width(processor):
 
     """
     if processor.number_of_nodes() > 1:
-
-        anal_graph = _get_anal_graph(processor)
-        _aug_ports(anal_graph)
-        _split_nodes(anal_graph)
-        _dist_edge_caps(anal_graph)
-        _chk_flow_vol(_min_width(anal_graph), _in_width(anal_graph))
+        _analyze_width(processor)
 
 
 def _chk_cycles(processor):
@@ -733,6 +731,43 @@ def _post_order(graph, capabilities):
         networkx.dfs_postorder_nodes(graph))
 
 
+def _mov_out_link(graph, link, new_node):
+    """Move an outgoing link from an old node to a new one.
+
+    `graph` is the graph containing the nodes.
+    `link` is the outgoing link to move.
+    `new_node` is the node to move the outgoing link to.
+
+    """
+    graph.add_edge(new_node, link[1])
+    graph.remove_edge(*link)
+
+
+def _mov_out_links(graph, out_links, new_node):
+    """Move outgoing links from an old node to a new one.
+
+    `graph` is the graph containing the nodes.
+    `out_links` are the outgoing links to move.
+    `new_node` is the node to move the outgoing links to.
+
+    """
+    for cur_link in out_links:
+        _mov_out_link(graph, cur_link, new_node)
+
+
+def _split_node(graph, old_node, new_node):
+    """Split a node into old and new ones.
+
+    `graph` is the graph containing the node to be split.
+    `old_node` is the existing node.
+    `new_node` is the node added after splitting.
+
+    """
+    graph.add_node(new_node, width=graph.node[old_node][_UNIT_WIDTH_KEY])
+    _mov_out_links(graph, graph.out_edges(old_node), new_node)
+    graph.add_edge(old_node, new_node)
+
+
 def _split_nodes(graph):
     """Split nodes in the given graph as necessary.
 
@@ -749,15 +784,51 @@ def _split_nodes(graph):
     for unit, in_deg in in_degrees:
         if in_deg != 1 and out_degrees[unit] != 1 and (
             in_deg or out_degrees[unit]):
+            _split_node(graph, unit, ext_base + unit)
 
-            source_node = ext_base + unit
-            graph.add_node(
-                source_node, width=graph.node[unit][_UNIT_WIDTH_KEY])
-            out_links = graph.out_edges(unit)
-            graph.add_edge(unit, source_node)
 
-            # Move outgoing links to the new source node.
-            for cur_link in out_links:
+def _add_port_link(graph, old_port, new_port, link):
+    """Add a link between old and new ports.
 
-                graph.add_edge(source_node, cur_link[1])
-                graph.remove_edge(*cur_link)
+    `graph` is the graph containing ports.
+    `old_port` is the old port.
+    `new_port` is the new port.
+    `link` is the link connecting the two ports.
+
+    """
+    graph.node[new_port][_UNIT_WIDTH_KEY] += graph.node[old_port][
+        _UNIT_WIDTH_KEY]
+    graph.add_edge(*link)
+
+
+def _unify_ports(graph, ports, edge_func):
+    """Unify ports in the graph.
+
+    `graph` is the graph containing terminals.
+    `ports` are the ports to unify.
+    `edge_func` is the creation function for edges connecting old
+                terminals to the new one. It takes as parameters the old
+                and the new terminals in order and returns the a tuple
+                representing the directed edge between the two.
+
+    """
+    unified_port = graph.number_of_nodes()
+    graph.add_node(unified_port, width=0)
+
+    for cur_port in ports:
+        _add_port_link(graph, cur_port[0], unified_port,
+                       edge_func(cur_port[0], unified_port))
+
+
+def _update_graph(idx, unit, processor, width_graph, unit_idx_map):
+    """Update width graph structures.
+
+    `idx` is the unit index.
+    `unit` is the unit name.
+    `processor` is the original processor.
+    `width_graph` is the bus width analysis graph.
+    `unit_idx_map` is the mapping between unit names and indices .
+
+    """
+    width_graph.add_node(idx, processor.node[unit])
+    unit_idx_map[unit] = idx
