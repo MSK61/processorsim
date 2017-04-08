@@ -405,10 +405,8 @@ class _WidthAnalyzer(object):
         `self` is this bus width analyzer.
 
         """
-        in_port = self._get_port(self._width_graph.in_degree_iter())
-        out_port = self._get_port(self._width_graph.out_degree_iter())
         return networkx.maximum_flow_value(
-            self._width_graph, in_port[0], out_port[0])
+            self._width_graph, self._in_port(), self._out_port())
 
     def split_nodes(self):
         """Split nodes as necessary.
@@ -448,7 +446,7 @@ class _WidthAnalyzer(object):
         A port is a unit with zero degree.
 
         """
-        return next(ifilterfalse(itemgetter(1), degrees))
+        return next(ifilterfalse(itemgetter(1), degrees))[0]
 
     def _set_capacities(self, cap_edges):
         """Assign capacities to capping edges.
@@ -512,6 +510,14 @@ class _WidthAnalyzer(object):
                 in_deg[0]] == 1, self._width_graph.in_degree_iter()))
         return set(cap_edges)
 
+    def _in_port(self):
+        """Find the input port of the processor.
+
+        `self` is this bus width analyzer.
+
+        """
+        return self._get_port(self._width_graph.in_degree_iter())
+
     @property
     def in_width(self):
         """Input capacity of the processor
@@ -519,8 +525,15 @@ class _WidthAnalyzer(object):
         `self` is this bus width analyzer.
 
         """
-        return self._width_graph.node[self._get_port(
-            self._width_graph.in_degree_iter())[0]][_UNIT_WIDTH_KEY]
+        return self._width_graph.node[self._in_port()][_UNIT_WIDTH_KEY]
+
+    def _out_port(self):
+        """Find the output port of the processor.
+
+        `self` is this bus width analyzer.
+
+        """
+        return self._get_port(self._width_graph.out_degree_iter())
 
 
 def load_proc_desc(raw_desc):
