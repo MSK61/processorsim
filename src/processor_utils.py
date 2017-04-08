@@ -353,188 +353,6 @@ class _IndexedSet:
         self._std_form_map[self._index_func(elem)] = elem
 
 
-class _WidthAnalyzer(object):
-
-    """Processor bus width analyzer"""
-
-    def __init__(self, processor):
-        """Create a processor bus width analyzer.
-
-        `self` is this bus width analyzer.
-        `processor` is the processor of the bus width analyzer.
-
-        """
-        self._width_graph = DiGraph()
-        units = enumerate(processor.nodes_iter())
-        new_nodes = {}
-
-        for idx, unit in units:
-
-            self._width_graph.add_node(idx, processor.node[unit])
-            new_nodes[unit] = idx
-
-        self._width_graph.add_edges_from(imap(
-            lambda edge: itemgetter(*edge)(new_nodes), processor.edges_iter()))
-
-    def aug_ports(self):
-        """Unify the ports in the processor.
-
-        `self` is this bus width analyzer.
-        The method tries to connect several input and output ports into
-        a single input port and a single output port.
-
-        """
-        for cur_terms in [[self._width_graph.in_degree_iter(),
-                           lambda *inputs: reversed(inputs)],
-            [self._width_graph.out_degree_iter(), lambda *outputs: outputs]]:
-            self._aug_terminals(*cur_terms)
-
-    def dist_capacities(self):
-        """Distribute capacities over edges as needed.
-
-        `self` is this bus width analyzer.
-        The method distributes capacities over capping edges.
-
-        """
-        self._set_capacities(self._coll_cap_edges())
-
-    def min_width(self):
-        """Calculate the minimum bus width for the associated processor.
-
-        `self` is this bus width analyzer.
-
-        """
-        return networkx.maximum_flow_value(
-            self._width_graph, self._in_port(), self._out_port())
-
-    def split_nodes(self):
-        """Split nodes as necessary.
-
-        `self` is this bus width analyzer.
-        The method splits nodes having multiple links on one side and a
-        non-capping link on the other. A link on one side is capping if
-        it's the only link on this side.
-
-        """
-        in_degrees = self._width_graph.in_degree_iter()
-        out_degrees = self._width_graph.out_degree()
-        ext_base = len(out_degrees)
-
-        for unit, in_deg in in_degrees:
-            if in_deg != 1 and out_degrees[unit] != 1 and (
-                in_deg or out_degrees[unit]):
-
-                source_node = ext_base + unit
-                self._width_graph.add_node(
-                    source_node,
-                    width=self._width_graph.node[unit][_UNIT_WIDTH_KEY])
-                out_links = self._width_graph.out_edges(unit)
-                self._width_graph.add_edge(unit, source_node)
-
-                # Move outgoing links to the new source node.
-                for cur_link in out_links:
-
-                    self._width_graph.add_edge(source_node, cur_link[1])
-                    self._width_graph.remove_edge(*cur_link)
-
-    @staticmethod
-    def _get_port(degrees):
-        """Find the port with respect to the given degrees.
-
-        `degrees` are the degrees of all units.
-        A port is a unit with zero degree.
-
-        """
-        return next(ifilterfalse(itemgetter(1), degrees))[0]
-
-    def _set_capacities(self, cap_edges):
-        """Assign capacities to capping edges.
-
-        `self` is this bus width analyzer.
-        `cap_edges` are the capping edges.
-
-        """
-        cap_attr = "capacity"
-
-        for cur_edge in cap_edges:
-            self._width_graph[cur_edge[0]][cur_edge[1]][cap_attr] = min(
-                imap(lambda unit:
-                    self._width_graph.node[unit][_UNIT_WIDTH_KEY], cur_edge))
-
-    def _aug_terminals(self, degrees, edge_func):
-        """Unify terminals indicated by degrees in the processor.
-
-        `self` is this bus width analyzer.
-        `degrees` are the degrees of all units from the terminal side.
-        `edge_func` is the creation function for edges connecting old
-                    terminals to the new one. It takes as parameters the old
-                    and the new terminals in order and returns the a tuple
-                    representing the directed edge between the two.
-        The method tries to connect several terminals into a single new
-        terminal.
-
-        """
-        ports = ifilterfalse(itemgetter(1), degrees)
-        try:
-            ports = itertools.chain([next(ports), next(ports)], ports)
-        except StopIteration:
-            pass
-        else:  # multiple units
-
-            unified_port = self._width_graph.number_of_nodes()
-            self._width_graph.add_node(unified_port, width=0)
-
-            for cur_port in ports:
-
-                self._width_graph.node[unified_port][
-                    _UNIT_WIDTH_KEY] += self._width_graph.node[cur_port[0]][
-                    _UNIT_WIDTH_KEY]
-                self._width_graph.add_edge(
-                    *(edge_func(cur_port[0], unified_port)))
-
-    def _coll_cap_edges(self):
-        """Collect capping edges.
-
-        `self` is this bus width analyzer.
-        The method returns capping edges. A capping edge is the sole
-        edge on either side of a node that determines the maximum flow
-        through the node.
-
-        """
-        out_degrees = self._width_graph.out_degree()
-        cap_edges = imap(
-            lambda in_deg: next((self._width_graph.in_edges_iter if in_deg[
-                1] == 1 else self._width_graph.out_edges_iter)(in_deg[0])),
-            itertools.ifilter(lambda in_deg: in_deg[1] == 1 or out_degrees[
-                in_deg[0]] == 1, self._width_graph.in_degree_iter()))
-        return set(cap_edges)
-
-    def _in_port(self):
-        """Find the input port of the processor.
-
-        `self` is this bus width analyzer.
-
-        """
-        return self._get_port(self._width_graph.in_degree_iter())
-
-    @property
-    def in_width(self):
-        """Input capacity of the processor
-
-        `self` is this bus width analyzer.
-
-        """
-        return self._width_graph.node[self._in_port()][_UNIT_WIDTH_KEY]
-
-    def _out_port(self):
-        """Find the output port of the processor.
-
-        `self` is this bus width analyzer.
-
-        """
-        return self._get_port(self._width_graph.out_degree_iter())
-
-
 def load_proc_desc(raw_desc):
     """Transform the given raw description into a processor one.
 
@@ -552,6 +370,26 @@ def load_proc_desc(raw_desc):
         proc_desc, dict(imap(_get_name_caps, raw_desc[unit_sect])))
 
 
+def _get_anal_graph(processor):
+    """Create a processor bus width analysis graph.
+
+    `processor` is the processor to build an analysis graph from.
+
+    """
+    width_graph = DiGraph()
+    units = enumerate(processor.nodes_iter())
+    new_nodes = {}
+
+    for idx, unit in units:
+
+        width_graph.add_node(idx, processor.node[unit])
+        new_nodes[unit] = idx
+
+    width_graph.add_edges_from(imap(
+        lambda edge: itemgetter(*edge)(new_nodes), processor.edges_iter()))
+    return width_graph
+
+
 def _get_name_caps(unit_desc):
     """Create an entry for a unit and its capabilities.
 
@@ -561,6 +399,16 @@ def _get_name_caps(unit_desc):
     """
     unit_caps_key = "capabilities"
     return unit_desc[_UNIT_NAME_KEY], unit_desc[unit_caps_key]
+
+
+def _get_port(degrees):
+    """Find the port with respect to the given degrees.
+
+    `degrees` are the degrees of all units.
+    A port is a unit with zero degree.
+
+    """
+    return next(ifilterfalse(itemgetter(1), degrees))[0]
 
 
 def _get_preds(processor, unit, unit_map):
@@ -616,6 +464,20 @@ def _get_unit_name(unit, unit_registry):
     return std_name
 
 
+def _set_capacities(graph, cap_edges):
+    """Assign capacities to capping edges.
+
+    `graph` is the graph containing edges.
+    `cap_edges` are the capping edges.
+
+    """
+    cap_attr = "capacity"
+
+    for cur_edge in cap_edges:
+        graph[cur_edge[0]][cur_edge[1]][cap_attr] = min(
+            imap(lambda unit: graph.node[unit][_UNIT_WIDTH_KEY], cur_edge))
+
+
 def _add_edge(processor, edge, unit_registry, edge_registry):
     """Add an edge to a processor.
 
@@ -666,6 +528,49 @@ def _add_unit(processor, unit, unit_registry):
     unit_registry.add(unit[_UNIT_NAME_KEY])
 
 
+def _aug_ports(graph):
+    """Unify the ports in the graph.
+
+    `graph` is the graph to weld whose ports.
+    The function tries to connect several input and output ports into a
+    single input port and a single output port.
+
+    """
+    for cur_terms in [[graph.in_degree_iter(), lambda *inputs: reversed(
+        inputs)], [graph.out_degree_iter(), lambda *outputs: outputs]]:
+        _aug_terminals(graph, *cur_terms)
+
+
+def _aug_terminals(graph, degrees, edge_func):
+    """Unify terminals indicated by degrees in the graph.
+
+    `graph` is the graph containing terminals.
+    `degrees` are the degrees of all units from the terminal side.
+    `edge_func` is the creation function for edges connecting old
+                terminals to the new one. It takes as parameters the old
+                and the new terminals in order and returns the a tuple
+                representing the directed edge between the two.
+    The function tries to connect several terminals into a single new
+    terminal.
+
+    """
+    ports = ifilterfalse(itemgetter(1), degrees)
+    try:
+        ports = itertools.chain([next(ports), next(ports)], ports)
+    except StopIteration:  # single unit
+        pass
+    else:  # multiple units
+
+        unified_port = graph.number_of_nodes()
+        graph.add_node(unified_port, width=0)
+
+        for cur_port in ports:
+
+            graph.node[unified_port][_UNIT_WIDTH_KEY] += graph.node[
+                cur_port[0]][_UNIT_WIDTH_KEY]
+            graph.add_edge(*(edge_func(cur_port[0], unified_port)))
+
+
 def _chk_bus_width(processor):
     """Check the given processor bus width.
 
@@ -676,11 +581,11 @@ def _chk_bus_width(processor):
     """
     if processor.number_of_nodes() > 1:
 
-        analyzer = _WidthAnalyzer(processor)
-        analyzer.aug_ports()
-        analyzer.split_nodes()
-        analyzer.dist_capacities()
-        _chk_flow_vol(analyzer.min_width(), analyzer.in_width)
+        anal_graph = _get_anal_graph(processor)
+        _aug_ports(anal_graph)
+        _split_nodes(anal_graph)
+        _dist_edge_caps(anal_graph)
+        _chk_flow_vol(_min_width(anal_graph), _in_width(anal_graph))
 
 
 def _chk_cycles(processor):
@@ -724,6 +629,23 @@ def _chk_proc_desc(processor):
         cur_chk(processor)
 
 
+def _coll_cap_edges(graph):
+    """Collect capping edges from the given graph.
+
+    `graph` is the graph to collect edges from.
+    The function returns capping edges. A capping edge is the sole edge
+    on either side of a node that determines the maximum flow through
+    the node.
+
+    """
+    out_degrees = graph.out_degree()
+    cap_edges = imap(lambda in_deg: next((graph.in_edges_iter if in_deg[1] ==
+                                          1 else graph.out_edges_iter)(in_deg[
+        0])), itertools.ifilter(lambda in_deg:
+        in_deg[1] == 1 or out_degrees[in_deg[0]] == 1, graph.in_degree_iter()))
+    return set(cap_edges)
+
+
 def _create_graph(units, links):
     """Create a data flow graph for a processor.
 
@@ -747,6 +669,53 @@ def _create_graph(units, links):
     return flow_graph
 
 
+def _dist_edge_caps(graph):
+    """Distribute capacities over edges as needed.
+
+    `graph` is the graph containing edges.
+    The function distributes capacities over capping edges.
+
+    """
+    _set_capacities(graph, _coll_cap_edges(graph))
+
+
+def _in_port(graph):
+    """Find the input port of the graph.
+
+    `graph` is the graph to get whose input port.
+
+    """
+    return _get_port(graph.in_degree_iter())
+
+
+def _in_width(graph):
+    """Calculate the input capacity of the graph.
+
+    `graph` is the graph to get whose input capacity.
+
+    """
+    return graph.node[_in_port(graph)][_UNIT_WIDTH_KEY]
+
+
+def _min_width(processor):
+    """Calculate the minimum bus width for the processor.
+
+    `processor` is the processor to get whose minimum bus width.
+
+    """
+    return networkx.maximum_flow_value(
+        processor, _in_port(processor), _out_port(processor))
+
+
+def _out_port(graph):
+    """Find the output port of the graph.
+
+    `graph` is the graph to get whose output port.
+
+    """
+    return _get_port(graph.out_degree_iter())
+
+
 def _post_order(graph, capabilities):
     """Create a post-order for the given processor.
 
@@ -762,3 +731,33 @@ def _post_order(graph, capabilities):
     return map(lambda name:
         FuncUnit(unit_map[name], _get_preds(graph, name, unit_map)),
         networkx.dfs_postorder_nodes(graph))
+
+
+def _split_nodes(graph):
+    """Split nodes in the given graph as necessary.
+
+    `graph` is the graph containing nodes.
+    The function splits nodes having multiple links on one side and a
+    non-capping link on the other. A link on one side is capping if it's
+    the only link on this side.
+
+    """
+    in_degrees = graph.in_degree_iter()
+    out_degrees = graph.out_degree()
+    ext_base = len(out_degrees)
+
+    for unit, in_deg in in_degrees:
+        if in_deg != 1 and out_degrees[unit] != 1 and (
+            in_deg or out_degrees[unit]):
+
+            source_node = ext_base + unit
+            graph.add_node(
+                source_node, width=graph.node[unit][_UNIT_WIDTH_KEY])
+            out_links = graph.out_edges(unit)
+            graph.add_edge(unit, source_node)
+
+            # Move outgoing links to the new source node.
+            for cur_link in out_links:
+
+                graph.add_edge(source_node, cur_link[1])
+                graph.remove_edge(*cur_link)
