@@ -144,8 +144,8 @@ class TestEdges:
         `self` is this test case.
 
         """
-        exChk = raises(
-            processor_utils.ElemError, _read_file, "edgeWithUnknownUnit.yaml")
+        exChk = raises(processor_utils.UndefElemError, _read_file,
+                       "edgeWithUnknownUnit.yaml")
         _chk_error([_VerifyPoint(exChk.value.element, "input")], exChk.value)
 
     @mark.parametrize("in_file, bad_edge", [("emptyEdge.yaml", []),

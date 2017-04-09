@@ -121,32 +121,6 @@ class DupElemError(RuntimeError):
         return self._old_elem
 
 
-class ElemError(RuntimeError):
-
-    """Unknown set element error"""
-
-    def __init__(self, msg_tmpl, elem):
-        """Create an unknown element error.
-
-        `self` is this unknown element error.
-        `msg_tmpl` is the error format message taking the unknown
-                   element as a positional argument.
-        `elem` is the unknown element.
-
-        """
-        RuntimeError.__init__(self, msg_tmpl.format(elem))
-        self._elem = elem
-
-    @property
-    def element(self):
-        """Unknown element
-
-        `self` is this unknown element error.
-
-        """
-        return self._elem
-
-
 class TightWidthError(RuntimeError):
 
     """Tight bus width error"""
@@ -188,6 +162,32 @@ class TightWidthError(RuntimeError):
 
         """
         return self._min_width
+
+
+class UndefElemError(RuntimeError):
+
+    """Unknown set element error"""
+
+    def __init__(self, msg_tmpl, elem):
+        """Create an unknown element error.
+
+        `self` is this unknown element error.
+        `msg_tmpl` is the error format message taking the unknown
+                   element as a positional argument.
+        `elem` is the unknown element.
+
+        """
+        RuntimeError.__init__(self, msg_tmpl.format(elem))
+        self._elem = elem
+
+    @property
+    def element(self):
+        """Unknown element
+
+        `self` is this unknown element error.
+
+        """
+        return self._elem
 
 
 class FuncUnit(object):
@@ -426,7 +426,7 @@ def _get_std_edge(edge, unit_registry):
 
     `edge` is the edge to validate.
     `unit_registry` is the store of defined units.
-    The function raises an ElemError if an undefined unit is
+    The function raises an UndefElemError if an undefined unit is
     encountered.
 
     """
@@ -450,14 +450,14 @@ def _get_unit_name(unit, unit_registry):
 
     `unit` is the name of the unit to validate.
     `unit_registry` is the store of defined units.
-    The function raises an ElemError if no unit exists with this name,
-    otherwise returns the validated unit name.
+    The function raises an UndefElemError if no unit exists with this
+    name, otherwise returns the validated unit name.
 
     """
     std_name = unit_registry.get(unit)
 
     if std_name is None:
-        raise ElemError("Undefined functional unit {}", unit)
+        raise UndefElemError("Undefined functional unit {}", unit)
 
     return std_name
 
@@ -484,7 +484,7 @@ def _add_edge(processor, edge, unit_registry, edge_registry):
     `unit_registry` is the store of defined units.
     `edge_registry` is the store of previously added edges.
     The function raises a BadEdgeError if the edge doesn't connect
-    exactly two units and an ElemError if an undefined unit is
+    exactly two units and an UndefElemError if an undefined unit is
     encountered.
 
     """
