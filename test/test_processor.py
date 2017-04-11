@@ -369,7 +369,8 @@ def _read_file(file_name):
 
     """
     data_dir = "data"
-    with open(os.path.join(data_dir, file_name)) as proc_file:
+    with open(
+        os.path.join(test_env.TEST_DIR, data_dir, file_name)) as proc_file:
         return processor_utils.load_proc_desc(yaml.load(proc_file))
 
 

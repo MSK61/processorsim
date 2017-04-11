@@ -44,6 +44,7 @@
 import logging
 import os
 import sys
+TEST_DIR = os.path.dirname(__file__)
 
 def _add_src_path():
     """Add the source path to the python search path.
@@ -53,7 +54,7 @@ def _add_src_path():
 
     """
     src_dir = "src"
-    sys.path.append(os.path.join(os.path.pardir, src_dir))
+    sys.path.append(os.path.join(TEST_DIR, os.path.pardir, src_dir))
 
 
 def _init():

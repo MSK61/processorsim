@@ -5,9 +5,7 @@ prerequisites
 -------------
 
 ### development/run-time requirements
-
-- PyYAML
-- NetworkX
+Please refer to requirements.txt for the list of dependency packages.
 
 ### testing requirements
 
