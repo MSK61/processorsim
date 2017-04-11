@@ -1,5 +1,6 @@
 # processorsim
-https://travis-ci.org/MSK61/processorsim.svg?branch=master
+![](https://travis-ci.org/MSK61/processorsim.svg?branch=master)
+
 program execution simulator on processors
 
 prerequisites
