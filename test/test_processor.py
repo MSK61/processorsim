@@ -356,7 +356,6 @@ def _chk_two_units(processor):
     among them.
 
     """
-    assert len(processor) == 2
     assert processor == [FuncUnit(UnitModel("output", 1, []), [
         processor[1].model]), FuncUnit(UnitModel("input", 1, []), [])]
 
