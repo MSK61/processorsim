@@ -217,6 +217,15 @@ class TestUnits:
 
     """Test case for loading processor units"""
 
+    def test_empty_processor_raises_EmptyProcError(self):
+        """Test a processor with no units.
+
+        `self` is this test case.
+
+        """
+        raises(
+            processor_utils.EmptyProcError, _read_file, "emptyProcessor.yaml")
+
     @mark.parametrize(
         "in_file, dup_unit", [("twoUnitsWithSameNameAndCase.yaml", "fullSys"),
             ("twoUnitsWithSameNameAndDifferentCase.yaml", "FULLsYS")])

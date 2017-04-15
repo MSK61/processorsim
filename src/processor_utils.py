@@ -121,6 +121,11 @@ class DupElemError(RuntimeError):
         return self._old_elem
 
 
+class EmptyProcError(RuntimeError):
+
+    """Empty processor error"""
+
+
 class TightWidthError(RuntimeError):
 
     """Tight bus width error"""
@@ -679,6 +684,18 @@ def _chk_cycles(processor):
         raise networkx.NetworkXUnfeasible()
 
 
+def _chk_empty_proc(processor):
+    """Check that the given processor isn't empty.
+
+    `processor` is the processor to check.
+    The function raises an EmptyProcError if the processor doesn't
+    contain any units.
+
+    """
+    if not processor:
+        raise EmptyProcError()
+
+
 def _chk_flow_vol(min_width, in_width):
     """Check the flow volume from the input throughout all units.
 
@@ -699,12 +716,13 @@ def _chk_proc_desc(processor):
     """Check the given processor.
 
     `processor` is the processor to check.
-    The function raises a NetworkXUnfeasible if the processor isn't a
-    DAG and a TightWidthError if input width exceeds the minimum bus
+    The function raises an EmptyProcError if the processor doesn't
+    contain any units, a NetworkXUnfeasible if the processor isn't a
+    DAG, and a TightWidthError if input width exceeds the minimum bus
     width.
 
     """
-    for cur_chk in [_chk_cycles, _chk_bus_width]:
+    for cur_chk in [_chk_empty_proc, _chk_cycles, _chk_bus_width]:
         cur_chk(processor)
 
 
