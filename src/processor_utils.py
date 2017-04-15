@@ -499,7 +499,7 @@ def _get_preds(processor, unit, unit_map):
     The function returns an iterable of predecessor units.
 
     """
-    return imap(lambda pred: unit_map[pred], processor.predecessors(unit))
+    return imap(lambda pred: unit_map[pred], processor.predecessors_iter(unit))
 
 
 def _get_std_edge(edge, unit_registry):
