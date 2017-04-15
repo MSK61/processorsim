@@ -204,7 +204,7 @@ class FuncUnit(object):
 
         """
         self._model = model
-        self._preds = frozenset(preds)
+        self._preds = tuple(preds)
 
     def __eq__(self, other):
         """Test if the two functional units are identical.
