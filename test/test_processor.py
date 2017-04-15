@@ -41,7 +41,7 @@
 #
 ############################################################
 
-from itertools import imap, izip
+import itertools
 import mock
 import networkx
 import os.path
@@ -49,7 +49,7 @@ import pytest
 from pytest import mark, raises
 import test_env
 import processor_utils
-from processor_utils import FuncUnit, UnitModel
+from processor_utils import FuncUnit, ProcessorDesc, UnitModel
 import yaml
 
 class TestLoop:
@@ -67,40 +67,6 @@ class TestLoop:
 
         """
         raises(networkx.NetworkXUnfeasible, _read_file, in_file)
-
-
-class _UnitNode(object):
-
-    """Functional unit node information"""
-
-    def __init__(self, model, preds):
-        """Set functional unit node information.
-
-        `self` is this functional unit node.
-        `model` is the unit model.
-        `preds` are the predecessor nodes.
-
-        """
-        self._model = model
-        self._preds = tuple(preds)
-
-    @property
-    def model(self):
-        """Model of this functional unit node
-
-        `self` is this functional unit node.
-
-        """
-        return self._model
-
-    @property
-    def predecessors(self):
-        """Predecessor nodes for this functional unit node
-
-        `self` is this functional unit node.
-
-        """
-        return self._preds
 
 
 class _VerifyPoint:
@@ -194,7 +160,7 @@ class TestEdges:
         assert warn_mock.call_args
         warn_msg = warn_mock.call_args[0][0].format(
             *(warn_mock.call_args[0][1 :]), **(warn_mock.call_args[1]))
-        assert all(imap(lambda edge: str(edge) in warn_msg, edges))
+        assert all(itertools.imap(lambda edge: str(edge) in warn_msg, edges))
 
 
 class TestProcessors:
@@ -216,21 +182,14 @@ class TestProcessors:
 
         """
         proc_desc = _read_file("4ConnectedUnitsProcessor.yaml")
-        sorted_indices = sorted(
-            xrange(len(proc_desc)), key=lambda idx: proc_desc[idx].model.name)
-        exp_units = [_UnitNode(UnitModel("input", 1, []), []),
-                     _UnitNode(UnitModel("middle", 1, []), ["input"]),
-                     _UnitNode(UnitModel("output 1", 1, []), ["input"]),
-                     _UnitNode(UnitModel("output 2", 1, []), ["middle"])]
-        assert map(lambda idx: proc_desc[idx].model, sorted_indices) == map(
-            lambda unit: unit.model, exp_units)
-        index_map = dict(imap(lambda entry: (entry[1].model.name, entry[0]),
-                              enumerate(proc_desc)))
-        chk_entries = izip(sorted_indices, exp_units)
-
-        for cur_idx, cur_unit in chk_entries:
-            self._assert_edges(
-                proc_desc, cur_idx, cur_unit.predecessors, index_map)
+        assert not proc_desc.in_out_ports
+        internal_unit = UnitModel("middle", 1, [])
+        assert (proc_desc.in_ports,
+                sorted(proc_desc.out_ports, key=lambda port: port.model.name),
+                proc_desc.internal_units) == ((UnitModel("input", 1, []),),
+            [FuncUnit(UnitModel("output 1", 1, []), proc_desc.in_ports),
+             FuncUnit(UnitModel("output 2", 1, []), [proc_desc.internal_units[
+                0].model])], (FuncUnit(internal_unit, proc_desc.in_ports),))
 
     @mark.parametrize(
         "in_file", ["twoConnectedUnitsProcessor.yaml",
@@ -250,40 +209,8 @@ class TestProcessors:
         `self` is this test case.
 
         """
-        assert _read_file("singleUnitProcessor.yaml") == [
-            FuncUnit(UnitModel("fullSys", 1, ["ALU"]), [])]
-
-    @classmethod
-    def _assert_edges(cls, processor, unit_idx, predecessors, index_map):
-        """Verify edges to predecessors of a unit.
-
-        `cls` is this class.
-        `processor` is the processor assess whose edges.
-        `unit_idx` is the unit index.
-        `predecessors` are the names of predecessor units.
-        `index_map` is the mapping from unit names to indices.
-
-        """
-        assert len(processor[unit_idx].predecessors) == len(predecessors)
-        pred_units = izip(sorted(processor[unit_idx].predecessors,
-                                 key=lambda unit: unit.name), predecessors)
-
-        for actual_pred, exp_pred in pred_units:
-            cls._assert_pred(
-                processor, actual_pred, index_map[exp_pred], unit_idx)
-
-    @staticmethod
-    def _assert_pred(processor, actual_pred, exp_pred, unit_idx):
-        """Verify a predecessor.
-
-        `processor` is the processor containing all units.
-        `actual_pred` is the actual predecessor unit.
-        `exp_pred` is the expected predecessor unit index.
-        `unit_idx` is the unit index.
-
-        """
-        assert exp_pred > unit_idx
-        assert actual_pred is processor[exp_pred].model
+        assert _read_file("singleUnitProcessor.yaml") == ProcessorDesc(
+            [], [], [UnitModel("fullSys", 1, ["ALU"])], [])
 
 
 class TestUnits:
@@ -356,8 +283,8 @@ def _chk_two_units(processor):
     among them.
 
     """
-    assert processor == [FuncUnit(UnitModel("output", 1, []), [
-        processor[1].model]), FuncUnit(UnitModel("input", 1, []), [])]
+    assert processor == ProcessorDesc([UnitModel("input", 1, [])],
+        [FuncUnit(UnitModel("output", 1, []), processor.in_ports)], [], [])
 
 
 def _read_file(file_name):

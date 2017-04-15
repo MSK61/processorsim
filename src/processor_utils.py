@@ -245,6 +245,87 @@ class FuncUnit(object):
         return self._preds
 
 
+class ProcessorDesc(object):
+
+    """Processor description"""
+
+    def __init__(self, in_ports, out_ports, in_out_ports, internal_untis):
+        """Create a processor.
+
+        `self` is this processor.
+        `in_ports` are the input-only ports.
+        `out_ports` are the output-only ports.
+        `in_out_ports` are the ports that act as both inputs and
+                       outputs.
+        `internal_untis` are the internal units that are neither exposed
+                         as inputs or outputs.
+
+        """
+        self._in_ports = tuple(in_ports)
+        self._out_ports = tuple(out_ports)
+        self._in_out_ports = tuple(in_out_ports)
+        self._internal_units = tuple(internal_untis)
+
+    def __eq__(self, other):
+        """Test if the two processors are identical.
+
+        `self` is this processor.
+        `other` is the other processor.
+
+        """
+        return self._in_ports == other.in_ports and \
+                               self._out_ports == other.out_ports and \
+                               self._in_out_ports == other.in_out_ports and \
+                               self._internal_units == other.internal_units
+
+    def __ne__(self, other):
+        """Test if the two processors are different.
+
+        `self` is this processor.
+        `other` is the other processor.
+
+        """
+        return not self == other
+
+    @property
+    def in_out_ports(self):
+        """Processor input-output ports
+
+        `self` is this processor.
+
+        """
+        return self._in_out_ports
+
+    @property
+    def in_ports(self):
+        """Processor input-only ports
+
+        `self` is this processor.
+
+        """
+        return self._in_ports
+
+    @property
+    def internal_units(self):
+        """Processor internal units
+
+        `self` is this processor.
+        An internal unit is a unit that's neither an input nor an
+        output.
+
+        """
+        return self._internal_units
+
+    @property
+    def out_ports(self):
+        """Processor output-only ports
+
+        `self` is this processor.
+
+        """
+        return self._out_ports
+
+
 class UnitModel(object):
 
     """Functional unit model"""
@@ -366,8 +447,8 @@ def load_proc_desc(raw_desc):
     data_path_sect = "dataPath"
     proc_desc = _create_graph(raw_desc[unit_sect], raw_desc[data_path_sect])
     _chk_proc_desc(proc_desc)
-    return _post_order(
-        proc_desc, dict(imap(_get_name_caps, raw_desc[unit_sect])))
+    name_caps = imap(_get_name_caps, raw_desc[unit_sect])
+    return _make_processor(proc_desc, _post_order(proc_desc, dict(name_caps)))
 
 
 def _get_anal_graph(processor):
@@ -729,6 +810,33 @@ def _post_order(graph, capabilities):
     return map(lambda name:
         FuncUnit(unit_map[name], _get_preds(graph, name, unit_map)),
         networkx.dfs_postorder_nodes(graph))
+
+
+def _make_processor(proc_graph, post_ord):
+    """Create a processor description from the given units.
+
+    `proc_desc` is the processor graph.
+    `post_ord` is the post-order of the processor units.
+
+    """
+    in_out_ports = []
+    in_ports = []
+    internal_units = []
+    out_ports = []
+    in_degrees = proc_graph.in_degree()
+    out_degrees = proc_graph.out_degree()
+
+    for unit in post_ord:
+        if in_degrees[unit.model.name] and out_degrees[unit.model.name]:
+            internal_units.append(unit)
+        elif in_degrees[unit.model.name]:
+            out_ports.append(unit)
+        elif out_degrees[unit.model.name]:
+            in_ports.append(unit.model)
+        elif not in_degrees[unit.model.name]:
+            in_out_ports.append(unit.model)
+
+    return ProcessorDesc(in_ports, out_ports, in_out_ports, internal_units)
 
 
 def _mov_out_link(graph, link, new_node):
