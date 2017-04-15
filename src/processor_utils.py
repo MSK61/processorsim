@@ -213,8 +213,8 @@ class FuncUnit(object):
         `other` is the other functional unit.
 
         """
-        return self._model == other.model and len(self._preds) == len(
-            other.predecessors) and all(imap(
+        return (self._model, len(self._preds)) == (
+            other.model, len(other.predecessors)) and all(imap(
             operator.is_, sorted(self._preds), sorted(other.predecessors)))
 
     def __ne__(self, other):
@@ -273,10 +273,10 @@ class ProcessorDesc(object):
         `other` is the other processor.
 
         """
-        return self._in_ports == other.in_ports and \
-                               self._out_ports == other.out_ports and \
-                               self._in_out_ports == other.in_out_ports and \
-                               self._internal_units == other.internal_units
+        return (
+            self._in_ports, self._out_ports, self._in_out_ports,
+            self._internal_units) == (other.in_ports, other.out_ports,
+                                      other.in_out_ports, other.internal_units)
 
     def __ne__(self, other):
         """Test if the two processors are different.
@@ -351,8 +351,8 @@ class UnitModel(object):
         `other` is the other functional unit model.
 
         """
-        return self._name == other.name and self._width == other.width and \
-                           self._capabilities == other.capabilities
+        return (self._name, self._width, self._capabilities) == (
+            other.name, other.width, other.capabilities)
 
     def __ne__(self, other):
         """Test if the two functional unit models are different.
