@@ -66,6 +66,7 @@ class TestCaps:
         """Test loading two capabilities with the same name in one unit.
 
         `self` is this test case.
+        `in_file` is the processor description file.
         `capabilities` are the identical capabilities.
 
         """
