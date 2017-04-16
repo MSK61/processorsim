@@ -222,8 +222,8 @@ class FuncUnit(object):
         criteria = imap(
             lambda attrs: (attrs[0], len(attrs[1])),
             [(self._model, self._preds), (other.model, other.predecessors)])
-        return eq(*criteria) and all(imap(
-            operator.is_, sorted(self._preds), sorted(other.predecessors)))
+        pred_lists = imap(sorted, [self._preds, other.predecessors])
+        return eq(*criteria) and all(imap(operator.is_, *pred_lists))
 
     def __ne__(self, other):
         """Test if the two functional units are different.
@@ -316,7 +316,7 @@ class ProcessorDesc(object):
         `rhs_units` is the right hand side list.
 
         """
-        return eq(*(imap(cls._sorted_units, [lhs_units, rhs_units])))
+        return eq(*(imap(sorted_units, [lhs_units, rhs_units])))
 
     @staticmethod
     def _sorted_models(models):
@@ -326,15 +326,6 @@ class ProcessorDesc(object):
 
         """
         return sorted(models, key=lambda model: model.name)
-
-    @staticmethod
-    def _sorted_units(units):
-        """Create a sorted list of the given units.
-
-        `models` are the units to create a sorted list of.
-
-        """
-        return sorted(units, key=lambda unit: unit.model.name)
 
     @property
     def in_out_ports(self):
@@ -512,6 +503,15 @@ def load_proc_desc(raw_desc):
     proc_desc = _create_graph(raw_desc[unit_sect], raw_desc[data_path_sect])
     _chk_proc_desc(proc_desc)
     return _make_processor(proc_desc, _post_order(proc_desc))
+
+
+def sorted_units(units):
+    """Create a sorted list of the given units.
+
+    `models` are the units to create a sorted list of.
+
+    """
+    return sorted(units, key=lambda unit: unit.model.name)
 
 
 def _get_anal_graph(processor):

@@ -222,7 +222,7 @@ class TestProcessors:
         assert not proc_desc.in_out_ports
         internal_unit = UnitModel("middle", 1, [])
         assert (proc_desc.in_ports,
-                sorted(proc_desc.out_ports, key=lambda port: port.model.name),
+                processor_utils.sorted_units(proc_desc.out_ports),
                 proc_desc.internal_units) == ((UnitModel("input", 1, []),),
             [FuncUnit(UnitModel("output 1", 1, []), proc_desc.in_ports),
              FuncUnit(UnitModel("output 2", 1, []), [proc_desc.internal_units[
