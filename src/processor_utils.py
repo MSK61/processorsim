@@ -49,6 +49,7 @@ from networkx import DiGraph
 import operator
 from operator import itemgetter
 # unit attributes
+_UNIT_CAPS_KEY = "capabilities"
 _UNIT_NAME_KEY = "name"
 _UNIT_WIDTH_KEY = "width"
 
@@ -347,7 +348,7 @@ class UnitModel(object):
         """
         self._name = name
         self._width = width
-        self._capabilities = frozenset(capabilities)
+        self._capabilities = tuple(capabilities)
 
     def __eq__(self, other):
         """Test if the two functional unit models are identical.
@@ -439,6 +440,19 @@ class _IndexedSet:
         self._std_form_map[self._index_func(elem)] = elem
 
 
+class _LowerIndexSet(_IndexedSet):
+
+    """Lower-case index set"""
+
+    def __init__(self):
+        """Create a set with a lower-case indexing function.
+
+        `self` is this set.
+
+        """
+        _IndexedSet.__init__(self, str.lower)
+
+
 def load_proc_desc(raw_desc):
     """Transform the given raw description into a processor one.
 
@@ -452,8 +466,7 @@ def load_proc_desc(raw_desc):
     data_path_sect = "dataPath"
     proc_desc = _create_graph(raw_desc[unit_sect], raw_desc[data_path_sect])
     _chk_proc_desc(proc_desc)
-    name_caps = imap(_get_name_caps, raw_desc[unit_sect])
-    return _make_processor(proc_desc, _post_order(proc_desc, dict(name_caps)))
+    return _make_processor(proc_desc, _post_order(proc_desc))
 
 
 def _get_anal_graph(processor):
@@ -472,17 +485,6 @@ def _get_anal_graph(processor):
     width_graph.add_edges_from(imap(
         lambda edge: itemgetter(*edge)(new_nodes), processor.edges_iter()))
     return width_graph
-
-
-def _get_name_caps(unit_desc):
-    """Create an entry for a unit and its capabilities.
-
-    `unit_desc` is the description to create a capability entry from.
-    The function returns a tuple of the unit name and its capabilities.
-
-    """
-    unit_caps_key = "capabilities"
-    return unit_desc[_UNIT_NAME_KEY], unit_desc[unit_caps_key]
 
 
 def _get_port(degrees):
@@ -519,11 +521,11 @@ def _get_std_edge(edge, unit_registry):
     return imap(lambda unit: _get_unit_name(unit, unit_registry), edge)
 
 
-def _get_unit_entry(width, name, capabilities):
+def _get_unit_entry(name, width, capabilities):
     """Create a unit map entry from the given attributes.
 
-    `width` is the unit capacity.
     `name` is the unit name.
+    `width` is the unit capacity.
     `capabilities` are the unit capabilities.
     The function returns a tuple of the unit name and model.
 
@@ -562,6 +564,26 @@ def _set_capacities(graph, cap_edges):
             imap(lambda unit: graph.node[unit][_UNIT_WIDTH_KEY], cur_edge))
 
 
+def _add_capability(unit, cap, cap_list, cap_registry):
+    """Add a capability to the given unit.
+
+    `unit` is the unit to add the capability to.
+    `cap` is the capability to add.
+    `cap_list` is the list of capabilities in the given unit.
+    `cap_registry` is the store of previously added capabilities in the
+                   given unit.
+
+    """
+    old_cap = cap_registry.get(cap)
+
+    if old_cap is None:
+        _add_new_cap(cap, cap_list, cap_registry)
+    else:
+        logging.warning(
+            "Capability {} previously added as {} for unit {}, ignoring...",
+            cap, old_cap, unit)
+
+
 def _add_edge(processor, edge, unit_registry, edge_registry):
     """Add an edge to a processor.
 
@@ -590,6 +612,19 @@ def _add_edge(processor, edge, unit_registry, edge_registry):
     edge_registry.add(edge)
 
 
+def _add_new_cap(cap, cap_list, cap_registry):
+    """Add a new capability to the given list and registry.
+
+    `cap` is the capability to add.
+    `cap_list` is the list of capabilities in a unit.
+    `cap_registry` is the store of previously added capabilities in the
+                   unit whose capability list is given.
+
+    """
+    cap_list.append(cap)
+    cap_registry.add(cap)
+
+
 def _add_unit(processor, unit, unit_registry):
     """Add a functional unit to a processor.
 
@@ -608,8 +643,14 @@ def _add_unit(processor, unit, unit_registry):
                 DupElemError.NEW_ELEM_IDX, DupElemError.OLD_ELEM_IDX),
             old_name, unit[_UNIT_NAME_KEY])
 
-    processor.add_node(unit[_UNIT_NAME_KEY], width=unit[_UNIT_WIDTH_KEY])
+    processor.add_node(
+        unit[_UNIT_NAME_KEY], width=unit[_UNIT_WIDTH_KEY], capabilities=[])
     unit_registry.add(unit[_UNIT_NAME_KEY])
+    cap_registry = _LowerIndexSet()
+
+    for cur_cap in unit[_UNIT_CAPS_KEY]:
+        _add_capability(unit[_UNIT_NAME_KEY], cur_cap, processor.node[
+            unit[_UNIT_NAME_KEY]][_UNIT_CAPS_KEY], cap_registry)
 
 
 def _analyze_width(processor):
@@ -753,7 +794,7 @@ def _create_graph(units, links):
 
     """
     flow_graph = DiGraph()
-    unit_registry = _IndexedSet(str.lower)
+    unit_registry = _LowerIndexSet()
     edge_registry = _IndexedSet(
         lambda edge: tuple(imap(unit_registry.get, edge)))
 
@@ -813,18 +854,17 @@ def _out_port(graph):
     return _get_port(graph.out_degree_iter())
 
 
-def _post_order(graph, capabilities):
+def _post_order(graph):
     """Create a post-order for the given processor.
 
     `graph` is the processor.
-    `capabilities` are the capabilities of the functional units.
     The function returns a list of the processor functional units in
     post-order.
 
     """
-    unit_map = dict(
-        imap(lambda unit_entry: _get_unit_entry(graph.node[unit_entry[0]][
-            _UNIT_WIDTH_KEY], *unit_entry), capabilities.iteritems()))
+    unit_map = dict(imap(lambda unit:
+        _get_unit_entry(unit, graph.node[unit][_UNIT_WIDTH_KEY],
+                        graph.node[unit][_UNIT_CAPS_KEY]), graph.nodes_iter()))
     return map(lambda name:
         FuncUnit(unit_map[name], _get_preds(graph, name, unit_map)),
         networkx.dfs_postorder_nodes(graph))

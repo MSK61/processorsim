@@ -41,7 +41,7 @@
 #
 ############################################################
 
-import itertools
+from itertools import imap
 import mock
 import networkx
 import os.path
@@ -51,6 +51,28 @@ import test_env
 import processor_utils
 from processor_utils import FuncUnit, ProcessorDesc, UnitModel
 import yaml
+
+class TestCaps:
+
+    """Test case for loading capabilities"""
+
+    @mark.parametrize("in_file, capabilities", [
+        ("twoCapabilitiesWithSameNameAndCaseInOneUnit.yaml", ["ALU"]),
+        ("twoCapabilitiesWithSameNameAndDifferentCaseInOneUnit.yaml",
+         ["ALU", "alu"])])
+    def test_two_units_with_same_name_are_detected(
+        self, in_file, capabilities):
+        """Test loading two capabilities with the same name in one unit.
+
+        `self` is this test case.
+        `capabilities` are the identical capabilities.
+
+        """
+        with mock.patch("logging.warning") as warn_mock:
+            assert _read_file(in_file) == ProcessorDesc(
+                [], [], [UnitModel("fullSys", 1, ["ALU"])], [])
+        _chk_warn(capabilities, warn_mock)
+
 
 class TestLoop:
 
@@ -145,22 +167,7 @@ class TestEdges:
         """
         with mock.patch("logging.warning") as warn_mock:
             _chk_two_units(_read_file(in_file))
-        self._chk_edge_warn(edges, warn_mock)
-
-    @staticmethod
-    def _chk_edge_warn(edges, warn_mock):
-        """Verify edges in a warning message.
-
-        `edges` are the edges to assess.
-        `warn_mock` is the warning function mock.
-        The method asserts that all edges exist in the constructed
-        warning message.
-
-        """
-        assert warn_mock.call_args
-        warn_msg = warn_mock.call_args[0][0].format(
-            *(warn_mock.call_args[0][1 :]), **(warn_mock.call_args[1]))
-        assert all(itertools.imap(lambda edge: str(edge) in warn_msg, edges))
+        _chk_warn(imap(str, edges), warn_mock)
 
 
 class TestProcessors:
@@ -294,6 +301,21 @@ def _chk_two_units(processor):
     """
     assert processor == ProcessorDesc([UnitModel("input", 1, [])],
         [FuncUnit(UnitModel("output", 1, []), processor.in_ports)], [], [])
+
+
+def _chk_warn(tokens, warn_mock):
+    """Verify tokens in a warning message.
+
+    `tokens` are the toekens to assess.
+    `warn_mock` is the warning function mock.
+    The method asserts that all tokens exist in the constructed warning
+    message.
+
+    """
+    assert warn_mock.call_args
+    warn_msg = warn_mock.call_args[0][0].format(
+        *(warn_mock.call_args[0][1 :]), **(warn_mock.call_args[1]))
+    assert all(imap(lambda cap: cap in warn_msg, tokens))
 
 
 def _read_file(file_name):
