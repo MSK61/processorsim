@@ -71,8 +71,7 @@ class TestCaps:
 
         """
         with mock.patch("logging.warning") as warn_mock:
-            assert _read_file(in_file) == ProcessorDesc(
-                [], [], [UnitModel("fullSys", 1, ["ALU"])], [])
+            _chk_one_unit(_read_file(in_file))
         _chk_warn(capabilities, warn_mock.call_args)
 
 
@@ -247,8 +246,7 @@ class TestProcessors:
         `self` is this test case.
 
         """
-        assert _read_file("singleUnitProcessor.yaml") == ProcessorDesc(
-            [], [], [UnitModel("fullSys", 1, ["ALU"])], [])
+        _chk_one_unit(_read_file("singleUnitProcessor.yaml"))
 
 
 class TestUnits:
@@ -320,6 +318,16 @@ def _chk_error(verify_points, error):
 
     for cur_point in verify_points:
         cur_point.check(error, idx)
+
+
+def _chk_one_unit(processor):
+    """Verify a single unit processor.
+
+    `processor` is the single unit processor to assess.
+
+    """
+    assert processor == ProcessorDesc(
+        [], [], [UnitModel("fullSys", 1, ["ALU"])], [])
 
 
 def _chk_two_units(processor):
