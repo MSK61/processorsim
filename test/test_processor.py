@@ -71,7 +71,7 @@ class TestCaps:
         with mock.patch("logging.warning") as warn_mock:
             assert _read_file(in_file) == ProcessorDesc(
                 [], [], [UnitModel("fullSys", 1, ["ALU"])], [])
-        _chk_warn(capabilities, warn_mock)
+        _chk_warn(capabilities, warn_mock.call_args)
 
 
 class TestLoop:
@@ -167,7 +167,7 @@ class TestEdges:
         """
         with mock.patch("logging.warning") as warn_mock:
             _chk_two_units(_read_file(in_file))
-        _chk_warn(imap(str, edges), warn_mock)
+        _chk_warn(imap(str, edges), warn_mock.call_args)
 
 
 class TestProcessors:
@@ -303,18 +303,17 @@ def _chk_two_units(processor):
         [FuncUnit(UnitModel("output", 1, []), processor.in_ports)], [], [])
 
 
-def _chk_warn(tokens, warn_mock):
+def _chk_warn(tokens, warn_call):
     """Verify tokens in a warning message.
 
-    `tokens` are the toekens to assess.
-    `warn_mock` is the warning function mock.
+    `tokens` are the tokens to assess.
+    `warn_call` is the warning function mock call.
     The method asserts that all tokens exist in the constructed warning
     message.
 
     """
-    assert warn_mock.call_args
-    warn_msg = warn_mock.call_args[0][0].format(
-        *(warn_mock.call_args[0][1 :]), **(warn_mock.call_args[1]))
+    assert warn_call
+    warn_msg = warn_call[0][0].format(*(warn_call[0][1 :]), **(warn_call[1]))
     assert all(imap(lambda cap: cap in warn_msg, tokens))
 
 
