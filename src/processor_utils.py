@@ -605,11 +605,11 @@ def _add_edge(processor, edge, unit_registry, edge_registry):
     processor.add_edge(*(_get_std_edge(edge, unit_registry)))
     old_edge = edge_registry.get(edge)
 
-    if old_edge is not None:
+    if old_edge is None:
+        edge_registry.add(edge)
+    else:
         logging.warning(
             "Edge {} previously added as {}, ignoring...", edge, old_edge)
-
-    edge_registry.add(edge)
 
 
 def _add_new_cap(cap, cap_list, cap_registry):

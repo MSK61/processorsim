@@ -41,6 +41,7 @@
 #
 ############################################################
 
+import itertools
 from itertools import imap
 import mock
 import networkx
@@ -150,6 +151,23 @@ class TestEdges:
         exChk = raises(processor_utils.BadEdgeError, _read_file, in_file)
         _chk_error([_VerifyPoint(exChk.value.edge, bad_edge)], exChk.value)
 
+    def test_three_identical_edges_are_detected(self):
+        """Test loading three identical edges with the same units.
+
+        `self` is this test case.
+
+        """
+        with mock.patch("logging.warning") as warn_mock:
+            _chk_two_units(_read_file(
+                "3EdgesWithSameUnitNamesAndLowerThenUpperThenMixedCase.yaml"))
+        assert len(warn_mock.call_args_list) == 2
+        chk_entries = itertools.izip(warn_mock.call_args_list, [
+            [["input", "output"], ["INPUT", "OUTPUT"]],
+            [["input", "output"], ["Input", "Output"]]])
+
+        for cur_call, edge_pair in chk_entries:
+            self._chk_edge_warn(edge_pair, cur_call)
+
     @mark.parametrize("in_file, edges",
                       [("twoEdgesWithSameUnitNamesAndCase.yaml",
                         [["input", "output"]]),
@@ -167,7 +185,19 @@ class TestEdges:
         """
         with mock.patch("logging.warning") as warn_mock:
             _chk_two_units(_read_file(in_file))
-        _chk_warn(imap(str, edges), warn_mock.call_args)
+        self._chk_edge_warn(edges, warn_mock.call_args)
+
+    @staticmethod
+    def _chk_edge_warn(edges, warn_call):
+        """Verify edges in a warning message.
+
+        `edges` are the edges to assess.
+        `warn_call` is the warning function mock call.
+        The method asserts that all edges exist in the constructed
+        warning message.
+
+        """
+        _chk_warn(imap(str, edges), warn_call)
 
 
 class TestProcessors:
