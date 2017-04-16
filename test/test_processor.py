@@ -61,7 +61,7 @@ class TestCaps:
         ("twoCapabilitiesWithSameNameAndCaseInOneUnit.yaml", ["ALU"]),
         ("twoCapabilitiesWithSameNameAndDifferentCaseInOneUnit.yaml",
          ["ALU", "alu"])])
-    def test_two_units_with_same_name_are_detected(
+    def test_two_capabilities_with_same_name_in_one_unit_are_detected(
         self, in_file, capabilities):
         """Test loading two capabilities with the same name in one unit.
 
