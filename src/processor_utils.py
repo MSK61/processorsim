@@ -670,6 +670,20 @@ def _add_new_cap(cap, cap_list, cap_registry):
     cap_registry.add(cap)
 
 
+def _add_port_link(graph, old_port, new_port, link):
+    """Add a link between old and new ports.
+
+    `graph` is the graph containing ports.
+    `old_port` is the old port.
+    `new_port` is the new port.
+    `link` is the link connecting the two ports.
+
+    """
+    graph.node[new_port][_UNIT_WIDTH_KEY] += graph.node[old_port][
+        _UNIT_WIDTH_KEY]
+    graph.add_edge(*link)
+
+
 def _add_unit(processor, unit, unit_registry):
     """Add a functional unit to a processor.
 
@@ -880,41 +894,6 @@ def _in_width(graph):
     return graph.node[_in_port(graph)][_UNIT_WIDTH_KEY]
 
 
-def _min_width(processor):
-    """Calculate the minimum bus width for the processor.
-
-    `processor` is the processor to get whose minimum bus width.
-
-    """
-    return networkx.maximum_flow_value(
-        processor, _in_port(processor), _out_port(processor))
-
-
-def _out_port(graph):
-    """Find the output port of the graph.
-
-    `graph` is the graph to get whose output port.
-
-    """
-    return _get_port(graph.out_degree_iter())
-
-
-def _post_order(graph):
-    """Create a post-order for the given processor.
-
-    `graph` is the processor.
-    The function returns a list of the processor functional units in
-    post-order.
-
-    """
-    unit_map = dict(imap(lambda unit:
-        _get_unit_entry(unit, graph.node[unit][_UNIT_WIDTH_KEY],
-                        graph.node[unit][_UNIT_CAPS_KEY]), graph.nodes_iter()))
-    return map(lambda name:
-        FuncUnit(unit_map[name], _get_preds(graph, name, unit_map)),
-        networkx.dfs_postorder_nodes(graph))
-
-
 def _make_processor(proc_graph, post_ord):
     """Create a processor description from the given units.
 
@@ -942,6 +921,16 @@ def _make_processor(proc_graph, post_ord):
     return ProcessorDesc(in_ports, out_ports, in_out_ports, internal_units)
 
 
+def _min_width(processor):
+    """Calculate the minimum bus width for the processor.
+
+    `processor` is the processor to get whose minimum bus width.
+
+    """
+    return networkx.maximum_flow_value(
+        processor, _in_port(processor), _out_port(processor))
+
+
 def _mov_out_link(graph, link, new_node):
     """Move an outgoing link from an old node to a new one.
 
@@ -964,6 +953,31 @@ def _mov_out_links(graph, out_links, new_node):
     """
     for cur_link in out_links:
         _mov_out_link(graph, cur_link, new_node)
+
+
+def _out_port(graph):
+    """Find the output port of the graph.
+
+    `graph` is the graph to get whose output port.
+
+    """
+    return _get_port(graph.out_degree_iter())
+
+
+def _post_order(graph):
+    """Create a post-order for the given processor.
+
+    `graph` is the processor.
+    The function returns a list of the processor functional units in
+    post-order.
+
+    """
+    unit_map = dict(imap(lambda unit:
+        _get_unit_entry(unit, graph.node[unit][_UNIT_WIDTH_KEY],
+                        graph.node[unit][_UNIT_CAPS_KEY]), graph.nodes_iter()))
+    return map(lambda name:
+        FuncUnit(unit_map[name], _get_preds(graph, name, unit_map)),
+        networkx.dfs_postorder_nodes(graph))
 
 
 def _split_node(graph, old_node, new_node):
@@ -996,20 +1010,6 @@ def _split_nodes(graph):
         if in_deg != 1 and out_degrees[unit] != 1 and (
             in_deg or out_degrees[unit]):
             _split_node(graph, unit, ext_base + unit)
-
-
-def _add_port_link(graph, old_port, new_port, link):
-    """Add a link between old and new ports.
-
-    `graph` is the graph containing ports.
-    `old_port` is the old port.
-    `new_port` is the new port.
-    `link` is the link connecting the two ports.
-
-    """
-    graph.node[new_port][_UNIT_WIDTH_KEY] += graph.node[old_port][
-        _UNIT_WIDTH_KEY]
-    graph.add_edge(*link)
 
 
 def _unify_ports(graph, ports, edge_func):
