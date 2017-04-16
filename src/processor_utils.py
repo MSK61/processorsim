@@ -47,7 +47,7 @@ import logging
 import networkx
 from networkx import DiGraph
 import operator
-from operator import itemgetter
+from operator import eq, itemgetter
 # unit attributes
 _UNIT_CAPS_KEY = "capabilities"
 _UNIT_NAME_KEY = "name"
@@ -219,8 +219,10 @@ class FuncUnit(object):
         `other` is the other functional unit.
 
         """
-        return (self._model, len(self._preds)) == (
-            other.model, len(other.predecessors)) and all(imap(
+        criteria = imap(
+            lambda attrs: (attrs[0], len(attrs[1])),
+            [(self._model, self._preds), (other.model, other.predecessors)])
+        return eq(*criteria) and all(imap(
             operator.is_, sorted(self._preds), sorted(other.predecessors)))
 
     def __ne__(self, other):
@@ -279,10 +281,11 @@ class ProcessorDesc(object):
         `other` is the other processor.
 
         """
-        return (
-            self._in_ports, self._out_ports, self._in_out_ports,
-            self._internal_units) == (other.in_ports, other.out_ports,
-                                      other.in_out_ports, other.internal_units)
+        return self._equal_models(
+            self._in_ports, other.in_ports) and self._equal_units(
+            self._out_ports, other.out_ports) and self._equal_models(
+            self._in_out_ports, other.in_out_ports) and self._equal_units(
+            self._internal_units, other.internal_units)
 
     def __ne__(self, other):
         """Test if the two processors are different.
@@ -292,6 +295,46 @@ class ProcessorDesc(object):
 
         """
         return not self == other
+
+    @classmethod
+    def _equal_models(cls, lhs_models, rhs_models):
+        """Test if the two unit model lists are identical.
+
+        `cls` is this class.
+        `lhs_models` is the left hand side list.
+        `rhs_models` is the right hand side list.
+
+        """
+        return eq(*(imap(cls._sorted_models, [lhs_models, rhs_models])))
+
+    @classmethod
+    def _equal_units(cls, lhs_units, rhs_units):
+        """Test if the two unit lists are identical.
+
+        `cls` is this class.
+        `lhs_units` is the left hand side list.
+        `rhs_units` is the right hand side list.
+
+        """
+        return eq(*(imap(cls._sorted_units, [lhs_units, rhs_units])))
+
+    @staticmethod
+    def _sorted_models(models):
+        """Create a sorted list of the given models.
+
+        `models` are the models to create a sorted list of.
+
+        """
+        return sorted(models, key=lambda model: model.name)
+
+    @staticmethod
+    def _sorted_units(units):
+        """Create a sorted list of the given units.
+
+        `models` are the units to create a sorted list of.
+
+        """
+        return sorted(units, key=lambda unit: unit.model.name)
 
     @property
     def in_out_ports(self):
@@ -357,8 +400,10 @@ class UnitModel(object):
         `other` is the other functional unit model.
 
         """
-        return (self._name, self._width, self._capabilities) == (
-            other.name, other.width, other.capabilities)
+        criteria = imap(lambda attrs: attrs[: -1] + (sorted(attrs[-1]),),
+                        [(self._name, self._width, self._capabilities),
+                            (other.name, other.width, other.capabilities)])
+        return eq(*criteria)
 
     def __ne__(self, other):
         """Test if the two functional unit models are different.
