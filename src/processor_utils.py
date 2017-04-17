@@ -234,6 +234,15 @@ class FuncUnit(object):
         """
         return not self == other
 
+    def __repr__(self):
+        """Return the official string of this functional unit.
+
+        `self` is this functional unit.
+
+        """
+        return '{}({}, {})'.format(
+            type(self).__name__, self._model, _sorted_models(self._preds))
+
     @property
     def model(self):
         """Model of this functional unit
@@ -296,6 +305,16 @@ class ProcessorDesc(object):
         """
         return not self == other
 
+    def __repr__(self):
+        """Return the official string of this processor.
+
+        `self` is this processor.
+
+        """
+        return "{}({}, {}, {}, {})".format(type(self).__name__, _sorted_models(
+            self._in_ports), sorted_units(self._out_ports), _sorted_models(
+            self._in_out_ports), sorted_units(self._internal_units))
+
     @classmethod
     def _equal_models(cls, lhs_models, rhs_models):
         """Test if the two unit model lists are identical.
@@ -305,7 +324,7 @@ class ProcessorDesc(object):
         `rhs_models` is the right hand side list.
 
         """
-        return eq(*(imap(cls._sorted_models, [lhs_models, rhs_models])))
+        return eq(*(imap(_sorted_models, [lhs_models, rhs_models])))
 
     @classmethod
     def _equal_units(cls, lhs_units, rhs_units):
@@ -317,15 +336,6 @@ class ProcessorDesc(object):
 
         """
         return eq(*(imap(sorted_units, [lhs_units, rhs_units])))
-
-    @staticmethod
-    def _sorted_models(models):
-        """Create a sorted list of the given models.
-
-        `models` are the models to create a sorted list of.
-
-        """
-        return sorted(models, key=lambda model: model.name)
 
     @property
     def in_out_ports(self):
@@ -413,6 +423,15 @@ class UnitModel(object):
         """
         return hash(self._name)
 
+    def __repr__(self):
+        """Return the official string of this functional unit model.
+
+        `self` is this functional unit model.
+
+        """
+        return '{}({}, {}, {})'.format(type(self).__name__, repr(self._name),
+                                       self._width, sorted(self._capabilities))
+
     @property
     def capabilities(self):
         """Unit model capabilities
@@ -439,6 +458,40 @@ class UnitModel(object):
 
         """
         return self._width
+
+
+class _CapabilityInfo(object):
+
+    """Unit capability information"""
+
+    def __init__(self, name, unit):
+        """Set capability information.
+
+        `self` is this capability.
+        `name` is the capability name.
+        `unit` is the unit where the capability is defined.
+
+        """
+        self._name = name
+        self._unit = unit
+
+    @property
+    def name(self):
+        """Capability name
+
+        `self` is this capability.
+
+        """
+        return self._name
+
+    @property
+    def unit(self):
+        """Unit where the capability is defined
+
+        `self` is this capability.
+
+        """
+        return self._unit
 
 
 class _IndexedSet:
@@ -609,20 +662,23 @@ def _set_capacities(graph, cap_edges):
             imap(lambda unit: graph.node[unit][_UNIT_WIDTH_KEY], cur_edge))
 
 
-def _add_capability(unit, cap, cap_list, cap_registry):
+def _add_capability(unit, cap, cap_list, unit_cap_reg, global_cap_reg):
     """Add a capability to the given unit.
 
     `unit` is the unit to add the capability to.
     `cap` is the capability to add.
     `cap_list` is the list of capabilities in the given unit.
-    `cap_registry` is the store of previously added capabilities in the
+    `unit_cap_reg` is the store of previously added capabilities in the
                    given unit.
+    `global_cap_reg` is the store of added capabilities across all units
+                     so far.
 
     """
-    old_cap = cap_registry.get(cap)
+    old_cap = unit_cap_reg.get(cap)
 
     if old_cap is None:
-        _add_new_cap(cap, cap_list, cap_registry)
+        _add_new_cap(
+            _CapabilityInfo(cap, unit), cap_list, unit_cap_reg, global_cap_reg)
     else:
         logging.warning(
             "Capability {} previously added as {} for unit {}, ignoring...",
@@ -657,17 +713,28 @@ def _add_edge(processor, edge, unit_registry, edge_registry):
             "Edge {} previously added as {}, ignoring...", edge, old_edge)
 
 
-def _add_new_cap(cap, cap_list, cap_registry):
+def _add_new_cap(cap, cap_list, unit_cap_reg, global_cap_reg):
     """Add a new capability to the given list and registry.
 
     `cap` is the capability to add.
     `cap_list` is the list of capabilities in a unit.
-    `cap_registry` is the store of previously added capabilities in the
+    `unit_cap_reg` is the store of previously added capabilities in the
                    unit whose capability list is given.
+    `global_cap_reg` is the store of added capabilities across all units
+                     so far.
 
     """
-    cap_list.append(cap)
-    cap_registry.add(cap)
+    std_cap = global_cap_reg.get(cap)
+
+    if std_cap is None:
+        std_cap = _add_to_set(global_cap_reg, cap)
+    elif std_cap.name != cap.name:
+        logging.warning("Capability {} in unit {} previously defined as {} in "
+                        "unit {}, using original definition...", cap.name,
+                        cap.unit, std_cap.name, std_cap.unit)
+
+    cap_list.append(std_cap.name)
+    unit_cap_reg.add(cap.name)
 
 
 def _add_port_link(graph, old_port, new_port, link):
@@ -684,12 +751,24 @@ def _add_port_link(graph, old_port, new_port, link):
     graph.add_edge(*link)
 
 
-def _add_unit(processor, unit, unit_registry):
+def _add_to_set(elem_set, elem):
+        """Add an element to the given set.
+
+        `elem_set` is the set to add the element to.
+        `elem` is the element to add.
+
+        """
+        elem_set.add(elem)
+        return elem
+
+
+def _add_unit(processor, unit, unit_registry, cap_registry):
     """Add a functional unit to a processor.
 
     `processor` is the processor to add the unit to.
     `unit` is the functional unit to add.
     `unit_registry` is the store of previously added units.
+    `cap_registry` is the store of previously added capabilities.
     The function raises a DupElemError if a unit with the same name was
     previously added to the processor.
 
@@ -705,11 +784,11 @@ def _add_unit(processor, unit, unit_registry):
     processor.add_node(
         unit[_UNIT_NAME_KEY], width=unit[_UNIT_WIDTH_KEY], capabilities=[])
     unit_registry.add(unit[_UNIT_NAME_KEY])
-    cap_registry = _LowerIndexSet()
+    unit_cap_reg = _LowerIndexSet()
 
     for cur_cap in unit[_UNIT_CAPS_KEY]:
         _add_capability(unit[_UNIT_NAME_KEY], cur_cap, processor.node[
-            unit[_UNIT_NAME_KEY]][_UNIT_CAPS_KEY], cap_registry)
+            unit[_UNIT_NAME_KEY]][_UNIT_CAPS_KEY], unit_cap_reg, cap_registry)
 
 
 def _analyze_width(processor):
@@ -856,9 +935,10 @@ def _create_graph(units, links):
     unit_registry = _LowerIndexSet()
     edge_registry = _IndexedSet(
         lambda edge: tuple(imap(unit_registry.get, edge)))
+    cap_registry = _IndexedSet(lambda cap: cap.name.lower())
 
     for cur_unit in units:
-        _add_unit(flow_graph, cur_unit, unit_registry)
+        _add_unit(flow_graph, cur_unit, unit_registry, cap_registry)
 
     for cur_link in links:
         _add_edge(flow_graph, cur_link, unit_registry, edge_registry)
@@ -978,6 +1058,15 @@ def _post_order(graph):
     return map(lambda name:
         FuncUnit(unit_map[name], _get_preds(graph, name, unit_map)),
         networkx.dfs_postorder_nodes(graph))
+
+
+def _sorted_models(models):
+    """Create a sorted list of the given models.
+
+    `models` are the models to create a sorted list of.
+
+    """
+    return sorted(models, key=lambda model: model.name)
 
 
 def _split_node(graph, old_node, new_node):

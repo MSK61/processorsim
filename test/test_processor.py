@@ -57,6 +57,19 @@ class TestCaps:
 
     """Test case for loading capabilities"""
 
+    def test_same_capability_with_different_case_in_two_units_is_detected(
+        self):
+        """Test loading a capability with different cases in two units.
+
+        `self` is this test case.
+
+        """
+        in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits.yaml"
+        with mock.patch("logging.warning") as warn_mock:
+            assert _read_file(in_file) == ProcessorDesc([], [], [UnitModel(
+                "core 1", 1, ["ALU"]), UnitModel("core 2", 1, ["ALU"])], [])
+        _chk_warn(["ALU", "core 1", "alu", "core 2"], warn_mock.call_args)
+
     @mark.parametrize("in_file, capabilities", [
         ("twoCapabilitiesWithSameNameAndCaseInOneUnit.yaml", ["ALU"]),
         ("twoCapabilitiesWithSameNameAndDifferentCaseInOneUnit.yaml",
