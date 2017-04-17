@@ -50,7 +50,7 @@ import pytest
 from pytest import mark, raises
 import test_env
 import processor_utils
-from processor_utils import FuncUnit, ProcessorDesc, UnitModel
+from processor_utils import exceptions, FuncUnit, ProcessorDesc, UnitModel
 import yaml
 
 class TestCaps:
@@ -146,8 +146,8 @@ class TestEdges:
         `self` is this test case.
 
         """
-        exChk = raises(processor_utils.UndefElemError, _read_file,
-                       "edgeWithUnknownUnit.yaml")
+        exChk = raises(
+            exceptions.UndefElemError, _read_file, "edgeWithUnknownUnit.yaml")
         _chk_error([_VerifyPoint(exChk.value.element, "input")], exChk.value)
 
     @mark.parametrize("in_file, bad_edge", [("emptyEdge.yaml", []),
@@ -161,7 +161,7 @@ class TestEdges:
         `bad_edge` is the bad edge.
 
         """
-        exChk = raises(processor_utils.BadEdgeError, _read_file, in_file)
+        exChk = raises(exceptions.BadEdgeError, _read_file, in_file)
         _chk_error([_VerifyPoint(exChk.value.edge, bad_edge)], exChk.value)
 
     def test_three_identical_edges_are_detected(self):
@@ -272,8 +272,7 @@ class TestUnits:
         `self` is this test case.
 
         """
-        raises(
-            processor_utils.EmptyProcError, _read_file, "emptyProcessor.yaml")
+        raises(exceptions.EmptyProcError, _read_file, "emptyProcessor.yaml")
 
     @mark.parametrize(
         "in_file, dup_unit", [("twoUnitsWithSameNameAndCase.yaml", "fullSys"),
@@ -287,7 +286,7 @@ class TestUnits:
         `dup_unit` is the duplicate unit.
 
         """
-        exChk = raises(processor_utils.DupElemError, _read_file, in_file)
+        exChk = raises(exceptions.DupElemError, _read_file, in_file)
         _chk_error(
             [_VerifyPoint(exChk.value.new_element, dup_unit),
              _VerifyPoint(exChk.value.old_element, "fullSys")], exChk.value)
@@ -308,7 +307,7 @@ class TestWidth:
         `in_file` is the processor description file.
 
         """
-        exChk = raises(processor_utils.TightWidthError, _read_file, in_file)
+        exChk = raises(exceptions.TightWidthError, _read_file, in_file)
         _chk_error([_VerifyPoint(exChk.value.actual_width, 1),
                     _VerifyPoint(exChk.value.min_width, 2)], exChk.value)
 

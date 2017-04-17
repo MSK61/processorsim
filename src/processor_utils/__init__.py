@@ -40,6 +40,8 @@
 #
 ############################################################
 
+import exceptions
+from exceptions import DupElemError, TightWidthError
 import itertools
 from itertools import ifilterfalse, imap
 import logging
@@ -47,153 +49,11 @@ import networkx
 from networkx import DiGraph
 import operator
 from operator import eq, itemgetter
+__all__ = ["exceptions"]
 # unit attributes
 _UNIT_CAPS_KEY = "capabilities"
 _UNIT_NAME_KEY = "name"
 _UNIT_WIDTH_KEY = "width"
-
-# exception types
-class BadEdgeError(RuntimeError):
-
-    """Bad edge error"""
-
-    def __init__(self, msg_tmpl, edge):
-        """Create a bad edge error.
-
-        `self` is this bad edge error.
-        `msg_tmpl` is the error format message taking the bad edge as a
-                   positional argument.
-        `edge` is the bad edge.
-
-        """
-        RuntimeError.__init__(self, msg_tmpl.format(edge))
-        self._edge = edge
-
-    @property
-    def edge(self):
-        """Bad edge
-
-        `self` is this bad edge error.
-
-        """
-        return self._edge
-
-
-class DupElemError(RuntimeError):
-
-    """Duplicate set element error"""
-
-    # parameter indices in format message
-    OLD_ELEM_IDX = 0
-
-    NEW_ELEM_IDX = 1
-
-    def __init__(self, msg_tmpl, old_elem, new_elem):
-        """Create a duplicate element error.
-
-        `self` is this duplicate element error.
-        `msg_tmpl` is the error format message taking in order the old
-                   and new elements as positional parameters.
-        `old_elem` is the element already existing.
-        `new_elem` is the element just discovered.
-
-        """
-        RuntimeError.__init__(self, msg_tmpl.format(old_elem, new_elem))
-        self._old_elem = old_elem
-        self._new_elem = new_elem
-
-    @property
-    def new_element(self):
-        """Duplicate element just discovered
-
-        `self` is this duplicate element error.
-
-        """
-        return self._new_elem
-
-    @property
-    def old_element(self):
-        """Element added before
-
-        `self` is this duplicate element error.
-
-        """
-        return self._old_elem
-
-
-class EmptyProcError(RuntimeError):
-
-    """Empty processor error"""
-
-
-class TightWidthError(RuntimeError):
-
-    """Tight bus width error"""
-
-    # parameter indices in format message
-    REAL_WIDTH_IDX = 0
-
-    MIN_WIDTH_IDX = 1
-
-    def __init__(self, msg_tmpl, actual_width, min_width):
-        """Create a tight bus width error.
-
-        `self` is this width error.
-        `msg_tmpl` is the error format message taking in order the
-                   actual and minimum bus widths as positional
-                   parameters.
-        `actual_width` is the violating width value.
-        `min_width` is the minimum allowed width.
-
-        """
-        RuntimeError.__init__(self, msg_tmpl.format(actual_width, min_width))
-        self._actual_width = actual_width
-        self._min_width = min_width
-
-    @property
-    def actual_width(self):
-        """Violating width
-
-        `self` is this tight bus width error.
-
-        """
-        return self._actual_width
-
-    @property
-    def min_width(self):
-        """Minimum allowed width
-
-        `self` is this tight bus width error.
-
-        """
-        return self._min_width
-
-
-class UndefElemError(RuntimeError):
-
-    """Unknown set element error"""
-
-    def __init__(self, msg_tmpl, elem):
-        """Create an unknown element error.
-
-        `self` is this unknown element error.
-        `msg_tmpl` is the error format message taking the unknown
-                   element as a positional argument.
-        `elem` is the unknown element.
-
-        """
-        RuntimeError.__init__(self, msg_tmpl.format(elem))
-        self._elem = elem
-
-    @property
-    def element(self):
-        """Unknown element
-
-        `self` is this unknown element error.
-
-        """
-        return self._elem
-
 
 class FuncUnit(object):
 
@@ -642,7 +502,7 @@ def _get_unit_name(unit, unit_registry):
     std_name = unit_registry.get(unit)
 
     if std_name is None:
-        raise UndefElemError("Undefined functional unit {}", unit)
+        raise exceptions.UndefElemError("Undefined functional unit {}", unit)
 
     return std_name
 
@@ -699,7 +559,7 @@ def _add_edge(processor, edge, unit_registry, edge_registry):
     good_edge_len = 2
 
     if len(edge) != good_edge_len:
-        raise BadEdgeError(
+        raise exceptions.BadEdgeError(
             "Edge {} doesn't connect exactly 2 functional units.", edge)
 
     processor.add_edge(*(_get_std_edge(edge, unit_registry)))
@@ -871,7 +731,7 @@ def _chk_empty_proc(processor):
 
     """
     if not processor:
-        raise EmptyProcError()
+        raise exceptions.EmptyProcError()
 
 
 def _chk_flow_vol(min_width, in_width):
