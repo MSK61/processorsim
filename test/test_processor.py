@@ -50,7 +50,8 @@ import pytest
 from pytest import mark, raises
 import test_env
 import processor_utils
-from processor_utils import exceptions, FuncUnit, ProcessorDesc, UnitModel
+from processor_utils import exceptions, ProcessorDesc
+from processor_utils.units import FuncUnit, UnitModel
 import yaml
 
 class TestCaps:
