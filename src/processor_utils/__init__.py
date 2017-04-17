@@ -40,7 +40,6 @@
 #
 ############################################################
 
-import exceptions
 from exceptions import DupElemError, TightWidthError
 import itertools
 from itertools import ifilterfalse, imap
@@ -50,7 +49,7 @@ from networkx import DiGraph
 import operator
 from operator import eq, itemgetter
 from sets import IndexedSet, LowerIndexSet
-__all__ = ["exceptions"]
+__all__ = ["exceptions", "units"]
 # unit attributes
 _UNIT_CAPS_KEY = "capabilities"
 _UNIT_NAME_KEY = "name"
