@@ -49,7 +49,8 @@ from networkx import DiGraph
 import operator
 from operator import eq, itemgetter
 from sets import IndexedSet, LowerIndexSet
-__all__ = ["exceptions", "units"]
+__all__ = [
+    "exceptions", "load_proc_desc", "ProcessorDesc", "sorted_units", "units"]
 # unit attributes
 _UNIT_CAPS_KEY = "capabilities"
 _UNIT_NAME_KEY = "name"
