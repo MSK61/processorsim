@@ -49,6 +49,7 @@ import networkx
 from networkx import DiGraph
 import operator
 from operator import eq, itemgetter
+from sets import IndexedSet, LowerIndexSet
 __all__ = ["exceptions"]
 # unit attributes
 _UNIT_CAPS_KEY = "capabilities"
@@ -201,54 +202,6 @@ class _CapabilityInfo(object):
 
         """
         return self._unit
-
-
-class _IndexedSet:
-
-    """Indexed set"""
-
-    def __init__(self, index_func):
-        """Create an indexed set.
-
-        `self` is this set.
-        `index_func` is the index calculation function.
-
-        """
-        self._index_func = index_func
-        self._std_form_map = {}
-
-    def get(self, elem):
-        """Retrieve the elem in this set matching the given one.
-
-        `self` is this set.
-        `elem` is the element to look up in this set.
-        The method returns the element in this set that matches the
-        given one, or None if none exists.
-
-        """
-        return self._std_form_map.get(self._index_func(elem))
-
-    def add(self, elem):
-        """Add the given element to this set.
-
-        `self` is this set.
-        `elem` is the element to add.
-
-        """
-        self._std_form_map[self._index_func(elem)] = elem
-
-
-class _LowerIndexSet(_IndexedSet):
-
-    """Lower-case index set"""
-
-    def __init__(self):
-        """Create a set with a lower-case indexing function.
-
-        `self` is this set.
-
-        """
-        _IndexedSet.__init__(self, str.lower)
 
 
 def load_proc_desc(raw_desc):
@@ -493,7 +446,7 @@ def _add_unit(processor, unit, unit_registry, cap_registry):
     processor.add_node(
         unit[_UNIT_NAME_KEY], width=unit[_UNIT_WIDTH_KEY], capabilities=[])
     unit_registry.add(unit[_UNIT_NAME_KEY])
-    unit_cap_reg = _LowerIndexSet()
+    unit_cap_reg = LowerIndexSet()
 
     for cur_cap in unit[_UNIT_CAPS_KEY]:
         _add_capability(unit[_UNIT_NAME_KEY], cur_cap, processor.node[
@@ -641,10 +594,10 @@ def _create_graph(units, links):
 
     """
     flow_graph = DiGraph()
-    unit_registry = _LowerIndexSet()
-    edge_registry = _IndexedSet(
+    unit_registry = LowerIndexSet()
+    edge_registry = IndexedSet(
         lambda edge: tuple(imap(unit_registry.get, edge)))
-    cap_registry = _IndexedSet(lambda cap: cap.name.lower())
+    cap_registry = IndexedSet(lambda cap: cap.name.lower())
 
     for cur_unit in units:
         _add_unit(flow_graph, cur_unit, unit_registry, cap_registry)
