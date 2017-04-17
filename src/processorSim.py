@@ -45,11 +45,11 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 ############################################################
 
-import compiler
 import itertools
 import logging
 import operator
 import processor
+import program_utils
 import sys
 import argparse
 # command-line option variables
@@ -106,9 +106,10 @@ def run(processor_file, program_file):
 
     """
     proc_desc = processor.read_processor(processor_file)
-    prog = compiler.read_program(program_file)
-    _print_sim_res(processor.simulate(compiler.compile(prog, proc_desc.isa),
-                                      proc_desc.hw_desc))
+    prog = program_utils.read_program(program_file)
+    _print_sim_res(
+        processor.simulate(
+            program_utils.compile(prog, proc_desc.isa), proc_desc.hw_desc))
 
 
 def _print_sim_res(sim_res):

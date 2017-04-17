@@ -42,7 +42,7 @@
 ############################################################
 
 import test_env
-import compiler
+import program_utils
 import unittest
 
 class ProgLoadTest(unittest.TestCase):
@@ -55,6 +55,7 @@ class ProgLoadTest(unittest.TestCase):
         `self` is this test case.
 
         """
+        program_utils.read_program(None)
 
 def main():
     """entry point for running test in this module"""

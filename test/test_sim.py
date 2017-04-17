@@ -42,8 +42,8 @@
 ############################################################
 
 import test_env
-import compiler
 import processor
+import program_utils
 import unittest
 
 class SimTest(unittest.TestCase):

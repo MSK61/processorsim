@@ -23,7 +23,7 @@
 #
 # program:      processor simulator
 #
-# file:         compiler.py
+# file:         program_utils.py
 #
 # function:     compilation services
 #
