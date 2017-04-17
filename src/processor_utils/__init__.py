@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""low-level processor utilities"""
+"""processor_utils package"""
 
 ############################################################
 #
@@ -23,12 +23,11 @@
 #
 # program:      processor simulator
 #
-# file:         processor_utils.py
+# file:         __init__.py
 #
-# function:     low-level processor loading utilities
+# function:     processor_utils package
 #
-# description:  loads different entities inside a processor description
-#               file
+# description:  processor_utils package export file
 #
 # author:       Mohammed El-Afifi (ME)
 #
