@@ -1,4 +1,5 @@
 networkx
 pytest-cov
 pytest-travis-fold
+python-coveralls
 PyYAML

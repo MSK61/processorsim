@@ -1,2 +1,3 @@
 language: python
 script: py.test --cov=src
+after_success: coveralls
