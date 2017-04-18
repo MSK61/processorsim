@@ -49,6 +49,7 @@ from networkx import DiGraph
 import operator
 from operator import eq, itemgetter
 from sets import IndexedSet, LowerIndexSet
+from units import sorted_models
 __all__ = [
     "exceptions", "load_proc_desc", "ProcessorDesc", "sorted_units", "units"]
 # unit attributes
@@ -105,8 +106,8 @@ class ProcessorDesc(object):
         `self` is this processor.
 
         """
-        return "{}({}, {}, {}, {})".format(type(self).__name__, _sorted_models(
-            self._in_ports), sorted_units(self._out_ports), _sorted_models(
+        return "{}({}, {}, {}, {})".format(type(self).__name__, sorted_models(
+            self._in_ports), sorted_units(self._out_ports), sorted_models(
             self._in_out_ports), sorted_units(self._internal_units))
 
     @classmethod
@@ -118,7 +119,7 @@ class ProcessorDesc(object):
         `rhs_models` is the right hand side list.
 
         """
-        return eq(*(imap(_sorted_models, [lhs_models, rhs_models])))
+        return eq(*(imap(sorted_models, [lhs_models, rhs_models])))
 
     @classmethod
     def _equal_units(cls, lhs_units, rhs_units):
@@ -720,15 +721,6 @@ def _post_order(graph):
     return map(lambda name:
         units.FuncUnit(unit_map[name], _get_preds(graph, name, unit_map)),
         networkx.dfs_postorder_nodes(graph))
-
-
-def _sorted_models(models):
-    """Create a sorted list of the given models.
-
-    `models` are the models to create a sorted list of.
-
-    """
-    return sorted(models, key=lambda model: model.name)
 
 
 def _split_node(graph, old_node, new_node):

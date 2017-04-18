@@ -89,6 +89,47 @@ class TestCaps:
         _chk_warn(capabilities, warn_mock.call_args)
 
 
+class TestCoverage:
+
+    """Test case for fulfilling complete code coverage"""
+
+    def test_FuncUnit_ne_operator(self):
+        """Test FuncUnit != operator.
+
+        `self` is this test case.
+
+        """
+        assert FuncUnit(UnitModel("", 1, [""]), []) != FuncUnit(
+            UnitModel("input", 1, [""]), [])
+
+    def test_ProcessorDesc_ne_operator(self):
+        """Test ProcessorDesc != operator.
+
+        `self` is this test case.
+
+        """
+        assert ProcessorDesc([], [], [], []) != ProcessorDesc(
+            [UnitModel("", 1, [""])], [], [], [])
+
+    def test_ProcessorDesc_repr(self):
+        """Test ProcessorDesc representation.
+
+        `self` is this test case.
+
+        """
+        in_port = UnitModel("", 1, [""])
+        out_port = UnitModel("output", 1, [""])
+        repr(ProcessorDesc([in_port], [FuncUnit(out_port, [in_port])], [], []))
+
+    def test_UnitModel_ne_operator(self):
+        """Test UnitModel != operator.
+
+        `self` is this test case.
+
+        """
+        assert UnitModel("", 1, [""]) != UnitModel("input", 1, [""])
+
+
 class TestLoop:
 
     """Test case for loading processors with loops"""

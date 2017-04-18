@@ -56,6 +56,7 @@ class SimTest(unittest.TestCase):
         `self` is this test case.
 
         """
+        processor.read_processor(None)
 
 def main():
     """entry point for running test in this module"""

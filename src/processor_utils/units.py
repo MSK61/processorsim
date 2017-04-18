@@ -41,6 +41,7 @@
 from itertools import imap
 import operator
 from operator import eq, itemgetter
+__all__ = ["FuncUnit", "UnitModel"]
 
 class FuncUnit(object):
 
@@ -87,7 +88,7 @@ class FuncUnit(object):
 
         """
         return '{}({}, {})'.format(
-            type(self).__name__, self._model, _sorted_models(self._preds))
+            type(self).__name__, self._model, sorted_models(self._preds))
 
     @property
     def model(self):
@@ -147,14 +148,6 @@ class UnitModel(object):
         """
         return not self == other
 
-    def __hash__(self):
-        """Calculate the hash of this functional unit model.
-
-        `self` is this functional unit model.
-
-        """
-        return hash(self._name)
-
     def __repr__(self):
         """Return the official string of this functional unit model.
 
@@ -190,3 +183,12 @@ class UnitModel(object):
 
         """
         return self._width
+
+
+def sorted_models(models):
+    """Create a sorted list of the given models.
+
+    `models` are the models to create a sorted list of.
+
+    """
+    return sorted(models, key=lambda model: model.name)
