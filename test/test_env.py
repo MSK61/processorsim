@@ -46,6 +46,7 @@ import os
 import sys
 TEST_DIR = os.path.dirname(__file__)
 
+
 def _add_src_path():
     """Add the source path to the python search path.
 

@@ -43,6 +43,7 @@ import operator
 from operator import eq, itemgetter
 __all__ = ["FuncUnit", "UnitModel"]
 
+
 class FuncUnit(object):
 
     """Processing functional unit"""

@@ -39,6 +39,7 @@
 #
 ############################################################
 
+
 class BadEdgeError(RuntimeError):
 
     """Bad edge error"""

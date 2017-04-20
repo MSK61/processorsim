@@ -46,6 +46,7 @@ import processor
 import program_utils
 import unittest
 
+
 class SimTest(unittest.TestCase):
 
     """Test case for program simulation"""
@@ -57,6 +58,7 @@ class SimTest(unittest.TestCase):
 
         """
         processor.read_processor(None)
+
 
 def main():
     """entry point for running test in this module"""

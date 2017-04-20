@@ -40,6 +40,7 @@
 #
 ############################################################
 
+
 def compile(prog, isa):
     """Compile the program using the given instruction set.
 

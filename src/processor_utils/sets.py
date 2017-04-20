@@ -40,6 +40,7 @@
 
 __all__ = []
 
+
 class IndexedSet:
 
     """Indexed set"""

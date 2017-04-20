@@ -57,6 +57,7 @@ _UNIT_CAPS_KEY = "capabilities"
 _UNIT_NAME_KEY = "name"
 _UNIT_WIDTH_KEY = "width"
 
+
 class ProcessorDesc(object):
 
     """Processor description"""
@@ -476,7 +477,7 @@ def _aug_ports(graph):
 
     """
     for cur_terms in [[graph.in_degree_iter(), lambda *inputs: reversed(
-        inputs)], [graph.out_degree_iter(), lambda *outputs: outputs]]:
+            inputs)], [graph.out_degree_iter(), lambda *outputs: outputs]]:
         _aug_terminals(graph, *cur_terms)
 
 
@@ -578,10 +579,11 @@ def _coll_cap_edges(graph):
 
     """
     out_degrees = graph.out_degree()
-    cap_edges = imap(lambda in_deg: next((graph.in_edges_iter if in_deg[1] ==
-                                          1 else graph.out_edges_iter)(in_deg[
-        0])), itertools.ifilter(lambda in_deg:
-        in_deg[1] == 1 or out_degrees[in_deg[0]] == 1, graph.in_degree_iter()))
+    cap_edges = imap(
+        lambda in_deg: next((graph.in_edges_iter if in_deg[1] == 1 else
+                             graph.out_edges_iter)(in_deg[0])),
+        itertools.ifilter(lambda in_deg: in_deg[1] == 1 or
+                          out_degrees[in_deg[0]] == 1, graph.in_degree_iter()))
     return set(cap_edges)
 
 
@@ -715,12 +717,11 @@ def _post_order(graph):
     post-order.
 
     """
-    unit_map = dict(imap(lambda unit:
-        _get_unit_entry(unit, graph.node[unit][_UNIT_WIDTH_KEY],
-                        graph.node[unit][_UNIT_CAPS_KEY]), graph.nodes_iter()))
-    return map(lambda name:
-        units.FuncUnit(unit_map[name], _get_preds(graph, name, unit_map)),
-        networkx.dfs_postorder_nodes(graph))
+    unit_map = dict(imap(lambda unit: _get_unit_entry(
+        unit, graph.node[unit][_UNIT_WIDTH_KEY],
+        graph.node[unit][_UNIT_CAPS_KEY]), graph.nodes_iter()))
+    return map(lambda name: units.FuncUnit(unit_map[name], _get_preds(
+        graph, name, unit_map)), networkx.dfs_postorder_nodes(graph))
 
 
 def _split_node(graph, old_node, new_node):
@@ -751,7 +752,7 @@ def _split_nodes(graph):
 
     for unit, in_deg in in_degrees:
         if in_deg != 1 and out_degrees[unit] != 1 and (
-            in_deg or out_degrees[unit]):
+                in_deg or out_degrees[unit]):
             _split_node(graph, unit, ext_base + unit)
 
 

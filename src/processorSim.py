@@ -57,6 +57,7 @@ import argparse
 _PROC_OPT_VAR = "processor_file"
 _PROG_OPT_VAR = "prog_file"  # variable to receive the program file
 
+
 def process_command_line(argv):
     """
     Return args object.
@@ -84,6 +85,7 @@ def process_command_line(argv):
     args = parser.parse_args(argv)
 
     return args
+
 
 def main(argv=None):
     args = process_command_line(argv)

@@ -54,12 +54,13 @@ from processor_utils import exceptions, ProcessorDesc
 from processor_utils.units import FuncUnit, UnitModel
 import yaml
 
+
 class TestCaps:
 
     """Test case for loading capabilities"""
 
     def test_same_capability_with_different_case_in_two_units_is_detected(
-        self):
+            self):
         """Test loading a capability with different cases in two units.
 
         `self` is this test case.
@@ -76,7 +77,7 @@ class TestCaps:
         ("twoCapabilitiesWithSameNameAndDifferentCaseInOneUnit.yaml",
          ["ALU", "alu"])])
     def test_two_capabilities_with_same_name_in_one_unit_are_detected(
-        self, in_file, capabilities):
+            self, in_file, capabilities):
         """Test loading two capabilities with the same name in one unit.
 
         `self` is this test case.
@@ -192,10 +193,10 @@ class TestEdges:
             exceptions.UndefElemError, _read_file, "edgeWithUnknownUnit.yaml")
         _chk_error([_VerifyPoint(exChk.value.element, "input")], exChk.value)
 
-    @mark.parametrize("in_file, bad_edge", [("emptyEdge.yaml", []),
-        ("3UnitEdge.yaml", ["input", "middle", "output"])])
+    @mark.parametrize("in_file, bad_edge", [("emptyEdge.yaml", []), (
+        "3UnitEdge.yaml", ["input", "middle", "output"])])
     def test_edge_with_wrong_number_of_units_raises_BadEdgeError(
-        self, in_file, bad_edge):
+            self, in_file, bad_edge):
         """Test loading an edge with wrong number of units.
 
         `self` is this test case.
@@ -223,13 +224,13 @@ class TestEdges:
         for cur_call, edge_pair in chk_entries:
             self._chk_edge_warn(edge_pair, cur_call)
 
-    @mark.parametrize("in_file, edges",
-                      [("twoEdgesWithSameUnitNamesAndCase.yaml",
-                        [["input", "output"]]),
-                        ("twoEdgesWithSameUnitNamesAndLowerThenUpperCase.yaml",
-                         [["input", "output"], ["INPUT", "OUTPUT"]]),
-                        ("twoEdgesWithSameUnitNamesAndUpperThenLowerCase.yaml",
-                         [["INPUT", "OUTPUT"], ["input", "output"]])])
+    @mark.parametrize(
+        "in_file, edges",
+        [("twoEdgesWithSameUnitNamesAndCase.yaml", [["input", "output"]]),
+            ("twoEdgesWithSameUnitNamesAndLowerThenUpperCase.yaml",
+             [["input", "output"], ["INPUT", "OUTPUT"]]),
+            ("twoEdgesWithSameUnitNamesAndUpperThenLowerCase.yaml",
+             [["INPUT", "OUTPUT"], ["input", "output"]])])
     def test_two_identical_edges_are_detected(self, in_file, edges):
         """Test loading two identical edges with the same units.
 
@@ -278,10 +279,11 @@ class TestProcessors:
         internal_unit = UnitModel("middle", 1, [])
         assert (proc_desc.in_ports,
                 processor_utils.sorted_units(proc_desc.out_ports),
-                proc_desc.internal_units) == ((UnitModel("input", 1, []),),
-            [FuncUnit(UnitModel("output 1", 1, []), proc_desc.in_ports),
-             FuncUnit(UnitModel("output 2", 1, []), [proc_desc.internal_units[
-                0].model])], (FuncUnit(internal_unit, proc_desc.in_ports),))
+                proc_desc.internal_units) == ((UnitModel("input", 1, []),), [
+                    FuncUnit(UnitModel("output 1", 1, []), proc_desc.in_ports),
+                    FuncUnit(UnitModel("output 2", 1, []),
+                             [proc_desc.internal_units[0].model])],
+            (FuncUnit(internal_unit, proc_desc.in_ports),))
 
     @mark.parametrize(
         "in_file", ["twoConnectedUnitsProcessor.yaml",
@@ -316,11 +318,11 @@ class TestUnits:
         """
         raises(exceptions.EmptyProcError, _read_file, "emptyProcessor.yaml")
 
-    @mark.parametrize(
-        "in_file, dup_unit", [("twoUnitsWithSameNameAndCase.yaml", "fullSys"),
-            ("twoUnitsWithSameNameAndDifferentCase.yaml", "FULLsYS")])
+    @mark.parametrize("in_file, dup_unit", [
+        ("twoUnitsWithSameNameAndCase.yaml", "fullSys"),
+        ("twoUnitsWithSameNameAndDifferentCase.yaml", "FULLsYS")])
     def test_two_units_with_same_name_raise_DupElemError(
-        self, in_file, dup_unit):
+            self, in_file, dup_unit):
         """Test loading two units with the same name.
 
         `self` is this test case.
@@ -342,7 +344,7 @@ class TestWidth:
                                   "busTightOnlyInTheMiddleProcessor.yaml",
                                   "twoInputOneOutputProcessor.yaml"])
     def test_width_less_than_input_capacity_raises_TightWidthError(
-        self, in_file):
+            self, in_file):
         """Test a processor with a width less than its input capacity.
 
         `self` is this test case.
@@ -352,6 +354,7 @@ class TestWidth:
         exChk = raises(exceptions.TightWidthError, _read_file, in_file)
         _chk_error([_VerifyPoint(exChk.value.actual_width, 1),
                     _VerifyPoint(exChk.value.min_width, 2)], exChk.value)
+
 
 def main():
     """entry point for running test in this module"""
@@ -392,8 +395,8 @@ def _chk_two_units(processor):
     among them.
 
     """
-    assert processor == ProcessorDesc([UnitModel("input", 1, [])],
-        [FuncUnit(UnitModel("output", 1, []), processor.in_ports)], [], [])
+    assert processor == ProcessorDesc([UnitModel("input", 1, [])], [
+        FuncUnit(UnitModel("output", 1, []), processor.in_ports)], [], [])
 
 
 def _chk_warn(tokens, warn_call):
@@ -406,7 +409,7 @@ def _chk_warn(tokens, warn_call):
 
     """
     assert warn_call
-    warn_msg = warn_call[0][0].format(*(warn_call[0][1 :]), **(warn_call[1]))
+    warn_msg = warn_call[0][0].format(*(warn_call[0][1:]), **(warn_call[1]))
     assert all(imap(lambda cap: cap in warn_msg, tokens))
 
 
@@ -419,7 +422,7 @@ def _read_file(file_name):
     """
     data_dir = "data"
     with open(
-        os.path.join(test_env.TEST_DIR, data_dir, file_name)) as proc_file:
+            os.path.join(test_env.TEST_DIR, data_dir, file_name)) as proc_file:
         return processor_utils.load_proc_desc(yaml.load(proc_file))
 
 
