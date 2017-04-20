@@ -584,7 +584,7 @@ def _coll_cap_edges(graph):
                              graph.out_edges_iter)(in_deg[0])),
         itertools.ifilter(lambda in_deg: in_deg[1] == 1 or
                           out_degrees[in_deg[0]] == 1, graph.in_degree_iter()))
-    return set(cap_edges)
+    return frozenset(cap_edges)
 
 
 def _create_graph(units, links):
