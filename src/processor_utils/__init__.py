@@ -746,7 +746,7 @@ def _split_nodes(graph):
     the only link on this side.
 
     """
-    in_degrees = graph.in_degree_iter()
+    in_degrees = list(graph.in_degree_iter())
     out_degrees = graph.out_degree()
     ext_base = len(out_degrees)
 
