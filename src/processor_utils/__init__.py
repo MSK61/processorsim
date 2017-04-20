@@ -445,14 +445,9 @@ def _add_unit(processor, unit, unit_registry, cap_registry):
                 DupElemError.NEW_ELEM_IDX, DupElemError.OLD_ELEM_IDX),
             old_name, unit[_UNIT_NAME_KEY])
 
-    processor.add_node(
-        unit[_UNIT_NAME_KEY], width=unit[_UNIT_WIDTH_KEY], capabilities=[])
+    processor.add_node(unit[_UNIT_NAME_KEY], width=unit[_UNIT_WIDTH_KEY],
+                       capabilities=_load_caps(unit, cap_registry))
     unit_registry.add(unit[_UNIT_NAME_KEY])
-    unit_cap_reg = LowerIndexSet()
-
-    for cur_cap in unit[_UNIT_CAPS_KEY]:
-        _add_capability(unit[_UNIT_NAME_KEY], cur_cap, processor.node[
-            unit[_UNIT_NAME_KEY]][_UNIT_CAPS_KEY], unit_cap_reg, cap_registry)
 
 
 def _analyze_width(processor):
@@ -637,6 +632,24 @@ def _in_width(graph):
 
     """
     return graph.node[_in_port(graph)][_UNIT_WIDTH_KEY]
+
+
+def _load_caps(unit, cap_registry):
+    """Load the given unit capabilities.
+
+    `unit` is the unit to load whose capabilities.
+    `cap_registry` is the store of previously added capabilities.
+    The function returns a list of loaded capabilities.
+
+    """
+    cap_list = []
+    unit_cap_reg = LowerIndexSet()
+
+    for cur_cap in unit[_UNIT_CAPS_KEY]:
+        _add_capability(unit[_UNIT_NAME_KEY], cur_cap, cap_list, unit_cap_reg,
+                        cap_registry)
+
+    return cap_list
 
 
 def _make_processor(proc_graph, post_ord):
