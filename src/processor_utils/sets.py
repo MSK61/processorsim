@@ -71,6 +71,7 @@ class IndexedSet:
 
         `self` is this set.
         `elem` is the element to add.
+        If the element already exists, it'll be overwritten.
 
         """
         self._std_form_map[self._index_func(elem)] = elem
