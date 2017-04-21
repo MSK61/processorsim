@@ -148,114 +148,6 @@ class TestLoop:
         raises(networkx.NetworkXUnfeasible, _read_file, in_file)
 
 
-class _VerifyPoint:
-
-    """Verification point"""
-
-    def __init__(self, real_val, exp_val):
-        """Create a verification point.
-
-        `self` is this verification point.
-        `real_val` is the actual value.
-        `exp_val` is the expected value.
-        The constructor asserts that the real and expected values match.
-
-        """
-        assert real_val == exp_val
-        self._value = exp_val
-
-    def check(self, error_msg, start_index):
-        """Check that the error message contains the associated value.
-
-        `self` is this verification point.
-        `error_msg` is the error message to be checked.
-        `start_index` is the index to start searching at.
-        The method returns the index of the associated value in the
-        given error message after the specified index.
-
-        """
-        start_index = error_msg.find(str(self._value), start_index + 1)
-        assert start_index >= 0
-        return start_index
-
-
-class TestEdges:
-
-    """Test case for loading edges"""
-
-    def test_edge_with_unknown_unit_raises_ElemError(self):
-        """Test loading an edge involving an unknown unit.
-
-        `self` is this test case.
-
-        """
-        exChk = raises(
-            exceptions.UndefElemError, _read_file, "edgeWithUnknownUnit.yaml")
-        _chk_error([_VerifyPoint(exChk.value.element, "input")], exChk.value)
-
-    @mark.parametrize("in_file, bad_edge", [("emptyEdge.yaml", []), (
-        "3UnitEdge.yaml", ["input", "middle", "output"])])
-    def test_edge_with_wrong_number_of_units_raises_BadEdgeError(
-            self, in_file, bad_edge):
-        """Test loading an edge with wrong number of units.
-
-        `self` is this test case.
-        `in_file` is the processor description file.
-        `bad_edge` is the bad edge.
-
-        """
-        exChk = raises(exceptions.BadEdgeError, _read_file, in_file)
-        _chk_error([_VerifyPoint(exChk.value.edge, bad_edge)], exChk.value)
-
-    def test_three_identical_edges_are_detected(self):
-        """Test loading three identical edges with the same units.
-
-        `self` is this test case.
-
-        """
-        with mock.patch("logging.warning") as warn_mock:
-            _chk_two_units(_read_file(
-                "3EdgesWithSameUnitNamesAndLowerThenUpperThenMixedCase.yaml"))
-        assert len(warn_mock.call_args_list) == 2
-        chk_entries = itertools.izip(warn_mock.call_args_list, [
-            [["input", "output"], ["INPUT", "OUTPUT"]],
-            [["input", "output"], ["Input", "Output"]]])
-
-        for cur_call, edge_pair in chk_entries:
-            self._chk_edge_warn(edge_pair, cur_call)
-
-    @mark.parametrize(
-        "in_file, edges",
-        [("twoEdgesWithSameUnitNamesAndCase.yaml", [["input", "output"]]),
-            ("twoEdgesWithSameUnitNamesAndLowerThenUpperCase.yaml",
-             [["input", "output"], ["INPUT", "OUTPUT"]]),
-            ("twoEdgesWithSameUnitNamesAndUpperThenLowerCase.yaml",
-             [["INPUT", "OUTPUT"], ["input", "output"]])])
-    def test_two_identical_edges_are_detected(self, in_file, edges):
-        """Test loading two identical edges with the same units.
-
-        `self` is this test case.
-        `in_file` is the processor description file.
-        `edges` are the identical edges.
-
-        """
-        with mock.patch("logging.warning") as warn_mock:
-            _chk_two_units(_read_file(in_file))
-        self._chk_edge_warn(edges, warn_mock.call_args)
-
-    @staticmethod
-    def _chk_edge_warn(edges, warn_call):
-        """Verify edges in a warning message.
-
-        `edges` are the edges to assess.
-        `warn_call` is the warning function mock call.
-        The method asserts that all edges exist in the constructed
-        warning message.
-
-        """
-        _chk_warn(imap(str, edges), warn_call)
-
-
 class TestProcessors:
 
     """Test case for loading valid processors"""
@@ -306,6 +198,114 @@ class TestProcessors:
         _chk_one_unit(_read_file("singleUnitProcessor.yaml"))
 
 
+class _ValInStrCheck:
+
+    """Verification point for checking a string contains a value"""
+
+    def __init__(self, real_val, exp_val):
+        """Create a verification point.
+
+        `self` is this verification point.
+        `real_val` is the actual value.
+        `exp_val` is the expected value.
+        The constructor asserts that the real and expected values match.
+
+        """
+        assert real_val == exp_val
+        self._value = exp_val
+
+    def check(self, msg, start_index):
+        """Check that the message contains the associated value.
+
+        `self` is this verification point.
+        `msg` is the message to be checked.
+        `start_index` is the index to start searching at.
+        The method returns the index of the associated value in the
+        given message after the specified index.
+
+        """
+        start_index = msg.find(str(self._value), start_index + 1)
+        assert start_index >= 0
+        return start_index
+
+
+class TestEdges:
+
+    """Test case for loading edges"""
+
+    def test_edge_with_unknown_unit_raises_UndefElemError(self):
+        """Test loading an edge involving an unknown unit.
+
+        `self` is this test case.
+
+        """
+        exChk = raises(
+            exceptions.UndefElemError, _read_file, "edgeWithUnknownUnit.yaml")
+        _chk_error([_ValInStrCheck(exChk.value.element, "input")], exChk.value)
+
+    @mark.parametrize("in_file, bad_edge", [("emptyEdge.yaml", []), (
+        "3UnitEdge.yaml", ["input", "middle", "output"])])
+    def test_edge_with_wrong_number_of_units_raises_BadEdgeError(
+            self, in_file, bad_edge):
+        """Test loading an edge with wrong number of units.
+
+        `self` is this test case.
+        `in_file` is the processor description file.
+        `bad_edge` is the bad edge.
+
+        """
+        exChk = raises(exceptions.BadEdgeError, _read_file, in_file)
+        _chk_error([_ValInStrCheck(exChk.value.edge, bad_edge)], exChk.value)
+
+    def test_three_identical_edges_are_detected(self):
+        """Test loading three identical edges with the same units.
+
+        `self` is this test case.
+
+        """
+        with mock.patch("logging.warning") as warn_mock:
+            _chk_two_units(_read_file(
+                "3EdgesWithSameUnitNamesAndLowerThenUpperThenMixedCase.yaml"))
+        assert len(warn_mock.call_args_list) == 2
+        chk_entries = itertools.izip(warn_mock.call_args_list, [
+            [["input", "output"], ["INPUT", "OUTPUT"]],
+            [["input", "output"], ["Input", "Output"]]])
+
+        for cur_call, edge_pair in chk_entries:
+            self._chk_edge_warn(edge_pair, cur_call)
+
+    @mark.parametrize(
+        "in_file, edges",
+        [("twoEdgesWithSameUnitNamesAndCase.yaml", [["input", "output"]]),
+            ("twoEdgesWithSameUnitNamesAndLowerThenUpperCase.yaml",
+             [["input", "output"], ["INPUT", "OUTPUT"]]),
+            ("twoEdgesWithSameUnitNamesAndUpperThenLowerCase.yaml",
+             [["INPUT", "OUTPUT"], ["input", "output"]])])
+    def test_two_identical_edges_are_detected(self, in_file, edges):
+        """Test loading two identical edges with the same units.
+
+        `self` is this test case.
+        `in_file` is the processor description file.
+        `edges` are the identical edges.
+
+        """
+        with mock.patch("logging.warning") as warn_mock:
+            _chk_two_units(_read_file(in_file))
+        self._chk_edge_warn(edges, warn_mock.call_args)
+
+    @staticmethod
+    def _chk_edge_warn(edges, warn_call):
+        """Verify edges in a warning message.
+
+        `edges` are the edges to assess.
+        `warn_call` is the warning function mock call.
+        The method asserts that all edges exist in the constructed
+        warning message.
+
+        """
+        _chk_warn(imap(str, edges), warn_call)
+
+
 class TestUnits:
 
     """Test case for loading processor units"""
@@ -332,8 +332,8 @@ class TestUnits:
         """
         exChk = raises(exceptions.DupElemError, _read_file, in_file)
         _chk_error(
-            [_VerifyPoint(exChk.value.new_element, dup_unit),
-             _VerifyPoint(exChk.value.old_element, "fullSys")], exChk.value)
+            [_ValInStrCheck(exChk.value.new_element, dup_unit),
+             _ValInStrCheck(exChk.value.old_element, "fullSys")], exChk.value)
 
 
 class TestWidth:
@@ -352,8 +352,8 @@ class TestWidth:
 
         """
         exChk = raises(exceptions.TightWidthError, _read_file, in_file)
-        _chk_error([_VerifyPoint(exChk.value.actual_width, 1),
-                    _VerifyPoint(exChk.value.min_width, 2)], exChk.value)
+        _chk_error([_ValInStrCheck(exChk.value.actual_width, 1),
+                    _ValInStrCheck(exChk.value.min_width, 2)], exChk.value)
 
 
 def main():
