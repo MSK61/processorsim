@@ -89,6 +89,18 @@ class TestCaps:
             _chk_one_unit(_read_file(in_file))
         _chk_warn(capabilities, warn_mock.call_args)
 
+    def test_unit_with_empty_capabilities_is_detected(self):
+        """Test loading a unit with no capabilities.
+
+        `self` is this test case.
+
+        """
+        with mock.patch("logging.warning") as warn_mock:
+            assert _read_file("unitWithNoCapabilities.yaml") == ProcessorDesc(
+                [], [], [UnitModel("core 1", 1, ["ALU"]),
+                         UnitModel("core 2", 1, [])], [])
+        _chk_warn(["core 2"], warn_mock.call_args)
+
 
 class TestCoverage:
 
@@ -395,8 +407,8 @@ def _chk_two_units(processor):
     among them.
 
     """
-    assert processor == ProcessorDesc([UnitModel("input", 1, [])], [
-        FuncUnit(UnitModel("output", 1, []), processor.in_ports)], [], [])
+    assert processor == ProcessorDesc([UnitModel("input", 1, ["ALU"])], [
+        FuncUnit(UnitModel("output", 1, ["ALU"]), processor.in_ports)], [], [])
 
 
 def _chk_warn(tokens, warn_call):

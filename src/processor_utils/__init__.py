@@ -550,6 +550,20 @@ def _chk_flow_vol(min_width, in_width):
             min_width, in_width)
 
 
+def _chk_no_caps(processor):
+    """Detect empty units in the given processor.
+
+    `processor` is the processor to check.
+    The function detects units with no capabilities in the processor.
+
+    """
+    unit_entries = processor.node.items()
+
+    for unit, attrs in unit_entries:
+        if not attrs[_UNIT_CAPS_KEY]:
+            logging.warning("No capabilities defined for unit {}!", unit)
+
+
 def _chk_proc_desc(processor):
     """Check the given processor.
 
@@ -560,7 +574,8 @@ def _chk_proc_desc(processor):
     width.
 
     """
-    for cur_chk in [_chk_empty_proc, _chk_cycles, _chk_bus_width]:
+    for cur_chk in [
+            _chk_empty_proc, _chk_cycles, _chk_no_caps, _chk_bus_width]:
         cur_chk(processor)
 
 
