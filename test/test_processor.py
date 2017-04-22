@@ -65,8 +65,9 @@ class TestCaps:
         `self` is this test case.
 
         """
-        raises(exceptions.EmptyProcError, _read_file,
-               "processorWithNoCapableInputs.yaml")
+        assert "input" in str(
+            raises(exceptions.EmptyProcError, _read_file,
+                   "processorWithNoCapableInputs.yaml").value).lower()
 
     def test_same_capability_with_different_case_in_two_units_is_detected(
             self):
