@@ -51,6 +51,7 @@ from pytest import mark, raises
 import test_env
 import processor_utils
 from processor_utils import exceptions, ProcessorDesc
+from processor_utils.exceptions import EmptyProcError
 from processor_utils.units import FuncUnit, UnitModel
 import yaml
 
@@ -59,15 +60,21 @@ class TestCaps:
 
     """Test case for loading capabilities"""
 
-    def test_processor_with_incapable_inputs_raises_EmptyProcError(self):
-        """Test a processor with no capable input ports.
+    @mark.parametrize(
+        "in_file, err_tag", [("processorWithNoCapableInputs.yaml", "input"),
+                             ("singleUnitWithNoCapabilities.yaml", "input"),
+                             ("processorWithNoCapableOutputs.yaml", "output")])
+    def test_processor_with_incapable_ports_raises_EmptyProcError(
+            self, in_file, err_tag):
+        """Test a processor with no capable ports.
 
         `self` is this test case.
+        `in_file` is the processor description file.
+        `err_tag` is the port type tag in the error message.
 
         """
-        assert "input" in str(
-            raises(exceptions.EmptyProcError, _read_file,
-                   "processorWithNoCapableInputs.yaml").value).lower()
+        assert err_tag in str(
+            raises(EmptyProcError, _read_file, in_file).value).lower()
 
     def test_same_capability_with_different_case_in_two_units_is_detected(
             self):
@@ -337,7 +344,7 @@ class TestUnits:
         `self` is this test case.
 
         """
-        raises(exceptions.EmptyProcError, _read_file, "emptyProcessor.yaml")
+        raises(EmptyProcError, _read_file, "emptyProcessor.yaml")
 
     @mark.parametrize("in_file, dup_unit", [
         ("twoUnitsWithSameNameAndCase.yaml", "fullSys"),
