@@ -345,7 +345,7 @@ def _add_capability(unit, cap, cap_list, unit_cap_reg, global_cap_reg):
             _CapabilityInfo(cap, unit), cap_list, unit_cap_reg, global_cap_reg)
     else:
         logging.warning(
-            "Capability {} previously added as {} for unit {}, ignoring...",
+            "Capability %s previously added as %s for unit %s, ignoring...",
             cap, old_cap, unit)
 
 
@@ -374,7 +374,7 @@ def _add_edge(processor, edge, unit_registry, edge_registry):
         edge_registry.add(edge)
     else:
         logging.warning(
-            "Edge {} previously added as {}, ignoring...", edge, old_edge)
+            "Edge %s previously added as %s, ignoring...", edge, old_edge)
 
 
 def _add_new_cap(cap, cap_list, unit_cap_reg, global_cap_reg):
@@ -393,8 +393,8 @@ def _add_new_cap(cap, cap_list, unit_cap_reg, global_cap_reg):
     if std_cap is None:
         std_cap = _add_to_set(global_cap_reg, cap)
     elif std_cap.name != cap.name:
-        logging.warning("Capability {} in unit {} previously defined as {} in "
-                        "unit {}, using original definition...", cap.name,
+        logging.warning("Capability %s in unit %s previously defined as %s in "
+                        "unit %s, using original definition...", cap.name,
                         cap.unit, std_cap.name, std_cap.unit)
 
     cap_list.append(std_cap.name)
@@ -748,7 +748,7 @@ def rm_empty_unit(processor, unit):
     `unit` is the unit to remove.
 
     """
-    logging.warning("No capabilities defined for unit {}, removing...", unit)
+    logging.warning("No capabilities defined for unit %s, removing...", unit)
     processor.remove_node(unit)
 
 

@@ -420,7 +420,7 @@ def _chk_warn(tokens, warn_call):
 
     """
     assert warn_call
-    warn_msg = warn_call[0][0].format(*(warn_call[0][1:]), **(warn_call[1]))
+    warn_msg = warn_call[0][0] % warn_call[0][1:]
     assert all(imap(lambda cap: cap in warn_msg, tokens))
 
 
