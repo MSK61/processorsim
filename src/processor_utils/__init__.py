@@ -40,7 +40,7 @@
 #
 ############################################################
 
-from exceptions import DupElemError, EmptyProcError, TightWidthError
+from exceptions import DupElemError, TightWidthError
 import itertools
 from itertools import ifilter, imap
 import logging
@@ -576,18 +576,6 @@ def _chk_cycles(processor):
         raise networkx.NetworkXUnfeasible()
 
 
-def _chk_empty_proc(processor):
-    """Check that the given processor isn't empty.
-
-    `processor` is the processor to check.
-    The function raises an EmptyProcError if the processor doesn't
-    contain any units.
-
-    """
-    if not processor:
-        raise EmptyProcError()
-
-
 def _chk_flow_vol(min_width, in_width):
     """Check the flow volume from the input throughout all units.
 
@@ -653,7 +641,7 @@ def _chk_no_ports(processor, ports, err_msg):
     try:
         next(ifilter(lambda port: port in processor, ports))
     except StopIteration:
-        raise EmptyProcError(err_msg)
+        raise exceptions.EmptyProcError(err_msg)
 
 
 def _coll_cap_edges(graph):
@@ -841,7 +829,6 @@ def _prep_proc_desc(processor):
     exceeds the minimum bus width.
 
     """
-    _chk_empty_proc(processor)
     _chk_cycles(processor)
     port_info = _PortGroup(processor)
     _rm_empty_units(processor)

@@ -63,7 +63,8 @@ class TestCaps:
     @mark.parametrize(
         "in_file, err_tag", [("processorWithNoCapableInputs.yaml", "input"),
                              ("singleUnitWithNoCapabilities.yaml", "input"),
-                             ("processorWithNoCapableOutputs.yaml", "output")])
+                             ("processorWithNoCapableOutputs.yaml", "output"),
+                             ("emptyProcessor.yaml", "input")])
     def test_processor_with_incapable_ports_raises_EmptyProcError(
             self, in_file, err_tag):
         """Test a processor with no capable ports.
@@ -337,14 +338,6 @@ class TestEdges:
 class TestUnits:
 
     """Test case for loading processor units"""
-
-    def test_empty_processor_raises_EmptyProcError(self):
-        """Test a processor with no units.
-
-        `self` is this test case.
-
-        """
-        raises(EmptyProcError, _read_file, "emptyProcessor.yaml")
 
     @mark.parametrize("in_file, dup_unit", [
         ("twoUnitsWithSameNameAndCase.yaml", "fullSys"),
