@@ -42,7 +42,7 @@
 
 from exceptions import DupElemError, EmptyProcError, TightWidthError
 import itertools
-from itertools import ifilter, ifilterfalse, imap
+from itertools import ifilter, imap
 import logging
 import networkx
 from networkx import DiGraph
@@ -256,7 +256,17 @@ def _get_port(degrees):
     A port is a unit with zero degree.
 
     """
-    return next(ifilterfalse(itemgetter(1), degrees))[0]
+    return next(_get_ports(degrees))[0]
+
+
+def _get_ports(degrees):
+    """Find the ports with respect to the given degrees.
+
+    `degrees` are the degrees of all units.
+    A port is a unit with zero degree.
+
+    """
+    return itertools.ifilterfalse(itemgetter(1), degrees)
 
 
 def _get_preds(processor, unit, unit_map):
@@ -489,7 +499,7 @@ def _aug_terminals(graph, degrees, edge_func):
     terminal.
 
     """
-    ports = ifilterfalse(itemgetter(1), degrees)
+    ports = _get_ports(degrees)
     try:
         ports = itertools.chain([next(ports), next(ports)], ports)
     except StopIteration:  # single unit
@@ -751,8 +761,7 @@ def _prep_proc_desc(processor):
     """
     _chk_empty_proc(processor)
     _chk_cycles(processor)
-    in_ports = map(
-        itemgetter(0), ifilterfalse(itemgetter(1), processor.in_degree_iter()))
+    in_ports = map(itemgetter(0), _get_ports(processor.in_degree_iter()))
     _rm_empty_units(processor)
     _chk_no_inputs(processor, in_ports)
     _chk_bus_width(processor)
