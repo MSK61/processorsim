@@ -59,6 +59,15 @@ class TestCaps:
 
     """Test case for loading capabilities"""
 
+    def test_processor_with_incapable_inputs_raises_EmptyProcError(self):
+        """Test a processor with no capable input ports.
+
+        `self` is this test case.
+
+        """
+        raises(exceptions.EmptyProcError, _read_file,
+               "processorWithNoCapableInputs.yaml")
+
     def test_same_capability_with_different_case_in_two_units_is_detected(
             self):
         """Test loading a capability with different cases in two units.

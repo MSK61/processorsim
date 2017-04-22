@@ -40,9 +40,9 @@
 #
 ############################################################
 
-from exceptions import DupElemError, TightWidthError
+from exceptions import DupElemError, EmptyProcError, TightWidthError
 import itertools
-from itertools import ifilterfalse, imap
+from itertools import ifilter, ifilterfalse, imap
 import logging
 import networkx
 from networkx import DiGraph
@@ -531,7 +531,7 @@ def _chk_empty_proc(processor):
 
     """
     if not processor:
-        raise exceptions.EmptyProcError()
+        raise EmptyProcError()
 
 
 def _chk_flow_vol(min_width, in_width):
@@ -550,6 +550,20 @@ def _chk_flow_vol(min_width, in_width):
             min_width, in_width)
 
 
+def _chk_no_inputs(processor, in_ports):
+    """Check if the processor no longer has input ports.
+
+    `processor` is the processor to check.
+    `in_ports` are the processor declared input ports.
+    The function raises an EmptyProcError if no input ports still exist.
+
+    """
+    try:
+        next(ifilter(lambda port: port in processor, in_ports))
+    except StopIteration:
+        raise EmptyProcError("No input ports found")
+
+
 def _coll_cap_edges(graph):
     """Collect capping edges from the given graph.
 
@@ -561,10 +575,10 @@ def _coll_cap_edges(graph):
     """
     out_degrees = graph.out_degree()
     cap_edges = imap(
-        lambda in_deg: next((graph.in_edges_iter if in_deg[1] == 1 else
-                             graph.out_edges_iter)(in_deg[0])),
-        itertools.ifilter(lambda in_deg: in_deg[1] == 1 or
-                          out_degrees[in_deg[0]] == 1, graph.in_degree_iter()))
+        lambda in_deg: next((
+            graph.in_edges_iter if in_deg[1] == 1 else graph.out_edges_iter)(
+            in_deg[0])), ifilter(lambda in_deg: in_deg[1] == 1 or out_degrees[
+                in_deg[0]] == 1, graph.in_degree_iter()))
     return frozenset(cap_edges)
 
 
@@ -737,7 +751,10 @@ def _prep_proc_desc(processor):
     """
     _chk_empty_proc(processor)
     _chk_cycles(processor)
+    in_ports = map(
+        itemgetter(0), ifilterfalse(itemgetter(1), processor.in_degree_iter()))
     _rm_empty_units(processor)
+    _chk_no_inputs(processor, in_ports)
     _chk_bus_width(processor)
 
 
