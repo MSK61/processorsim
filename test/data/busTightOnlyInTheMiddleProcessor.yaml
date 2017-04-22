@@ -1,13 +1,16 @@
 units:
     - name: input
       width: 2
-      capabilities: []
+      capabilities:
+        - ALU
     - name: middle
       width: 1
-      capabilities: []
+      capabilities:
+        - ALU
     - name: output
       width: 2
-      capabilities: []
+      capabilities:
+        - ALU
 dataPath:
     - [input, middle]
     - [middle, output]

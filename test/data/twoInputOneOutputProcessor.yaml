@@ -1,13 +1,16 @@
 units:
     - name: input 1
       width: 1
-      capabilities: []
+      capabilities:
+        - ALU
     - name: input 2
       width: 1
-      capabilities: []
+      capabilities:
+        - ALU
     - name: output
       width: 1
-      capabilities: []
+      capabilities:
+        - ALU
 dataPath:
     - [input 1, output]
     - [input 2, output]

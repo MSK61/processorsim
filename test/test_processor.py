@@ -97,8 +97,7 @@ class TestCaps:
         """
         with mock.patch("logging.warning") as warn_mock:
             assert _read_file("unitWithNoCapabilities.yaml") == ProcessorDesc(
-                [], [], [UnitModel("core 1", 1, ["ALU"]),
-                         UnitModel("core 2", 1, [])], [])
+                [], [], [UnitModel("core 1", 1, ["ALU"])], [])
         _chk_warn(["core 2"], warn_mock.call_args)
 
 
@@ -180,13 +179,13 @@ class TestProcessors:
         """
         proc_desc = _read_file("4ConnectedUnitsProcessor.yaml")
         assert not proc_desc.in_out_ports
-        internal_unit = UnitModel("middle", 1, [])
-        assert (proc_desc.in_ports,
-                processor_utils.sorted_units(proc_desc.out_ports),
-                proc_desc.internal_units) == ((UnitModel("input", 1, []),), [
-                    FuncUnit(UnitModel("output 1", 1, []), proc_desc.in_ports),
-                    FuncUnit(UnitModel("output 2", 1, []),
-                             [proc_desc.internal_units[0].model])],
+        internal_unit = UnitModel("middle", 1, ["ALU"])
+        assert (proc_desc.in_ports, processor_utils.sorted_units(
+            proc_desc.out_ports), proc_desc.internal_units) == (
+            (UnitModel("input", 1, ["ALU"]),),
+            [FuncUnit(UnitModel("output 1", 1, ["ALU"]), proc_desc.in_ports),
+             FuncUnit(UnitModel("output 2", 1, ["ALU"]),
+                      [proc_desc.internal_units[0].model])],
             (FuncUnit(internal_unit, proc_desc.in_ports),))
 
     @mark.parametrize(

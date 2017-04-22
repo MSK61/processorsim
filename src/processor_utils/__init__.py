@@ -218,7 +218,7 @@ def load_proc_desc(raw_desc):
     unit_sect = "units"
     data_path_sect = "dataPath"
     proc_desc = _create_graph(raw_desc[unit_sect], raw_desc[data_path_sect])
-    _chk_proc_desc(proc_desc)
+    _prep_proc_desc(proc_desc)
     return _make_processor(proc_desc, _post_order(proc_desc))
 
 
@@ -550,35 +550,6 @@ def _chk_flow_vol(min_width, in_width):
             min_width, in_width)
 
 
-def _chk_no_caps(processor):
-    """Detect empty units in the given processor.
-
-    `processor` is the processor to check.
-    The function detects units with no capabilities in the processor.
-
-    """
-    unit_entries = processor.node.items()
-
-    for unit, attrs in unit_entries:
-        if not attrs[_UNIT_CAPS_KEY]:
-            logging.warning("No capabilities defined for unit {}!", unit)
-
-
-def _chk_proc_desc(processor):
-    """Check the given processor.
-
-    `processor` is the processor to check.
-    The function raises an EmptyProcError if the processor doesn't
-    contain any units, a NetworkXUnfeasible if the processor isn't a
-    DAG, and a TightWidthError if input width exceeds the minimum bus
-    width.
-
-    """
-    for cur_chk in [
-            _chk_empty_proc, _chk_cycles, _chk_no_caps, _chk_bus_width]:
-        cur_chk(processor)
-
-
 def _coll_cap_edges(graph):
     """Collect capping edges from the given graph.
 
@@ -750,6 +721,49 @@ def _post_order(graph):
         graph.node[unit][_UNIT_CAPS_KEY]), graph.nodes_iter()))
     return map(lambda name: units.FuncUnit(unit_map[name], _get_preds(
         graph, name, unit_map)), networkx.dfs_postorder_nodes(graph))
+
+
+def _prep_proc_desc(processor):
+    """Prepare the given processor.
+
+    `processor` is the processor to prepare.
+    The function makes some preliminary checks against the processor and
+    optimizes its structure by trying to only keep the effective units
+    needed in a typical program execution. It raises an EmptyProcError
+    if the processor doesn't contain any units, a NetworkXUnfeasible if
+    the processor isn't a DAG, and a TightWidthError if input width
+    exceeds the minimum bus width.
+
+    """
+    _chk_empty_proc(processor)
+    _chk_cycles(processor)
+    _rm_empty_units(processor)
+    _chk_bus_width(processor)
+
+
+def rm_empty_unit(processor, unit):
+    """Remove a unit from the given processor.
+
+    `processor` is the processor to remove the unit from.
+    `unit` is the unit to remove.
+
+    """
+    logging.warning("No capabilities defined for unit {}, removing...", unit)
+    processor.remove_node(unit)
+
+
+def _rm_empty_units(processor):
+    """Remove empty units from the given processor.
+
+    `processor` is the processor to clean.
+    The function removes units with no capabilities from the processor.
+
+    """
+    unit_entries = processor.node.items()
+
+    for unit, attrs in unit_entries:
+        if not attrs[_UNIT_CAPS_KEY]:
+            rm_empty_unit(processor, unit)
 
 
 def _split_node(graph, old_node, new_node):
