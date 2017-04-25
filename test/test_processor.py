@@ -107,7 +107,7 @@ class TestCaps:
             _chk_one_unit(_read_file(in_file))
         _chk_warn(capabilities, warn_mock.call_args)
 
-    def test_unit_with_empty_capabilities_is_detected(self):
+    def test_unit_with_empty_capabilities_is_removed(self):
         """Test loading a unit with no capabilities.
 
         `self` is this test case.
