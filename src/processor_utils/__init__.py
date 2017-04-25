@@ -883,7 +883,7 @@ def _restrict_caps(processor, unit):
             _UNIT_CAPS_KEY]).intersection(_combine_caps(processor, preds))
 
 
-def rm_empty_unit(processor, unit):
+def _rm_empty_unit(processor, unit):
     """Remove a unit from the given processor.
 
     `processor` is the processor to remove the unit from.
@@ -905,7 +905,7 @@ def _rm_empty_units(processor):
 
     for unit, attrs in unit_entries:
         if not attrs[_UNIT_CAPS_KEY]:
-            rm_empty_unit(processor, unit)
+            _rm_empty_unit(processor, unit)
 
 
 def _split_node(graph, old_node, new_node):
