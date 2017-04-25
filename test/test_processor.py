@@ -60,6 +60,18 @@ class TestCaps:
 
     """Test case for loading capabilities"""
 
+    def test_output_more_capable_than_input(self):
+        """Test an output which has more capabilities than the input.
+
+        `self` is this test case.
+
+        """
+        in_file = "oneCapabilityInputAndTwoCapabilitiesOutput.yaml"
+        proc_desc = _read_file(in_file)
+        assert proc_desc == ProcessorDesc(
+            [UnitModel("input", 1, ["ALU"])], [FuncUnit(
+                UnitModel("output", 1, ["ALU"]), proc_desc.in_ports)], [], [])
+
     @mark.parametrize(
         "in_file, err_tag", [("processorWithNoCapableInputs.yaml", "input"),
                              ("singleUnitWithNoCapabilities.yaml", "input"),

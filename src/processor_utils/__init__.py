@@ -42,7 +42,7 @@
 
 from exceptions import DupElemError, TightWidthError
 import itertools
-from itertools import ifilter, imap
+from itertools import chain, ifilter, imap
 import logging
 import networkx
 from networkx import DiGraph
@@ -545,7 +545,7 @@ def _aug_terminals(graph, degrees, edge_func):
     """
     ports = _get_ports(degrees)
     try:
-        ports = itertools.chain([next(ports), next(ports)], ports)
+        ports = chain([next(ports), next(ports)], ports)
     except StopIteration:  # single unit
         pass
     else:  # multiple units
@@ -644,6 +644,20 @@ def _chk_no_ports(processor, ports, err_msg):
         raise exceptions.EmptyProcError(err_msg)
 
 
+def _clean_caps(processor):
+    """Remove unneeded capabilities from nodes.
+
+    `processor` is the processor to clean whose unit capabilities.
+    The function removes capabilities in each unit that aren't supported
+    in any of its predecessor units.
+
+    """
+    units = networkx.topological_sort(processor)
+
+    for unit in units:
+        _restrict_caps(processor, unit)
+
+
 def _coll_cap_edges(graph):
     """Collect capping edges from the given graph.
 
@@ -660,6 +674,19 @@ def _coll_cap_edges(graph):
             in_deg[0])), ifilter(lambda in_deg: in_deg[1] == 1 or out_degrees[
                 in_deg[0]] == 1, graph.in_degree_iter()))
     return frozenset(cap_edges)
+
+
+def _combine_caps(processor, units):
+    """Flatten the capabilities of the given units.
+
+    `processor` is the processor containing the units.
+    `units` is the units to combine whose capabilities.
+    The function returns an iterable of all the capabilities supported
+    by the given units. The returned iterable may contain duplicates.
+
+    """
+    return chain(
+        *(imap(lambda unit: processor.node[unit][_UNIT_CAPS_KEY], units)))
 
 
 def _create_graph(units, links):
@@ -830,10 +857,30 @@ def _prep_proc_desc(processor):
 
     """
     _chk_cycles(processor)
+    _clean_caps(processor)
     port_info = _PortGroup(processor)
     _rm_empty_units(processor)
     _chk_non_empty(processor, port_info)
     _chk_bus_width(processor)
+
+
+def _restrict_caps(processor, unit):
+    """Restrict the capabilities of the given unit.
+
+    `processor` is the processor containing the unit.
+    `unit` is the unit to restrict whose capabilities.
+    The function restricts the capabilities of the given unit to only
+    those supported by its predecessors.
+
+    """
+    preds = processor.predecessors_iter(unit)
+    try:
+        preds = chain([next(preds)], preds)
+    except:
+        pass
+    else:
+        processor.node[unit][_UNIT_CAPS_KEY] = frozenset(processor.node[unit][
+            _UNIT_CAPS_KEY]).intersection(_combine_caps(processor, preds))
 
 
 def rm_empty_unit(processor, unit):
