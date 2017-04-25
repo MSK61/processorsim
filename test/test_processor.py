@@ -116,7 +116,7 @@ class TestCaps:
 
         """
         with mock.patch("logging.warning") as warn_mock:
-            _chk_one_unit(_read_file(in_file))
+            _chk_one_unit(in_file)
         _chk_warn(capabilities, warn_mock.call_args)
 
     def test_unit_with_empty_capabilities_is_removed(self):
@@ -228,7 +228,7 @@ class TestProcessors:
         `in_file` is the processor description file.
 
         """
-        _chk_two_units(_read_file(in_file))
+        _chk_two_units(in_file)
 
     def test_single_functional_unit_processor(self):
         """Test loading a single function unit processor.
@@ -236,7 +236,7 @@ class TestProcessors:
         `self` is this test case.
 
         """
-        _chk_one_unit(_read_file("singleUnitProcessor.yaml"))
+        _chk_one_unit("singleUnitProcessor.yaml")
 
 
 class _ValInStrCheck:
@@ -305,8 +305,8 @@ class TestEdges:
 
         """
         with mock.patch("logging.warning") as warn_mock:
-            _chk_two_units(_read_file(
-                "3EdgesWithSameUnitNamesAndLowerThenUpperThenMixedCase.yaml"))
+            _chk_two_units(
+                "3EdgesWithSameUnitNamesAndLowerThenUpperThenMixedCase.yaml")
         assert len(warn_mock.call_args_list) == 2
         chk_entries = itertools.izip(warn_mock.call_args_list, [
             [["input", "output"], ["INPUT", "OUTPUT"]],
@@ -331,7 +331,7 @@ class TestEdges:
 
         """
         with mock.patch("logging.warning") as warn_mock:
-            _chk_two_units(_read_file(in_file))
+            _chk_two_units(in_file)
         self._chk_edge_warn(edges, warn_mock.call_args)
 
     @staticmethod
@@ -410,26 +410,27 @@ def _chk_error(verify_points, error):
         cur_point.check(error, idx)
 
 
-def _chk_one_unit(processor):
+def _chk_one_unit(proc_file):
     """Verify a single unit processor.
 
-    `processor` is the single unit processor to assess.
+    `proc_file` is the processor description file.
 
     """
-    assert processor == ProcessorDesc(
+    assert _read_file(proc_file) == ProcessorDesc(
         [], [], [UnitModel("fullSys", 1, ["ALU"])], [])
 
 
-def _chk_two_units(processor):
+def _chk_two_units(proc_file):
     """Verify a two-unit processor.
 
-    `processor` is the two-unit processor to assess.
+    `proc_file` is the processor description file.
     The function asserts the order and descriptions of units and links
     among them.
 
     """
-    assert processor == ProcessorDesc([UnitModel("input", 1, ["ALU"])], [
-        FuncUnit(UnitModel("output", 1, ["ALU"]), processor.in_ports)], [], [])
+    proc_desc = _read_file(proc_file)
+    assert proc_desc == ProcessorDesc([UnitModel("input", 1, ["ALU"])], [
+        FuncUnit(UnitModel("output", 1, ["ALU"]), proc_desc.in_ports)], [], [])
 
 
 def _chk_warn(tokens, warn_call):
