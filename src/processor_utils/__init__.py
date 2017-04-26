@@ -293,6 +293,16 @@ def _get_anal_graph(processor):
     return width_graph
 
 
+def _get_iterable(iterable):
+    """Return a non-empty iterable.
+
+    `iterable` is the iterable to return.
+    The function raises a StopIteration if the iterable is empty.
+
+    """
+    return chain([next(iterable)], iterable)
+
+
 def _get_port(degrees):
     """Find the port with respect to the given degrees.
 
@@ -545,7 +555,7 @@ def _aug_terminals(graph, degrees, edge_func):
     """
     ports = _get_ports(degrees)
     try:
-        ports = chain([next(ports), next(ports)], ports)
+        ports = chain([next(ports)], _get_iterable(ports))
     except StopIteration:  # single unit
         pass
     else:  # multiple units
@@ -640,7 +650,7 @@ def _chk_no_ports(processor, ports, err_msg):
     """
     try:
         next(ifilter(lambda port: port in processor, ports))
-    except StopIteration:
+    except StopIteration:  # No ports exist.
         raise exceptions.EmptyProcError(err_msg)
 
 
@@ -875,8 +885,8 @@ def _restrict_caps(processor, unit):
     """
     preds = processor.predecessors_iter(unit)
     try:
-        preds = chain([next(preds)], preds)
-    except:
+        preds = _get_iterable(preds)
+    except StopIteration:  # no predecessors(The unit is an in-port.)
         pass
     else:
         processor.node[unit][_UNIT_CAPS_KEY] = frozenset(processor.node[unit][
