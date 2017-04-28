@@ -312,7 +312,8 @@ class TestEdges:
 
         """
         with mock.patch("logging.warning") as warn_mock:
-            _chk_two_units("edges",
+            _chk_two_units(
+                "edges",
                 "3EdgesWithSameUnitNamesAndLowerThenUpperThenMixedCase.yaml")
         assert len(warn_mock.call_args_list) == 2
         chk_entries = itertools.izip(warn_mock.call_args_list, [
