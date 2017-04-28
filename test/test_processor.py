@@ -74,8 +74,8 @@ class TestCaps:
         `err_tag` is the port type tag in the error message.
 
         """
-        assert err_tag in str(
-            raises(EmptyProcError, _read_file, in_file).value).lower()
+        assert err_tag in str(raises(
+            EmptyProcError, _read_file, "capabilities", in_file).value).lower()
 
     def test_same_capability_with_different_case_in_two_units_is_detected(
             self):
@@ -86,8 +86,9 @@ class TestCaps:
         """
         in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits.yaml"
         with mock.patch("logging.warning") as warn_mock:
-            assert _read_file(in_file) == ProcessorDesc([], [], [UnitModel(
-                "core 1", 1, ["ALU"]), UnitModel("core 2", 1, ["ALU"])], [])
+            assert _read_file("capabilities", in_file) == ProcessorDesc(
+                [], [], [UnitModel("core 1", 1, ["ALU"]),
+                         UnitModel("core 2", 1, ["ALU"])], [])
         _chk_warn(["ALU", "core 1", "alu", "core 2"], warn_mock.call_args)
 
     @mark.parametrize("in_file, capabilities", [
@@ -104,7 +105,7 @@ class TestCaps:
 
         """
         with mock.patch("logging.warning") as warn_mock:
-            _chk_one_unit(in_file)
+            _chk_one_unit("capabilities", in_file)
         _chk_warn(capabilities, warn_mock.call_args)
 
 
@@ -119,7 +120,7 @@ class TestClean:
 
         """
         in_file = "oneCapabilityInputAndTwoCapabilitiesOutput.yaml"
-        proc_desc = _read_file(in_file)
+        proc_desc = _read_file("optimization", in_file)
         assert proc_desc == ProcessorDesc(
             [UnitModel("input", 1, ["ALU"])], [FuncUnit(
                 UnitModel("output", 1, ["ALU"]), proc_desc.in_ports)], [], [])
@@ -131,7 +132,8 @@ class TestClean:
 
         """
         with mock.patch("logging.warning") as warn_mock:
-            assert _read_file("unitWithNoCapabilities.yaml") == ProcessorDesc(
+            assert _read_file("optimization",
+                              "unitWithNoCapabilities.yaml") == ProcessorDesc(
                 [], [], [UnitModel("core 1", 1, ["ALU"])], [])
         _chk_warn(["core 2"], warn_mock.call_args)
 
@@ -191,7 +193,7 @@ class TestLoop:
         `in_file` is the processor description file.
 
         """
-        raises(networkx.NetworkXUnfeasible, _read_file, in_file)
+        raises(networkx.NetworkXUnfeasible, _read_file, "loops", in_file)
 
 
 class TestProcessors:
@@ -204,7 +206,7 @@ class TestProcessors:
         `self` is this test case.
 
         """
-        _read_file("oneInputTwoOutputProcessor.yaml")
+        _read_file("processors", "oneInputTwoOutputProcessor.yaml")
 
     def test_processor_with_four_connected_functional_units(self):
         """Test loading a processor with four functional units.
@@ -212,7 +214,7 @@ class TestProcessors:
         `self` is this test case.
 
         """
-        proc_desc = _read_file("4ConnectedUnitsProcessor.yaml")
+        proc_desc = _read_file("processors", "4ConnectedUnitsProcessor.yaml")
         assert not proc_desc.in_out_ports
         internal_unit = UnitModel("middle", 1, ["ALU"])
         assert (proc_desc.in_ports, processor_utils.sorted_units(
@@ -233,7 +235,7 @@ class TestProcessors:
         `in_file` is the processor description file.
 
         """
-        _chk_two_units(in_file)
+        _chk_two_units("processors", in_file)
 
     def test_single_functional_unit_processor(self):
         """Test loading a single function unit processor.
@@ -241,7 +243,7 @@ class TestProcessors:
         `self` is this test case.
 
         """
-        _chk_one_unit("singleUnitProcessor.yaml")
+        _chk_one_unit("processors", "singleUnitProcessor.yaml")
 
 
 class _ValInStrCheck:
@@ -285,8 +287,8 @@ class TestEdges:
         `self` is this test case.
 
         """
-        exChk = raises(
-            exceptions.UndefElemError, _read_file, "edgeWithUnknownUnit.yaml")
+        exChk = raises(exceptions.UndefElemError, _read_file, "edges",
+                       "edgeWithUnknownUnit.yaml")
         _chk_error([_ValInStrCheck(exChk.value.element, "input")], exChk.value)
 
     @mark.parametrize("in_file, bad_edge", [("emptyEdge.yaml", []), (
@@ -300,7 +302,7 @@ class TestEdges:
         `bad_edge` is the bad edge.
 
         """
-        exChk = raises(exceptions.BadEdgeError, _read_file, in_file)
+        exChk = raises(exceptions.BadEdgeError, _read_file, "edges", in_file)
         _chk_error([_ValInStrCheck(exChk.value.edge, bad_edge)], exChk.value)
 
     def test_three_identical_edges_are_detected(self):
@@ -310,7 +312,7 @@ class TestEdges:
 
         """
         with mock.patch("logging.warning") as warn_mock:
-            _chk_two_units(
+            _chk_two_units("edges",
                 "3EdgesWithSameUnitNamesAndLowerThenUpperThenMixedCase.yaml")
         assert len(warn_mock.call_args_list) == 2
         chk_entries = itertools.izip(warn_mock.call_args_list, [
@@ -336,7 +338,7 @@ class TestEdges:
 
         """
         with mock.patch("logging.warning") as warn_mock:
-            _chk_two_units(in_file)
+            _chk_two_units("edges", in_file)
         self._chk_edge_warn(edges, warn_mock.call_args)
 
     @staticmethod
@@ -368,7 +370,7 @@ class TestUnits:
         `dup_unit` is the duplicate unit.
 
         """
-        exChk = raises(exceptions.DupElemError, _read_file, in_file)
+        exChk = raises(exceptions.DupElemError, _read_file, "units", in_file)
         _chk_error(
             [_ValInStrCheck(exChk.value.new_element, dup_unit),
              _ValInStrCheck(exChk.value.old_element, "fullSys")], exChk.value)
@@ -389,7 +391,8 @@ class TestWidth:
         `in_file` is the processor description file.
 
         """
-        exChk = raises(exceptions.TightWidthError, _read_file, in_file)
+        exChk = raises(
+            exceptions.TightWidthError, _read_file, "widths", in_file)
         _chk_error([_ValInStrCheck(exChk.value.actual_width, 1),
                     _ValInStrCheck(exChk.value.min_width, 2)], exChk.value)
 
@@ -415,25 +418,27 @@ def _chk_error(verify_points, error):
         cur_point.check(error, idx)
 
 
-def _chk_one_unit(proc_file):
+def _chk_one_unit(proc_dir, proc_file):
     """Verify a single unit processor.
 
+    `proc_dir` is the directory containing the processor description file.
     `proc_file` is the processor description file.
 
     """
-    assert _read_file(proc_file) == ProcessorDesc(
+    assert _read_file(proc_dir, proc_file) == ProcessorDesc(
         [], [], [UnitModel("fullSys", 1, ["ALU"])], [])
 
 
-def _chk_two_units(proc_file):
+def _chk_two_units(proc_dir, proc_file):
     """Verify a two-unit processor.
 
+    `proc_dir` is the directory containing the processor description file.
     `proc_file` is the processor description file.
     The function asserts the order and descriptions of units and links
     among them.
 
     """
-    proc_desc = _read_file(proc_file)
+    proc_desc = _read_file(proc_dir, proc_file)
     assert proc_desc == ProcessorDesc([UnitModel("input", 1, ["ALU"])], [
         FuncUnit(UnitModel("output", 1, ["ALU"]), proc_desc.in_ports)], [], [])
 
@@ -452,16 +457,17 @@ def _chk_warn(tokens, warn_call):
     assert all(imap(lambda cap: cap in warn_msg, tokens))
 
 
-def _read_file(file_name):
+def _read_file(proc_dir, file_name):
     """Read a processor description file.
 
+    `proc_dir` is the directory containing the processor description file.
     `file_name` is the processor description file name.
     The function returns the processor description.
 
     """
     data_dir = "data"
-    with open(
-            os.path.join(test_env.TEST_DIR, data_dir, file_name)) as proc_file:
+    with open(os.path.join(
+            test_env.TEST_DIR, data_dir, proc_dir, file_name)) as proc_file:
         return processor_utils.load_proc_desc(yaml.load(proc_file))
 
 
