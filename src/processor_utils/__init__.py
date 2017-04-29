@@ -660,7 +660,8 @@ def _clean_struct(processor):
     units = networkx.topological_sort(processor)
 
     for unit in units:
-        _clean_unit(processor, unit)
+        if processor.in_degree(unit):  # Skip in-ports.
+            _clean_unit(processor, unit)
 
 
 def _clean_unit(processor, unit):
@@ -674,8 +675,15 @@ def _clean_unit(processor, unit):
     the given unit.
 
     """
-    if processor.in_degree(unit):
-        _distill_unit(processor, unit)
+    pred_edges = processor.in_edges(unit)
+    cap_set = set()
+    processor.node[unit][_UNIT_CAPS_KEY] = frozenset(
+        processor.node[unit][_UNIT_CAPS_KEY])
+
+    for edge in pred_edges:
+        cap_set.update(_chk_edge(processor, edge))
+
+    processor.node[unit][_UNIT_CAPS_KEY] = cap_set
 
 
 def _coll_cap_edges(graph):
@@ -728,28 +736,6 @@ def _dist_edge_caps(graph):
 
     """
     _set_capacities(graph, _coll_cap_edges(graph))
-
-
-def _distill_unit(processor, unit):
-    """Distill the given unit.
-
-    `processor` is the processor containing the unit.
-    `unit` is the unit to distill.
-    The function restricts the capabilities of the given unit to only
-    those supported by its predecessors. It also removes incoming edges
-    coming from a predecessor unit having no capabilities in common with
-    the given unit.
-
-    """
-    pred_edges = processor.in_edges(unit)
-    cap_set = set()
-    processor.node[unit][_UNIT_CAPS_KEY] = frozenset(
-        processor.node[unit][_UNIT_CAPS_KEY])
-
-    for edge in pred_edges:
-        cap_set.update(_chk_edge(processor, edge))
-
-    processor.node[unit][_UNIT_CAPS_KEY] = cap_set
 
 
 def _in_port(graph):
