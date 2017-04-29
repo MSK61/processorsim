@@ -50,8 +50,7 @@ import operator
 from operator import eq, itemgetter
 from sets import IndexedSet, LowerIndexSet
 from units import sorted_models
-__all__ = [
-    "exceptions", "load_proc_desc", "ProcessorDesc", "sorted_units", "units"]
+__all__ = ["exceptions", "load_proc_desc", "ProcessorDesc", "units"]
 # unit attributes
 _UNIT_CAPS_KEY = "capabilities"
 _UNIT_NAME_KEY = "name"
@@ -74,10 +73,10 @@ class ProcessorDesc(object):
                          as inputs or outputs.
 
         """
-        self._in_ports = tuple(in_ports)
-        self._out_ports = tuple(out_ports)
-        self._in_out_ports = tuple(in_out_ports)
-        self._internal_units = tuple(internal_untis)
+        self._in_ports = tuple(sorted_models(in_ports))
+        self._out_ports = tuple(self._sorted_units(out_ports))
+        self._in_out_ports = tuple(sorted_models(in_out_ports))
+        self._internal_units = tuple(self._sorted_units(internal_untis))
 
     def __eq__(self, other):
         """Test if the two processors are identical.
@@ -86,11 +85,10 @@ class ProcessorDesc(object):
         `other` is the other processor.
 
         """
-        return self._equal_models(
-            self._in_ports, other.in_ports) and self._equal_units(
-            self._out_ports, other.out_ports) and self._equal_models(
-            self._in_out_ports, other.in_out_ports) and self._equal_units(
-            self._internal_units, other.internal_units)
+        return (
+            self._in_ports, self._out_ports, self._in_out_ports,
+            self._internal_units) == (other.in_ports, other.out_ports,
+                                      other.in_out_ports, other.internal_units)
 
     def __ne__(self, other):
         """Test if the two processors are different.
@@ -107,31 +105,18 @@ class ProcessorDesc(object):
         `self` is this processor.
 
         """
-        return "{}({}, {}, {}, {})".format(type(self).__name__, sorted_models(
-            self._in_ports), sorted_units(self._out_ports), sorted_models(
-            self._in_out_ports), sorted_units(self._internal_units))
+        return "{}({}, {}, {}, {})".format(
+            type(self).__name__, self._in_ports, self._out_ports,
+            self._in_out_ports, self._internal_units)
 
-    @classmethod
-    def _equal_models(cls, lhs_models, rhs_models):
-        """Test if the two unit model lists are identical.
+    @staticmethod
+    def _sorted_units(units):
+        """Create a sorted list of the given units.
 
-        `cls` is this class.
-        `lhs_models` is the left hand side list.
-        `rhs_models` is the right hand side list.
+        `models` are the units to create a sorted list of.
 
         """
-        return eq(*(imap(sorted_models, [lhs_models, rhs_models])))
-
-    @classmethod
-    def _equal_units(cls, lhs_units, rhs_units):
-        """Test if the two unit lists are identical.
-
-        `cls` is this class.
-        `lhs_units` is the left hand side list.
-        `rhs_units` is the right hand side list.
-
-        """
-        return eq(*(imap(sorted_units, [lhs_units, rhs_units])))
+        return sorted(units, key=lambda unit: unit.model.name)
 
     @property
     def in_out_ports(self):
@@ -264,15 +249,6 @@ def load_proc_desc(raw_desc):
     proc_desc = _create_graph(raw_desc[unit_sect], raw_desc[data_path_sect])
     _prep_proc_desc(proc_desc)
     return _make_processor(proc_desc, _post_order(proc_desc))
-
-
-def sorted_units(units):
-    """Create a sorted list of the given units.
-
-    `models` are the units to create a sorted list of.
-
-    """
-    return sorted(units, key=lambda unit: unit.model.name)
 
 
 def _get_anal_graph(processor):

@@ -234,13 +234,14 @@ class TestProcessors:
         """
         proc_desc = _read_file("processors", "4ConnectedUnitsProcessor.yaml")
         assert not proc_desc.in_out_ports
+        out_ports = FuncUnit(
+            UnitModel("output 1", 1, ["ALU"]), proc_desc.in_ports), FuncUnit(
+            UnitModel("output 2", 1, ["ALU"]),
+            [proc_desc.internal_units[0].model])
         internal_unit = UnitModel("middle", 1, ["ALU"])
-        assert (proc_desc.in_ports, processor_utils.sorted_units(
-            proc_desc.out_ports), proc_desc.internal_units) == (
-            (UnitModel("input", 1, ["ALU"]),),
-            [FuncUnit(UnitModel("output 1", 1, ["ALU"]), proc_desc.in_ports),
-             FuncUnit(UnitModel("output 2", 1, ["ALU"]),
-                      [proc_desc.internal_units[0].model])],
+        assert (proc_desc.in_ports, proc_desc.out_ports,
+                proc_desc.internal_units) == (
+            (UnitModel("input", 1, ["ALU"]),), out_ports,
             (FuncUnit(internal_unit, proc_desc.in_ports),))
 
     @mark.parametrize(

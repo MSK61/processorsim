@@ -126,7 +126,7 @@ class UnitModel(object):
         """
         self._name = name
         self._width = width
-        self._capabilities = tuple(capabilities)
+        self._capabilities = tuple(sorted(capabilities))
 
     def __eq__(self, other):
         """Test if the two functional unit models are identical.
@@ -135,10 +135,8 @@ class UnitModel(object):
         `other` is the other functional unit model.
 
         """
-        criteria = imap(lambda attrs: attrs[: -1] + (sorted(attrs[-1]),),
-                        [(self._name, self._width, self._capabilities),
-                            (other.name, other.width, other.capabilities)])
-        return eq(*criteria)
+        return (self._name, self._width, self._capabilities) == (
+            other.name, other.width, other.capabilities)
 
     def __ne__(self, other):
         """Test if the two functional unit models are different.
@@ -156,7 +154,7 @@ class UnitModel(object):
 
         """
         return '{}({}, {}, {})'.format(type(self).__name__, repr(self._name),
-                                       self._width, sorted(self._capabilities))
+                                       self._width, self._capabilities)
 
     @property
     def capabilities(self):
