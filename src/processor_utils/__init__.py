@@ -629,10 +629,11 @@ def _chk_terminals(processor, orig_port_info):
     after trimming actions during optimization.
 
     """
-    cur_out_ports = _get_port_names(processor.out_degree_iter())
-    processor.remove_nodes_from(
-        ifilterfalse(
-            lambda port: port in orig_port_info.out_ports, cur_out_ports))
+    new_out_ports = ifilterfalse(lambda port: port in orig_port_info.out_ports,
+                                 _get_port_names(processor.out_degree_iter()))
+
+    for out_port in new_out_ports:
+        _rm_dead_end(processor, out_port)
 
 
 def _clean_struct(processor):
@@ -861,6 +862,19 @@ def _prep_proc_desc(processor):
     _chk_terminals(processor, port_info)
     _chk_non_empty(processor, port_info.in_ports)
     _chk_bus_width(processor)
+
+
+def _rm_dead_end(processor, dead_end):
+    """Remove a dead end from the given processor.
+
+    `processor` is the processor to remove the dead end from.
+    `dead_end` is the dead end to remove.
+    A dead end is a port that looks like an output port after
+    optimization actions have cut it off real output ports.
+
+    """
+    logging.warning("Dead end detected at unit %s, removing...", dead_end)
+    processor.remove_node(dead_end)
 
 
 def _rm_dummy_edge(processor, edge):

@@ -122,11 +122,13 @@ class TestClean:
         reaching its output so that a dead end may appear.
 
         """
-        proc_desc = _read_file(
-            "optimization", "pathThatGetsCutOffItsOutput.yaml")
+        with mock.patch("logging.warning") as warn_mock:
+            proc_desc = _read_file(
+                "optimization", "pathThatGetsCutOffItsOutput.yaml")
         assert proc_desc == ProcessorDesc([UnitModel("input", 1, ["ALU"])], [
             FuncUnit(UnitModel("output 1", 1, ["ALU"]), proc_desc.in_ports)],
             [], [])
+        _chk_warn(["middle"], warn_mock.call_args)
 
     def test_incompatible_edge_is_removed(self):
         """Test an edge connecting two incompatible units.
