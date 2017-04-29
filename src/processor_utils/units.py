@@ -40,7 +40,6 @@
 
 from itertools import imap
 import operator
-from operator import eq, itemgetter
 __all__ = ["FuncUnit", "UnitModel"]
 
 
@@ -71,7 +70,7 @@ class FuncUnit(object):
             lambda attrs: (attrs[0], len(attrs[1])),
             [(self._model, self._preds), (other.model, other.predecessors)])
         pred_lists = imap(sorted, [self._preds, other.predecessors])
-        return eq(*criteria) and all(imap(operator.is_, *pred_lists))
+        return operator.eq(*criteria) and all(imap(operator.is_, *pred_lists))
 
     def __ne__(self, other):
         """Test if the two functional units are different.

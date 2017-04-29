@@ -43,7 +43,7 @@
 
 import itertools
 from itertools import imap
-import mock
+from mock import patch
 import networkx
 import os.path
 import pytest
@@ -51,7 +51,6 @@ from pytest import mark, raises
 import test_env
 import processor_utils
 from processor_utils import exceptions, ProcessorDesc
-from processor_utils.exceptions import EmptyProcError
 from processor_utils.units import FuncUnit, UnitModel
 import yaml
 
@@ -73,8 +72,8 @@ class TestCaps:
         `err_tag` is the port type tag in the error message.
 
         """
-        assert err_tag in str(raises(
-            EmptyProcError, _read_file, "capabilities", in_file).value).lower()
+        assert err_tag in str(raises(exceptions.EmptyProcError, _read_file,
+                                     "capabilities", in_file).value).lower()
 
     def test_same_capability_with_different_case_in_two_units_is_detected(
             self):
@@ -84,7 +83,7 @@ class TestCaps:
 
         """
         in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits.yaml"
-        with mock.patch("logging.warning") as warn_mock:
+        with patch("logging.warning") as warn_mock:
             assert _read_file("capabilities", in_file) == ProcessorDesc(
                 [], [], [UnitModel("core 1", 1, ["ALU"]),
                          UnitModel("core 2", 1, ["ALU"])], [])
@@ -103,7 +102,7 @@ class TestCaps:
         `capabilities` are the identical capabilities.
 
         """
-        with mock.patch("logging.warning") as warn_mock:
+        with patch("logging.warning") as warn_mock:
             _chk_one_unit("capabilities", in_file)
         _chk_warn(capabilities, warn_mock.call_args)
 
@@ -122,7 +121,7 @@ class TestClean:
         reaching its output so that a dead end may appear.
 
         """
-        with mock.patch("logging.warning") as warn_mock:
+        with patch("logging.warning") as warn_mock:
             proc_desc = _read_file(
                 "optimization", "pathThatGetsCutOffItsOutput.yaml")
         assert proc_desc == ProcessorDesc([UnitModel("input", 1, ["ALU"])], [
@@ -136,7 +135,7 @@ class TestClean:
         `self` is this test case.
 
         """
-        with mock.patch("logging.warning") as warn_mock:
+        with patch("logging.warning") as warn_mock:
             proc_desc = _read_file(
                 "optimization", "incompatibleEdgeProcessor.yaml")
         name_input_map = dict(
@@ -166,7 +165,7 @@ class TestClean:
         `self` is this test case.
 
         """
-        with mock.patch("logging.warning") as warn_mock:
+        with patch("logging.warning") as warn_mock:
             assert _read_file("optimization",
                               "unitWithNoCapabilities.yaml") == ProcessorDesc(
                 [], [], [UnitModel("core 1", 1, ["ALU"])], [])
@@ -347,7 +346,7 @@ class TestEdges:
         `self` is this test case.
 
         """
-        with mock.patch("logging.warning") as warn_mock:
+        with patch("logging.warning") as warn_mock:
             _chk_two_units(
                 "edges",
                 "3EdgesWithSameUnitNamesAndLowerThenUpperThenMixedCase.yaml")
@@ -374,7 +373,7 @@ class TestEdges:
         `edges` are the identical edges.
 
         """
-        with mock.patch("logging.warning") as warn_mock:
+        with patch("logging.warning") as warn_mock:
             _chk_two_units("edges", in_file)
         self._chk_edge_warn(edges, warn_mock.call_args)
 
