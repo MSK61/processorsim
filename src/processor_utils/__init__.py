@@ -41,8 +41,7 @@
 ############################################################
 
 from exceptions import DupElemError, TightWidthError
-import itertools
-from itertools import chain, ifilter, imap
+from itertools import chain, ifilter, ifilterfalse, imap
 import logging
 import networkx
 from networkx import DiGraph
@@ -214,7 +213,7 @@ class _PortGroup(object):
         A port is a unit with zero degree.
 
         """
-        return tuple(map(itemgetter(0), _get_ports(degrees)))
+        return tuple(_get_port_names(degrees))
 
     @property
     def in_ports(self):
@@ -289,6 +288,16 @@ def _get_port(degrees):
     return next(_get_ports(degrees))[0]
 
 
+def _get_port_names(degrees):
+    """Find the ports with respect to the given degrees.
+
+    `degrees` are the degrees of all units.
+    A port is a unit with zero degree.
+
+    """
+    return map(itemgetter(0), _get_ports(degrees))
+
+
 def _get_ports(degrees):
     """Find the ports with respect to the given degrees.
 
@@ -296,7 +305,7 @@ def _get_ports(degrees):
     A port is a unit with zero degree.
 
     """
-    return itertools.ifilterfalse(itemgetter(1), degrees)
+    return ifilterfalse(itemgetter(1), degrees)
 
 
 def _get_preds(processor, unit, unit_map):
@@ -596,56 +605,34 @@ def _chk_flow_vol(min_width, in_width):
             min_width, in_width)
 
 
-def _chk_no_inputs(processor, in_ports):
-    """Check if the processor no longer has input ports.
+def _chk_non_empty(processor, in_ports):
+    """Check if the processor still has input ports.
 
     `processor` is the processor to check.
-    `in_ports` are the processor declared input ports.
+    `in_ports` is the processor original input ports.
     The function raises an EmptyProcError if no input ports still exist.
 
     """
-    err_msg = "No input ports found"
-    _chk_no_ports(processor, in_ports, err_msg)
-
-
-def _chk_non_empty(processor, port_info):
-    """Check if the processor still has ports.
-
-    `processor` is the processor to check.
-    `port_info` is the original processor port information.
-    The function raises an EmptyProcError if no ports still exist.
-
-    """
-    _chk_no_inputs(processor, port_info.in_ports)
-    _chk_no_outputs(processor, port_info.out_ports)
-
-
-def _chk_no_outputs(processor, out_ports):
-    """Check if the processor no longer has output ports.
-
-    `processor` is the processor to check.
-    `out_ports` are the processor declared output ports.
-    The function raises an EmptyProcError if no output ports still
-    exist.
-
-    """
-    err_msg = "No output ports found"
-    _chk_no_ports(processor, out_ports, err_msg)
-
-
-def _chk_no_ports(processor, ports, err_msg):
-    """Check if the processor no longer has ports.
-
-    `processor` is the processor to check.
-    `ports` are the processor declared ports.
-    `err_msg` is the error message to report if no ports are found.
-    The function raises an EmptyProcError if no ports still exist.
-
-    """
     try:
-        next(ifilter(lambda port: port in processor, ports))
+        next(ifilter(lambda port: port in processor, in_ports))
     except StopIteration:  # No ports exist.
-        raise exceptions.EmptyProcError(err_msg)
+        raise exceptions.EmptyProcError("No input ports found")
+
+
+def _chk_terminals(processor, orig_port_info):
+    """Check if new terminals have appeared after optimization.
+
+    `processor` is the processor to check.
+    `orig_port_info` is the original port information(before
+                     optimization).
+    The function removes spurious output ports that might have appeared
+    after trimming actions during optimization.
+
+    """
+    cur_out_ports = _get_port_names(processor.out_degree_iter())
+    processor.remove_nodes_from(
+        ifilterfalse(
+            lambda port: port in orig_port_info.out_ports, cur_out_ports))
 
 
 def _clean_struct(processor):
@@ -871,7 +858,8 @@ def _prep_proc_desc(processor):
     port_info = _PortGroup(processor)
     _clean_struct(processor)
     _rm_empty_units(processor)
-    _chk_non_empty(processor, port_info)
+    _chk_terminals(processor, port_info)
+    _chk_non_empty(processor, port_info.in_ports)
     _chk_bus_width(processor)
 
 

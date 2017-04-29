@@ -63,7 +63,6 @@ class TestCaps:
     @mark.parametrize(
         "in_file, err_tag", [("processorWithNoCapableInputs.yaml", "input"),
                              ("singleUnitWithNoCapabilities.yaml", "input"),
-                             ("processorWithNoCapableOutputs.yaml", "output"),
                              ("emptyProcessor.yaml", "input")])
     def test_processor_with_incapable_ports_raises_EmptyProcError(
             self, in_file, err_tag):
@@ -112,6 +111,22 @@ class TestCaps:
 class TestClean:
 
     """Test case for cleaning(optimizing) a processor"""
+
+    def test_data_path_cut_before_output_is_removed(self):
+        """Test a data path that ends before reaching an output.
+
+        `self` is this test case.
+        Initially a data path never ends before reaching an output(since
+        outputs in the first place are taken from where all paths end),
+        however due to optimization operations a path may be cut before
+        reaching its output so that a dead end may appear.
+
+        """
+        proc_desc = _read_file(
+            "optimization", "pathThatGetsCutOffItsOutput.yaml")
+        assert proc_desc == ProcessorDesc([UnitModel("input", 1, ["ALU"])], [
+            FuncUnit(UnitModel("output 1", 1, ["ALU"]), proc_desc.in_ports)],
+            [], [])
 
     def test_incompatible_edge_is_removed(self):
         """Test an edge connecting two incompatible units.
