@@ -586,6 +586,24 @@ def _chk_cycles(processor):
         raise networkx.NetworkXUnfeasible()
 
 
+def _chk_edge(processor, edge):
+    """Check if the edge is useful.
+
+    `processor` is the processor containing the edge.
+    `edge` is the edge to check.
+    The function removes the given edge if it isn't needed. It returns
+    the common capabilities between the units connected by the edge.
+
+    """
+    common_caps = processor.node[edge[1]][_UNIT_CAPS_KEY].intersection(
+        processor.node[edge[0]][_UNIT_CAPS_KEY])
+
+    if not common_caps:
+        _rm_dummy_edge(processor, edge)
+
+    return common_caps
+
+
 def _chk_flow_vol(min_width, in_width):
     """Check the flow volume from the input throughout all units.
 
@@ -654,18 +672,34 @@ def _chk_no_ports(processor, ports, err_msg):
         raise exceptions.EmptyProcError(err_msg)
 
 
-def _clean_caps(processor):
-    """Remove unneeded capabilities from nodes.
+def _clean_struct(processor):
+    """Clean the given processor structure.
 
-    `processor` is the processor to clean whose unit capabilities.
+    `processor` is the processor to clean whose structure.
     The function removes capabilities in each unit that aren't supported
-    in any of its predecessor units.
+    in any of its predecessor units. It also removes incompatible edges(those
+    connecting units having no capabilities in common).
 
     """
     units = networkx.topological_sort(processor)
 
     for unit in units:
-        _restrict_caps(processor, unit)
+        _clean_unit(processor, unit)
+
+
+def _clean_unit(processor, unit):
+    """Clean the given unit properties.
+
+    `processor` is the processor containing the unit.
+    `unit` is the unit to clean whose properties.
+    The function restricts the capabilities of the given unit to only
+    those supported by its predecessors. It also removes incoming edges
+    coming from a predecessor unit having no capabilities in common with
+    the given unit.
+
+    """
+    if processor.in_degree(unit):
+        _distill_unit(processor, unit)
 
 
 def _coll_cap_edges(graph):
@@ -684,19 +718,6 @@ def _coll_cap_edges(graph):
             in_deg[0])), ifilter(lambda in_deg: in_deg[1] == 1 or out_degrees[
                 in_deg[0]] == 1, graph.in_degree_iter()))
     return frozenset(cap_edges)
-
-
-def _combine_caps(processor, units):
-    """Flatten the capabilities of the given units.
-
-    `processor` is the processor containing the units.
-    `units` is the units to combine whose capabilities.
-    The function returns an iterable of all the capabilities supported
-    by the given units. The returned iterable may contain duplicates.
-
-    """
-    return chain(
-        *(imap(lambda unit: processor.node[unit][_UNIT_CAPS_KEY], units)))
 
 
 def _create_graph(units, links):
@@ -731,6 +752,28 @@ def _dist_edge_caps(graph):
 
     """
     _set_capacities(graph, _coll_cap_edges(graph))
+
+
+def _distill_unit(processor, unit):
+    """Distill the given unit.
+
+    `processor` is the processor containing the unit.
+    `unit` is the unit to distill.
+    The function restricts the capabilities of the given unit to only
+    those supported by its predecessors. It also removes incoming edges
+    coming from a predecessor unit having no capabilities in common with
+    the given unit.
+
+    """
+    pred_edges = processor.in_edges(unit)
+    cap_set = set()
+    processor.node[unit][_UNIT_CAPS_KEY] = frozenset(
+        processor.node[unit][_UNIT_CAPS_KEY])
+
+    for edge in pred_edges:
+        cap_set.update(_chk_edge(processor, edge))
+
+    processor.node[unit][_UNIT_CAPS_KEY] = cap_set
 
 
 def _in_port(graph):
@@ -867,30 +910,23 @@ def _prep_proc_desc(processor):
 
     """
     _chk_cycles(processor)
-    _clean_caps(processor)
     port_info = _PortGroup(processor)
+    _clean_struct(processor)
     _rm_empty_units(processor)
     _chk_non_empty(processor, port_info)
     _chk_bus_width(processor)
 
 
-def _restrict_caps(processor, unit):
-    """Restrict the capabilities of the given unit.
+def _rm_dummy_edge(processor, edge):
+    """Remove an edge from the given processor.
 
-    `processor` is the processor containing the unit.
-    `unit` is the unit to restrict whose capabilities.
-    The function restricts the capabilities of the given unit to only
-    those supported by its predecessors.
+    `processor` is the processor to remove the edge from.
+    `edge` is the edge to remove.
 
     """
-    preds = processor.predecessors_iter(unit)
-    try:
-        preds = _get_iterable(preds)
-    except StopIteration:  # no predecessors(The unit is an in-port.)
-        pass
-    else:
-        processor.node[unit][_UNIT_CAPS_KEY] = frozenset(processor.node[unit][
-            _UNIT_CAPS_KEY]).intersection(_combine_caps(processor, preds))
+    logging.warning("Units %s and %s have no capabilities in common, "
+                    "removing connecting edge...", *edge)
+    processor.remove_edge(*edge)
 
 
 def _rm_empty_unit(processor, unit):

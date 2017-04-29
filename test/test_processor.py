@@ -113,6 +113,24 @@ class TestClean:
 
     """Test case for cleaning(optimizing) a processor"""
 
+    def test_incompatible_edge_is_removed(self):
+        """Test an edge connecting two incompatible units.
+
+        `self` is this test case.
+
+        """
+        with mock.patch("logging.warning") as warn_mock:
+            proc_desc = _read_file(
+                "optimization", "incompatibleEdgeProcessor.yaml")
+        name_input_map = dict(
+            imap(lambda in_port: (in_port.name, in_port), proc_desc.in_ports))
+        assert proc_desc == ProcessorDesc([UnitModel("input 1", 1, ["ALU"]),
+                                           UnitModel("input 2", 1, ["MEM"])], [
+            FuncUnit(UnitModel("output 1", 1, ["ALU"]), [name_input_map[
+                "input 1"]]), FuncUnit(UnitModel("output 2", 1, ["MEM"]),
+                                       [name_input_map["input 2"]])], [], [])
+        _chk_warn(["input 2", "output 1"], warn_mock.call_args)
+
     def test_output_more_capable_than_input(self):
         """Test an output which has more capabilities than the input.
 
