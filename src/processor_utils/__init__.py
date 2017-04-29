@@ -675,15 +675,11 @@ def _clean_unit(processor, unit):
     the given unit.
 
     """
-    pred_edges = processor.in_edges(unit)
-    cap_set = set()
     processor.node[unit][_UNIT_CAPS_KEY] = frozenset(
         processor.node[unit][_UNIT_CAPS_KEY])
-
-    for edge in pred_edges:
-        cap_set.update(_chk_edge(processor, edge))
-
-    processor.node[unit][_UNIT_CAPS_KEY] = cap_set
+    pred_caps = imap(
+        lambda edge: _chk_edge(processor, edge), processor.in_edges(unit))
+    processor.node[unit][_UNIT_CAPS_KEY] = frozenset().union(*pred_caps)
 
 
 def _coll_cap_edges(graph):
