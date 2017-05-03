@@ -201,18 +201,8 @@ class _PortGroup(object):
                     from.
 
         """
-        self._in_ports = self._get_port_names(processor.in_degree_iter())
-        self._out_ports = self._get_port_names(processor.out_degree_iter())
-
-    @staticmethod
-    def _get_port_names(degrees):
-        """Find the ports with respect to the given degrees.
-
-        `degrees` are the degrees of all units.
-        A port is a unit with zero degree.
-
-        """
-        return tuple(_get_port_names(degrees))
+        self._in_ports = tuple(_get_port_names(processor.in_degree_iter()))
+        self._out_ports = tuple(_get_out_ports(processor))
 
     @property
     def in_ports(self):
@@ -275,6 +265,15 @@ def _get_iterable(iterable):
 
     """
     return chain([next(iterable)], iterable)
+
+
+def _get_out_ports(processor):
+    """Find the output ports.
+
+    `processor` is the processor to find whose output ports.
+
+    """
+    return _get_port_names(processor.out_degree_iter())
 
 
 def _get_port(degrees):
@@ -629,7 +628,7 @@ def _chk_terminals(processor, orig_port_info):
 
     """
     new_out_ports = ifilterfalse(lambda port: port in orig_port_info.out_ports,
-                                 _get_port_names(processor.out_degree_iter()))
+                                 _get_out_ports(processor))
 
     for out_port in new_out_ports:
         _rm_dead_end(processor, out_port, orig_port_info.in_ports)
