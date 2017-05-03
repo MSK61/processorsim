@@ -41,6 +41,8 @@
 #
 ############################################################
 
+import test_env
+import program_utils
 import unittest
 
 
@@ -54,6 +56,7 @@ class ProgLoadTest(unittest.TestCase):
         `self` is this test case.
 
         """
+        program_utils.read_program(test_env.TEST_DIR)
 
 
 def main():
