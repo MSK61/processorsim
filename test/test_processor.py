@@ -55,6 +55,23 @@ from processor_utils.units import FuncUnit, UnitModel
 import yaml
 
 
+class TestBlocking:
+
+    """Test case for detecting blocked inputs"""
+
+    def test_in_port_with_no_compatible_out_links_raises_DeadInputError(self):
+        """Test an input port with only incompatible out links.
+
+        `self` is this test case.
+        An incompatible link is a link connecting an input port to a
+        successor unit with no capabilities in common.
+
+        """
+        exChk = raises(exceptions.DeadInputError, _read_file, "blocking",
+                       "isolatedInputPort.yaml")
+        _chk_error([_ValInStrCheck(exChk.value.port, "input 2")], exChk.value)
+
+
 class TestCaps:
 
     """Test case for loading capabilities"""

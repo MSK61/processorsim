@@ -632,7 +632,7 @@ def _chk_terminals(processor, orig_port_info):
                                  _get_port_names(processor.out_degree_iter()))
 
     for out_port in new_out_ports:
-        _rm_dead_end(processor, out_port)
+        _rm_dead_end(processor, out_port, orig_port_info.in_ports)
 
 
 def _clean_struct(processor):
@@ -863,15 +863,21 @@ def _prep_proc_desc(processor):
     _chk_bus_width(processor)
 
 
-def _rm_dead_end(processor, dead_end):
+def _rm_dead_end(processor, dead_end, in_ports):
     """Remove a dead end from the given processor.
 
     `processor` is the processor to remove the dead end from.
     `dead_end` is the dead end to remove.
+    `in_ports` are the processor original input ports.
     A dead end is a port that looks like an output port after
     optimization actions have cut it off real output ports.
 
     """
+    if dead_end in in_ports:  # an in-port turned in-out port
+        raise exceptions.DeadInputError(
+            "No feasible path found from input port {} to any output ports",
+            dead_end)
+
     logging.warning("Dead end detected at unit %s, removing...", dead_end)
     processor.remove_node(dead_end)
 

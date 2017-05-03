@@ -66,6 +66,37 @@ class BadEdgeError(RuntimeError):
         return self._edge
 
 
+class DeadInputError(RuntimeError):
+
+    """Dead input port error
+
+    A dead input port is one that is connected to units none of which is
+    supporting any of the input port capabilities.
+
+    """
+
+    def __init__(self, msg_tmpl, port):
+        """Create a dead input error.
+
+        `self` is this dead input error.
+        `msg_tmpl` is the error format message taking the blocked port
+                   as a positional argument.
+        `port` is the blocked input error.
+
+        """
+        RuntimeError.__init__(self, msg_tmpl.format(port))
+        self._port = port
+
+    @property
+    def port(self):
+        """Blocked input port
+
+        `self` is this dead input error.
+
+        """
+        return self._port
+
+
 class DupElemError(RuntimeError):
 
     """Duplicate set element error"""
