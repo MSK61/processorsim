@@ -41,8 +41,6 @@
 #
 ############################################################
 
-import test_env
-import program_utils
 import unittest
 
 

@@ -40,6 +40,7 @@
 #
 ############################################################
 
+import exceptions
 from exceptions import DupElemError, TightWidthError
 from itertools import chain, ifilter, ifilterfalse, imap
 import logging
@@ -47,6 +48,7 @@ import networkx
 from networkx import DiGraph
 from operator import itemgetter
 from sets import IndexedSet, LowerIndexSet
+import units
 from units import sorted_models
 __all__ = ["exceptions", "load_proc_desc", "ProcessorDesc", "units"]
 # unit attributes

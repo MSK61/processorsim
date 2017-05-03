@@ -41,9 +41,7 @@
 #
 ############################################################
 
-import test_env
 import processor
-import program_utils
 import unittest
 
 

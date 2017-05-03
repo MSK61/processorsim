@@ -45,7 +45,6 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 ############################################################
 
-import itertools
 import logging
 import operator
 import processor
