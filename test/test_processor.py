@@ -59,17 +59,25 @@ class TestBlocking:
 
     """Test case for detecting blocked inputs"""
 
-    def test_in_port_with_no_compatible_out_links_raises_DeadInputError(self):
+    @mark.parametrize(
+        "in_file, isolated_input", [("isolatedInputPort.yaml", "input 2"), (
+            "processorWithNoCapableOutputs.yaml", "input")])
+    def test_in_port_with_no_compatible_out_links_raises_DeadInputError(
+            self, in_file, isolated_input):
         """Test an input port with only incompatible out links.
 
         `self` is this test case.
+        `in_file` is the processor description file.
+        `isolated_input` is the input unit that gets isolated during
+                         optimization.
         An incompatible link is a link connecting an input port to a
         successor unit with no capabilities in common.
 
         """
-        exChk = raises(exceptions.DeadInputError, _read_file, "blocking",
-                       "isolatedInputPort.yaml")
-        _chk_error([_ValInStrCheck(exChk.value.port, "input 2")], exChk.value)
+        exChk = raises(
+            exceptions.DeadInputError, _read_file, "blocking", in_file)
+        _chk_error(
+            [_ValInStrCheck(exChk.value.port, isolated_input)], exChk.value)
 
 
 class TestCaps:

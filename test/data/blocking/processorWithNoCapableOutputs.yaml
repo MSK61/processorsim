@@ -1,0 +1,10 @@
+units:
+    - name: input
+      width: 1
+      capabilities:
+        - ALU
+    - name: output
+      width: 1
+      capabilities: []
+dataPath:
+    - [input, output]
