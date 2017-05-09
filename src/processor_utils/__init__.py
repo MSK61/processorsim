@@ -42,7 +42,8 @@
 
 import exceptions
 from exceptions import DupElemError, TightWidthError
-from itertools import chain, ifilter, ifilterfalse, imap
+import itertools
+from itertools import chain, ifilter, imap
 import logging
 import networkx
 from networkx import DiGraph
@@ -312,7 +313,7 @@ def _get_ports(degrees):
     A port is a unit with zero degree.
 
     """
-    return imap(itemgetter(0), ifilterfalse(itemgetter(1), degrees))
+    return imap(itemgetter(0), itertools.ifilterfalse(itemgetter(1), degrees))
 
 
 def _get_preds(processor, unit, unit_map):
