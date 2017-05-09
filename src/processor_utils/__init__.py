@@ -203,7 +203,7 @@ class _PortGroup(object):
                     from.
 
         """
-        self._in_ports = tuple(_get_port_names(processor.in_degree_iter()))
+        self._in_ports = tuple(_get_in_ports(processor))
         self._out_ports = tuple(_get_out_ports(processor))
 
     @property
@@ -268,13 +268,22 @@ def _get_cap_units(processor):
 
     """
     cap_unit_map = {}
-    in_ports = imap(itemgetter(0), _get_ports(processor.in_degree_iter()))
+    in_ports = _get_in_ports(processor)
 
     for cur_port in in_ports:
         for cur_cap in processor.node[cur_port][_UNIT_CAPS_KEY]:
             cap_unit_map.setdefault(cur_cap, []).append(cur_port)
 
     return cap_unit_map.iteritems()
+
+
+def _get_in_ports(processor):
+    """Find the input ports.
+
+    `processor` is the processor to find whose input ports.
+
+    """
+    return _get_ports(processor.in_degree_iter())
 
 
 def _get_iterable(iterable):
@@ -293,27 +302,7 @@ def _get_out_ports(processor):
     `processor` is the processor to find whose output ports.
 
     """
-    return _get_port_names(processor.out_degree_iter())
-
-
-def _get_port(degrees):
-    """Find the port with respect to the given degrees.
-
-    `degrees` are the degrees of all units.
-    A port is a unit with zero degree.
-
-    """
-    return next(_get_ports(degrees))[0]
-
-
-def _get_port_names(degrees):
-    """Find the ports with respect to the given degrees.
-
-    `degrees` are the degrees of all units.
-    A port is a unit with zero degree.
-
-    """
-    return map(itemgetter(0), _get_ports(degrees))
+    return _get_ports(processor.out_degree_iter())
 
 
 def _get_ports(degrees):
@@ -323,7 +312,7 @@ def _get_ports(degrees):
     A port is a unit with zero degree.
 
     """
-    return ifilterfalse(itemgetter(1), degrees)
+    return imap(itemgetter(0), ifilterfalse(itemgetter(1), degrees))
 
 
 def _get_preds(processor, unit, unit_map):
@@ -543,31 +532,33 @@ def _aug_ports(graph):
     single input port and a single output port.
 
     """
-    for cur_terms in [[graph.in_degree_iter(), lambda *inputs: reversed(
-            inputs)], [graph.out_degree_iter(), lambda *outputs: outputs]]:
+    call_params = [[_get_in_ports(graph), lambda *inputs: reversed(inputs)],
+                   [_get_out_ports(graph), _create_edge]]
+
+    for cur_terms in call_params:
         _aug_terminals(graph, *cur_terms)
 
 
-def _aug_terminals(graph, degrees, edge_func):
+def _aug_terminals(graph, ports, edge_func):
     """Unify terminals indicated by degrees in the graph.
 
     `graph` is the graph containing terminals.
-    `degrees` are the degrees of all units from the terminal side.
+    `ports` are the terminals to unify.
     `edge_func` is the creation function for edges connecting old
                 terminals to the new one. It takes as parameters the old
                 and the new terminals in order and returns the a tuple
                 representing the directed edge between the two.
     The function tries to connect several terminals into a single new
-    terminal.
+    terminal. The function returns the newly added port.
 
     """
-    ports = _get_ports(degrees)
+    aug_port = next(ports)
     try:
-        ports = chain([next(ports)], _get_iterable(ports))
+        ports = chain([aug_port], _get_iterable(ports))
     except StopIteration:  # single unit
-        pass
-    else:  # multiple units
-        _unify_ports(graph, ports, edge_func)
+        return aug_port
+    # multiple units
+    return _unify_ports(graph, ports, edge_func)
 
 
 def _cap_in_edge(processor, capability, edge):
@@ -598,17 +589,9 @@ def _chk_cap_flow(processor, capability, in_ports):
     unit_anal_map = dict(
         imap(lambda anal_entry: (anal_entry[1]["old_node"], anal_entry[0]),
              anal_graph.node.iteritems()))
-    out_ports = imap(lambda old_port: (unit_anal_map[old_port[0]], old_port[
-        1]), _get_ports(processor.out_degree_iter()))
-    unified_out = next(out_ports)
-    try:
-        out_ports = chain([unified_out], _get_iterable(out_ports))
-    except StopIteration:  # single unit
-        unified_out = unified_out[0]  # Take the port name.
-    else:  # multiple units
-        unified_out = _unify_ports(
-            anal_graph, out_ports, lambda *outputs: outputs)
-
+    unified_out = _aug_terminals(
+        anal_graph, imap(lambda old_port: unit_anal_map[old_port],
+                         _get_out_ports(processor)), _create_edge)
     _split_nodes(anal_graph)
     _dist_edge_caps(anal_graph)
 
@@ -737,8 +720,8 @@ def _chk_terminals(processor, orig_port_info):
     after trimming actions during optimization.
 
     """
-    new_out_ports = ifilterfalse(lambda port: port in orig_port_info.out_ports,
-                                 _get_out_ports(processor))
+    new_out_ports = filter(lambda port: port not in orig_port_info.out_ports,
+                           _get_out_ports(processor))
 
     for out_port in new_out_ports:
         _rm_dead_end(processor, out_port, orig_port_info.in_ports)
@@ -809,6 +792,17 @@ def _coll_cap_edges(graph):
     return frozenset(cap_edges)
 
 
+def _create_edge(src, dst):
+    """Create a link between the given units.
+
+    `src` is the source unit.
+    `dst` is the destination unit.
+    The function returns the created link.
+
+    """
+    return src, dst
+
+
 def _create_graph(units, links):
     """Create a data flow graph for a processor.
 
@@ -849,7 +843,7 @@ def _in_port(graph):
     `graph` is the graph to get whose input port.
 
     """
-    return _get_port(graph.in_degree_iter())
+    return next(_get_in_ports(graph))
 
 
 def _in_width(graph):
@@ -964,7 +958,7 @@ def _out_port(graph):
     `graph` is the graph to get whose output port.
 
     """
-    return _get_port(graph.out_degree_iter())
+    return next(_get_out_ports(graph))
 
 
 def _post_order(graph):
@@ -1107,8 +1101,8 @@ def _unify_ports(graph, ports, edge_func):
     graph.add_node(unified_port, width=0)
 
     for cur_port in ports:
-        _add_port_link(graph, cur_port[0], unified_port,
-                       edge_func(cur_port[0], unified_port))
+        _add_port_link(
+            graph, cur_port, unified_port, edge_func(cur_port, unified_port))
 
     return unified_port
 
