@@ -473,14 +473,14 @@ def _add_port_link(graph, old_port, new_port, link):
 
 
 def _add_to_set(elem_set, elem):
-        """Add an element to the given set.
+    """Add an element to the given set.
 
-        `elem_set` is the set to add the element to.
-        `elem` is the element to add.
+    `elem_set` is the set to add the element to.
+    `elem` is the element to add.
 
-        """
-        elem_set.add(elem)
-        return elem
+    """
+    elem_set.add(elem)
+    return elem
 
 
 def _add_unit(processor, unit, unit_registry, cap_registry):
