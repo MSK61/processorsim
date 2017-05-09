@@ -259,6 +259,24 @@ def _get_anal_graph(processor):
     return width_graph
 
 
+def _get_cap_units(processor):
+    """Create a mapping between capabilities and supporting input ports.
+
+    `processor` is the processor to create a capability-port map for.
+    The function return an iterable of tuples; each tuple represents a
+    capability and its supporting units.
+
+    """
+    cap_unit_map = {}
+    in_ports = imap(itemgetter(0), _get_ports(processor.in_degree_iter()))
+
+    for cur_port in in_ports:
+        for cur_cap in processor.node[cur_port][_UNIT_CAPS_KEY]:
+            cap_unit_map.setdefault(cur_cap, []).append(cur_port)
+
+    return cap_unit_map.iteritems()
+
+
 def _get_iterable(iterable):
     """Return a non-empty iterable.
 
@@ -499,17 +517,22 @@ def _add_unit(processor, unit, unit_registry, cap_registry):
     unit_registry.add(unit[_UNIT_NAME_KEY])
 
 
-def _analyze_width(processor):
-    """Analyze the processor bus width.
+def _analyze_flow(processor):
+    """Check the flow of every supported capability in every input port.
 
-    `processor` is the processor to analyze whose width.
+    `processor` is the processor to check whose capability flow.
+    The function tests the flow of every supported capability through
+    every compatible input port. If any capability through any input
+    port can't flow with the full capacity of this input port to the
+    output ports, the function raises a BlockedCapError. It then tests
+    the flow of a virtual fused capability across all inputs(i.e. as if
+    all capabilities became a single capability) and raises a
+    TightWidthError if the input width exceeds the minimum fused bus
+    width.
 
     """
-    anal_graph = _get_anal_graph(processor)
-    _aug_ports(anal_graph)
-    _split_nodes(anal_graph)
-    _dist_edge_caps(anal_graph)
-    _chk_flow_vol(_min_width(anal_graph), _in_width(anal_graph))
+    _chk_caps_flow(processor)
+    _chk_fused_flow(processor)
 
 
 def _aug_ports(graph):
@@ -547,16 +570,67 @@ def _aug_terminals(graph, degrees, edge_func):
         _unify_ports(graph, ports, edge_func)
 
 
-def _chk_bus_width(processor):
-    """Check the given processor bus width.
+def _cap_in_edge(processor, capability, edge):
+    """Check if the given capability is supported by the edge.
 
-    `processor` is the processor to check.
-    The function raises a TightWidthError if input width exceeds the
-    minimum bus width.
+    `processor` is the processor containing the edge.
+    `capability` is the capability to check.
+    `edge` is the edge to check.
 
     """
-    if processor.number_of_nodes() > 1:
-        _analyze_width(processor)
+    return all(imap(
+        lambda unit: capability in processor.node[unit][_UNIT_CAPS_KEY], edge))
+
+
+def _chk_cap_flow(processor, capability, in_ports):
+    """Check the flow capacity for the given capability.
+
+    `processor` is the processor containing the capability and input
+                ports.
+    `capability` is the capability to check whose flow.
+    `in_ports` are the input ports supporting the given capability.
+    The function raises a BlockedCapError if the capability through any
+    input port can't flow with the full capacity of this input port to
+    the output ports.
+
+    """
+    anal_graph = _get_anal_graph(_make_cap_graph(processor, capability))
+    unit_anal_map = dict(
+        imap(lambda anal_entry: (anal_entry[1]["old_node"], anal_entry[0]),
+             anal_graph.node.iteritems()))
+    out_ports = imap(lambda old_port: (unit_anal_map[old_port[0]], old_port[
+        1]), _get_ports(processor.out_degree_iter()))
+    unified_out = next(out_ports)
+    try:
+        out_ports = chain([unified_out], _get_iterable(out_ports))
+    except StopIteration:  # single unit
+        unified_out = unified_out[0]  # Take the port name.
+    else:  # multiple units
+        unified_out = _unify_ports(
+            anal_graph, out_ports, lambda *outputs: outputs)
+
+    _split_nodes(anal_graph)
+    _dist_edge_caps(anal_graph)
+
+    for cur_port in in_ports:
+        _chk_unit_flow(networkx.maximum_flow_value(
+            anal_graph, unit_anal_map[cur_port], unified_out), anal_graph.node[
+            unit_anal_map[cur_port]][_UNIT_WIDTH_KEY])
+
+
+def _chk_caps_flow(processor):
+    """Check the flow capacity for every capability in the processor.
+
+    `processor` is the processor to check.
+    The function raises a BlockedCapError if any capability through any
+    supporting input port can't flow with the full capacity of this
+    input port to the output ports.
+
+    """
+    cap_units = _get_cap_units(processor)
+
+    for cap, in_ports in cap_units:
+        _chk_cap_flow(processor, cap, in_ports)
 
 
 def _chk_cycles(processor):
@@ -589,6 +663,24 @@ def _chk_edge(processor, edge):
     return common_caps
 
 
+def _chk_flow(processor):
+    """Check the flow of every supported capability in every input port.
+
+    `processor` is the processor to check whose capability flow.
+    The function tests the flow of every supported capability through
+    every compatible input port. If any capability through any input
+    port can't flow with the full capacity of this input port to the
+    output ports, the function raises a BlockedCapError. It then tests
+    the flow of a virtual fused capability across all inputs(i.e. as if
+    all capabilities became a single capability) and raises a
+    TightWidthError if the input width exceeds the minimum fused bus
+    width.
+
+    """
+    if processor.number_of_nodes() > 1:
+        _analyze_flow(processor)
+
+
 def _chk_flow_vol(min_width, in_width):
     """Check the flow volume from the input throughout all units.
 
@@ -603,6 +695,22 @@ def _chk_flow_vol(min_width, in_width):
             "Input width {{{}}} exceeding minimum width {{{}}}".format(
                 TightWidthError.REAL_WIDTH_IDX, TightWidthError.MIN_WIDTH_IDX),
             min_width, in_width)
+
+
+def _chk_fused_flow(processor):
+    """Check the flow for all capabilities fused.
+
+    `processor` is the processor to check.
+    The function raises a TightWidthError if input width exceeds the
+    minimum bus width after testing the processor as if it had a single
+    capability across all units.
+
+    """
+    anal_graph = _get_anal_graph(processor)
+    _aug_ports(anal_graph)
+    _split_nodes(anal_graph)
+    _dist_edge_caps(anal_graph)
+    _chk_flow_vol(_min_width(anal_graph), _in_width(anal_graph))
 
 
 def _chk_non_empty(processor, in_ports):
@@ -634,6 +742,19 @@ def _chk_terminals(processor, orig_port_info):
 
     for out_port in new_out_ports:
         _rm_dead_end(processor, out_port, orig_port_info.in_ports)
+
+
+def _chk_unit_flow(min_width, in_width):
+    """Check the flow volume from an input port to outputs.
+
+    `min_width` is the minimum bus width.
+    `in_width` is the input port width.
+    The function raises a BlockedCapError if the input port width
+    exceeds the minimum bus width.
+
+    """
+    if min_width < in_width:
+        raise exceptions.BlockedCapError()
 
 
 def _clean_struct(processor):
@@ -758,6 +879,24 @@ def _load_caps(unit, cap_registry):
     return cap_list
 
 
+def _make_cap_graph(processor, capability):
+    """Create a graph condensed for the given capability.
+
+    `processor` is the processor to create a graph from.
+    `capability` is the capability to consider while constructing the
+                 graph.
+    The function creates a graph with all units in the original
+    processor but only with edges connecting units having the given
+    capability in common.
+
+    """
+    cap_graph = DiGraph(
+        ifilter(lambda edge: _cap_in_edge(processor, capability, edge),
+                processor.edges_iter()))
+    cap_graph.add_nodes_from(processor.nodes_iter(True))  # for in-out ports
+    return cap_graph
+
+
 def _make_processor(proc_graph, post_ord):
     """Create a processor description from the given units.
 
@@ -861,7 +1000,7 @@ def _prep_proc_desc(processor):
     _rm_empty_units(processor)
     _chk_terminals(processor, port_info)
     _chk_non_empty(processor, port_info.in_ports)
-    _chk_bus_width(processor)
+    _chk_flow(processor)
 
 
 def _rm_dead_end(processor, dead_end, in_ports):
@@ -961,6 +1100,7 @@ def _unify_ports(graph, ports, edge_func):
                 terminals to the new one. It takes as parameters the old
                 and the new terminals in order and returns the a tuple
                 representing the directed edge between the two.
+    The function returns the new port.
 
     """
     unified_port = graph.number_of_nodes()
@@ -969,6 +1109,8 @@ def _unify_ports(graph, ports, edge_func):
     for cur_port in ports:
         _add_port_link(graph, cur_port[0], unified_port,
                        edge_func(cur_port[0], unified_port))
+
+    return unified_port
 
 
 def _update_graph(idx, unit, processor, width_graph, unit_idx_map):
@@ -981,5 +1123,5 @@ def _update_graph(idx, unit, processor, width_graph, unit_idx_map):
     `unit_idx_map` is the mapping between unit names and indices .
 
     """
-    width_graph.add_node(idx, processor.node[unit])
+    width_graph.add_node(idx, processor.node[unit], old_node=unit)
     unit_idx_map[unit] = idx

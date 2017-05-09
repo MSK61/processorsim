@@ -66,6 +66,17 @@ class BadEdgeError(RuntimeError):
         return self._edge
 
 
+class BlockedCapError(RuntimeError):
+
+    """Blocked Input capability error
+
+    A blocked input capability is one that if fed to a supporting input
+    port won't reach all outputs with the full width of the input it was
+    fed to.
+
+    """
+
+
 class DeadInputError(RuntimeError):
 
     """Dead input port error

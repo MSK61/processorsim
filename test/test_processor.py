@@ -85,6 +85,18 @@ class TestCaps:
     """Test case for loading capabilities"""
 
     @mark.parametrize(
+        "in_file", ["inputPortWithUnconsumedCapability.yaml",
+                    "inputPortWithPartiallyConsumedCapability.yaml"])
+    def test_input_port_with_not_fully_consumed_capabilitiy(self, in_file):
+        """Test an input with a capability not fully consumed.
+
+        `self` is this test case.
+        `in_file` is the processor description file.
+
+        """
+        raises(exceptions.BlockedCapError, _read_file, "capabilities", in_file)
+
+    @mark.parametrize(
         "in_file, err_tag", [("processorWithNoCapableInputs.yaml", "input"),
                              ("singleUnitWithNoCapabilities.yaml", "input"),
                              ("emptyProcessor.yaml", "input")])
@@ -441,19 +453,18 @@ class TestWidth:
 
     """Test case for checking data path width"""
 
-    @mark.parametrize("in_file", ["twoWideInputOneWideOutputProcessor.yaml",
-                                  "busTightOnlyInTheMiddleProcessor.yaml",
-                                  "twoInputOneOutputProcessor.yaml"])
-    def test_width_less_than_input_capacity_raises_TightWidthError(
-            self, in_file):
-        """Test a processor with a width less than its input capacity.
+    def test_width_less_than_fused_input_capacity_raises_TightWidthError(self):
+        """Test a processor with a width less than its fused capacity.
 
         `self` is this test case.
-        `in_file` is the processor description file.
+        The test runs a scenario where only fused capability flow will
+        suffer a tight width problem. Each single capability in this
+        scenario can already fully flow with full capacity to the
+        output.
 
         """
-        exChk = raises(
-            exceptions.TightWidthError, _read_file, "widths", in_file)
+        exChk = raises(exceptions.TightWidthError, _read_file, "widths",
+                       "fusedCapacityLargerThanBusWidth.yaml")
         _chk_error([_ValInStrCheck(exChk.value.actual_width, 1),
                     _ValInStrCheck(exChk.value.min_width, 2)], exChk.value)
 
