@@ -589,7 +589,7 @@ def _chk_cap_flow(processor, capability, in_ports):
     anal_graph = _get_anal_graph(_make_cap_graph(processor, capability))
     unit_anal_map = dict(
         imap(lambda anal_entry: (anal_entry[1]["old_node"], anal_entry[0]),
-             anal_graph.node.iteritems()))
+             anal_graph.nodes_iter(True)))
     unified_out = _aug_terminals(
         anal_graph, imap(lambda old_port: unit_anal_map[old_port],
                          _get_out_ports(processor)), _create_edge)
@@ -1047,7 +1047,7 @@ def _rm_empty_units(processor):
     The function removes units with no capabilities from the processor.
 
     """
-    unit_entries = processor.node.items()
+    unit_entries = processor.nodes(True)
 
     for unit, attrs in unit_entries:
         if not attrs[_UNIT_CAPS_KEY]:
