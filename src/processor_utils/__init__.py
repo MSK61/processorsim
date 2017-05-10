@@ -594,9 +594,10 @@ def _chk_cap_flow(processor, capability, in_ports):
     _dist_edge_caps(anal_graph)
 
     for cur_port in in_ports:
-        _chk_unit_flow(networkx.maximum_flow_value(
-            anal_graph, unit_anal_map[cur_port], unified_out), anal_graph.node[
-            unit_anal_map[cur_port]][_UNIT_WIDTH_KEY], capability, cur_port)
+        _chk_unit_flow(networkx.maximum_flow_value(anal_graph, unit_anal_map[
+            cur_port], unified_out), exceptions.CapPortInfo(
+            capability, cur_port,
+            anal_graph.node[unit_anal_map[cur_port]][_UNIT_WIDTH_KEY]))
 
 
 def _chk_caps_flow(processor):
@@ -725,24 +726,22 @@ def _chk_terminals(processor, orig_port_info):
         _rm_dead_end(processor, out_port, orig_port_info.in_ports)
 
 
-def _chk_unit_flow(min_width, in_width, capability, port):
+def _chk_unit_flow(min_width, cap_port_info):
     """Check the flow volume from an input port to outputs.
 
     `min_width` is the minimum bus width.
-    `in_width` is the input port width.
-    `capability` is the capability whose flow is checked.
-    `port` is the port the flow is checked starting from.
+    `cap_port_info` is the capability port information.
     The function raises a BlockedCapError if the input port width
     exceeds the minimum bus width.
 
     """
-    if min_width < in_width:
+    if min_width < cap_port_info.capacity:
         raise BlockedCapError(
             "Capability {{{}}} at port {{{}}} with width {{{}}} exceeding "
             "minimum width {{{}}}".format(
                 BlockedCapError.CAPABILITY_IDX, BlockedCapError.PORT_IDX,
                 BlockedCapError.CAPACITY_IDX, BlockedCapError.MAX_WIDTH_IDX),
-            exceptions.CapPortInfo(capability, port, in_width), min_width)
+            cap_port_info, min_width)
 
 
 def _clean_struct(processor):
