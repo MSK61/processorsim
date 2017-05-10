@@ -99,10 +99,11 @@ class TestCaps:
         """
         exChk = raises(
             exceptions.BlockedCapError, _read_file, "capabilities", in_file)
-        _chk_error([_ValInStrCheck(exChk.value.capability, "MEM"),
-                    _ValInStrCheck(exChk.value.port, "input"), _ValInStrCheck(
-                        exChk.value.capacity, capacity), _ValInStrCheck(
-                        exChk.value.max_width, max_width)], exChk.value)
+        _chk_error(
+            [_ValInStrCheck(exChk.value.blocking_info.capability, "MEM"),
+             _ValInStrCheck(exChk.value.blocking_info.port, "input"),
+             _ValInStrCheck(exChk.value.blocking_info.capacity, capacity),
+             _ValInStrCheck(exChk.value.max_width, max_width)], exChk.value)
 
     @mark.parametrize(
         "in_file, err_tag", [("processorWithNoCapableInputs.yaml", "input"),

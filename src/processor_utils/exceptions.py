@@ -100,28 +100,17 @@ class BlockedCapError(RuntimeError):
         RuntimeError.__init__(
             self, msg_tmpl.format(blocking_info.capability, blocking_info.port,
                                   blocking_info.capacity, max_width))
-        self._capability = blocking_info.capability
-        self._port = blocking_info.port
-        self._capacity = blocking_info.capacity
+        self._blocking_info = blocking_info
         self._max_width = max_width
 
     @property
-    def capability(self):
-        """Blocked capability
+    def blocking_info(self):
+        """Blocking situation
 
         `self` is this blocked input capability error.
 
         """
-        return self._capability
-
-    @property
-    def capacity(self):
-        """Capacity of the blocked port
-
-        `self` is this blocked input capability error.
-
-        """
-        return self._capacity
+        return self._blocking_info
 
     @property
     def max_width(self):
@@ -131,15 +120,6 @@ class BlockedCapError(RuntimeError):
 
         """
         return self._max_width
-
-    @property
-    def port(self):
-        """Port the capability is block at
-
-        `self` is this blocked input capability error.
-
-        """
-        return self._port
 
 
 class CapPortInfo(object):
