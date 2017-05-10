@@ -339,7 +339,7 @@ class _ValInStrCheck:
 
         `self` is this verification point.
         `msg` is the message to be checked.
-        `start_index` is the index to start searching at.
+        `start_index` is the index to start searching after.
         The method returns the index of the associated value in the
         given message after the specified index.
 
@@ -487,7 +487,7 @@ def _chk_error(verify_points, error):
     idx = -1
 
     for cur_point in verify_points:
-        cur_point.check(error, idx)
+        idx = cur_point.check(error, idx)
 
 
 def _chk_one_unit(proc_dir, proc_file):
