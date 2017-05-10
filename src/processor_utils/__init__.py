@@ -52,6 +52,7 @@ from sets import IndexedSet, LowerIndexSet
 import units
 from units import sorted_models
 __all__ = ["exceptions", "load_proc_desc", "ProcessorDesc", "units"]
+_OLD_NODE_KEY = "old_node"
 # unit attributes
 _UNIT_CAPS_KEY = "capabilities"
 _UNIT_NAME_KEY = "name"
@@ -502,8 +503,8 @@ def _add_unit(processor, unit, unit_registry, cap_registry):
                 DupElemError.NEW_ELEM_IDX, DupElemError.OLD_ELEM_IDX),
             old_name, unit[_UNIT_NAME_KEY])
 
-    processor.add_node(unit[_UNIT_NAME_KEY], width=unit[_UNIT_WIDTH_KEY],
-                       capabilities=_load_caps(unit, cap_registry))
+    processor.add_node(unit[_UNIT_NAME_KEY], {_UNIT_WIDTH_KEY: unit[
+        _UNIT_WIDTH_KEY], _UNIT_CAPS_KEY: _load_caps(unit, cap_registry)})
     unit_registry.add(unit[_UNIT_NAME_KEY])
 
 
@@ -588,7 +589,7 @@ def _chk_cap_flow(processor, capability, in_ports):
     """
     anal_graph = _get_anal_graph(_make_cap_graph(processor, capability))
     unit_anal_map = dict(
-        imap(lambda anal_entry: (anal_entry[1]["old_node"], anal_entry[0]),
+        imap(lambda anal_entry: (anal_entry[1][_OLD_NODE_KEY], anal_entry[0]),
              anal_graph.nodes_iter(True)))
     unified_out = _aug_terminals(
         anal_graph, imap(lambda old_port: unit_anal_map[old_port],
@@ -1062,7 +1063,8 @@ def _split_node(graph, old_node, new_node):
     `new_node` is the node added after splitting.
 
     """
-    graph.add_node(new_node, width=graph.node[old_node][_UNIT_WIDTH_KEY])
+    graph.add_node(
+        new_node, {_UNIT_WIDTH_KEY: graph.node[old_node][_UNIT_WIDTH_KEY]})
     _mov_out_links(graph, graph.out_edges(old_node), new_node)
     graph.add_edge(old_node, new_node)
 
@@ -1099,7 +1101,7 @@ def _unify_ports(graph, ports, edge_func):
 
     """
     unified_port = graph.number_of_nodes()
-    graph.add_node(unified_port, width=0)
+    graph.add_node(unified_port, {_UNIT_WIDTH_KEY: 0})
 
     for cur_port in ports:
         _add_port_link(
@@ -1118,5 +1120,6 @@ def _update_graph(idx, unit, processor, width_graph, unit_idx_map):
     `unit_idx_map` is the mapping between unit names and indices .
 
     """
-    width_graph.add_node(idx, processor.node[unit], old_node=unit)
+    width_graph.add_node(
+        idx, dict([(_OLD_NODE_KEY, unit)], **(processor.node[unit])))
     unit_idx_map[unit] = idx
