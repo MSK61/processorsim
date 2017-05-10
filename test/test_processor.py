@@ -84,17 +84,25 @@ class TestCaps:
 
     """Test case for loading capabilities"""
 
-    @mark.parametrize(
-        "in_file", ["inputPortWithUnconsumedCapability.yaml",
-                    "inputPortWithPartiallyConsumedCapability.yaml"])
-    def test_input_port_with_not_fully_consumed_capabilitiy(self, in_file):
+    @mark.parametrize("in_file, capacity, max_width", [
+        ("inputPortWithUnconsumedCapability.yaml", 1, 0),
+        ("inputPortWithPartiallyConsumedCapability.yaml", 2, 1)])
+    def test_input_port_with_not_fully_consumed_capabilitiy(
+            self, in_file, capacity, max_width):
         """Test an input with a capability not fully consumed.
 
         `self` is this test case.
         `in_file` is the processor description file.
+        `capacity` is the blocked port capacity.
+        `max_width` is the processor maximum bus width.
 
         """
-        raises(exceptions.BlockedCapError, _read_file, "capabilities", in_file)
+        exChk = raises(
+            exceptions.BlockedCapError, _read_file, "capabilities", in_file)
+        _chk_error([_ValInStrCheck(exChk.value.capability, "MEM"),
+                    _ValInStrCheck(exChk.value.port, "input"), _ValInStrCheck(
+                        exChk.value.capacity, capacity), _ValInStrCheck(
+                        exChk.value.max_width, max_width)], exChk.value)
 
     @mark.parametrize(
         "in_file, err_tag", [("processorWithNoCapableInputs.yaml", "input"),

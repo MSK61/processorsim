@@ -76,6 +76,116 @@ class BlockedCapError(RuntimeError):
 
     """
 
+    # parameter indices in format message
+    CAPABILITY_IDX = 0
+
+    PORT_IDX = 1
+
+    CAPACITY_IDX = 2
+
+    MAX_WIDTH_IDX = 3
+
+    def __init__(self, msg_tmpl, blocking_info, max_width):
+        """Create a blocked input capability error.
+
+        `self` is this blocked input capability error.
+        `msg_tmpl` is the error format message taking in order the
+                   capability, port, actual, and maximum bus widths as
+                   positional parameters.
+        `blocking_info` is the blocking information.
+        `max_width` is the maximum capacity that can flow from the port
+                    to the outputs.
+
+        """
+        RuntimeError.__init__(
+            self, msg_tmpl.format(blocking_info.capability, blocking_info.port,
+                                  blocking_info.capacity, max_width))
+        self._capability = blocking_info.capability
+        self._port = blocking_info.port
+        self._capacity = blocking_info.capacity
+        self._max_width = max_width
+
+    @property
+    def capability(self):
+        """Blocked capability
+
+        `self` is this blocked input capability error.
+
+        """
+        return self._capability
+
+    @property
+    def capacity(self):
+        """Capacity of the blocked port
+
+        `self` is this blocked input capability error.
+
+        """
+        return self._capacity
+
+    @property
+    def max_width(self):
+        """Maximum allowed width
+
+        `self` is this blocked input capability error.
+
+        """
+        return self._max_width
+
+    @property
+    def port(self):
+        """Port the capability is block at
+
+        `self` is this blocked input capability error.
+
+        """
+        return self._port
+
+
+class CapPortInfo(object):
+
+    """Capability-port combination information"""
+
+    def __init__(self, capability, port, capacity):
+        """Set the capability-port combination information.
+
+        `self` is this capability-port combination information.
+        `capability` is the capability.
+        `port` is the port.
+        `capacity` is the port width.
+
+        """
+        self._capability = capability
+        self._port = port
+        self._capacity = capacity
+
+    @property
+    def capability(self):
+        """Capability
+
+        `self` is this capability-port combination information.
+
+        """
+        return self._capability
+
+    @property
+    def capacity(self):
+        """Port width
+
+        `self` is this capability-port combination information.
+
+        """
+        return self._capacity
+
+    @property
+    def port(self):
+        """Port
+
+        `self` is this capability-port combination information.
+
+        """
+        return self._port
+
 
 class DeadInputError(RuntimeError):
 
