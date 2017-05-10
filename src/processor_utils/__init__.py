@@ -236,9 +236,7 @@ def load_proc_desc(raw_desc):
     of a unit always succeed the unit.
 
     """
-    unit_sect = "units"
-    data_path_sect = "dataPath"
-    proc_desc = _create_graph(raw_desc[unit_sect], raw_desc[data_path_sect])
+    proc_desc = _create_graph(raw_desc["units"], raw_desc["dataPath"])
     _prep_proc_desc(proc_desc)
     return _make_processor(proc_desc, _post_order(proc_desc))
 
@@ -377,10 +375,8 @@ def _set_capacities(graph, cap_edges):
     `cap_edges` are the capping edges.
 
     """
-    cap_attr = "capacity"
-
     for cur_edge in cap_edges:
-        graph[cur_edge[0]][cur_edge[1]][cap_attr] = min(
+        graph[cur_edge[0]][cur_edge[1]]["capacity"] = min(
             imap(lambda unit: graph.node[unit][_UNIT_WIDTH_KEY], cur_edge))
 
 
