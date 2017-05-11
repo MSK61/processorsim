@@ -97,20 +97,32 @@ class BlockedCapError(RuntimeError):
                     to the outputs.
 
         """
-        RuntimeError.__init__(self, msg_tmpl.format(
-            blocking_info.capability_name, blocking_info.port_name,
-            blocking_info.capacity, max_width))
-        self._blocking_info = blocking_info
+        RuntimeError.__init__(
+            self, msg_tmpl.format(blocking_info.capability_info.reporting_name,
+                                  blocking_info.port_info.reporting_name,
+                                  blocking_info.capacity, max_width))
+        self._capability = blocking_info.capability_info.std_name
+        self._port = blocking_info.port_info.std_name
+        self._capacity = blocking_info.capacity
         self._max_width = max_width
 
     @property
-    def blocking_info(self):
-        """Blocking situation
+    def capability(self):
+        """Blocked capability
 
         `self` is this blocked input capability error.
 
         """
-        return self._blocking_info
+        return self._capability
+
+    @property
+    def capacity(self):
+        """Capacity of the blocked port
+
+        `self` is this blocked input capability error.
+
+        """
+        return self._capacity
 
     @property
     def max_width(self):
@@ -120,6 +132,15 @@ class BlockedCapError(RuntimeError):
 
         """
         return self._max_width
+
+    @property
+    def port(self):
+        """Port the capability is block at
+
+        `self` is this blocked input capability error.
+
+        """
+        return self._port
 
 
 class CapPortInfo(object):
@@ -135,29 +156,18 @@ class CapPortInfo(object):
         `capacity` is the port width.
 
         """
-        self._capability = capability_info.std_name
-        self._cap_name = capability_info.reporting_name
-        self._port = port_info.std_name
-        self._port_name = port_info.reporting_name
+        self._cap_info = capability_info
+        self._port_info = port_info
         self._capacity = capacity
 
     @property
-    def capability(self):
-        """Capability
+    def capability_info(self):
+        """Capability information
 
         `self` is this capability-port combination information.
 
         """
-        return self._capability
-
-    @property
-    def capability_name(self):
-        """Capability reporting name
-
-        `self` is this capability-port combination information.
-
-        """
-        return self._cap_name
+        return self._cap_info
 
     @property
     def capacity(self):
@@ -169,22 +179,13 @@ class CapPortInfo(object):
         return self._capacity
 
     @property
-    def port(self):
-        """Port
+    def port_info(self):
+        """Port information
 
         `self` is this capability-port combination information.
 
         """
-        return self._port
-
-    @property
-    def port_name(self):
-        """Port reporting name
-
-        `self` is this capability-port combination information.
-
-        """
-        return self._port_name
+        return self._port_info
 
 
 class ComponentInfo(object):
