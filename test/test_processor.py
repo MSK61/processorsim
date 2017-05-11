@@ -84,27 +84,6 @@ class TestCaps:
 
     """Test case for loading capabilities"""
 
-    @mark.parametrize("in_file, capacity, max_width", [
-        ("inputPortWithUnconsumedCapability.yaml", 1, 0),
-        ("inputPortWithPartiallyConsumedCapability.yaml", 2, 1)])
-    def test_input_port_with_not_fully_consumed_capabilitiy(
-            self, in_file, capacity, max_width):
-        """Test an input with a capability not fully consumed.
-
-        `self` is this test case.
-        `in_file` is the processor description file.
-        `capacity` is the blocked port capacity.
-        `max_width` is the processor maximum bus width.
-
-        """
-        exChk = raises(
-            exceptions.BlockedCapError, _read_file, "capabilities", in_file)
-        _chk_error([_ValInStrCheck("Capability " + exChk.value.capability,
-                                   "Capability MEM"), _ValInStrCheck(
-            "port " + exChk.value.port, "port input"), _ValInStrCheck(
-            exChk.value.capacity, capacity), _ValInStrCheck(
-            exChk.value.max_width, max_width)], exChk.value)
-
     @mark.parametrize(
         "in_file, err_tag", [("processorWithNoCapableInputs.yaml", "input"),
                              ("singleUnitWithNoCapabilities.yaml", "input"),
@@ -461,6 +440,27 @@ class TestUnits:
 class TestWidth:
 
     """Test case for checking data path width"""
+
+    @mark.parametrize("in_file, capacity, max_width", [
+        ("inputPortWithUnconsumedCapability.yaml", 1, 0),
+        ("inputPortWithPartiallyConsumedCapability.yaml", 2, 1)])
+    def test_input_port_with_not_fully_consumed_capabilitiy(
+            self, in_file, capacity, max_width):
+        """Test an input with a capability not fully consumed.
+
+        `self` is this test case.
+        `in_file` is the processor description file.
+        `capacity` is the blocked port capacity.
+        `max_width` is the processor maximum bus width.
+
+        """
+        exChk = raises(
+            exceptions.BlockedCapError, _read_file, "widths", in_file)
+        _chk_error([_ValInStrCheck("Capability " + exChk.value.capability,
+                                   "Capability MEM"), _ValInStrCheck(
+            "port " + exChk.value.port, "port input"), _ValInStrCheck(
+            exChk.value.capacity, capacity), _ValInStrCheck(
+            exChk.value.max_width, max_width)], exChk.value)
 
     def test_width_less_than_fused_input_capacity_raises_TightWidthError(self):
         """Test a processor with a width less than its fused capacity.
