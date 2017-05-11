@@ -41,7 +41,8 @@
 ############################################################
 
 import exceptions
-from exceptions import BlockedCapError, DupElemError, TightWidthError
+from exceptions import BlockedCapError, ComponentInfo, DupElemError, \
+    TightWidthError
 import itertools
 from itertools import chain, ifilter, imap
 import logging
@@ -571,19 +572,22 @@ def _cap_in_edge(processor, capability, edge):
         lambda unit: capability in processor.node[unit][_UNIT_CAPS_KEY], edge))
 
 
-def _chk_cap_flow(processor, capability, in_ports):
+def _chk_cap_flow(
+        processor, cap_graph, capability_info, in_ports, port_name_func):
     """Check the flow capacity for the given capability.
 
-    `processor` is the processor containing the capability and input
-                ports.
-    `capability` is the capability to check whose flow.
+    `processor` is the original processor containing the capability and
+                input ports.
+    `cap_graph` is the capability-focused processor.
+    `capability_info` is the capability information.
     `in_ports` are the input ports supporting the given capability.
+    `port_name_func` is the port reporting name function.
     The function raises a BlockedCapError if the capability through any
     input port can't flow with the full capacity of this input port to
     the output ports.
 
     """
-    anal_graph = _get_anal_graph(_make_cap_graph(processor, capability))
+    anal_graph = _get_anal_graph(cap_graph)
     unit_anal_map = dict(
         imap(lambda anal_entry: (anal_entry[1][_OLD_NODE_KEY], anal_entry[0]),
              anal_graph.nodes_iter(True)))
@@ -594,10 +598,11 @@ def _chk_cap_flow(processor, capability, in_ports):
     _dist_edge_caps(anal_graph)
 
     for cur_port in in_ports:
-        _chk_unit_flow(networkx.maximum_flow_value(anal_graph, unit_anal_map[
-            cur_port], unified_out), exceptions.CapPortInfo(
-            capability, cur_port,
-            anal_graph.node[unit_anal_map[cur_port]][_UNIT_WIDTH_KEY]))
+        _chk_unit_flow(
+            networkx.maximum_flow_value(
+                anal_graph, unit_anal_map[cur_port], unified_out),
+            anal_graph.node[unit_anal_map[cur_port]][_UNIT_WIDTH_KEY],
+            capability_info, ComponentInfo(cur_port, port_name_func(cur_port)))
 
 
 def _chk_caps_flow(processor):
@@ -612,7 +617,9 @@ def _chk_caps_flow(processor):
     cap_units = _get_cap_units(processor)
 
     for cap, in_ports in cap_units:
-        _chk_cap_flow(processor, cap, in_ports)
+        _chk_cap_flow(processor, _make_cap_graph(processor, cap),
+                      ComponentInfo(cap, "Capability " + cap), in_ports,
+                      lambda port: "port " + port)
 
 
 def _chk_cycles(processor):
@@ -726,22 +733,27 @@ def _chk_terminals(processor, orig_port_info):
         _rm_dead_end(processor, out_port, orig_port_info.in_ports)
 
 
-def _chk_unit_flow(min_width, cap_port_info):
+def _chk_unit_flow(min_width, in_width, capability_info, port_info):
     """Check the flow volume from an input port to outputs.
 
     `min_width` is the minimum bus width.
-    `cap_port_info` is the capability port information.
+    `in_width` is the input port width.
+    `capability_info` is the information of the capability whose flow is
+                      checked.
+    `port_info` is the information of the port the flow is checked
+                starting from.
     The function raises a BlockedCapError if the input port width
     exceeds the minimum bus width.
 
     """
-    if min_width < cap_port_info.capacity:
+    if min_width < in_width:
         raise BlockedCapError(
-            "Capability {{{}}} at port {{{}}} with width {{{}}} exceeding "
-            "minimum width {{{}}}".format(
+            "{{{}}} from {{{}}} with width {{{}}} exceeding minimum width "
+            "{{{}}}".format(
                 BlockedCapError.CAPABILITY_IDX, BlockedCapError.PORT_IDX,
                 BlockedCapError.CAPACITY_IDX, BlockedCapError.MAX_WIDTH_IDX),
-            cap_port_info, min_width)
+            exceptions.CapPortInfo(capability_info, port_info, in_width),
+            min_width)
 
 
 def _clean_struct(processor):

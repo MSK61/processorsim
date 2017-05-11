@@ -97,9 +97,9 @@ class BlockedCapError(RuntimeError):
                     to the outputs.
 
         """
-        RuntimeError.__init__(
-            self, msg_tmpl.format(blocking_info.capability, blocking_info.port,
-                                  blocking_info.capacity, max_width))
+        RuntimeError.__init__(self, msg_tmpl.format(
+            blocking_info.capability_name, blocking_info.port_name,
+            blocking_info.capacity, max_width))
         self._blocking_info = blocking_info
         self._max_width = max_width
 
@@ -126,17 +126,19 @@ class CapPortInfo(object):
 
     """Capability-port combination information"""
 
-    def __init__(self, capability, port, capacity):
+    def __init__(self, capability_info, port_info, capacity):
         """Set the capability-port combination information.
 
         `self` is this capability-port combination information.
-        `capability` is the capability.
-        `port` is the port.
+        `capability_info` is the capability information.
+        `port_info` is the port information.
         `capacity` is the port width.
 
         """
-        self._capability = capability
-        self._port = port
+        self._capability = capability_info.std_name
+        self._cap_name = capability_info.reporting_name
+        self._port = port_info.std_name
+        self._port_name = port_info.reporting_name
         self._capacity = capacity
 
     @property
@@ -147,6 +149,15 @@ class CapPortInfo(object):
 
         """
         return self._capability
+
+    @property
+    def capability_name(self):
+        """Capability reporting name
+
+        `self` is this capability-port combination information.
+
+        """
+        return self._cap_name
 
     @property
     def capacity(self):
@@ -165,6 +176,49 @@ class CapPortInfo(object):
 
         """
         return self._port
+
+    @property
+    def port_name(self):
+        """Port reporting name
+
+        `self` is this capability-port combination information.
+
+        """
+        return self._port_name
+
+
+class ComponentInfo(object):
+
+    """Component information"""
+
+    def __init__(self, std_name, reporting_name):
+        """Set the component information.
+
+        `self` is this component information.
+        `std_name` is the component standard name.
+        `reporting_name` is the component reporting name.
+
+        """
+        self._std_name = std_name
+        self._rep_name = reporting_name
+
+    @property
+    def reporting_name(self):
+        """Component reporting name
+
+        `self` is this component information.
+
+        """
+        return self._rep_name
+
+    @property
+    def std_name(self):
+        """Component standard name
+
+        `self` is this component information.
+
+        """
+        return self._std_name
 
 
 class DeadInputError(RuntimeError):

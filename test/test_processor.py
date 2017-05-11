@@ -100,8 +100,10 @@ class TestCaps:
         exChk = raises(
             exceptions.BlockedCapError, _read_file, "capabilities", in_file)
         _chk_error(
-            [_ValInStrCheck(exChk.value.blocking_info.capability, "MEM"),
-             _ValInStrCheck(exChk.value.blocking_info.port, "input"),
+            [_ValInStrCheck(
+                "Capability " + exChk.value.blocking_info.capability,
+                "Capability MEM"), _ValInStrCheck(
+                "port " + exChk.value.blocking_info.port, "port input"),
              _ValInStrCheck(exChk.value.blocking_info.capacity, capacity),
              _ValInStrCheck(exChk.value.max_width, max_width)], exChk.value)
 
