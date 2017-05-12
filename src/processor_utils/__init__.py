@@ -573,12 +573,12 @@ def _cap_in_edge(processor, capability, edge):
 
 
 def _chk_cap_flow(
-        processor, anal_graph, capability_info, in_ports, port_name_func):
+        processor, cap_graph, capability_info, in_ports, port_name_func):
     """Check the flow capacity for the given capability.
 
     `processor` is the original processor containing the capability and
                 input ports.
-    `anal_graph` is the analysis graph.
+    `cap_graph` is the capability-focused processor.
     `capability_info` is the capability information.
     `in_ports` are the input ports supporting the given capability.
     `port_name_func` is the port reporting name function.
@@ -587,6 +587,7 @@ def _chk_cap_flow(
     the output ports.
 
     """
+    anal_graph = _get_anal_graph(cap_graph)
     unit_anal_map = dict(
         imap(lambda anal_entry: (anal_entry[1][_OLD_NODE_KEY], anal_entry[0]),
              anal_graph.nodes_iter(True)))
@@ -616,10 +617,9 @@ def _chk_caps_flow(processor):
     cap_units = _get_cap_units(processor)
 
     for cap, in_ports in cap_units:
-        _chk_cap_flow(
-            processor, _get_anal_graph(_make_cap_graph(processor, cap)),
-            ComponentInfo(cap, "Capability " + cap), in_ports,
-            lambda port: "port " + port)
+        _chk_cap_flow(processor, _make_cap_graph(processor, cap),
+                      ComponentInfo(cap, "Capability " + cap), in_ports,
+                      lambda port: "port " + port)
 
 
 def _chk_cycles(processor):
