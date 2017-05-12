@@ -41,10 +41,9 @@
 ############################################################
 
 import exceptions
-from exceptions import BlockedCapError, ComponentInfo, DupElemError, \
-    TightWidthError
+from exceptions import BlockedCapError, ComponentInfo, DupElemError
 import itertools
-from itertools import chain, ifilter, imap
+from itertools import ifilter, imap
 import logging
 import networkx
 from networkx import DiGraph
@@ -287,16 +286,6 @@ def _get_in_ports(processor):
     return _get_ports(processor.in_degree_iter())
 
 
-def _get_iterable(iterable):
-    """Return a non-empty iterable.
-
-    `iterable` is the iterable to return.
-    The function raises a StopIteration if the iterable is empty.
-
-    """
-    return chain([next(iterable)], iterable)
-
-
 def _get_out_ports(processor):
     """Find the output ports.
 
@@ -515,27 +504,12 @@ def _analyze_flow(processor):
     output ports, the function raises a BlockedCapError. It then tests
     the flow of a virtual fused capability across all inputs(i.e. as if
     all capabilities became a single capability) and raises a
-    TightWidthError if the input width exceeds the minimum fused bus
+    BlockedCapError if the input width exceeds the minimum fused bus
     width.
 
     """
     _chk_caps_flow(processor)
     _chk_fused_flow(processor)
-
-
-def _aug_ports(graph):
-    """Unify the ports in the graph.
-
-    `graph` is the graph to weld whose ports.
-    The function tries to connect several input and output ports into a
-    single input port and a single output port.
-
-    """
-    call_params = [[_get_in_ports(graph), lambda *inputs: reversed(inputs)],
-                   [_get_out_ports(graph), _create_edge]]
-
-    for cur_terms in call_params:
-        _aug_terminals(graph, *cur_terms)
 
 
 def _aug_terminals(graph, ports, edge_func):
@@ -551,13 +525,8 @@ def _aug_terminals(graph, ports, edge_func):
     terminal. The function returns the newly added port.
 
     """
-    aug_port = next(ports)
-    try:
-        ports = chain([aug_port], _get_iterable(ports))
-    except StopIteration:  # single unit
-        return aug_port
-    # multiple units
-    return _unify_ports(graph, ports, edge_func)
+    return ports[0] if len(ports) == 1 else _unify_ports(
+        graph, ports, edge_func)
 
 
 def _cap_in_edge(processor, capability, edge):
@@ -592,9 +561,9 @@ def _chk_cap_flow(
         imap(lambda anal_entry: (anal_entry[1][_OLD_NODE_KEY], anal_entry[0]),
              anal_graph.nodes_iter(True)))
     unified_out = _aug_terminals(
-        anal_graph, imap(lambda old_port: unit_anal_map[old_port],
-                         _get_out_ports(processor)), _create_edge)
-    _split_nodes(anal_graph)
+        anal_graph, map(lambda old_port: unit_anal_map[old_port],
+                        _get_out_ports(processor)), _create_edge)
+    unified_out = _split_nodes(anal_graph)[unified_out]
     _dist_edge_caps(anal_graph)
 
     for cur_port in in_ports:
@@ -662,7 +631,7 @@ def _chk_flow(processor):
     output ports, the function raises a BlockedCapError. It then tests
     the flow of a virtual fused capability across all inputs(i.e. as if
     all capabilities became a single capability) and raises a
-    TightWidthError if the input width exceeds the minimum fused bus
+    BlockedCapError if the input width exceeds the minimum fused bus
     width.
 
     """
@@ -670,36 +639,21 @@ def _chk_flow(processor):
         _analyze_flow(processor)
 
 
-def _chk_flow_vol(min_width, in_width):
-    """Check the flow volume from the input throughout all units.
-
-    `min_width` is the minimum bus width.
-    `in_width` is the processor input width.
-    The function raises a TightWidthError if the input width exceeds the
-    minimum bus width.
-
-    """
-    if min_width < in_width:
-        raise TightWidthError(
-            "Input width {{{}}} exceeding minimum width {{{}}}".format(
-                TightWidthError.REAL_WIDTH_IDX, TightWidthError.MIN_WIDTH_IDX),
-            min_width, in_width)
-
-
 def _chk_fused_flow(processor):
     """Check the flow for all capabilities fused.
 
     `processor` is the processor to check.
-    The function raises a TightWidthError if input width exceeds the
+    The function raises a BlockedCapError if input width exceeds the
     minimum bus width after testing the processor as if it had a single
     capability across all units.
 
     """
     anal_graph = _get_anal_graph(processor)
-    _aug_ports(anal_graph)
-    _split_nodes(anal_graph)
-    _dist_edge_caps(anal_graph)
-    _chk_flow_vol(_min_width(anal_graph), _in_width(anal_graph))
+    in_ports = _get_in_ports(anal_graph)
+    _chk_cap_flow(anal_graph, anal_graph, ComponentInfo(
+        "fused capability", "All capabilities"),
+                  [_aug_terminals(anal_graph, list(in_ports), lambda *inputs:
+                                  reversed(inputs))], lambda port: "all ports")
 
 
 def _chk_non_empty(processor, in_ports):
@@ -853,24 +807,6 @@ def _dist_edge_caps(graph):
     _set_capacities(graph, _coll_cap_edges(graph))
 
 
-def _in_port(graph):
-    """Find the input port of the graph.
-
-    `graph` is the graph to get whose input port.
-
-    """
-    return next(_get_in_ports(graph))
-
-
-def _in_width(graph):
-    """Calculate the input capacity of the graph.
-
-    `graph` is the graph to get whose input capacity.
-
-    """
-    return graph.node[_in_port(graph)][_UNIT_WIDTH_KEY]
-
-
 def _load_caps(unit, cap_registry):
     """Load the given unit capabilities.
 
@@ -934,16 +870,6 @@ def _make_processor(proc_graph, post_ord):
     return ProcessorDesc(in_ports, out_ports, in_out_ports, internal_units)
 
 
-def _min_width(processor):
-    """Calculate the minimum bus width for the processor.
-
-    `processor` is the processor to get whose minimum bus width.
-
-    """
-    return networkx.maximum_flow_value(
-        processor, _in_port(processor), _out_port(processor))
-
-
 def _mov_out_link(graph, link, new_node):
     """Move an outgoing link from an old node to a new one.
 
@@ -966,15 +892,6 @@ def _mov_out_links(graph, out_links, new_node):
     """
     for cur_link in out_links:
         _mov_out_link(graph, cur_link, new_node)
-
-
-def _out_port(graph):
-    """Find the output port of the graph.
-
-    `graph` is the graph to get whose output port.
-
-    """
-    return next(_get_out_ports(graph))
 
 
 def _post_order(graph):
@@ -1000,7 +917,7 @@ def _prep_proc_desc(processor):
     optimizes its structure by trying to only keep the effective units
     needed in a typical program execution. It raises an EmptyProcError
     if the processor doesn't contain any units, a NetworkXUnfeasible if
-    the processor isn't a DAG, and a TightWidthError if input width
+    the processor isn't a DAG, and a BlockedCapError if input width
     exceeds the minimum bus width.
 
     """
@@ -1075,12 +992,14 @@ def _split_node(graph, old_node, new_node):
     `graph` is the graph containing the node to be split.
     `old_node` is the existing node.
     `new_node` is the node added after splitting.
+    The function returns the new node.
 
     """
     graph.add_node(
         new_node, {_UNIT_WIDTH_KEY: graph.node[old_node][_UNIT_WIDTH_KEY]})
     _mov_out_links(graph, graph.out_edges(old_node), new_node)
     graph.add_edge(old_node, new_node)
+    return new_node
 
 
 def _split_nodes(graph):
@@ -1090,16 +1009,19 @@ def _split_nodes(graph):
     The function splits nodes having multiple links on one side and a
     non-capping link on the other. A link on one side is capping if it's
     the only link on this side.
+    The function returns a dictionary mapping each unit to its output
+    twin(if one was created) or itself if it wasn't split.
 
     """
-    in_degrees = list(graph.in_degree_iter())
     out_degrees = graph.out_degree()
-    ext_base = len(out_degrees)
-
-    for unit, in_deg in in_degrees:
-        if in_deg != 1 and out_degrees[unit] != 1 and (
-                in_deg or out_degrees[unit]):
-            _split_node(graph, unit, ext_base + unit)
+    out_twins = imap(
+        lambda in_deg_item:
+        (in_deg_item[0],
+         _split_node(graph, in_deg_item[0], len(out_degrees) + in_deg_item[
+            0]) if in_deg_item[1] != 1 and out_degrees[in_deg_item[0]] != 1 and
+         (in_deg_item[1] or out_degrees[in_deg_item[0]]) else in_deg_item[0]),
+        list(graph.in_degree_iter()))
+    return dict(out_twins)
 
 
 def _unify_ports(graph, ports, edge_func):
@@ -1135,5 +1057,5 @@ def _update_graph(idx, unit, processor, width_graph, unit_idx_map):
 
     """
     width_graph.add_node(
-        idx, dict([(_OLD_NODE_KEY, unit)], **(processor.node[unit])))
+        idx, dict(processor.node[unit], **{_OLD_NODE_KEY: unit}))
     unit_idx_map[unit] = idx

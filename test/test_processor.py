@@ -51,6 +51,7 @@ from pytest import mark, raises
 import test_env
 import processor_utils
 from processor_utils import exceptions, ProcessorDesc
+from processor_utils.exceptions import BlockedCapError
 from processor_utils.units import FuncUnit, UnitModel
 import yaml
 
@@ -444,7 +445,7 @@ class TestWidth:
     @mark.parametrize("in_file, capacity, max_width", [
         ("inputPortWithUnconsumedCapability.yaml", 1, 0),
         ("inputPortWithPartiallyConsumedCapability.yaml", 2, 1)])
-    def test_input_port_with_not_fully_consumed_capabilitiy(
+    def test_not_fully_consumed_capabilitiy_raises_BlockedCapError(
             self, in_file, capacity, max_width):
         """Test an input with a capability not fully consumed.
 
@@ -454,15 +455,14 @@ class TestWidth:
         `max_width` is the processor maximum bus width.
 
         """
-        exChk = raises(
-            exceptions.BlockedCapError, _read_file, "widths", in_file)
+        exChk = raises(BlockedCapError, _read_file, "widths", in_file)
         _chk_error([_ValInStrCheck("Capability " + exChk.value.capability,
                                    "Capability MEM"), _ValInStrCheck(
             "port " + exChk.value.port, "port input"), _ValInStrCheck(
             exChk.value.capacity, capacity), _ValInStrCheck(
             exChk.value.max_width, max_width)], exChk.value)
 
-    def test_width_less_than_fused_input_capacity_raises_TightWidthError(self):
+    def test_width_less_than_fused_input_capacity_raises_BlockedCapError(self):
         """Test a processor with a width less than its fused capacity.
 
         `self` is this test case.
@@ -472,10 +472,13 @@ class TestWidth:
         output.
 
         """
-        exChk = raises(exceptions.TightWidthError, _read_file, "widths",
+        exChk = raises(BlockedCapError, _read_file, "widths",
                        "fusedCapacityLargerThanBusWidth.yaml")
-        _chk_error([_ValInStrCheck(exChk.value.actual_width, 1),
-                    _ValInStrCheck(exChk.value.min_width, 2)], exChk.value)
+        assert exChk.value.capability == "fused capability"
+        _chk_error([_ValInStrCheck("All capabilities", "All capabilities"),
+                    _ValInStrCheck("all ports", "all ports"),
+                    _ValInStrCheck(exChk.value.capacity, 2),
+                    _ValInStrCheck(exChk.value.max_width, 1)], exChk.value)
 
 
 def main():
