@@ -41,7 +41,8 @@
 ############################################################
 
 import exceptions
-from exceptions import BlockedCapError, ComponentInfo, DupElemError
+from exceptions import BlockedCapError, ComponentInfo, DupElemError, \
+    TightWidthError
 import itertools
 from itertools import ifilter, imap
 import logging
@@ -659,9 +660,15 @@ def _chk_fused_flow(processor):
 
     """
     anal_graph = _get_anal_graph(processor)
-    _chk_cap_flow(anal_graph, anal_graph,
-                  ComponentInfo("fused capability", "All capabilities"),
-                  [_aug_in_ports(anal_graph)], lambda port: "all ports")
+    try:
+        _chk_cap_flow(anal_graph, anal_graph,
+                      ComponentInfo("fused capability", "All capabilities"),
+                      [_aug_in_ports(anal_graph)], lambda port: "all ports")
+    except BlockedCapError as err:
+        raise TightWidthError(
+            "Input width {{{}}} exceeding supported width {{{}}}".format(
+                TightWidthError.REQ_WIDTH_IDX, TightWidthError.REAL_WIDTH_IDX),
+            err.max_width, err.capacity)
 
 
 def _chk_non_empty(processor, in_ports):

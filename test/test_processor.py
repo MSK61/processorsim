@@ -51,7 +51,6 @@ from pytest import mark, raises
 import test_env
 import processor_utils
 from processor_utils import exceptions, ProcessorDesc
-from processor_utils.exceptions import BlockedCapError
 from processor_utils.units import FuncUnit, UnitModel
 import yaml
 
@@ -455,7 +454,8 @@ class TestWidth:
         `max_width` is the processor maximum bus width.
 
         """
-        exChk = raises(BlockedCapError, _read_file, "widths", in_file)
+        exChk = raises(
+            exceptions.BlockedCapError, _read_file, "widths", in_file)
         _chk_error([_ValInStrCheck("Capability " + exChk.value.capability,
                                    "Capability MEM"), _ValInStrCheck(
             "port " + exChk.value.port, "port input"), _ValInStrCheck(
@@ -472,13 +472,10 @@ class TestWidth:
         output.
 
         """
-        exChk = raises(BlockedCapError, _read_file, "widths",
+        exChk = raises(exceptions.TightWidthError, _read_file, "widths",
                        "fusedCapacityLargerThanBusWidth.yaml")
-        assert exChk.value.capability == "fused capability"
-        _chk_error([_ValInStrCheck("All capabilities", "All capabilities"),
-                    _ValInStrCheck("all ports", "all ports"),
-                    _ValInStrCheck(exChk.value.capacity, 2),
-                    _ValInStrCheck(exChk.value.max_width, 1)], exChk.value)
+        _chk_error([_ValInStrCheck(exChk.value.needed_width, 2),
+                    _ValInStrCheck(exChk.value.actual_width, 1)], exChk.value)
 
 
 def main():

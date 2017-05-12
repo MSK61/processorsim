@@ -300,6 +300,49 @@ class EmptyProcError(RuntimeError):
     """Empty processor error"""
 
 
+class TightWidthError(RuntimeError):
+
+    """Tight bus width error"""
+
+    # parameter indices in format message
+    REAL_WIDTH_IDX = 0
+
+    REQ_WIDTH_IDX = 1
+
+    def __init__(self, msg_tmpl, actual_width, in_width):
+        """Create a tight bus width error.
+
+        `self` is this width error.
+        `msg_tmpl` is the error format message taking in order the
+                   actual and needed bus widths as positional
+                   parameters.
+        `actual_width` is the actual width.
+        `in_width` is the needed width from inputs.
+
+        """
+        RuntimeError.__init__(self, msg_tmpl.format(actual_width, in_width))
+        self._actual_width = actual_width
+        self._in_width = in_width
+
+    @property
+    def actual_width(self):
+        """Supported width
+
+        `self` is this tight bus width error.
+
+        """
+        return self._actual_width
+
+    @property
+    def needed_width(self):
+        """Width needed by the input
+
+        `self` is this tight bus width error.
+
+        """
+        return self._in_width
+
+
 class UndefElemError(RuntimeError):
 
     """Unknown set element error"""
