@@ -562,7 +562,7 @@ def _chk_cap_flow(
              anal_graph.nodes_iter(True)))
     unified_out = _aug_terminals(
         anal_graph, map(lambda old_port: unit_anal_map[old_port],
-                        _get_out_ports(processor)), _create_edge)
+                        _get_out_ports(processor)), lambda *outputs: outputs)
     unified_out = _split_nodes(anal_graph)[unified_out]
     _dist_edge_caps(anal_graph)
 
@@ -760,17 +760,6 @@ def _coll_cap_edges(graph):
             in_deg[0])), ifilter(lambda in_deg: in_deg[1] == 1 or out_degrees[
                 in_deg[0]] == 1, graph.in_degree_iter()))
     return frozenset(cap_edges)
-
-
-def _create_edge(src, dst):
-    """Create a link between the given units.
-
-    `src` is the source unit.
-    `dst` is the destination unit.
-    The function returns the created link.
-
-    """
-    return src, dst
 
 
 def _create_graph(units, links):
