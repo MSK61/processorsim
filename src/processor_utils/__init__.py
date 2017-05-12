@@ -512,6 +512,30 @@ def _analyze_flow(processor):
     _chk_fused_flow(processor)
 
 
+def _aug_in_ports(processor):
+    """Unify the input ports in the processor.
+
+    `processor` is the processor to weld whose input ports.
+    The function connects the processor input ports into a single input
+    port and returns that single port.
+
+    """
+    return _aug_terminals(processor, list(_get_in_ports(processor)),
+                          lambda *inputs: reversed(inputs))
+
+
+def _aug_out_ports(processor, out_ports):
+    """Unify the output ports in the processor.
+
+    `processor` is the processor containing the output ports.
+    `out_ports` are the output ports to weld.
+    The function connects several output ports into a single output port
+    and returns that single port.
+
+    """
+    return _aug_terminals(processor, out_ports, lambda *outputs: outputs)
+
+
 def _aug_terminals(graph, ports, edge_func):
     """Unify terminals indicated by degrees in the graph.
 
@@ -635,11 +659,9 @@ def _chk_fused_flow(processor):
 
     """
     anal_graph = _get_anal_graph(processor)
-    in_ports = _get_in_ports(anal_graph)
-    _chk_cap_flow(anal_graph, anal_graph, ComponentInfo(
-        "fused capability", "All capabilities"),
-                  [_aug_terminals(anal_graph, list(in_ports), lambda *inputs:
-                                  reversed(inputs))], lambda port: "all ports")
+    _chk_cap_flow(anal_graph, anal_graph,
+                  ComponentInfo("fused capability", "All capabilities"),
+                  [_aug_in_ports(anal_graph)], lambda port: "all ports")
 
 
 def _chk_non_empty(processor, in_ports):
@@ -673,9 +695,8 @@ def _chk_ports_flow(
     unit_anal_map = dict(
         imap(lambda anal_entry: (anal_entry[1][_OLD_NODE_KEY], anal_entry[0]),
              anal_graph.nodes_iter(True)))
-    unified_out = _aug_terminals(
-        anal_graph, map(lambda old_port: unit_anal_map[old_port], out_ports),
-        lambda *outputs: outputs)
+    unified_out = _aug_out_ports(anal_graph, map(lambda old_port:
+                                 unit_anal_map[old_port], out_ports))
     unified_out = _split_nodes(anal_graph)[unified_out]
     _dist_edge_caps(anal_graph)
 
