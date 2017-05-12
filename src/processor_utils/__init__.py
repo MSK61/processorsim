@@ -556,22 +556,8 @@ def _chk_cap_flow(
     the output ports.
 
     """
-    anal_graph = _get_anal_graph(cap_graph)
-    unit_anal_map = dict(
-        imap(lambda anal_entry: (anal_entry[1][_OLD_NODE_KEY], anal_entry[0]),
-             anal_graph.nodes_iter(True)))
-    unified_out = _aug_terminals(
-        anal_graph, map(lambda old_port: unit_anal_map[old_port],
-                        _get_out_ports(processor)), lambda *outputs: outputs)
-    unified_out = _split_nodes(anal_graph)[unified_out]
-    _dist_edge_caps(anal_graph)
-
-    for cur_port in in_ports:
-        _chk_unit_flow(
-            networkx.maximum_flow_value(
-                anal_graph, unit_anal_map[cur_port], unified_out),
-            anal_graph.node[unit_anal_map[cur_port]][_UNIT_WIDTH_KEY],
-            capability_info, ComponentInfo(cur_port, port_name_func(cur_port)))
+    _chk_ports_flow(_get_anal_graph(cap_graph), capability_info, in_ports,
+                    _get_out_ports(processor), port_name_func)
 
 
 def _chk_caps_flow(processor):
@@ -668,6 +654,37 @@ def _chk_non_empty(processor, in_ports):
         next(ifilter(lambda port: port in processor, in_ports))
     except StopIteration:  # No ports exist.
         raise exceptions.EmptyProcError("No input ports found")
+
+
+def _chk_ports_flow(
+        anal_graph, capability_info, in_ports, out_ports, port_name_func):
+    """Check the flow capacity for the given capability and ports.
+
+    `anal_graph` is the analysis graph.
+    `capability_info` is the capability information.
+    `in_ports` are the input ports supporting the given capability.
+    `out_ports` are the output ports of the original processor.
+    `port_name_func` is the port reporting name function.
+    The function raises a BlockedCapError if the capability through any
+    input port can't flow with the full capacity of this input port to
+    the output ports.
+
+    """
+    unit_anal_map = dict(
+        imap(lambda anal_entry: (anal_entry[1][_OLD_NODE_KEY], anal_entry[0]),
+             anal_graph.nodes_iter(True)))
+    unified_out = _aug_terminals(
+        anal_graph, map(lambda old_port: unit_anal_map[old_port], out_ports),
+        lambda *outputs: outputs)
+    unified_out = _split_nodes(anal_graph)[unified_out]
+    _dist_edge_caps(anal_graph)
+
+    for cur_port in in_ports:
+        _chk_unit_flow(
+            networkx.maximum_flow_value(
+                anal_graph, unit_anal_map[cur_port], unified_out),
+            anal_graph.node[unit_anal_map[cur_port]][_UNIT_WIDTH_KEY],
+            capability_info, ComponentInfo(cur_port, port_name_func(cur_port)))
 
 
 def _chk_terminals(processor, orig_port_info):
