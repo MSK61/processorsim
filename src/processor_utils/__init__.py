@@ -1118,7 +1118,7 @@ def _update_graph(idx, unit, processor, width_graph, unit_idx_map):
     `unit` is the unit name.
     `processor` is the original processor.
     `width_graph` is the bus width analysis graph.
-    `unit_idx_map` is the mapping between unit names and indices .
+    `unit_idx_map` is the mapping between unit names and indices.
 
     """
     width_graph.add_node(
