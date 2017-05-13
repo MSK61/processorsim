@@ -488,9 +488,10 @@ def _add_unit(processor, unit, unit_registry, cap_registry):
     `cap_registry` is the store of previously added capabilities.
 
     """
-    processor.add_node(_load_name(unit[_UNIT_NAME_KEY], unit_registry),
-                       {_UNIT_WIDTH_KEY: _load_width(unit),
-                        _UNIT_CAPS_KEY: _load_caps(unit, cap_registry)})
+    _chk_unit_name(unit[_UNIT_NAME_KEY], unit_registry)
+    _chk_unit_width(unit)
+    processor.add_node(unit[_UNIT_NAME_KEY], {_UNIT_WIDTH_KEY: unit[
+        _UNIT_WIDTH_KEY], _UNIT_CAPS_KEY: _load_caps(unit, cap_registry)})
     unit_registry.add(unit[_UNIT_NAME_KEY])
 
 
@@ -754,6 +755,38 @@ def _chk_unit_flow(min_width, in_width, capability_info, port_info):
             min_width)
 
 
+def _chk_unit_name(name, name_registry):
+    """Check the given unit name.
+
+    `name` is the unit name.
+    `name_registry` is the name store of previously added units.
+    The function raises a DupElemError if a unit with the same name was
+    previously added to the processor.
+
+    """
+    old_name = name_registry.get(name)
+
+    if old_name is not None:
+        raise DupElemError(
+            "Functional unit {{{}}} previously added as {{{}}}".format(
+                DupElemError.NEW_ELEM_IDX, DupElemError.OLD_ELEM_IDX),
+            old_name, name)
+
+
+def _chk_unit_width(unit):
+    """Check the given unit width.
+
+    `unit` is the unit to load whose width.
+    The function raises a BadWidthError if the width isn't positive.
+
+    """
+    if unit[_UNIT_WIDTH_KEY] <= 0:
+        raise BadWidthError(
+            "Functional unit {{{}}} has a bad width {{{}}}.".format(
+                BadWidthError.UNIT_IDX, BadWidthError.WIDTH_IDX),
+            *(itemgetter(_UNIT_NAME_KEY, _UNIT_WIDTH_KEY)(unit)))
+
+
 def _clean_struct(processor):
     """Clean the given processor structure.
 
@@ -856,44 +889,6 @@ def _load_caps(unit, cap_registry):
                         cap_registry)
 
     return cap_list
-
-
-def _load_name(name, name_registry):
-    """Load the given unit name.
-
-    `name` is the unit name.
-    `name_registry` is the name store of previously added units.
-    The function raises a DupElemError if a unit with the same name was
-    previously added to the processor, otherwise returns the loaded
-    name.
-
-    """
-    old_name = name_registry.get(name)
-
-    if old_name is None:
-        return name
-
-    raise DupElemError(
-        "Functional unit {{{}}} previously added as {{{}}}".format(
-            DupElemError.NEW_ELEM_IDX, DupElemError.OLD_ELEM_IDX), old_name,
-        name)
-
-
-def _load_width(unit):
-    """Load the given unit width.
-
-    `unit` is the unit to load whose width.
-    The function raises a BadWidthError if the width isn't positive,
-    otherwise returns the loaded width.
-
-    """
-    if unit[_UNIT_WIDTH_KEY] > 0:
-        return unit[_UNIT_WIDTH_KEY]
-
-    raise BadWidthError(
-        "Functional unit {{{}}} has a bad width {{{}}}.".format(
-            BadWidthError.UNIT_IDX, BadWidthError.WIDTH_IDX),
-        *(itemgetter(_UNIT_NAME_KEY, _UNIT_WIDTH_KEY)(unit)))
 
 
 def _make_cap_graph(processor, capability):
