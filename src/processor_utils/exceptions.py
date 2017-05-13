@@ -283,7 +283,7 @@ class DeadInputError(RuntimeError):
         `self` is this dead input error.
         `msg_tmpl` is the error format message taking the blocked port
                    as a positional argument.
-        `port` is the blocked input error.
+        `port` is the blocked input port.
 
         """
         RuntimeError.__init__(self, msg_tmpl.format(port))
