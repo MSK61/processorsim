@@ -237,12 +237,12 @@ class _PortGroup(object):
 
 
 def get_abilities(processor):
-    """Retrieve all capabilities supported by this processor.
+    """Retrieve all capabilities supported by the given processor.
 
     `processor` is the processor to retrieve whose capabilities.
 
     """
-    return frozenset(["ALU"])
+    return frozenset(processor.in_out_ports[0].capabilities)
 
 
 def load_proc_desc(raw_desc):

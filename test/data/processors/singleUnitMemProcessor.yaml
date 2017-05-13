@@ -1,0 +1,6 @@
+units:
+    - name: fullSys
+      width: 1
+      capabilities:
+        - MEM
+dataPath: []
