@@ -55,98 +55,6 @@ from processor_utils.units import FuncUnit, UnitModel
 import yaml
 
 
-class TestBlocking:
-
-    """Test case for detecting blocked inputs"""
-
-    @mark.parametrize(
-        "in_file, isolated_input", [("isolatedInputPort.yaml", "input 2"), (
-            "processorWithNoCapableOutputs.yaml", "input")])
-    def test_in_port_with_no_compatible_out_links_raises_DeadInputError(
-            self, in_file, isolated_input):
-        """Test an input port with only incompatible out links.
-
-        `self` is this test case.
-        `in_file` is the processor description file.
-        `isolated_input` is the input unit that gets isolated during
-                         optimization.
-        An incompatible link is a link connecting an input port to a
-        successor unit with no capabilities in common.
-
-        """
-        exChk = raises(
-            exceptions.DeadInputError, _read_file, "blocking", in_file)
-        _chk_error(
-            [_ValInStrCheck(exChk.value.port, isolated_input)], exChk.value)
-
-
-class TestCaps:
-
-    """Test case for loading capabilities"""
-
-    @mark.parametrize(
-        "in_file, err_tag", [("processorWithNoCapableInputs.yaml", "input"),
-                             ("singleUnitWithNoCapabilities.yaml", "input"),
-                             ("emptyProcessor.yaml", "input")])
-    def test_processor_with_incapable_ports_raises_EmptyProcError(
-            self, in_file, err_tag):
-        """Test a processor with no capable ports.
-
-        `self` is this test case.
-        `in_file` is the processor description file.
-        `err_tag` is the port type tag in the error message.
-
-        """
-        assert err_tag in str(raises(exceptions.EmptyProcError, _read_file,
-                                     "capabilities", in_file).value).lower()
-
-    def test_same_capability_with_different_case_in_two_units_is_detected(
-            self):
-        """Test loading a capability with different cases in two units.
-
-        `self` is this test case.
-
-        """
-        in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits.yaml"
-        with patch("logging.warning") as warn_mock:
-            assert _read_file("capabilities", in_file) == ProcessorDesc(
-                [], [], [UnitModel("core 1", 1, ["ALU"]),
-                         UnitModel("core 2", 1, ["ALU"])], [])
-        _chk_warn(["ALU", "core 1", "alu", "core 2"], warn_mock.call_args)
-
-    @mark.parametrize("in_file, capabilities", [
-        ("twoCapabilitiesWithSameNameAndCaseInOneUnit.yaml", ["ALU"]),
-        ("twoCapabilitiesWithSameNameAndDifferentCaseInOneUnit.yaml",
-         ["ALU", "alu"])])
-    def test_two_capabilities_with_same_name_in_one_unit_are_detected(
-            self, in_file, capabilities):
-        """Test loading two capabilities with the same name in one unit.
-
-        `self` is this test case.
-        `in_file` is the processor description file.
-        `capabilities` are the identical capabilities.
-
-        """
-        with patch("logging.warning") as warn_mock:
-            _chk_one_unit("capabilities", in_file)
-        _chk_warn(capabilities, warn_mock.call_args)
-
-    @mark.parametrize(
-        "in_file, bad_width", [("singleUnitWithZeroWidth.yaml", 0),
-                               ("singleUnitWithNegativeWidth.yaml", -1)])
-    def test_unit_with_non_positive_width_raises_BadWidthError(
-            self, in_file, bad_width):
-        """Test loading a unit with a non-positive width.
-
-        `self` is this test case.
-
-        """
-        exChk = raises(exceptions.BadWidthError, _read_file, "capabilities",
-                       in_file)
-        _chk_error([_ValInStrCheck(exChk.value.unit, "fullSys"),
-                    _ValInStrCheck(exChk.value.width, bad_width)], exChk.value)
-
-
 class TestClean:
 
     """Test case for cleaning(optimizing) a processor"""
@@ -350,6 +258,98 @@ class _ValInStrCheck:
         start_index = msg.find(str(self._value), start_index + 1)
         assert start_index >= 0
         return start_index
+
+
+class TestBlocking:
+
+    """Test case for detecting blocked inputs"""
+
+    @mark.parametrize(
+        "in_file, isolated_input", [("isolatedInputPort.yaml", "input 2"), (
+            "processorWithNoCapableOutputs.yaml", "input")])
+    def test_in_port_with_no_compatible_out_links_raises_DeadInputError(
+            self, in_file, isolated_input):
+        """Test an input port with only incompatible out links.
+
+        `self` is this test case.
+        `in_file` is the processor description file.
+        `isolated_input` is the input unit that gets isolated during
+                         optimization.
+        An incompatible link is a link connecting an input port to a
+        successor unit with no capabilities in common.
+
+        """
+        exChk = raises(
+            exceptions.DeadInputError, _read_file, "blocking", in_file)
+        _chk_error(
+            [_ValInStrCheck(exChk.value.port, isolated_input)], exChk.value)
+
+
+class TestCaps:
+
+    """Test case for loading capabilities"""
+
+    @mark.parametrize(
+        "in_file, err_tag", [("processorWithNoCapableInputs.yaml", "input"),
+                             ("singleUnitWithNoCapabilities.yaml", "input"),
+                             ("emptyProcessor.yaml", "input")])
+    def test_processor_with_incapable_ports_raises_EmptyProcError(
+            self, in_file, err_tag):
+        """Test a processor with no capable ports.
+
+        `self` is this test case.
+        `in_file` is the processor description file.
+        `err_tag` is the port type tag in the error message.
+
+        """
+        assert err_tag in str(raises(exceptions.EmptyProcError, _read_file,
+                                     "capabilities", in_file).value).lower()
+
+    def test_same_capability_with_different_case_in_two_units_is_detected(
+            self):
+        """Test loading a capability with different cases in two units.
+
+        `self` is this test case.
+
+        """
+        in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits.yaml"
+        with patch("logging.warning") as warn_mock:
+            assert _read_file("capabilities", in_file) == ProcessorDesc(
+                [], [], [UnitModel("core 1", 1, ["ALU"]),
+                         UnitModel("core 2", 1, ["ALU"])], [])
+        _chk_warn(["ALU", "core 1", "alu", "core 2"], warn_mock.call_args)
+
+    @mark.parametrize("in_file, capabilities", [
+        ("twoCapabilitiesWithSameNameAndCaseInOneUnit.yaml", ["ALU"]),
+        ("twoCapabilitiesWithSameNameAndDifferentCaseInOneUnit.yaml",
+         ["ALU", "alu"])])
+    def test_two_capabilities_with_same_name_in_one_unit_are_detected(
+            self, in_file, capabilities):
+        """Test loading two capabilities with the same name in one unit.
+
+        `self` is this test case.
+        `in_file` is the processor description file.
+        `capabilities` are the identical capabilities.
+
+        """
+        with patch("logging.warning") as warn_mock:
+            _chk_one_unit("capabilities", in_file)
+        _chk_warn(capabilities, warn_mock.call_args)
+
+    @mark.parametrize(
+        "in_file, bad_width", [("singleUnitWithZeroWidth.yaml", 0),
+                               ("singleUnitWithNegativeWidth.yaml", -1)])
+    def test_unit_with_non_positive_width_raises_BadWidthError(
+            self, in_file, bad_width):
+        """Test loading a unit with a non-positive width.
+
+        `self` is this test case.
+
+        """
+        exChk = raises(exceptions.BadWidthError, _read_file, "capabilities",
+                       in_file)
+        _chk_error([_ValInStrCheck(exChk.value.unit, "fullSys"),
+                    _ValInStrCheck(exChk.value.width, bad_width)], exChk.value)
 
 
 class TestEdges:
