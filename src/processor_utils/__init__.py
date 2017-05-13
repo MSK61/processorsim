@@ -41,8 +41,8 @@
 ############################################################
 
 import exceptions
-from exceptions import BlockedCapError, ComponentInfo, DupElemError, \
-    TightWidthError
+from exceptions import BadWidthError, BlockedCapError, ComponentInfo, \
+    DupElemError, TightWidthError
 import itertools
 from itertools import ifilter, imap
 import logging
@@ -498,8 +498,8 @@ def _add_unit(processor, unit, unit_registry, cap_registry):
                 DupElemError.NEW_ELEM_IDX, DupElemError.OLD_ELEM_IDX),
             old_name, unit[_UNIT_NAME_KEY])
 
-    processor.add_node(unit[_UNIT_NAME_KEY], {_UNIT_WIDTH_KEY: unit[
-        _UNIT_WIDTH_KEY], _UNIT_CAPS_KEY: _load_caps(unit, cap_registry)})
+    processor.add_node(unit[_UNIT_NAME_KEY], {_UNIT_WIDTH_KEY: _load_width(
+        unit), _UNIT_CAPS_KEY: _load_caps(unit, cap_registry)})
     unit_registry.add(unit[_UNIT_NAME_KEY])
 
 
@@ -865,6 +865,23 @@ def _load_caps(unit, cap_registry):
                         cap_registry)
 
     return cap_list
+
+
+def _load_width(unit):
+    """Load the given unit width.
+
+    `unit` is the unit to load whose width.
+    The function raises a BadWidthError if the width is 0, otherwise
+    returns the loaded width.
+
+    """
+    if unit[_UNIT_WIDTH_KEY]:
+        return unit[_UNIT_WIDTH_KEY]
+
+    raise BadWidthError(
+        "Functional unit {{{}}} has a bad width {{{}}}.".format(
+            BadWidthError.UNIT_IDX, BadWidthError.WIDTH_IDX),
+        *(itemgetter(_UNIT_NAME_KEY, _UNIT_WIDTH_KEY)(unit)))
 
 
 def _make_cap_graph(processor, capability):

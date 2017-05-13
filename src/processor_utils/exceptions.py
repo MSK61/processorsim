@@ -66,6 +66,52 @@ class BadEdgeError(RuntimeError):
         return self._edge
 
 
+class BadWidthError(RuntimeError):
+
+    """Bad Width error
+
+    A unit width is bad if it's zero.
+
+    """
+
+    # parameter indices in format message
+    UNIT_IDX = 0
+
+    WIDTH_IDX = 1
+
+    def __init__(self, msg_tmpl, unit, width):
+        """Create a bad width error.
+
+        `self` is this bad width error.
+        `msg_tmpl` is the error format message taking in order the
+                   offending unit and width as positional parameters.
+        `unit` is the unit with a bad width.
+        `width` is the bad width.
+
+        """
+        RuntimeError.__init__(self, msg_tmpl.format(unit, width))
+        self._unit = unit
+        self._width = width
+
+    @property
+    def unit(self):
+        """Unit having the bad width
+
+        `self` is this bad width error.
+
+        """
+        return self._unit
+
+    @property
+    def width(self):
+        """Bad width
+
+        `self` is this bad width error.
+
+        """
+        return self._width
+
+
 class BlockedCapError(RuntimeError):
 
     """Blocked Input capability error

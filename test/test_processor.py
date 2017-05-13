@@ -131,6 +131,17 @@ class TestCaps:
             _chk_one_unit("capabilities", in_file)
         _chk_warn(capabilities, warn_mock.call_args)
 
+    def test_unit_with_zero_width_raises_BadWidthError(self):
+        """Test loading a unit with zero width.
+
+        `self` is this test case.
+
+        """
+        exChk = raises(exceptions.BadWidthError, _read_file, "capabilities",
+                       "singleUnitWithZeroCapability.yaml")
+        _chk_error([_ValInStrCheck(exChk.value.unit, "fullSys"),
+                    _ValInStrCheck(exChk.value.width, 0)], exChk.value)
+
 
 class TestClean:
 
