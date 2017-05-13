@@ -51,7 +51,6 @@ from networkx import DiGraph
 from operator import itemgetter
 from sets import IndexedSet, LowerIndexSet
 import units
-from units import sorted_models
 __all__ = ["exceptions", "load_proc_desc", "ProcessorDesc", "units"]
 _OLD_NODE_KEY = "old_node"
 # unit attributes
@@ -76,10 +75,10 @@ class ProcessorDesc(object):
                          as inputs or outputs.
 
         """
-        self._in_ports = tuple(sorted_models(in_ports))
-        self._out_ports = tuple(self._sorted_units(out_ports))
-        self._in_out_ports = tuple(sorted_models(in_out_ports))
-        self._internal_units = tuple(self._sorted_units(internal_untis))
+        self._in_ports = self._sorted_models(in_ports)
+        self._out_ports = self._sorted_units(out_ports)
+        self._in_out_ports = self._sorted_models(in_out_ports)
+        self._internal_units = self._sorted_units(internal_untis)
 
     def __eq__(self, other):
         """Test if the two processors are identical.
@@ -113,13 +112,22 @@ class ProcessorDesc(object):
             self._in_out_ports, self._internal_units)
 
     @staticmethod
+    def _sorted_models(models):
+        """Create a sorted list of the given models.
+
+        `models` are the models to create a sorted list of.
+
+        """
+        return tuple(units.sorted_models(models))
+
+    @staticmethod
     def _sorted_units(units):
         """Create a sorted list of the given units.
 
         `models` are the units to create a sorted list of.
 
         """
-        return sorted(units, key=lambda unit: unit.model.name)
+        return tuple(sorted(units, key=lambda unit: unit.model.name))
 
     @property
     def in_out_ports(self):
