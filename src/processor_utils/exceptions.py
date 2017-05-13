@@ -70,7 +70,7 @@ class BadWidthError(RuntimeError):
 
     """Bad Width error
 
-    A unit width is bad if it's zero.
+    A unit width is bad if it isn't positive.
 
     """
 

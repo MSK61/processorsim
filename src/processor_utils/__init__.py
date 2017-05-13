@@ -871,11 +871,11 @@ def _load_width(unit):
     """Load the given unit width.
 
     `unit` is the unit to load whose width.
-    The function raises a BadWidthError if the width is 0, otherwise
-    returns the loaded width.
+    The function raises a BadWidthError if the width isn't positive,
+    otherwise returns the loaded width.
 
     """
-    if unit[_UNIT_WIDTH_KEY]:
+    if unit[_UNIT_WIDTH_KEY] > 0:
         return unit[_UNIT_WIDTH_KEY]
 
     raise BadWidthError(
