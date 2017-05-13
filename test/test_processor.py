@@ -60,18 +60,19 @@ class TestAbilities:
     """Test case for extracting processor capabilities"""
 
     @mark.parametrize(
-        "in_file, capability", [("singleUnitALUProcessor.yaml", "ALU"),
-                                ("singleUnitMemProcessor.yaml", "MEM")])
-    def test_abilities_from_single_unit(self, in_file, capability):
-        """Test extracting abilities from a single-unit processor.
+        "in_file, capabilities", [("singleUnitALUProcessor.yaml", ["ALU"]), (
+            "singleUnitMemProcessor.yaml", ["MEM"]),
+            ("dualCoreAluProcessor.yaml", ["ALU", "MEM"])])
+    def test_abilities(self, in_file, capabilities):
+        """Test extracting abilities from a processor.
 
         `self` is this test case.
         `in_file` is the processor description file.
-        `capability` is the unit capability.
+        `capabilities` are the processor capabilities.
 
         """
         assert processor_utils.get_abilities(
-            _read_file("processors", in_file)) == frozenset([capability])
+            _read_file("processors", in_file)) == frozenset(capabilities)
 
 
 class TestClean:

@@ -242,7 +242,8 @@ def get_abilities(processor):
     `processor` is the processor to retrieve whose capabilities.
 
     """
-    return frozenset(processor.in_out_ports[0].capabilities)
+    return reduce(lambda old_caps, port: old_caps.union(port.capabilities),
+                  processor.in_out_ports, frozenset())
 
 
 def load_proc_desc(raw_desc):
