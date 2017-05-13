@@ -55,6 +55,20 @@ from processor_utils.units import FuncUnit, UnitModel
 import yaml
 
 
+class TestAbilities:
+
+    """Test case for extracting processor capabilities"""
+
+    def test_abilities_from_single_unit(self):
+        """Test extracting abilities from single-unit processor.
+
+        `self` is this test case.
+
+        """
+        assert processor_utils.get_abilities(_read_file(
+            "processors", "singleUnitProcessor.yaml")) == frozenset(["ALU"])
+
+
 class TestClean:
 
     """Test case for cleaning(optimizing) a processor"""

@@ -236,6 +236,15 @@ class _PortGroup(object):
         return self._out_ports
 
 
+def get_abilities(processor):
+    """Retrieve all capabilities supported by this processor.
+
+    `processor` is the processor to retrieve whose capabilities.
+
+    """
+    return frozenset(["ALU"])
+
+
 def load_proc_desc(raw_desc):
     """Transform the given raw description into a processor one.
 
