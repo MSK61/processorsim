@@ -243,7 +243,7 @@ def get_abilities(processor):
 
     """
     return reduce(lambda old_caps, port: old_caps.union(port.capabilities),
-                  processor.in_out_ports, frozenset())
+                  processor.in_out_ports + processor.in_ports, frozenset())
 
 
 def load_proc_desc(raw_desc):
