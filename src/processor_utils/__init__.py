@@ -338,16 +338,16 @@ def _get_std_edge(edge, unit_registry):
     return imap(lambda unit: _get_unit_name(unit, unit_registry), edge)
 
 
-def _get_unit_entry(name, width, capabilities):
+def _get_unit_entry(name, attrs):
     """Create a unit map entry from the given attributes.
 
     `name` is the unit name.
-    `width` is the unit capacity.
-    `capabilities` are the unit capabilities.
+    `attrs` are the unit attribute dictionary.
     The function returns a tuple of the unit name and model.
 
     """
-    return name, units.UnitModel(name, width, capabilities)
+    return name, units.UnitModel(
+        name, *(itemgetter(_UNIT_WIDTH_KEY, _UNIT_CAPS_KEY)(attrs)))
 
 
 def _get_unit_name(unit, unit_registry):
@@ -961,9 +961,8 @@ def _post_order(graph):
     post-order.
 
     """
-    unit_map = dict(imap(lambda unit: _get_unit_entry(
-        unit, graph.node[unit][_UNIT_WIDTH_KEY],
-        graph.node[unit][_UNIT_CAPS_KEY]), graph.nodes_iter()))
+    unit_map = dict(imap(lambda unit: _get_unit_entry(unit, graph.node[unit]),
+                         graph.nodes_iter()))
     return map(lambda name: units.FuncUnit(unit_map[name], _get_preds(
         graph, name, unit_map)), networkx.dfs_postorder_nodes(graph))
 
