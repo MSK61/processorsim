@@ -486,20 +486,11 @@ def _add_unit(processor, unit, unit_registry, cap_registry):
     `unit` is the functional unit to add.
     `unit_registry` is the store of previously added units.
     `cap_registry` is the store of previously added capabilities.
-    The function raises a DupElemError if a unit with the same name was
-    previously added to the processor.
 
     """
-    old_name = unit_registry.get(unit[_UNIT_NAME_KEY])
-
-    if old_name is not None:
-        raise DupElemError(
-            "Functional unit {{{}}} previously added as {{{}}}".format(
-                DupElemError.NEW_ELEM_IDX, DupElemError.OLD_ELEM_IDX),
-            old_name, unit[_UNIT_NAME_KEY])
-
-    processor.add_node(unit[_UNIT_NAME_KEY], {_UNIT_WIDTH_KEY: _load_width(
-        unit), _UNIT_CAPS_KEY: _load_caps(unit, cap_registry)})
+    processor.add_node(_load_name(unit[_UNIT_NAME_KEY], unit_registry),
+                       {_UNIT_WIDTH_KEY: _load_width(unit),
+                        _UNIT_CAPS_KEY: _load_caps(unit, cap_registry)})
     unit_registry.add(unit[_UNIT_NAME_KEY])
 
 
@@ -865,6 +856,27 @@ def _load_caps(unit, cap_registry):
                         cap_registry)
 
     return cap_list
+
+
+def _load_name(name, name_registry):
+    """Load the given unit name.
+
+    `name` is the unit name.
+    `name_registry` is the name store of previously added units.
+    The function raises a DupElemError if a unit with the same name was
+    previously added to the processor, otherwise returns the loaded
+    name.
+
+    """
+    old_name = name_registry.get(name)
+
+    if old_name is None:
+        return name
+
+    raise DupElemError(
+        "Functional unit {{{}}} previously added as {{{}}}".format(
+            DupElemError.NEW_ELEM_IDX, DupElemError.OLD_ELEM_IDX), old_name,
+        name)
 
 
 def _load_width(unit):
