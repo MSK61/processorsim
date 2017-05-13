@@ -138,7 +138,7 @@ class TestCaps:
 
         """
         exChk = raises(exceptions.BadWidthError, _read_file, "capabilities",
-                       "singleUnitWithZeroCapability.yaml")
+                       "singleUnitWithZeroWidth.yaml")
         _chk_error([_ValInStrCheck(exChk.value.unit, "fullSys"),
                     _ValInStrCheck(exChk.value.width, 0)], exChk.value)
 
