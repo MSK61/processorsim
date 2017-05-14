@@ -214,8 +214,19 @@ class _PortGroup(object):
                     from.
 
         """
-        self._in_ports = tuple(_get_in_ports(processor))
-        self._out_ports = tuple(_get_out_ports(processor))
+        self._in_ports = _in_port_list(processor)
+        self._out_ports = self._out_port_list(processor)
+
+    @staticmethod
+    def _out_port_list(processor):
+        """Find the output ports.
+
+        `processor` is the processor to find whose output ports.
+        The method returns a read-only list of the processor output
+        ports.
+
+        """
+        return tuple(_get_out_ports(processor))
 
     @property
     def in_ports(self):
@@ -300,6 +311,7 @@ def _get_in_ports(processor):
     """Find the input ports.
 
     `processor` is the processor to find whose input ports.
+    The function returns an iterator over the processor input ports.
 
     """
     return _get_ports(processor.in_degree_iter())
@@ -309,6 +321,7 @@ def _get_out_ports(processor):
     """Find the output ports.
 
     `processor` is the processor to find whose output ports.
+    The function returns an iterator over the processor output ports.
 
     """
     return _get_ports(processor.out_degree_iter())
@@ -531,8 +544,8 @@ def _aug_in_ports(processor):
     port and returns that single port.
 
     """
-    return _aug_terminals(processor, list(_get_in_ports(processor)),
-                          lambda *inputs: reversed(inputs))
+    return _aug_terminals(
+        processor, _in_port_list(processor), lambda *inputs: reversed(inputs))
 
 
 def _aug_out_ports(processor, out_ports):
@@ -881,6 +894,16 @@ def _dist_edge_caps(graph):
 
     """
     _set_capacities(graph, _coll_cap_edges(graph))
+
+
+def _in_port_list(processor):
+    """Find the input ports.
+
+    `processor` is the processor to find whose input ports.
+    The function returns a read-only list of the processor input ports.
+
+    """
+    return tuple(_get_in_ports(processor))
 
 
 def _load_caps(unit, cap_registry):
