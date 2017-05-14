@@ -703,7 +703,7 @@ def _chk_non_empty(processor, in_ports):
 
     """
     try:
-        next(ifilter(lambda port: port in processor, in_ports))
+        ifilter(lambda port: port in processor, in_ports).next()
     except StopIteration:  # No ports exist.
         raise exceptions.EmptyProcError("No input ports found")
 
@@ -854,11 +854,10 @@ def _coll_cap_edges(graph):
 
     """
     out_degrees = graph.out_degree()
-    cap_edges = imap(
-        lambda in_deg: next((
-            graph.in_edges_iter if in_deg[1] == 1 else graph.out_edges_iter)(
-            in_deg[0])), ifilter(lambda in_deg: in_deg[1] == 1 or out_degrees[
-                in_deg[0]] == 1, graph.in_degree_iter()))
+    cap_edges = imap(lambda in_deg: (graph.in_edges_iter if in_deg[1] == 1 else
+                                     graph.out_edges_iter)(in_deg[0]).next(),
+                     ifilter(lambda in_deg: in_deg[1] == 1 or out_degrees[
+                        in_deg[0]] == 1, graph.in_degree_iter()))
     return frozenset(cap_edges)
 
 
