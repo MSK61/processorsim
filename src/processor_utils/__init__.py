@@ -43,7 +43,8 @@
 import exceptions
 from exceptions import BadWidthError, BlockedCapError, ComponentInfo, \
     DupElemError, TightWidthError, UndefElemError
-from itertools import ifilter, ifilterfalse, imap
+import itertools
+from itertools import ifilter, imap
 import logging
 import networkx
 from networkx import DiGraph
@@ -269,11 +270,8 @@ def load_isa(raw_desc, capabilities):
     if not raw_desc:
         return {}
 
-    try:
-        raise UndefElemError("Unsupported capability {}", ifilterfalse(
-            lambda cap: cap in capabilities, raw_desc.itervalues()).next())
-    except StopIteration:  # All capabilities are supported.
-        return raw_desc
+    _create_isa(raw_desc, _init_cap_reg(capabilities))
+    return raw_desc
 
 
 def load_proc_desc(raw_desc):
@@ -306,6 +304,23 @@ def _get_anal_graph(processor):
     width_graph.add_edges_from(imap(
         lambda edge: itemgetter(*edge)(new_nodes), processor.edges_iter()))
     return width_graph
+
+
+def _get_cap_name(capability, cap_registry):
+    """Return a supported capability name.
+
+    `capability` is the name of the capability to validate.
+    `cap_registry` is the store of supported capabilities.
+    The function raises an UndefElemError if no capability with this
+    name is supported, otherwise returns the supported capability name.
+
+    """
+    std_cap = cap_registry.get(capability)
+
+    if std_cap is None:
+        raise UndefElemError("Unsupported capability {}", capability)
+
+    return std_cap
 
 
 def _get_cap_units(processor):
@@ -353,7 +368,7 @@ def _get_ports(degrees):
     A port is a unit with zero degree.
 
     """
-    return imap(itemgetter(0), ifilterfalse(itemgetter(1), degrees))
+    return imap(itemgetter(0), itertools.ifilterfalse(itemgetter(1), degrees))
 
 
 def _get_preds(processor, unit, unit_map):
@@ -904,6 +919,21 @@ def _create_graph(units, links):
     return flow_graph
 
 
+def _create_isa(isa_dict, cap_registry):
+    """Create an instruction set in the given ISA dictionary.
+
+    `isa_dict` is the ISA dictionary to normalize.
+    `cap_registry` is the store of supported capabilities.
+    The function updates the given ISA dictionary to reference standard
+    capability names.
+
+    """
+    isa_entries = isa_dict.iteritems()
+
+    for instr, cap in isa_entries:
+        isa_dict[instr] = _get_cap_name(cap, cap_registry)
+
+
 def _dist_edge_caps(graph):
     """Distribute capacities over edges as needed.
 
@@ -912,6 +942,23 @@ def _dist_edge_caps(graph):
 
     """
     _set_capacities(graph, _coll_cap_edges(graph))
+
+
+def _init_cap_reg(capabilities):
+    """Initialize a capability registry.
+
+    `capabilities` are the capabilities to initially insert into the
+                   registry.
+    The function returns a capability registry containing the given
+    capabilities.
+
+    """
+    cap_registry = LowerIndexSet()
+
+    for cap in capabilities:
+        cap_registry.add(cap)
+
+    return cap_registry
 
 
 def _in_port_list(processor):

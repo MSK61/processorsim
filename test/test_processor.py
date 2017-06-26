@@ -197,9 +197,10 @@ class TestIsa:
                        "singleInstructionISA.yaml", ["MEM"])
         _chk_error([_ValInStrCheck(exChk.value.element, "ALU")], exChk.value)
 
-    @mark.parametrize("in_file, exp_isa", [
-        ("emptyISA.yaml", {}), ("singleInstructionISA.yaml", {"ADD": "ALU"})])
-    def test_load_isa(self, in_file, exp_isa):
+    @mark.parametrize("in_file, supported_caps, exp_isa", [("emptyISA.yaml", [
+        "ALU"], {}), ("singleInstructionISA.yaml", ["ALU"], {"ADD": "ALU"}),
+        ("singleInstructionISA.yaml", ["alu"], {"ADD": "alu"})])
+    def test_load_isa(self, in_file, supported_caps, exp_isa):
         """Test loading an instruction set.
 
         `self` is this test case.
@@ -207,7 +208,7 @@ class TestIsa:
         `exp_isa` is the expected instruction set.
 
         """
-        assert self._read_file(in_file, ["ALU"]) == exp_isa
+        assert self._read_file(in_file, supported_caps) == exp_isa
 
     @staticmethod
     def _read_file(file_name, capabilities):
