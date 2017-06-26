@@ -42,9 +42,8 @@
 
 import exceptions
 from exceptions import BadWidthError, BlockedCapError, ComponentInfo, \
-    DupElemError, TightWidthError
-import itertools
-from itertools import ifilter, imap
+    DupElemError, TightWidthError, UndefElemError
+from itertools import ifilter, ifilterfalse, imap
 import logging
 import networkx
 from networkx import DiGraph
@@ -267,7 +266,14 @@ def load_isa(raw_desc, capabilities):
     their capabilities.
 
     """
-    return raw_desc or {}
+    if not raw_desc:
+        return {}
+
+    try:
+        raise UndefElemError("Unsupported capability {}", ifilterfalse(
+            lambda cap: cap in capabilities, raw_desc.itervalues()).next())
+    except StopIteration:  # All capabilities are supported.
+        return raw_desc
 
 
 def load_proc_desc(raw_desc):
@@ -347,7 +353,7 @@ def _get_ports(degrees):
     A port is a unit with zero degree.
 
     """
-    return imap(itemgetter(0), itertools.ifilterfalse(itemgetter(1), degrees))
+    return imap(itemgetter(0), ifilterfalse(itemgetter(1), degrees))
 
 
 def _get_preds(processor, unit, unit_map):
@@ -398,7 +404,7 @@ def _get_unit_name(unit, unit_registry):
     std_name = unit_registry.get(unit)
 
     if std_name is None:
-        raise exceptions.UndefElemError("Undefined functional unit {}", unit)
+        raise UndefElemError("Undefined functional unit {}", unit)
 
     return std_name
 

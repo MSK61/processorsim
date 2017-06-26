@@ -51,6 +51,7 @@ from pytest import mark, raises
 import test_env
 import processor_utils
 from processor_utils import exceptions, ProcessorDesc
+from processor_utils.exceptions import UndefElemError
 from processor_utils.units import FuncUnit, UnitModel
 import yaml
 
@@ -196,8 +197,30 @@ class TestIsa:
         `exp_isa` is the expected instruction set.
 
         """
-        assert processor_utils.load_isa(
-            _load_yaml("ISA", in_file), ["ALU"]) == exp_isa
+        assert self._read_file(in_file, ["ALU"]) == exp_isa
+
+    def test_isa_with_unsupported_capabilitiy_raises_UndefElemError(self):
+        """Test loading an instruction set with an unknown capability.
+
+        `self` is this test case.
+
+        """
+        exChk = raises(UndefElemError, self._read_file,
+                       "singleInstructionISA.yaml", ["MEM"])
+        _chk_error([_ValInStrCheck(exChk.value.element, "ALU")], exChk.value)
+
+    @staticmethod
+    def _read_file(file_name, capabilities):
+        """Read an instruction set file.
+
+        `file_name` is the instruction set file name.
+        `capabilities` are supported capabilities.
+        The function returns the instruction set mapping.
+
+        """
+        test_dir = "ISA"
+        return processor_utils.load_isa(
+            _load_yaml(test_dir, file_name), capabilities)
 
 
 class TestLoop:
@@ -401,8 +424,8 @@ class TestEdges:
         `self` is this test case.
 
         """
-        exChk = raises(exceptions.UndefElemError, _read_file, "edges",
-                       "edgeWithUnknownUnit.yaml")
+        exChk = raises(
+            UndefElemError, _read_file, "edges", "edgeWithUnknownUnit.yaml")
         _chk_error([_ValInStrCheck(exChk.value.element, "input")], exChk.value)
 
     @mark.parametrize("in_file, bad_edge", [("emptyEdge.yaml", []), (
