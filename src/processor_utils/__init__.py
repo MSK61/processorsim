@@ -266,6 +266,7 @@ def load_isa(raw_desc):
     their capabilities.
 
     """
+    return raw_desc
 
 
 def load_proc_desc(raw_desc):

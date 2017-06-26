@@ -192,9 +192,26 @@ class TestIsa:
         `self` is this test case.
 
         """
+        assert not self._read_file("emptyISA.yaml")
+
+    def test_single_instruction_isa_is_ok(self):
+        """Test loading a single-instruction instruction set.
+
+        `self` is this test case.
+
+        """
+        assert self._read_file("singleInstructionISA.yaml") == {"ADD": "ALU"}
+
+    @staticmethod
+    def _read_file(file_name):
+        """Read an instruction set file.
+
+        `file_name` is the instruction set file name.
+        The function returns the instruction set mapping.
+
+        """
         test_dir = "ISA"
-        isa_file = "emptyISA.yaml"
-        assert not processor_utils.load_isa(_load_yaml(test_dir, isa_file))
+        return processor_utils.load_isa(_load_yaml(test_dir, file_name))
 
 
 class TestLoop:
