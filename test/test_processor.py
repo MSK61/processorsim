@@ -187,6 +187,16 @@ class TestIsa:
 
     """Test case for loading instruction sets"""
 
+    def test_isa_with_unsupported_capabilitiy_raises_UndefElemError(self):
+        """Test loading an instruction set with an unknown capability.
+
+        `self` is this test case.
+
+        """
+        exChk = raises(UndefElemError, self._read_file,
+                       "singleInstructionISA.yaml", ["MEM"])
+        _chk_error([_ValInStrCheck(exChk.value.element, "ALU")], exChk.value)
+
     @mark.parametrize("in_file, exp_isa", [
         ("emptyISA.yaml", {}), ("singleInstructionISA.yaml", {"ADD": "ALU"})])
     def test_load_isa(self, in_file, exp_isa):
@@ -198,16 +208,6 @@ class TestIsa:
 
         """
         assert self._read_file(in_file, ["ALU"]) == exp_isa
-
-    def test_isa_with_unsupported_capabilitiy_raises_UndefElemError(self):
-        """Test loading an instruction set with an unknown capability.
-
-        `self` is this test case.
-
-        """
-        exChk = raises(UndefElemError, self._read_file,
-                       "singleInstructionISA.yaml", ["MEM"])
-        _chk_error([_ValInStrCheck(exChk.value.element, "ALU")], exChk.value)
 
     @staticmethod
     def _read_file(file_name, capabilities):
