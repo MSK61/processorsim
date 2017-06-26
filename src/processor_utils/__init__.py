@@ -261,7 +261,7 @@ def load_isa(raw_desc, capabilities):
 
     `raw_desc` is the raw description to extract an instruction set
                from.
-    `capabilities` are the processor capabilities.
+    `capabilities` are supported capabilities.
     The function returns a mapping between supported instructions and
     their capabilities.
 
