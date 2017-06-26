@@ -186,32 +186,17 @@ class TestIsa:
 
     """Test case for loading instruction sets"""
 
-    def test_empty_isa_is_ok(self):
-        """Test loading an empty instruction set.
+    @mark.parametrize("in_file, exp_isa", [
+        ("emptyISA.yaml", {}), ("singleInstructionISA.yaml", {"ADD": "ALU"})])
+    def test_load_isa(self, in_file, exp_isa):
+        """Test loading an instruction set.
 
         `self` is this test case.
+        `in_file` is the instruction set file.
+        `exp_isa` is the expected instruction set.
 
         """
-        assert not self._read_file("emptyISA.yaml")
-
-    def test_single_instruction_isa_is_ok(self):
-        """Test loading a single-instruction instruction set.
-
-        `self` is this test case.
-
-        """
-        assert self._read_file("singleInstructionISA.yaml") == {"ADD": "ALU"}
-
-    @staticmethod
-    def _read_file(file_name):
-        """Read an instruction set file.
-
-        `file_name` is the instruction set file name.
-        The function returns the instruction set mapping.
-
-        """
-        test_dir = "ISA"
-        return processor_utils.load_isa(_load_yaml(test_dir, file_name))
+        assert processor_utils.load_isa(_load_yaml("ISA", in_file)) == exp_isa
 
 
 class TestLoop:
