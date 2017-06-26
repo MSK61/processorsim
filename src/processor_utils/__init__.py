@@ -257,6 +257,17 @@ def get_abilities(processor):
                   processor.in_out_ports + processor.in_ports, frozenset())
 
 
+def load_isa(raw_desc):
+    """Transform the given raw description into an instruction set.
+
+    `raw_desc` is the raw description to extract an instruction set
+               from.
+    The function returns a mapping between supported instructions and
+    their capabilities.
+
+    """
+
+
 def load_proc_desc(raw_desc):
     """Transform the given raw description into a processor one.
 

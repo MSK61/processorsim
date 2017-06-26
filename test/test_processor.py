@@ -182,6 +182,21 @@ class TestCoverage:
         assert UnitModel("", 1, [""]) != UnitModel("input", 1, [""])
 
 
+class TestIsa:
+
+    """Test case for loading instruction sets"""
+
+    def test_empty_isa_is_ok(self):
+        """Test loading an empty instruction set.
+
+        `self` is this test case.
+
+        """
+        test_dir = "ISA"
+        isa_file = "emptyISA.yaml"
+        assert not processor_utils.load_isa(_load_yaml(test_dir, isa_file))
+
+
 class TestLoop:
 
     """Test case for loading processors with loops"""
@@ -574,6 +589,20 @@ def _chk_warn(tokens, warn_call):
     assert all(imap(lambda cap: cap in warn_msg, tokens))
 
 
+def _load_yaml(test_dir, file_name):
+    """Read a test YAML file.
+
+    `test_dir` is the directory containing the YAML file.
+    `file_name` is the YAML file name.
+    The function returns the loaded YAML object.
+
+    """
+    data_dir = "data"
+    with open(os.path.join(
+            test_env.TEST_DIR, data_dir, test_dir, file_name)) as test_file:
+        return yaml.load(test_file)
+
+
 def _read_file(proc_dir, file_name):
     """Read a processor description file.
 
@@ -582,10 +611,7 @@ def _read_file(proc_dir, file_name):
     The function returns the processor description.
 
     """
-    data_dir = "data"
-    with open(os.path.join(
-            test_env.TEST_DIR, data_dir, proc_dir, file_name)) as proc_file:
-        return processor_utils.load_proc_desc(yaml.load(proc_file))
+    return processor_utils.load_proc_desc(_load_yaml(proc_dir, file_name))
 
 
 if __name__ == '__main__':
