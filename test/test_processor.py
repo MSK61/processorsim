@@ -196,7 +196,8 @@ class TestIsa:
         `exp_isa` is the expected instruction set.
 
         """
-        assert processor_utils.load_isa(_load_yaml("ISA", in_file)) == exp_isa
+        assert processor_utils.load_isa(
+            _load_yaml("ISA", in_file), ["ALU"]) == exp_isa
 
 
 class TestLoop:
