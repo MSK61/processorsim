@@ -62,7 +62,7 @@ class TestAbilities:
     @mark.parametrize(
         "in_file, capabilities", [("singleUnitALUProcessor.yaml", ["ALU"]), (
             "singleUnitMemProcessor.yaml", ["MEM"]),
-            ("dualCoreAluProcessor.yaml", ["ALU", "MEM"]),
+            ("dualCoreALUProcessor.yaml", ["ALU", "MEM"]),
             ("twoConnectedUnitsProcessor.yaml", ["ALU"])])
     def test_abilities(self, in_file, capabilities):
         """Test extracting abilities from a processor.
