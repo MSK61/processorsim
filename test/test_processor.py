@@ -53,31 +53,11 @@ import processor_utils
 from processor_utils import exceptions, ProcessorDesc
 from processor_utils.exceptions import UndefElemError
 from processor_utils.units import FuncUnit, UnitModel
+from unittest import TestCase
 import yaml
 
 
-class TestAbilities:
-
-    """Test case for extracting processor capabilities"""
-
-    @mark.parametrize(
-        "in_file, capabilities", [("singleUnitALUProcessor.yaml", ["ALU"]), (
-            "singleUnitMemProcessor.yaml", ["MEM"]),
-            ("dualCoreALUProcessor.yaml", ["ALU", "MEM"]),
-            ("twoConnectedUnitsProcessor.yaml", ["ALU"])])
-    def test_abilities(self, in_file, capabilities):
-        """Test extracting abilities from a processor.
-
-        `self` is this test case.
-        `in_file` is the processor description file.
-        `capabilities` are the processor capabilities.
-
-        """
-        assert processor_utils.get_abilities(
-            _read_file("processors", in_file)) == frozenset(capabilities)
-
-
-class TestClean:
+class CleanTest(TestCase):
 
     """Test case for cleaning(optimizing) a processor"""
 
@@ -142,7 +122,7 @@ class TestClean:
         _chk_warn(["core 2"], warn_mock.call_args)
 
 
-class TestCoverage:
+class CoverageTest(TestCase):
 
     """Test case for fulfilling complete code coverage"""
 
@@ -181,6 +161,27 @@ class TestCoverage:
 
         """
         assert UnitModel("", 1, [""]) != UnitModel("input", 1, [""])
+
+
+class TestAbilities:
+
+    """Test case for extracting processor capabilities"""
+
+    @mark.parametrize(
+        "in_file, capabilities", [("singleUnitALUProcessor.yaml", ["ALU"]), (
+            "singleUnitMemProcessor.yaml", ["MEM"]),
+            ("dualCoreALUProcessor.yaml", ["ALU", "MEM"]),
+            ("twoConnectedUnitsProcessor.yaml", ["ALU"])])
+    def test_abilities(self, in_file, capabilities):
+        """Test extracting abilities from a processor.
+
+        `self` is this test case.
+        `in_file` is the processor description file.
+        `capabilities` are the processor capabilities.
+
+        """
+        assert processor_utils.get_abilities(
+            _read_file("processors", in_file)) == frozenset(capabilities)
 
 
 class TestIsa:
