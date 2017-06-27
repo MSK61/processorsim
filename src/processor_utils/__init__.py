@@ -262,7 +262,7 @@ def load_isa(raw_desc, capabilities):
 
     `raw_desc` is the raw description to extract an instruction set
                from.
-    `capabilities` are supported capabilities.
+    `capabilities` are the supported unique capabilities.
     The function returns a mapping between supported instructions and
     their capabilities.
 
@@ -979,10 +979,10 @@ def _dist_edge_caps(graph):
 def _init_cap_reg(capabilities):
     """Initialize a capability registry.
 
-    `capabilities` are the capabilities to initially insert into the
-                   registry.
+    `capabilities` are the unique capabilities to initially insert into
+                   the registry.
     The function returns a capability registry containing the given
-    capabilities.
+    unique capabilities.
 
     """
     cap_registry = LowerIndexSet()
