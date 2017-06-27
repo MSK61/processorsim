@@ -487,6 +487,20 @@ def _add_edge(processor, edge, unit_registry, edge_registry):
             "Edge %s previously added as %s, ignoring...", edge, old_edge)
 
 
+def _add_instr(isa_dict, instr, instr_registry, cap_registry):
+    """Add an instruction to the instruction set.
+
+    `isa_dict` is the ISA to add the instruction to.
+    `instr` is the instruction to add.
+    `instr_registry` is the store of previously added instructions.
+    `cap_registry` is the store of supported capabilities.
+
+    """
+    _chk_instr(instr, instr_registry)
+    isa_dict[instr] = _get_cap_name(isa_dict[instr], cap_registry)
+    instr_registry.add(instr)
+
+
 def _add_new_cap(cap, cap_list, unit_cap_reg, global_cap_reg):
     """Add a new capability to the given list and registry.
 
@@ -728,6 +742,24 @@ def _chk_fused_flow(processor):
             err.max_width, err.capacity)
 
 
+def _chk_instr(instr, instr_registry):
+    """Check the given instruction.
+
+    `instr` is the instruction.
+    `instr_registry` is the store of previously added instructions.
+    The function raises a DupElemError if the same instruction was previously
+    added to the instruction store.
+
+    """
+    old_instr = instr_registry.get(instr)
+
+    if old_instr is not None:
+        raise DupElemError(
+            "Instruction {{{}}} previously added as {{{}}}".format(
+                DupElemError.NEW_ELEM_IDX, DupElemError.OLD_ELEM_IDX),
+            old_instr, instr)
+
+
 def _chk_non_empty(processor, in_ports):
     """Check if the processor still has input ports.
 
@@ -928,10 +960,10 @@ def _create_isa(isa_dict, cap_registry):
     capability names.
 
     """
-    isa_entries = isa_dict.iteritems()
+    instr_registry = LowerIndexSet()
 
-    for instr, cap in isa_entries:
-        isa_dict[instr] = _get_cap_name(cap, cap_registry)
+    for instr in isa_dict:
+        _add_instr(isa_dict, instr, instr_registry, cap_registry)
 
 
 def _dist_edge_caps(graph):

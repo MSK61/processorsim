@@ -199,7 +199,8 @@ class TestIsa:
 
     @mark.parametrize("in_file, supported_caps, exp_isa", [("emptyISA.yaml", [
         "ALU"], {}), ("singleInstructionISA.yaml", ["ALU"], {"ADD": "ALU"}),
-        ("singleInstructionISA.yaml", ["alu"], {"ADD": "alu"})])
+        ("singleInstructionISA.yaml", ["alu"], {"ADD": "alu"}),
+        ("dualInstructionISA.yaml", ["ALU"], {"ADD": "ALU", "SUB": "ALU"})])
     def test_load_isa(self, in_file, supported_caps, exp_isa):
         """Test loading an instruction set.
 
@@ -209,6 +210,18 @@ class TestIsa:
 
         """
         assert self._read_file(in_file, supported_caps) == exp_isa
+
+    def test_two_instructions_with_same_name_raise_DupElemError(self):
+        """Test loading two instructions with the same name.
+
+        `self` is this test case.
+
+        """
+        exChk = raises(exceptions.DupElemError, self._read_file,
+                       "twoInstructionsWithSameNameAndCase.yaml", ["ALU"])
+        _chk_error(
+            [_ValInStrCheck(exChk.value.new_element, "add"),
+             _ValInStrCheck(exChk.value.old_element, "ADD")], exChk.value)
 
     @staticmethod
     def _read_file(file_name, capabilities):
