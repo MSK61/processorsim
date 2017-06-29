@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""tests processor services"""
+"""tests processor loading service"""
 
 ############################################################
 #
@@ -26,9 +26,9 @@
 #
 # file:         test_processor.py
 #
-# function:     processor service tests
+# function:     processor loading service tests
 #
-# description:  tests processor and ISA loading
+# description:  tests processor loading
 #
 # author:       Mohammed El-Afifi (ME)
 #
@@ -45,16 +45,12 @@ import itertools
 from itertools import imap
 from mock import patch
 import networkx
-import os.path
 import pytest
 from pytest import mark, raises
-import test_env
-import processor_utils
+from test_utils import chk_error, read_file, ValInStrCheck
 from processor_utils import exceptions, ProcessorDesc
-from processor_utils.exceptions import UndefElemError
 from processor_utils.units import FuncUnit, UnitModel
 from unittest import TestCase
-import yaml
 
 
 class CleanTest(TestCase):
@@ -72,7 +68,7 @@ class CleanTest(TestCase):
 
         """
         with patch("logging.warning") as warn_mock:
-            proc_desc = _read_file(
+            proc_desc = read_file(
                 "optimization", "pathThatGetsCutOffItsOutput.yaml")
         assert proc_desc == ProcessorDesc([UnitModel("input", 1, ["ALU"])], [
             FuncUnit(UnitModel("output 1", 1, ["ALU"]), proc_desc.in_ports)],
@@ -86,7 +82,7 @@ class CleanTest(TestCase):
 
         """
         with patch("logging.warning") as warn_mock:
-            proc_desc = _read_file(
+            proc_desc = read_file(
                 "optimization", "incompatibleEdgeProcessor.yaml")
         name_input_map = dict(
             imap(lambda in_port: (in_port.name, in_port), proc_desc.in_ports))
@@ -104,7 +100,7 @@ class CleanTest(TestCase):
 
         """
         in_file = "oneCapabilityInputAndTwoCapabilitiesOutput.yaml"
-        proc_desc = _read_file("optimization", in_file)
+        proc_desc = read_file("optimization", in_file)
         assert proc_desc == ProcessorDesc(
             [UnitModel("input", 1, ["ALU"])], [FuncUnit(
                 UnitModel("output", 1, ["ALU"]), proc_desc.in_ports)], [], [])
@@ -116,8 +112,8 @@ class CleanTest(TestCase):
 
         """
         with patch("logging.warning") as warn_mock:
-            assert _read_file("optimization",
-                              "unitWithNoCapabilities.yaml") == ProcessorDesc(
+            assert read_file("optimization",
+                             "unitWithNoCapabilities.yaml") == ProcessorDesc(
                 [], [], [UnitModel("core 1", 1, ["ALU"])], [])
         _chk_warn(["core 2"], warn_mock.call_args)
 
@@ -163,180 +159,6 @@ class CoverageTest(TestCase):
         assert UnitModel("", 1, [""]) != UnitModel("input", 1, [""])
 
 
-class TestAbilities:
-
-    """Test case for extracting processor capabilities"""
-
-    @mark.parametrize(
-        "in_file, capabilities", [("singleUnitALUProcessor.yaml", ["ALU"]), (
-            "singleUnitMemProcessor.yaml", ["MEM"]),
-            ("dualCoreALUProcessor.yaml", ["ALU", "MEM"]),
-            ("twoConnectedUnitsProcessor.yaml", ["ALU"])])
-    def test_abilities(self, in_file, capabilities):
-        """Test extracting abilities from a processor.
-
-        `self` is this test case.
-        `in_file` is the processor description file.
-        `capabilities` are the processor capabilities.
-
-        """
-        assert processor_utils.get_abilities(
-            _read_file("processors", in_file)) == frozenset(capabilities)
-
-
-class TestIsa:
-
-    """Test case for loading instruction sets"""
-
-    def test_isa_with_unsupported_capabilitiy_raises_UndefElemError(self):
-        """Test loading an instruction set with an unknown capability.
-
-        `self` is this test case.
-
-        """
-        exChk = raises(UndefElemError, self._read_file,
-                       "singleInstructionISA.yaml", ["MEM"])
-        _chk_error([_ValInStrCheck(exChk.value.element, "ALU")], exChk.value)
-
-    @mark.parametrize("in_file, supported_caps, exp_isa", [("emptyISA.yaml", [
-        "ALU"], {}), ("singleInstructionISA.yaml", ["ALU"], {"ADD": "ALU"}),
-        ("singleInstructionISA.yaml", ["alu"], {"ADD": "alu"}),
-        ("dualInstructionISA.yaml", ["ALU"], {"ADD": "ALU", "SUB": "ALU"})])
-    def test_load_isa(self, in_file, supported_caps, exp_isa):
-        """Test loading an instruction set.
-
-        `self` is this test case.
-        `in_file` is the instruction set file.
-        `exp_isa` is the expected instruction set.
-
-        """
-        assert self._read_file(in_file, supported_caps) == exp_isa
-
-    def test_two_instructions_with_same_name_raise_DupElemError(self):
-        """Test loading two instructions with the same name.
-
-        `self` is this test case.
-
-        """
-        exChk = raises(exceptions.DupElemError, self._read_file,
-                       "twoInstructionsWithSameNameAndCase.yaml", ["ALU"])
-        _chk_error(
-            [_ValInStrCheck(exChk.value.new_element, "add"),
-             _ValInStrCheck(exChk.value.old_element, "ADD")], exChk.value)
-
-    @staticmethod
-    def _read_file(file_name, capabilities):
-        """Read an instruction set file.
-
-        `file_name` is the instruction set file name.
-        `capabilities` are supported capabilities.
-        The function returns the instruction set mapping.
-
-        """
-        test_dir = "ISA"
-        return processor_utils.load_isa(
-            _load_yaml(test_dir, file_name), capabilities)
-
-
-class TestLoop:
-
-    """Test case for loading processors with loops"""
-
-    @mark.parametrize("in_file", [
-        "selfNodeProcessor.yaml", "bidirectionalEdgeProcessor.yaml",
-        "bigLoopProcessor.yaml"])
-    def test_loop_raises_NetworkXUnfeasible(self, in_file):
-        """Test loading a processor with a loop.
-
-        `self` is this test case.
-        `in_file` is the processor description file.
-
-        """
-        raises(networkx.NetworkXUnfeasible, _read_file, "loops", in_file)
-
-
-class TestProcessors:
-
-    """Test case for loading valid processors"""
-
-    def test_processor_with_one_two_wide_input_and_two_one_wide_outputs(self):
-        """Test loading a processor with an input and two outputs.
-
-        `self` is this test case.
-
-        """
-        _read_file("processors", "oneInputTwoOutputProcessor.yaml")
-
-    def test_processor_with_four_connected_functional_units(self):
-        """Test loading a processor with four functional units.
-
-        `self` is this test case.
-
-        """
-        proc_desc = _read_file("processors", "4ConnectedUnitsProcessor.yaml")
-        assert not proc_desc.in_out_ports
-        out_ports = FuncUnit(
-            UnitModel("output 1", 1, ["ALU"]), proc_desc.in_ports), FuncUnit(
-            UnitModel("output 2", 1, ["ALU"]),
-            [proc_desc.internal_units[0].model])
-        internal_unit = UnitModel("middle", 1, ["ALU"])
-        assert (proc_desc.in_ports, proc_desc.out_ports,
-                proc_desc.internal_units) == (
-            (UnitModel("input", 1, ["ALU"]),), out_ports,
-            (FuncUnit(internal_unit, proc_desc.in_ports),))
-
-    @mark.parametrize(
-        "in_file", ["twoConnectedUnitsProcessor.yaml",
-                    "edgeWithUnitNamesInCaseDifferentFromDefinition.yaml"])
-    def test_processor_with_two_connected_functional_units(self, in_file):
-        """Test loading a processor with two functional units.
-
-        `self` is this test case.
-        `in_file` is the processor description file.
-
-        """
-        _chk_two_units("processors", in_file)
-
-    def test_single_functional_unit_processor(self):
-        """Test loading a single function unit processor.
-
-        `self` is this test case.
-
-        """
-        _chk_one_unit("processors", "singleUnitALUProcessor.yaml")
-
-
-class _ValInStrCheck:
-
-    """Verification point for checking a string contains a value"""
-
-    def __init__(self, real_val, exp_val):
-        """Create a verification point.
-
-        `self` is this verification point.
-        `real_val` is the actual value.
-        `exp_val` is the expected value.
-        The constructor asserts that the real and expected values match.
-
-        """
-        assert real_val == exp_val
-        self._value = exp_val
-
-    def check(self, msg, start_index):
-        """Check that the message contains the associated value.
-
-        `self` is this verification point.
-        `msg` is the message to be checked.
-        `start_index` is the index to start searching after.
-        The method returns the index of the associated value in the
-        given message after the specified index.
-
-        """
-        start_index = msg.find(str(self._value), start_index + 1)
-        assert start_index >= 0
-        return start_index
-
-
 class TestBlocking:
 
     """Test case for detecting blocked inputs"""
@@ -357,9 +179,9 @@ class TestBlocking:
 
         """
         exChk = raises(
-            exceptions.DeadInputError, _read_file, "blocking", in_file)
-        _chk_error(
-            [_ValInStrCheck(exChk.value.port, isolated_input)], exChk.value)
+            exceptions.DeadInputError, read_file, "blocking", in_file)
+        chk_error(
+            [ValInStrCheck(exChk.value.port, isolated_input)], exChk.value)
 
 
 class TestCaps:
@@ -379,7 +201,7 @@ class TestCaps:
         `err_tag` is the port type tag in the error message.
 
         """
-        assert err_tag in str(raises(exceptions.EmptyProcError, _read_file,
+        assert err_tag in str(raises(exceptions.EmptyProcError, read_file,
                                      "capabilities", in_file).value).lower()
 
     def test_same_capability_with_different_case_in_two_units_is_detected(
@@ -391,7 +213,7 @@ class TestCaps:
         """
         in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits.yaml"
         with patch("logging.warning") as warn_mock:
-            assert _read_file("capabilities", in_file) == ProcessorDesc(
+            assert read_file("capabilities", in_file) == ProcessorDesc(
                 [], [], [UnitModel("core 1", 1, ["ALU"]),
                          UnitModel("core 2", 1, ["ALU"])], [])
         _chk_warn(["ALU", "core 1", "alu", "core 2"], warn_mock.call_args)
@@ -423,10 +245,10 @@ class TestCaps:
         `self` is this test case.
 
         """
-        exChk = raises(exceptions.BadWidthError, _read_file, "capabilities",
-                       in_file)
-        _chk_error([_ValInStrCheck(exChk.value.unit, "fullSys"),
-                    _ValInStrCheck(exChk.value.width, bad_width)], exChk.value)
+        exChk = raises(
+            exceptions.BadWidthError, read_file, "capabilities", in_file)
+        chk_error([ValInStrCheck(exChk.value.unit, "fullSys"),
+                   ValInStrCheck(exChk.value.width, bad_width)], exChk.value)
 
 
 class TestEdges:
@@ -439,9 +261,9 @@ class TestEdges:
         `self` is this test case.
 
         """
-        exChk = raises(
-            UndefElemError, _read_file, "edges", "edgeWithUnknownUnit.yaml")
-        _chk_error([_ValInStrCheck(exChk.value.element, "input")], exChk.value)
+        exChk = raises(exceptions.UndefElemError, read_file, "edges",
+                       "edgeWithUnknownUnit.yaml")
+        chk_error([ValInStrCheck(exChk.value.element, "input")], exChk.value)
 
     @mark.parametrize("in_file, bad_edge", [("emptyEdge.yaml", []), (
         "3UnitEdge.yaml", ["input", "middle", "output"])])
@@ -454,8 +276,8 @@ class TestEdges:
         `bad_edge` is the bad edge.
 
         """
-        exChk = raises(exceptions.BadEdgeError, _read_file, "edges", in_file)
-        _chk_error([_ValInStrCheck(exChk.value.edge, bad_edge)], exChk.value)
+        exChk = raises(exceptions.BadEdgeError, read_file, "edges", in_file)
+        chk_error([ValInStrCheck(exChk.value.edge, bad_edge)], exChk.value)
 
     def test_three_identical_edges_are_detected(self):
         """Test loading three identical edges with the same units.
@@ -507,6 +329,74 @@ class TestEdges:
         _chk_warn(imap(str, edges), warn_call)
 
 
+class TestLoop:
+
+    """Test case for loading processors with loops"""
+
+    @mark.parametrize("in_file", [
+        "selfNodeProcessor.yaml", "bidirectionalEdgeProcessor.yaml",
+        "bigLoopProcessor.yaml"])
+    def test_loop_raises_NetworkXUnfeasible(self, in_file):
+        """Test loading a processor with a loop.
+
+        `self` is this test case.
+        `in_file` is the processor description file.
+
+        """
+        raises(networkx.NetworkXUnfeasible, read_file, "loops", in_file)
+
+
+class TestProcessors:
+
+    """Test case for loading valid processors"""
+
+    def test_processor_with_one_two_wide_input_and_two_one_wide_outputs(self):
+        """Test loading a processor with an input and two outputs.
+
+        `self` is this test case.
+
+        """
+        read_file("processors", "oneInputTwoOutputProcessor.yaml")
+
+    def test_processor_with_four_connected_functional_units(self):
+        """Test loading a processor with four functional units.
+
+        `self` is this test case.
+
+        """
+        proc_desc = read_file("processors", "4ConnectedUnitsProcessor.yaml")
+        assert not proc_desc.in_out_ports
+        out_ports = FuncUnit(
+            UnitModel("output 1", 1, ["ALU"]), proc_desc.in_ports), FuncUnit(
+            UnitModel("output 2", 1, ["ALU"]),
+            [proc_desc.internal_units[0].model])
+        internal_unit = UnitModel("middle", 1, ["ALU"])
+        assert (proc_desc.in_ports, proc_desc.out_ports,
+                proc_desc.internal_units) == (
+            (UnitModel("input", 1, ["ALU"]),), out_ports,
+            (FuncUnit(internal_unit, proc_desc.in_ports),))
+
+    @mark.parametrize(
+        "in_file", ["twoConnectedUnitsProcessor.yaml",
+                    "edgeWithUnitNamesInCaseDifferentFromDefinition.yaml"])
+    def test_processor_with_two_connected_functional_units(self, in_file):
+        """Test loading a processor with two functional units.
+
+        `self` is this test case.
+        `in_file` is the processor description file.
+
+        """
+        _chk_two_units("processors", in_file)
+
+    def test_single_functional_unit_processor(self):
+        """Test loading a single function unit processor.
+
+        `self` is this test case.
+
+        """
+        _chk_one_unit("processors", "singleUnitALUProcessor.yaml")
+
+
 class TestUnits:
 
     """Test case for loading processor units"""
@@ -523,10 +413,10 @@ class TestUnits:
         `dup_unit` is the duplicate unit.
 
         """
-        exChk = raises(exceptions.DupElemError, _read_file, "units", in_file)
-        _chk_error(
-            [_ValInStrCheck(exChk.value.new_element, dup_unit),
-             _ValInStrCheck(exChk.value.old_element, "fullSys")], exChk.value)
+        exChk = raises(exceptions.DupElemError, read_file, "units", in_file)
+        chk_error(
+            [ValInStrCheck(exChk.value.new_element, dup_unit),
+             ValInStrCheck(exChk.value.old_element, "fullSys")], exChk.value)
 
 
 class TestWidth:
@@ -547,11 +437,11 @@ class TestWidth:
 
         """
         exChk = raises(
-            exceptions.BlockedCapError, _read_file, "widths", in_file)
-        _chk_error([_ValInStrCheck("Capability " + exChk.value.capability,
-                                   "Capability MEM"), _ValInStrCheck(
-            "port " + exChk.value.port, "port input"), _ValInStrCheck(
-            exChk.value.capacity, capacity), _ValInStrCheck(
+            exceptions.BlockedCapError, read_file, "widths", in_file)
+        chk_error([ValInStrCheck("Capability " + exChk.value.capability,
+                                 "Capability MEM"), ValInStrCheck(
+            "port " + exChk.value.port, "port input"), ValInStrCheck(
+            exChk.value.capacity, capacity), ValInStrCheck(
             exChk.value.max_width, max_width)], exChk.value)
 
     def test_width_less_than_fused_input_capacity_raises_BlockedCapError(self):
@@ -564,31 +454,15 @@ class TestWidth:
         output.
 
         """
-        exChk = raises(exceptions.TightWidthError, _read_file, "widths",
+        exChk = raises(exceptions.TightWidthError, read_file, "widths",
                        "fusedCapacityLargerThanBusWidth.yaml")
-        _chk_error([_ValInStrCheck(exChk.value.needed_width, 2),
-                    _ValInStrCheck(exChk.value.actual_width, 1)], exChk.value)
+        chk_error([ValInStrCheck(exChk.value.needed_width, 2),
+                   ValInStrCheck(exChk.value.actual_width, 1)], exChk.value)
 
 
 def main():
     """entry point for running test in this module"""
     pytest.main(__file__)
-
-
-def _chk_error(verify_points, error):
-    """Check the specifications of an error.
-
-    `verify_points` are the verification points to assess.
-    `error` is the error to assess whose message.
-    The function checks the given verification points and that they're
-    contained in the error message.
-
-    """
-    error = str(error)
-    idx = -1
-
-    for cur_point in verify_points:
-        idx = cur_point.check(error, idx)
 
 
 def _chk_one_unit(proc_dir, proc_file):
@@ -598,7 +472,7 @@ def _chk_one_unit(proc_dir, proc_file):
     `proc_file` is the processor description file.
 
     """
-    assert _read_file(proc_dir, proc_file) == ProcessorDesc(
+    assert read_file(proc_dir, proc_file) == ProcessorDesc(
         [], [], [UnitModel("fullSys", 1, ["ALU"])], [])
 
 
@@ -611,7 +485,7 @@ def _chk_two_units(proc_dir, proc_file):
     among them.
 
     """
-    proc_desc = _read_file(proc_dir, proc_file)
+    proc_desc = read_file(proc_dir, proc_file)
     assert proc_desc == ProcessorDesc([UnitModel("input", 1, ["ALU"])], [
         FuncUnit(UnitModel("output", 1, ["ALU"]), proc_desc.in_ports)], [], [])
 
@@ -628,31 +502,6 @@ def _chk_warn(tokens, warn_call):
     assert warn_call
     warn_msg = warn_call[0][0] % warn_call[0][1:]
     assert all(imap(lambda cap: cap in warn_msg, tokens))
-
-
-def _load_yaml(test_dir, file_name):
-    """Read a test YAML file.
-
-    `test_dir` is the directory containing the YAML file.
-    `file_name` is the YAML file name.
-    The function returns the loaded YAML object.
-
-    """
-    data_dir = "data"
-    with open(os.path.join(
-            test_env.TEST_DIR, data_dir, test_dir, file_name)) as test_file:
-        return yaml.load(test_file)
-
-
-def _read_file(proc_dir, file_name):
-    """Read a processor description file.
-
-    `proc_dir` is the directory containing the processor description file.
-    `file_name` is the processor description file name.
-    The function returns the processor description.
-
-    """
-    return processor_utils.load_proc_desc(_load_yaml(proc_dir, file_name))
 
 
 if __name__ == '__main__':
