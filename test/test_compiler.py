@@ -41,7 +41,8 @@
 #
 ############################################################
 
-import test_env
+import os.path
+import test_utils
 import program_utils
 import unittest
 
@@ -50,13 +51,14 @@ class ProgLoadTest(unittest.TestCase):
 
     """Test case for loading programs"""
 
-    def test_single_instruction_program(self):
-        """Test loading a single instruction program.
+    def test_empty_program(self):
+        """Test loading an empty program.
 
         `self` is this test case.
 
         """
-        program_utils.read_program(test_env.TEST_DIR)
+        assert program_utils.compile(program_utils.read_program(os.path.join(
+            test_utils.TEST_DATA_DIR, "programs", "empty.asm")), {}) == []
 
 
 def main():

@@ -38,10 +38,11 @@
 #
 ############################################################
 
-import os.path
+from os.path import join
 import test_env
 import processor_utils
 import yaml
+TEST_DATA_DIR = join(test_env.TEST_DIR, "data")
 
 
 class ValInStrCheck:
@@ -99,9 +100,7 @@ def load_yaml(test_dir, file_name):
     The function returns the loaded YAML object.
 
     """
-    data_dir = "data"
-    with open(os.path.join(
-            test_env.TEST_DIR, data_dir, test_dir, file_name)) as test_file:
+    with open(join(TEST_DATA_DIR, test_dir, file_name)) as test_file:
         return yaml.load(test_file)
 
 

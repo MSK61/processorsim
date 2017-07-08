@@ -51,6 +51,7 @@ def compile(prog, isa):
     given instruction set and returns that sequence.
 
     """
+    return []
 
 
 def read_program(prog_file):
