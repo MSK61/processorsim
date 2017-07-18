@@ -46,6 +46,20 @@ import pytest
 import test_utils
 import program_defs
 import program_utils
+import unittest
+
+
+class CoverageTest(unittest.TestCase):
+
+    """Test case for fulfilling complete code coverage"""
+
+    def test_HwInstruction_repr(self):
+        """Test HwInstruction representation.
+
+        `self` is this test case.
+
+        """
+        repr(program_defs.HwInstruction("ALU", [], "R1"))
 
 
 class TestProgLoad:
