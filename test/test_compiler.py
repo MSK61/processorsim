@@ -42,28 +42,33 @@
 ############################################################
 
 import os.path
+import pytest
 import test_utils
+import program_defs
 import program_utils
-import unittest
 
 
-class ProgLoadTest(unittest.TestCase):
+class TestProgLoad:
 
     """Test case for loading programs"""
 
-    def test_empty_program(self):
-        """Test loading an empty program.
+    @pytest.mark.parametrize("prog_file, isa, compiled_prog", [
+        ("empty.asm", {}, []), ("singleInstruction.asm", {"ADD": "ALU"}, [
+            program_defs.HwInstruction("ALU", ["R11", "R15"], "R14")])])
+    def test_program(self, prog_file, isa, compiled_prog):
+        """Test loading a program.
 
         `self` is this test case.
 
         """
-        assert program_utils.compile(program_utils.read_program(os.path.join(
-            test_utils.TEST_DATA_DIR, "programs", "empty.asm")), {}) == []
+        assert program_utils.compile(program_utils.read_program(
+            os.path.join(test_utils.TEST_DATA_DIR, "programs", prog_file)),
+                                     isa) == compiled_prog
 
 
 def main():
     """entry point for running test in this module"""
-    unittest.main()
+    pytest.main(__file__)
 
 if __name__ == '__main__':
     main()

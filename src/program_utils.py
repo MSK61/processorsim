@@ -40,6 +40,8 @@
 #
 ############################################################
 
+import program_defs
+
 
 def compile(prog, isa):
     """Compile the program using the given instruction set.
@@ -51,7 +53,8 @@ def compile(prog, isa):
     given instruction set and returns that sequence.
 
     """
-    return []
+    return map(lambda progInstr: program_defs.HwInstruction(isa[
+        progInstr.name], progInstr.sources, progInstr.destination), prog)
 
 
 def read_program(prog_file):
@@ -61,3 +64,18 @@ def read_program(prog_file):
     The function returns the program instructions.
 
     """
+    with open(prog_file) as program:
+        return map(_create_instr, program)
+
+
+def _create_instr(src_line):
+    """Convert the source line to a program instruction.
+
+    `src_line` is the program instruction line.
+    The function returns the created program instruction.
+
+    """
+    instr_name, operands = src_line.split()
+    operand_sep = ','
+    operands = operands.split(operand_sep)
+    return program_defs.ProgInstruction(instr_name, operands[1:], operands[0])
