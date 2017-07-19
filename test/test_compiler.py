@@ -45,7 +45,7 @@ import os.path
 import pytest
 import test_utils
 import errors
-import program_defs
+from program_defs import HwInstruction
 import program_utils
 import unittest
 
@@ -60,7 +60,7 @@ class CoverageTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        repr(program_defs.HwInstruction("ALU", [], "R1"))
+        repr(HwInstruction("ALU", [], "R1"))
 
 
 class TestProgLoad:
@@ -69,7 +69,7 @@ class TestProgLoad:
 
     @pytest.mark.parametrize("prog_file, isa, compiled_prog", [
         ("empty.asm", {}, []), ("singleInstruction.asm", {"ADD": "ALU"}, [
-            program_defs.HwInstruction("ALU", ["R11", "R15"], "R14")])])
+            HwInstruction("ALU", ["R11", "R15"], "R14")])])
     def test_program(self, prog_file, isa, compiled_prog):
         """Test loading a program.
 
