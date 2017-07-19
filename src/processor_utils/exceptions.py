@@ -387,29 +387,3 @@ class TightWidthError(RuntimeError):
 
         """
         return self._in_width
-
-
-class UndefElemError(RuntimeError):
-
-    """Unknown set element error"""
-
-    def __init__(self, msg_tmpl, elem):
-        """Create an unknown element error.
-
-        `self` is this unknown element error.
-        `msg_tmpl` is the error format message taking the unknown
-                   element as a positional argument.
-        `elem` is the unknown element.
-
-        """
-        RuntimeError.__init__(self, msg_tmpl.format(elem))
-        self._elem = elem
-
-    @property
-    def element(self):
-        """Unknown element
-
-        `self` is this unknown element error.
-
-        """
-        return self._elem

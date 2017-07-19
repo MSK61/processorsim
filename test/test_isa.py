@@ -42,6 +42,7 @@
 import pytest
 from pytest import raises
 import test_utils
+import exception
 import processor_utils
 from processor_utils import exceptions
 from test_utils import chk_error, ValInStrCheck
@@ -57,7 +58,7 @@ class TestIsa:
         `self` is this test case.
 
         """
-        exChk = raises(exceptions.UndefElemError, self._read_file,
+        exChk = raises(exception.UndefElemError, self._read_file,
                        "singleInstructionISA.yaml", ["MEM"])
         chk_error([ValInStrCheck(exChk.value.element, "ALU")], exChk.value)
 

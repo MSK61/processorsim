@@ -44,6 +44,7 @@
 import os.path
 import pytest
 import test_utils
+import exception
 import program_defs
 import program_utils
 import unittest
@@ -75,9 +76,32 @@ class TestProgLoad:
         `self` is this test case.
 
         """
-        assert program_utils.compile(program_utils.read_program(
-            os.path.join(test_utils.TEST_DATA_DIR, "programs", prog_file)),
-                                     isa) == compiled_prog
+        assert program_utils.compile(
+            self._read_file(prog_file), isa) == compiled_prog
+
+    def test_unsupported_instruction_raises_UndefElemError(self):
+        """Test loading a program with an unknown instruction.
+
+        `self` is this test case.
+
+        """
+        exChk = pytest.raises(
+            exception.UndefElemError, program_utils.compile,
+            self._read_file("subtractProgram.asm"), {"ADD": "ALU"})
+        test_utils.chk_error([
+            test_utils.ValInStrCheck(exChk.value.element, "SUB")], exChk.value)
+
+    @staticmethod
+    def _read_file(file_name):
+        """Read a program file.
+
+        `file_name` is the program file name.
+        The function returns the loaded program.
+
+        """
+        test_dir = "programs"
+        return program_utils.read_program(
+            os.path.join(test_utils.TEST_DATA_DIR, test_dir, file_name))
 
 
 def main():

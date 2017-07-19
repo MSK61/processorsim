@@ -40,6 +40,7 @@
 #
 ############################################################
 
+import exception
 import program_defs
 
 
@@ -50,11 +51,16 @@ def compile(prog, isa):
     `isa` is the instruction set.
     The function validates and translates the given program into a
     sequence that can be directly fed into a processor understanding the
-    given instruction set and returns that sequence.
+    given instruction set and returns that sequence. The function raises an
+    UndefElemError if an unsupported instruction is encountered.
 
     """
-    return map(lambda progInstr: program_defs.HwInstruction(isa[
-        progInstr.name], progInstr.sources, progInstr.destination), prog)
+    try:
+        return map(lambda progInstr: program_defs.HwInstruction(isa[
+            progInstr.name], progInstr.sources, progInstr.destination), prog)
+    except KeyError as err:  # unsupported instruction
+        raise exception.UndefElemError(
+            "Unsupported instruction {}", err.args[0])
 
 
 def read_program(prog_file):

@@ -40,9 +40,11 @@
 #
 ############################################################
 
+import env
+from exception import UndefElemError
 import exceptions
 from exceptions import BadWidthError, BlockedCapError, ComponentInfo, \
-    DupElemError, TightWidthError, UndefElemError
+    DupElemError, TightWidthError
 import itertools
 from itertools import ifilter, imap
 import logging
