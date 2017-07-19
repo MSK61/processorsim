@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""source importer"""
+"""test environment setup"""
 
 ############################################################
 #
