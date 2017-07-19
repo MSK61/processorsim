@@ -40,8 +40,6 @@
 #
 ############################################################
 
-import env
-from errors import UndefElemError
 import exception
 from exception import BadWidthError, BlockedCapError, ComponentInfo, \
     DupElemError, TightWidthError
@@ -51,7 +49,9 @@ import logging
 import networkx
 from networkx import DiGraph
 from operator import itemgetter
+import os
 from sets import IndexedSet, LowerIndexSet
+import sys
 import units
 __all__ = ["exception", "load_proc_desc", "ProcessorDesc", "units"]
 _OLD_NODE_KEY = "old_node"
@@ -317,10 +317,11 @@ def _get_cap_name(capability, cap_registry):
     name is supported, otherwise returns the supported capability name.
 
     """
+    import errors
     std_cap = cap_registry.get(capability)
 
     if std_cap is None:
-        raise UndefElemError("Unsupported capability {}", capability)
+        raise errors.UndefElemError("Unsupported capability {}", capability)
 
     return std_cap
 
@@ -418,10 +419,11 @@ def _get_unit_name(unit, unit_registry):
     name, otherwise returns the validated unit name.
 
     """
+    import errors
     std_name = unit_registry.get(unit)
 
     if std_name is None:
-        raise UndefElemError("Undefined functional unit {}", unit)
+        raise errors.UndefElemError("Undefined functional unit {}", unit)
 
     return std_name
 
@@ -539,6 +541,11 @@ def _add_port_link(graph, old_port, new_port, link):
     graph.node[new_port][_UNIT_WIDTH_KEY] += graph.node[old_port][
         _UNIT_WIDTH_KEY]
     graph.add_edge(*link)
+
+
+def _add_src_path():
+    """Add the source path to the python search path."""
+    sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 
 
 def _add_to_set(elem_set, elem):
@@ -1256,3 +1263,5 @@ def _update_graph(idx, unit, processor, width_graph, unit_idx_map):
     width_graph.add_node(
         idx, dict(processor.node[unit], **{_OLD_NODE_KEY: unit}))
     unit_idx_map[unit] = idx
+
+_add_src_path()
