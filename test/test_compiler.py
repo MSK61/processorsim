@@ -44,7 +44,7 @@
 import os.path
 import pytest
 import test_utils
-import exception
+import errors
 import program_defs
 import program_utils
 import unittest
@@ -86,7 +86,7 @@ class TestProgLoad:
 
         """
         exChk = pytest.raises(
-            exception.UndefElemError, program_utils.compile,
+            errors.UndefElemError, program_utils.compile,
             self._read_file("subtractProgram.asm"), {"ADD": "ALU"})
         test_utils.chk_error([
             test_utils.ValInStrCheck(exChk.value.element, "SUB")], exChk.value)

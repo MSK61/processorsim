@@ -23,7 +23,7 @@
 #
 # program:      processor simulator
 #
-# file:         exception.py
+# file:         errors.py
 #
 # function:     generic exceptions
 #

@@ -48,7 +48,7 @@ import networkx
 import pytest
 from pytest import mark, raises
 from test_utils import chk_error, read_file, ValInStrCheck
-import exception
+import errors
 from processor_utils import exceptions, ProcessorDesc
 from processor_utils.units import FuncUnit, UnitModel
 from unittest import TestCase
@@ -262,7 +262,7 @@ class TestEdges:
         `self` is this test case.
 
         """
-        exChk = raises(exception.UndefElemError, read_file, "edges",
+        exChk = raises(errors.UndefElemError, read_file, "edges",
                        "edgeWithUnknownUnit.yaml")
         chk_error([ValInStrCheck(exChk.value.element, "input")], exChk.value)
 

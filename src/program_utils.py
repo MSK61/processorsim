@@ -40,7 +40,7 @@
 #
 ############################################################
 
-import exception
+import errors
 import program_defs
 
 
@@ -59,8 +59,7 @@ def compile(prog, isa):
         return map(lambda progInstr: program_defs.HwInstruction(isa[
             progInstr.name], progInstr.sources, progInstr.destination), prog)
     except KeyError as err:  # unsupported instruction
-        raise exception.UndefElemError(
-            "Unsupported instruction {}", err.args[0])
+        raise errors.UndefElemError("Unsupported instruction {}", err.args[0])
 
 
 def read_program(prog_file):

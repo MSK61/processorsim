@@ -41,7 +41,7 @@
 ############################################################
 
 import env
-from exception import UndefElemError
+from errors import UndefElemError
 import exceptions
 from exceptions import BadWidthError, BlockedCapError, ComponentInfo, \
     DupElemError, TightWidthError
