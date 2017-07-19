@@ -49,7 +49,7 @@ import pytest
 from pytest import mark, raises
 from test_utils import chk_error, read_file, ValInStrCheck
 import errors
-from processor_utils import exceptions, ProcessorDesc
+from processor_utils import exception, ProcessorDesc
 from processor_utils.units import FuncUnit, UnitModel
 from unittest import TestCase
 
@@ -180,7 +180,7 @@ class TestBlocking:
 
         """
         exChk = raises(
-            exceptions.DeadInputError, read_file, "blocking", in_file)
+            exception.DeadInputError, read_file, "blocking", in_file)
         chk_error(
             [ValInStrCheck(exChk.value.port, isolated_input)], exChk.value)
 
@@ -202,7 +202,7 @@ class TestCaps:
         `err_tag` is the port type tag in the error message.
 
         """
-        assert err_tag in str(raises(exceptions.EmptyProcError, read_file,
+        assert err_tag in str(raises(exception.EmptyProcError, read_file,
                                      "capabilities", in_file).value).lower()
 
     def test_same_capability_with_different_case_in_two_units_is_detected(
@@ -247,7 +247,7 @@ class TestCaps:
 
         """
         exChk = raises(
-            exceptions.BadWidthError, read_file, "capabilities", in_file)
+            exception.BadWidthError, read_file, "capabilities", in_file)
         chk_error([ValInStrCheck(exChk.value.unit, "fullSys"),
                    ValInStrCheck(exChk.value.width, bad_width)], exChk.value)
 
@@ -277,7 +277,7 @@ class TestEdges:
         `bad_edge` is the bad edge.
 
         """
-        exChk = raises(exceptions.BadEdgeError, read_file, "edges", in_file)
+        exChk = raises(exception.BadEdgeError, read_file, "edges", in_file)
         chk_error([ValInStrCheck(exChk.value.edge, bad_edge)], exChk.value)
 
     def test_three_identical_edges_are_detected(self):
@@ -414,7 +414,7 @@ class TestUnits:
         `dup_unit` is the duplicate unit.
 
         """
-        exChk = raises(exceptions.DupElemError, read_file, "units", in_file)
+        exChk = raises(exception.DupElemError, read_file, "units", in_file)
         chk_error(
             [ValInStrCheck(exChk.value.new_element, dup_unit),
              ValInStrCheck(exChk.value.old_element, "fullSys")], exChk.value)
@@ -437,8 +437,7 @@ class TestWidth:
         `max_width` is the processor maximum bus width.
 
         """
-        exChk = raises(
-            exceptions.BlockedCapError, read_file, "widths", in_file)
+        exChk = raises(exception.BlockedCapError, read_file, "widths", in_file)
         chk_error([ValInStrCheck("Capability " + exChk.value.capability,
                                  "Capability MEM"), ValInStrCheck(
             "port " + exChk.value.port, "port input"), ValInStrCheck(
@@ -455,7 +454,7 @@ class TestWidth:
         output.
 
         """
-        exChk = raises(exceptions.TightWidthError, read_file, "widths",
+        exChk = raises(exception.TightWidthError, read_file, "widths",
                        "fusedCapacityLargerThanBusWidth.yaml")
         chk_error([ValInStrCheck(exChk.value.needed_width, 2),
                    ValInStrCheck(exChk.value.actual_width, 1)], exChk.value)

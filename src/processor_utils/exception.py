@@ -23,7 +23,7 @@
 #
 # program:      processor simulator
 #
-# file:         exceptions.py
+# file:         exception.py
 #
 # function:     processor description loading exceptions
 #

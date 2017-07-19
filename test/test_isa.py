@@ -44,7 +44,7 @@ from pytest import raises
 import test_utils
 import errors
 import processor_utils
-from processor_utils import exceptions
+from processor_utils import exception
 from test_utils import chk_error, ValInStrCheck
 
 
@@ -83,7 +83,7 @@ class TestIsa:
         `self` is this test case.
 
         """
-        exChk = raises(exceptions.DupElemError, self._read_file,
+        exChk = raises(exception.DupElemError, self._read_file,
                        "twoInstructionsWithSameNameAndCase.yaml", ["ALU"])
         chk_error([ValInStrCheck(exChk.value.new_element, "add"),
                    ValInStrCheck(exChk.value.old_element, "ADD")], exChk.value)

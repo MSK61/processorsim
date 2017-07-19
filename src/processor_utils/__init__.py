@@ -42,8 +42,8 @@
 
 import env
 from errors import UndefElemError
-import exceptions
-from exceptions import BadWidthError, BlockedCapError, ComponentInfo, \
+import exception
+from exception import BadWidthError, BlockedCapError, ComponentInfo, \
     DupElemError, TightWidthError
 import itertools
 from itertools import ifilter, imap
@@ -53,7 +53,7 @@ from networkx import DiGraph
 from operator import itemgetter
 from sets import IndexedSet, LowerIndexSet
 import units
-__all__ = ["exceptions", "load_proc_desc", "ProcessorDesc", "units"]
+__all__ = ["exception", "load_proc_desc", "ProcessorDesc", "units"]
 _OLD_NODE_KEY = "old_node"
 # unit attributes
 _UNIT_CAPS_KEY = "capabilities"
@@ -476,7 +476,7 @@ def _add_edge(processor, edge, unit_registry, edge_registry):
     good_edge_len = 2
 
     if len(edge) != good_edge_len:
-        raise exceptions.BadEdgeError(
+        raise exception.BadEdgeError(
             "Edge {} doesn't connect exactly 2 functional units.", edge)
 
     processor.add_edge(*(_get_std_edge(edge, unit_registry)))
@@ -773,7 +773,7 @@ def _chk_non_empty(processor, in_ports):
     try:
         ifilter(lambda port: port in processor, in_ports).next()
     except StopIteration:  # No ports exist.
-        raise exceptions.EmptyProcError("No input ports found")
+        raise exception.EmptyProcError("No input ports found")
 
 
 def _chk_ports_flow(
@@ -842,7 +842,7 @@ def _chk_unit_flow(min_width, in_width, capability_info, port_info):
             "{{{}}}".format(
                 BlockedCapError.CAPABILITY_IDX, BlockedCapError.PORT_IDX,
                 BlockedCapError.CAPACITY_IDX, BlockedCapError.MAX_WIDTH_IDX),
-            exceptions.CapPortInfo(capability_info, port_info, in_width),
+            exception.CapPortInfo(capability_info, port_info, in_width),
             min_width)
 
 
@@ -1138,7 +1138,7 @@ def _rm_dead_end(processor, dead_end, in_ports):
 
     """
     if dead_end in in_ports:  # an in-port turned in-out port
-        raise exceptions.DeadInputError(
+        raise exception.DeadInputError(
             "No feasible path found from input port {} to any output ports",
             dead_end)
 
