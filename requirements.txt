@@ -1,4 +1,3 @@
-mock
 networkx
 pytest-cov
 pytest-flakes
