@@ -269,9 +269,6 @@ def load_isa(raw_desc, capabilities):
     their capabilities.
 
     """
-    if not raw_desc:
-        return {}
-
     return _create_isa(raw_desc, _init_cap_reg(capabilities))
 
 
