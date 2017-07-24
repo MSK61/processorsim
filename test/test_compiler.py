@@ -68,7 +68,7 @@ class TestProgLoad:
     """Test case for loading programs"""
 
     @pytest.mark.parametrize("prog_file, isa, compiled_prog", [
-        ("empty.asm", {}, []), ("singleInstruction.asm", {"add": "ALU"}, [
+        ("empty.asm", {}, []), ("singleInstruction.asm", {"ADD": "ALU"}, [
             HwInstruction("ALU", ["R11", "R15"], "R14")])])
     def test_program(self, prog_file, isa, compiled_prog):
         """Test loading a program.
@@ -87,7 +87,7 @@ class TestProgLoad:
         """
         exChk = pytest.raises(
             errors.UndefElemError, program_utils.compile,
-            self._read_file("subtractProgram.asm"), {"add": "ALU"})
+            self._read_file("subtractProgram.asm"), {"ADD": "ALU"})
         test_utils.chk_error([
             test_utils.ValInStrCheck(exChk.value.element, "SUB")], exChk.value)
 
