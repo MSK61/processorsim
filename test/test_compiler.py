@@ -67,9 +67,12 @@ class TestProgLoad:
 
     """Test case for loading programs"""
 
-    @pytest.mark.parametrize("prog_file, isa, compiled_prog", [
-        ("empty.asm", {}, []), ("singleInstruction.asm", {"ADD": "ALU"}, [
-            HwInstruction("ALU", ["R11", "R15"], "R14")])])
+    @pytest.mark.parametrize(
+        "prog_file, isa, compiled_prog",
+        [("empty.asm", {}, []), ("singleInstruction.asm", {"ADD": "ALU"}, [
+            HwInstruction("ALU", ["R11", "R15"], "R14")]),
+            ("lowerCaseSingleInstruction.asm", {"ADD": "ALU"},
+             [HwInstruction("ALU", ["R11", "R15"], "R14")])])
     def test_program(self, prog_file, isa, compiled_prog):
         """Test loading a program.
 

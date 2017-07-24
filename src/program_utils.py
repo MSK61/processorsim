@@ -56,8 +56,9 @@ def compile(prog, isa):
 
     """
     try:
-        return map(lambda progInstr: program_defs.HwInstruction(isa[
-            progInstr.name], progInstr.sources, progInstr.destination), prog)
+        return map(lambda progInstr: program_defs.HwInstruction(
+            isa[progInstr.name.upper()], progInstr.sources,
+            progInstr.destination), prog)
     except KeyError as err:  # unsupported instruction
         raise errors.UndefElemError("Unsupported instruction {}", err.args[0])
 
