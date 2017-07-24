@@ -64,9 +64,9 @@ class TestIsa:
 
     @pytest.mark.parametrize(
         "in_file, supported_caps, exp_isa", [("emptyISA.yaml", ["ALU"], {}), (
-            "singleInstructionISA.yaml", ["ALU"], {"ADD": "ALU"}),
-            ("singleInstructionISA.yaml", ["alu"], {"ADD": "alu"}), (
-            "dualInstructionISA.yaml", ["ALU"], {"ADD": "ALU", "SUB": "ALU"})])
+            "singleInstructionISA.yaml", ["ALU"], {"add": "ALU"}),
+            ("singleInstructionISA.yaml", ["alu"], {"add": "alu"}), (
+            "dualInstructionISA.yaml", ["ALU"], {"add": "ALU", "sub": "ALU"})])
     def test_load_isa(self, in_file, supported_caps, exp_isa):
         """Test loading an instruction set.
 

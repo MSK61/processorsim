@@ -272,8 +272,7 @@ def load_isa(raw_desc, capabilities):
     if not raw_desc:
         return {}
 
-    _create_isa(raw_desc, _init_cap_reg(capabilities))
-    return raw_desc
+    return _create_isa(raw_desc, _init_cap_reg(capabilities))
 
 
 def load_proc_desc(raw_desc):
@@ -498,11 +497,13 @@ def _add_instr(isa_dict, instr, instr_registry, cap_registry):
     `instr` is the instruction to add.
     `instr_registry` is the store of previously added instructions.
     `cap_registry` is the store of supported capabilities.
+    The function returns a tuple of the lower-case instruction and its
+    capability.
 
     """
     _chk_instr(instr, instr_registry)
-    isa_dict[instr] = _get_cap_name(isa_dict[instr], cap_registry)
     instr_registry.add(instr)
+    return instr.lower(), _get_cap_name(isa_dict[instr], cap_registry)
 
 
 def _add_new_cap(cap, cap_list, unit_cap_reg, global_cap_reg):
@@ -965,14 +966,13 @@ def _create_isa(isa_dict, cap_registry):
 
     `isa_dict` is the ISA dictionary to normalize.
     `cap_registry` is the store of supported capabilities.
-    The function updates the given ISA dictionary to reference standard
-    capability names.
+    The function returns the ISA dictionary with standard capability
+    names.
 
     """
     instr_registry = LowerIndexSet()
-
-    for instr in isa_dict:
-        _add_instr(isa_dict, instr, instr_registry, cap_registry)
+    return dict(imap(lambda instr: _add_instr(
+        isa_dict, instr, instr_registry, cap_registry), isa_dict))
 
 
 def _dist_edge_caps(graph):
