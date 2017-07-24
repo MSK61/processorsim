@@ -41,6 +41,7 @@
 ############################################################
 
 import errors
+import itertools
 import program_defs
 
 
@@ -71,7 +72,9 @@ def read_program(prog_file):
 
     """
     with open(prog_file) as program:
-        return map(_create_instr, program)
+        return map(
+            _create_instr, itertools.ifilter(
+                lambda line: line, itertools.imap(str.strip, program)))
 
 
 def _create_instr(src_line):
