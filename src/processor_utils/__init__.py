@@ -494,13 +494,13 @@ def _add_instr(isa_dict, instr, instr_registry, cap_registry):
     `instr` is the instruction to add.
     `instr_registry` is the store of previously added instructions.
     `cap_registry` is the store of supported capabilities.
-    The function returns a tuple of the lower-case instruction and its
+    The function returns a tuple of the upper-case instruction and its
     capability.
 
     """
     _chk_instr(instr, instr_registry)
     instr_registry.add(instr)
-    return instr.lower(), _get_cap_name(isa_dict[instr], cap_registry)
+    return instr.upper(), _get_cap_name(isa_dict[instr], cap_registry)
 
 
 def _add_new_cap(cap, cap_list, unit_cap_reg, global_cap_reg):
