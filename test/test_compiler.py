@@ -41,8 +41,10 @@
 #
 ############################################################
 
+import itertools
 import os.path
 import pytest
+from pytest import mark, raises
 import test_utils
 import errors
 from program_defs import HwInstruction
@@ -67,13 +69,11 @@ class TestProgLoad:
 
     """Test case for loading programs"""
 
-    @pytest.mark.parametrize(
-        "prog_file, isa, compiled_prog",
-        [("empty.asm", {}, []), ("singleInstruction.asm", {"ADD": "ALU"}, [
-            HwInstruction("ALU", ["R11", "R15"], "R14")]),
-            ("lowerCaseSingleInstruction.asm", {"ADD": "ALU"},
-             [HwInstruction("ALU", ["R11", "R15"], "R14")]),
-            ("emptyLineOnly.asm", {}, [])])
+    @mark.parametrize("prog_file, isa, compiled_prog", [
+        ("empty.asm", {}, []), ("singleInstruction.asm", {"ADD": "ALU"},
+                                [HwInstruction("ALU", ["R11", "R15"], "R14")]),
+        ("lowerCaseSingleInstruction.asm", {"ADD": "ALU"}, [HwInstruction(
+            "ALU", ["R11", "R15"], "R14")]), ("emptyLineOnly.asm", {}, [])])
     def test_program(self, prog_file, isa, compiled_prog):
         """Test loading a program.
 
@@ -81,7 +81,7 @@ class TestProgLoad:
 
         """
         assert program_utils.compile(
-            self._read_file(prog_file), isa) == compiled_prog
+            _read_file(prog_file), isa) == compiled_prog
 
     def test_unsupported_instruction_raises_UndefElemError(self):
         """Test loading a program with an unknown instruction.
@@ -89,28 +89,48 @@ class TestProgLoad:
         `self` is this test case.
 
         """
-        exChk = pytest.raises(
-            errors.UndefElemError, program_utils.compile,
-            self._read_file("subtractProgram.asm"), {"ADD": "ALU"})
+        exChk = raises(errors.UndefElemError, program_utils.compile,
+                       _read_file("subtractProgram.asm"), {"ADD": "ALU"})
         test_utils.chk_error([
             test_utils.ValInStrCheck(exChk.value.element, "SUB")], exChk.value)
 
-    @staticmethod
-    def _read_file(file_name):
-        """Read a program file.
 
-        `file_name` is the program file name.
-        The function returns the loaded program.
+class TestSyntax:
+
+    """Test case for syntax errors"""
+
+    @mark.parametrize("prog_file, line_num, instr", [
+        ("instructionAtFirstLineWithNoOperands.asm", 1, "ADD"),
+        ("instructionAtSecondLineWithNoOperands.asm", 2, "SUB")])
+    def test_instruction_with_no_operands_raises_SyntaxError(
+            self, prog_file, line_num, instr):
+        """Test loading an instruction with no operands.
+
+        `self` is this test case.
 
         """
-        test_dir = "programs"
-        return program_utils.read_program(
-            os.path.join(test_utils.TEST_DATA_DIR, test_dir, file_name))
+        exChk = raises(program_utils.SyntaxError, _read_file, prog_file)
+        assert exChk.value.line == line_num
+        assert all(itertools.imap(
+            lambda token: token in str(exChk.value), [str(line_num), instr]))
 
 
 def main():
     """entry point for running test in this module"""
     pytest.main(__file__)
+
+
+def _read_file(file_name):
+    """Read a program file.
+
+    `file_name` is the program file name.
+    The function returns the loaded program.
+
+    """
+    test_dir = "programs"
+    return program_utils.read_program(
+        os.path.join(test_utils.TEST_DATA_DIR, test_dir, file_name))
+
 
 if __name__ == '__main__':
     main()

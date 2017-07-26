@@ -45,6 +45,32 @@ import itertools
 import program_defs
 
 
+class SyntaxError(RuntimeError):
+
+    """Syntax error"""
+
+    def __init__(self, msg_tmpl, line):
+        """Create a syntax error.
+
+        `self` is this syntax error.
+        `msg_tmpl` is the error format message taking the line number as
+                   a positional parameter.
+        `line` is the number of the line containing the error.
+
+        """
+        RuntimeError.__init__(self, msg_tmpl.format(line))
+        self._line = line
+
+    @property
+    def line(self):
+        """Number of the source line containing the error
+
+        `self` is this syntax error.
+
+        """
+        return self._line
+
+
 def compile(prog, isa):
     """Compile the program using the given instruction set.
 
@@ -72,19 +98,27 @@ def read_program(prog_file):
 
     """
     with open(prog_file) as program:
+
+        program = itertools.imap(str.strip, program)
         return map(
             _create_instr, itertools.ifilter(
-                lambda line: line, itertools.imap(str.strip, program)))
+                lambda line_info: line_info[1], enumerate(program)))
 
 
-def _create_instr(src_line):
+def _create_instr(src_line_info):
     """Convert the source line to a program instruction.
 
-    `src_line` is the program instruction line.
+    `src_line_info` is the program instruction line information.
     The function returns the created program instruction.
 
     """
-    instr_name, operands = src_line.split()
+    line_txt_idx = 1
+    try:
+        instr_name, operands = src_line_info[line_txt_idx].split()
+    except ValueError:
+        raise SyntaxError(
+            "No operands provided for instruction {} at line {{}}".format(
+                src_line_info[line_txt_idx]), src_line_info[0] + 1)
     operand_sep = ','
     operands = operands.split(operand_sep)
     return program_defs.ProgInstruction(instr_name, operands[1:], operands[0])
