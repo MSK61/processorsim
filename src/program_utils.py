@@ -54,7 +54,7 @@ class SyntaxError(RuntimeError):
 
         `self` is this syntax error.
         `msg_tmpl` is the error format message taking the line number as
-                   a positional parameter.
+                   a positional argument.
         `line` is the number of the line containing the error.
 
         """

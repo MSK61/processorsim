@@ -84,7 +84,7 @@ class BadWidthError(RuntimeError):
 
         `self` is this bad width error.
         `msg_tmpl` is the error format message taking in order the
-                   offending unit and width as positional parameters.
+                   offending unit and width as positional arguments.
         `unit` is the unit with a bad width.
         `width` is the bad width.
 
@@ -137,7 +137,7 @@ class BlockedCapError(RuntimeError):
         `self` is this blocked input capability error.
         `msg_tmpl` is the error format message taking in order the
                    capability, port, actual, and maximum bus widths as
-                   positional parameters.
+                   positional arguments.
         `blocking_info` is the blocking information.
         `max_width` is the maximum capacity that can flow from the port
                     to the outputs.
@@ -313,7 +313,7 @@ class DupElemError(RuntimeError):
 
         `self` is this duplicate element error.
         `msg_tmpl` is the error format message taking in order the old
-                   and new elements as positional parameters.
+                   and new elements as positional arguments.
         `old_elem` is the element already existing.
         `new_elem` is the element just discovered.
 
@@ -361,7 +361,7 @@ class TightWidthError(RuntimeError):
         `self` is this width error.
         `msg_tmpl` is the error format message taking in order the
                    actual and needed bus widths as positional
-                   parameters.
+                   arguments.
         `actual_width` is the actual width.
         `in_width` is the needed width from inputs.
 
