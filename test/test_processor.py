@@ -444,7 +444,7 @@ class TestWidth:
             exChk.value.capacity, capacity), ValInStrCheck(
             exChk.value.max_width, max_width)], exChk.value)
 
-    def test_width_less_than_fused_input_capacity_raises_BlockedCapError(self):
+    def test_width_less_than_fused_input_capacity_raises_TightWidthError(self):
         """Test a processor with a width less than its fused capacity.
 
         `self` is this test case.
