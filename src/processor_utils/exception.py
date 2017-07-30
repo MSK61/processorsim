@@ -360,8 +360,7 @@ class TightWidthError(RuntimeError):
 
         `self` is this width error.
         `msg_tmpl` is the error format message taking in order the
-                   actual and needed bus widths as positional
-                   arguments.
+                   actual and needed bus widths as positional arguments.
         `actual_width` is the actual width.
         `in_width` is the needed width from inputs.
 
