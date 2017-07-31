@@ -99,6 +99,23 @@ class TestSyntax:
 
     """Test case for syntax errors"""
 
+    @mark.parametrize("prog_file, line_num, instr, operand", [
+        ("firstInstructionWithSecondOpernadEmpty.asm", 1, "ADD", 2),
+        ("secondInstructionWithFirstOpernadEmpty.asm", 2, "SUB", 1)])
+    def test_instruction_with_empty_operand_raises_SyntaxError(
+            self, prog_file, line_num, instr, operand):
+        """Test loading an instruction with an empty operand.
+
+        `self` is this test case.
+        `prog_file` is the program file.
+        `line_num` is the one-based number of the line containing the
+                   instruction with the empty operand.
+        `instr` is the instruction with an empty operand.
+        `operand` is the one-based index of the empty operand.
+
+        """
+        self._run_syn_err(prog_file, line_num, [instr, str(operand)])
+
     @mark.parametrize("prog_file, line_num, instr", [
         ("instructionAtFirstLineWithNoOperands.asm", 1, "ADD"),
         ("instructionAtSecondLineWithNoOperands.asm", 2, "SUB")])
@@ -109,10 +126,22 @@ class TestSyntax:
         `self` is this test case.
 
         """
+        self._run_syn_err(prog_file, line_num, [instr])
+
+    @staticmethod
+    def _run_syn_err(prog_file, line_num, err_details):
+        """Test loading a program with a syntax error.
+
+        `prog_file` is the program file.
+        `line_num` is the one-based number of the line containing the
+                   instruction with the empty operand.
+        `err_details` are the syntax error details.
+
+        """
         exChk = raises(program_utils.SyntaxError, _read_file, prog_file)
         assert exChk.value.line == line_num
-        assert all(itertools.imap(
-            lambda token: token in str(exChk.value), [str(line_num), instr]))
+        assert all(itertools.imap(lambda token: token in str(exChk.value),
+                                  [str(line_num)] + err_details))
 
 
 def main():
