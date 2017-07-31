@@ -119,9 +119,9 @@ class TestSyntax:
         """
         self._run_syn_err(prog_file, line_num, [instr, str(operand)])
 
-    @mark.parametrize("prog_file, line_num, instr", [
-        ("instructionAtFirstLineWithNoOperands.asm", 1, "ADD"),
-        ("instructionAtSecondLineWithNoOperands.asm", 2, "SUB")])
+    @mark.parametrize("prog_file, line_num, instr",
+                      [("firstInstructionWithNoOperands.asm", 1, "ADD"),
+                       ("secondInstructionWithNoOperands.asm", 2, "SUB")])
     def test_instruction_with_no_operands_raises_SyntaxError(
             self, prog_file, line_num, instr):
         """Test loading an instruction with no operands.
