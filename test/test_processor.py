@@ -244,6 +244,8 @@ class TestCaps:
         """Test loading a unit with a non-positive width.
 
         `self` is this test case.
+        `in_file` is the processor description file.
+        `bad_width` is the non-positive width.
 
         """
         exChk = raises(

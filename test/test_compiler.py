@@ -78,6 +78,9 @@ class TestProgLoad:
         """Test loading a program.
 
         `self` is this test case.
+        `prog_file` is the program file.
+        `isa` is the instruction set.
+        `compiled_prog` is the compiled program.
 
         """
         assert program_utils.compile(
@@ -124,6 +127,10 @@ class TestSyntax:
         """Test loading an instruction with no operands.
 
         `self` is this test case.
+        `prog_file` is the program file.
+        `line_num` is the one-based number of the line containing the
+                   instruction missing operands.
+        `instr` is the instruction missing operands.
 
         """
         self._run_syn_err(prog_file, line_num, [instr])

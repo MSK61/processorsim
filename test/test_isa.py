@@ -72,6 +72,7 @@ class TestIsa:
 
         `self` is this test case.
         `in_file` is the instruction set file.
+        `supported_caps` are the supported hardware capabilities.
         `exp_isa` is the expected instruction set.
 
         """
