@@ -112,23 +112,25 @@ def _create_instr(src_line_info):
     The function returns the created program instruction.
 
     """
-    line_txt_idx = 1
     line_num = src_line_info[0] + 1
-    try:
-        instr_name, operands = src_line_info[line_txt_idx].split()
-    except ValueError:
+    src_line_info = src_line_info[1].split()
+    assert src_line_info
+    instr_idx = 0
+
+    if len(src_line_info) == 1:
         raise SyntaxError(
             "No operands provided for instruction {} at line {{}}".format(
-                src_line_info[line_txt_idx]), line_num)
+                src_line_info[instr_idx]), line_num)
+
     operand_sep = ','
-    operands = operands.split(operand_sep)
+    operands = src_line_info[1].split(operand_sep)
     operand_indices = xrange(len(operands))
     try:
         raise SyntaxError(
             "Operand {} empty for instruction {} at line {{}}".format(
-                itertools.ifilterfalse(
-                    lambda operand_idx: operands[operand_idx],
-                    operand_indices).next() + 1, instr_name), line_num)
+                itertools.ifilterfalse(lambda operand_idx: operands[
+                    operand_idx], operand_indices).next() + 1,
+                src_line_info[instr_idx]), line_num)
     except StopIteration:  # all operands present
         return program_defs.ProgInstruction(
-            instr_name, operands[1:], operands[0])
+            src_line_info[instr_idx], operands[1:], operands[0])
