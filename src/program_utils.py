@@ -45,6 +45,40 @@ import itertools
 import program_defs
 
 
+class _LineInfo(object):
+
+    """Source line information"""
+
+    def __init__(self, instr, operands):
+        """Set source line information.
+
+        `self` is this source line information.
+        `instr` is the instruction.
+        `operands` are the instruction operands.
+
+        """
+        self._instruction = instr
+        self._operands = operands
+
+    @property
+    def instruction(self):
+        """Relevant instruction
+
+        `self` is this source line information.
+
+        """
+        return self._instruction
+
+    @property
+    def operands(self):
+        """Relevant instruction operands
+
+        `self` is this source line information.
+
+        """
+        return self._operands
+
+
 class SyntaxError(RuntimeError):
 
     """Syntax error"""
@@ -105,6 +139,49 @@ def read_program(prog_file):
                 lambda line_info: line_info[1], enumerate(program)))
 
 
+def _get_line_parts(src_line_info):
+    """Extract the source line components.
+
+    `src_line_info` is the source line information.
+    The function returns the structured line information. It raises a
+    SyntaxError if there's a problem extracting components from the
+    line.
+
+    """
+    line_parts = src_line_info[1].split()
+    assert line_parts
+
+    if len(line_parts) == 1:
+        raise SyntaxError(
+            "No operands provided for instruction {} at line {{}}".format(
+                line_parts[0]), src_line_info[0] + 1)
+
+    return _LineInfo(*line_parts)
+
+
+def _get_operands(src_line_info, line_num):
+    """Extract operands from the given line.
+
+    `src_line_info` is the source line information.
+    `line_num` is the line number in the original input.
+    The function returns the relevant instruction operands as extracted
+    from the line. It raises a SyntaxError if any of the operands is
+    invalid.
+
+    """
+    operand_sep = ','
+    operands = src_line_info.operands.split(operand_sep)
+    operand_indices = xrange(len(operands))
+    try:
+        raise SyntaxError(
+            "Operand {} empty for instruction {} at line {{}}".format(
+                itertools.ifilterfalse(lambda operand_idx: operands[
+                    operand_idx], operand_indices).next() + 1,
+                src_line_info.instruction), line_num)
+    except StopIteration:  # all operands present
+        return operands
+
+
 def _create_instr(src_line_info):
     """Convert the source line to a program instruction.
 
@@ -114,24 +191,7 @@ def _create_instr(src_line_info):
 
     """
     line_num = src_line_info[0] + 1
-    src_line_info = src_line_info[1].split()
-    assert src_line_info
-    instr_idx = 0
-
-    if len(src_line_info) == 1:
-        raise SyntaxError(
-            "No operands provided for instruction {} at line {{}}".format(
-                src_line_info[instr_idx]), line_num)
-
-    operand_sep = ','
-    operands = src_line_info[1].split(operand_sep)
-    operand_indices = xrange(len(operands))
-    try:
-        raise SyntaxError(
-            "Operand {} empty for instruction {} at line {{}}".format(
-                itertools.ifilterfalse(lambda operand_idx: operands[
-                    operand_idx], operand_indices).next() + 1,
-                src_line_info[instr_idx]), line_num)
-    except StopIteration:  # all operands present
-        return program_defs.ProgInstruction(
-            src_line_info[instr_idx], operands[1:], operands[0])
+    src_line_info = _get_line_parts(src_line_info)
+    operands = _get_operands(src_line_info, line_num)
+    return program_defs.ProgInstruction(
+        src_line_info.instruction, operands[1:], operands[0])
