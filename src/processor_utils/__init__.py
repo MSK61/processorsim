@@ -622,7 +622,7 @@ def _aug_terminals(graph, ports, edge_func):
     `ports` are the terminals to unify.
     `edge_func` is the creation function for edges connecting old
                 terminals to the new one. It takes as parameters the old
-                and the new terminals in order and returns the a tuple
+                and the new terminals in order and returns a tuple
                 representing the directed edge between the two.
     The function tries to connect several terminals into a single new
     terminal. The function returns the newly added port.
@@ -1232,7 +1232,7 @@ def _unify_ports(graph, ports, edge_func):
     `ports` are the ports to unify.
     `edge_func` is the creation function for edges connecting old
                 terminals to the new one. It takes as parameters the old
-                and the new terminals in order and returns the a tuple
+                and the new terminals in order and returns a tuple
                 representing the directed edge between the two.
     The function returns the new port.
 

@@ -109,7 +109,8 @@ def _create_instr(src_line_info):
     """Convert the source line to a program instruction.
 
     `src_line_info` is the program instruction line information.
-    The function returns the created program instruction.
+    The function returns the created program instruction. It raises a
+    SyntaxError if the instruction is malformed.
 
     """
     line_num = src_line_info[0] + 1
