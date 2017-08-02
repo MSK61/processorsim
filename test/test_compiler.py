@@ -36,6 +36,8 @@
 #               Fedora release 25 (Twenty Five)
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Fedora release 25 (Twenty Five)
+#               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
+#               Ubuntu 17.04
 #
 # notes:        This is a private program.
 #
