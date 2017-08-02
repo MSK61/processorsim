@@ -130,17 +130,28 @@ class ProgInstruction(_Instruction):
 
     """Program instruction"""
 
-    def __init__(self, name, sources, dst):
+    def __init__(self, name, line, sources, dst):
         """Create a program instruction.
 
         `self` is this program instruction.
         `name` is the instruction name.
+        `line` is the number of the line containing the instruction.
         `sources` are the source registers read by the instruction.
         `dst` is the register written by the instruction.
 
         """
         _Instruction.__init__(self, sources, dst)
+        self._line = line
         self._name = name
+
+    @property
+    def line(self):
+        """Number of the source line containing the instruction
+
+        `self` is this program instruction.
+
+        """
+        return self._line
 
     @property
     def name(self):

@@ -45,7 +45,7 @@ import os.path
 import pytest
 from pytest import mark, raises
 import test_utils
-import container_utils
+from container_utils import contains
 import errors
 from program_defs import HwInstruction
 import program_utils
@@ -86,16 +86,24 @@ class TestProgLoad:
         assert program_utils.compile(
             _read_file(prog_file), isa) == compiled_prog
 
-    def test_unsupported_instruction_raises_UndefElemError(self):
+    @mark.parametrize(
+        "prog_file, instr, line_num",
+        [("subtractProgram.asm", "SUB", 1), ("multiplyProgram.asm", "MUL", 2)])
+    def test_unsupported_instruction_raises_UndefElemError(
+            self, prog_file, instr, line_num):
         """Test loading a program with an unknown instruction.
 
         `self` is this test case.
+        `prog_file` is the program file.
+        `instr` is the unsupported instruction.
+        `line_num` is the one-based number of the line containing the
+                   unknown instruction missing operands.
 
         """
         exChk = raises(errors.UndefElemError, program_utils.compile,
-                       _read_file("subtractProgram.asm"), {"ADD": "ALU"})
-        test_utils.chk_error([
-            test_utils.ValInStrCheck(exChk.value.element, "SUB")], exChk.value)
+                       _read_file(prog_file), {"ADD": "ALU"})
+        assert exChk.value.element == instr
+        assert contains(str(exChk.value), [instr, str(line_num)])
 
 
 class TestSyntax:
@@ -147,8 +155,7 @@ class TestSyntax:
         """
         exChk = raises(program_utils.SyntaxError, _read_file, prog_file)
         assert exChk.value.line == line_num
-        assert container_utils.contains(
-            str(exChk.value), [str(line_num)] + err_details)
+        assert contains(str(exChk.value), [str(line_num)] + err_details)
 
 
 def main():

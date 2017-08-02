@@ -116,12 +116,8 @@ def compile(prog, isa):
     UndefElemError if an unsupported instruction is encountered.
 
     """
-    try:
-        return map(lambda progInstr: program_defs.HwInstruction(
-            isa[progInstr.name.upper()], progInstr.sources,
-            progInstr.destination), prog)
-    except KeyError as err:  # unsupported instruction
-        raise errors.UndefElemError("Unsupported instruction {}", err.args[0])
+    return map(lambda progInstr: program_defs.HwInstruction(_get_cap(
+        isa, progInstr), progInstr.sources, progInstr.destination), prog)
 
 
 def read_program(prog_file):
@@ -137,6 +133,23 @@ def read_program(prog_file):
         return map(
             _create_instr, itertools.ifilter(
                 lambda line_info: line_info[1], enumerate(program)))
+
+
+def _get_cap(isa, instr):
+    """Get the ISA capability of the given instruction.
+
+    `isa` is the instruction set.
+    `instr` is the program instruction to get whose capability.
+    The function raises an UndefElemError if an unsupported instruction
+    is encountered.
+
+    """
+    try:
+        return isa[instr.name.upper()]
+    except KeyError as err:  # unsupported instruction
+        raise errors.UndefElemError(
+            "Unsupported instruction {{}} at line {}".format(instr.line),
+            err.args[0])
 
 
 def _get_line_parts(src_line_info):
@@ -194,4 +207,4 @@ def _create_instr(src_line_info):
     src_line_info = _get_line_parts(src_line_info)
     operands = _get_operands(src_line_info, line_num)
     return program_defs.ProgInstruction(
-        src_line_info.instruction, operands[1:], operands[0])
+        src_line_info.instruction, line_num, operands[1:], operands[0])
