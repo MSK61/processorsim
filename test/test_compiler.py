@@ -41,11 +41,11 @@
 #
 ############################################################
 
-import itertools
 import os.path
 import pytest
 from pytest import mark, raises
 import test_utils
+import container_utils
 import errors
 from program_defs import HwInstruction
 import program_utils
@@ -147,8 +147,8 @@ class TestSyntax:
         """
         exChk = raises(program_utils.SyntaxError, _read_file, prog_file)
         assert exChk.value.line == line_num
-        assert all(itertools.imap(lambda token: token in str(exChk.value),
-                                  [str(line_num)] + err_details))
+        assert container_utils.contains(
+            str(exChk.value), [str(line_num)] + err_details)
 
 
 def main():

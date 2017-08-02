@@ -48,6 +48,7 @@ import networkx
 import pytest
 from pytest import mark, raises
 from test_utils import chk_error, read_file, ValInStrCheck
+import container_utils
 import errors
 from processor_utils import exception, ProcessorDesc
 from processor_utils.units import FuncUnit, UnitModel
@@ -502,8 +503,7 @@ def _chk_warn(tokens, warn_call):
 
     """
     assert warn_call
-    warn_msg = warn_call[0][0] % warn_call[0][1:]
-    assert all(imap(lambda cap: cap in warn_msg, tokens))
+    assert container_utils.contains(warn_call[0][0] % warn_call[0][1:], tokens)
 
 
 if __name__ == '__main__':
