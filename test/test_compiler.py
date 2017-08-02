@@ -88,7 +88,8 @@ class TestProgLoad:
 
     @mark.parametrize(
         "prog_file, instr, line_num",
-        [("subtractProgram.asm", "SUB", 1), ("multiplyProgram.asm", "MUL", 2)])
+        [("subtractProgram.asm", "SUB", 1), ("multiplyProgram.asm", "MUL", 2),
+            ("lowerCaseSubtractProgram.asm", "sub", 1)])
     def test_unsupported_instruction_raises_UndefElemError(
             self, prog_file, instr, line_num):
         """Test loading a program with an unknown instruction.

@@ -146,10 +146,10 @@ def _get_cap(isa, instr):
     """
     try:
         return isa[instr.name.upper()]
-    except KeyError as err:  # unsupported instruction
+    except KeyError:  # unsupported instruction
         raise errors.UndefElemError(
             "Unsupported instruction {{}} at line {}".format(instr.line),
-            err.args[0])
+            instr.name)
 
 
 def _get_line_parts(src_line_info):
