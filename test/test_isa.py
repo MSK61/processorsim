@@ -60,9 +60,9 @@ class TestIsa:
         `self` is this test case.
 
         """
-        exChk = raises(errors.UndefElemError, self._read_file,
-                       "singleInstructionISA.yaml", ["MEM"])
-        chk_error([ValInStrCheck(exChk.value.element, "ALU")], exChk.value)
+        ex_chk = raises(errors.UndefElemError, self._read_file,
+                        "singleInstructionISA.yaml", ["MEM"])
+        chk_error([ValInStrCheck(ex_chk.value.element, "ALU")], ex_chk.value)
 
     @pytest.mark.parametrize(
         "in_file, supported_caps, exp_isa", [("emptyISA.yaml", ["ALU"], {}), (
@@ -86,10 +86,11 @@ class TestIsa:
         `self` is this test case.
 
         """
-        exChk = raises(exception.DupElemError, self._read_file,
-                       "twoInstructionsWithSameNameAndCase.yaml", ["ALU"])
-        chk_error([ValInStrCheck(exChk.value.new_element, "add"),
-                   ValInStrCheck(exChk.value.old_element, "ADD")], exChk.value)
+        ex_chk = raises(exception.DupElemError, self._read_file,
+                        "twoInstructionsWithSameNameAndCase.yaml", ["ALU"])
+        chk_error(
+            [ValInStrCheck(ex_chk.value.new_element, "add"),
+             ValInStrCheck(ex_chk.value.old_element, "ADD")], ex_chk.value)
 
     @staticmethod
     def _read_file(file_name, capabilities):

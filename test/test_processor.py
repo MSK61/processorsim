@@ -182,10 +182,10 @@ class TestBlocking:
         successor unit with no capabilities in common.
 
         """
-        exChk = raises(
+        ex_chk = raises(
             exception.DeadInputError, read_file, "blocking", in_file)
         chk_error(
-            [ValInStrCheck(exChk.value.port, isolated_input)], exChk.value)
+            [ValInStrCheck(ex_chk.value.port, isolated_input)], ex_chk.value)
 
 
 class TestCaps:
@@ -251,10 +251,10 @@ class TestCaps:
         `bad_width` is the non-positive width.
 
         """
-        exChk = raises(
+        ex_chk = raises(
             exception.BadWidthError, read_file, "capabilities", in_file)
-        chk_error([ValInStrCheck(exChk.value.unit, "fullSys"),
-                   ValInStrCheck(exChk.value.width, bad_width)], exChk.value)
+        chk_error([ValInStrCheck(ex_chk.value.unit, "fullSys"),
+                   ValInStrCheck(ex_chk.value.width, bad_width)], ex_chk.value)
 
 
 class TestEdges:
@@ -267,9 +267,9 @@ class TestEdges:
         `self` is this test case.
 
         """
-        exChk = raises(errors.UndefElemError, read_file, "edges",
-                       "edgeWithUnknownUnit.yaml")
-        chk_error([ValInStrCheck(exChk.value.element, "input")], exChk.value)
+        ex_chk = raises(errors.UndefElemError, read_file, "edges",
+                        "edgeWithUnknownUnit.yaml")
+        chk_error([ValInStrCheck(ex_chk.value.element, "input")], ex_chk.value)
 
     @mark.parametrize("in_file, bad_edge", [("emptyEdge.yaml", []), (
         "3UnitEdge.yaml", ["input", "middle", "output"])])
@@ -282,8 +282,8 @@ class TestEdges:
         `bad_edge` is the bad edge.
 
         """
-        exChk = raises(exception.BadEdgeError, read_file, "edges", in_file)
-        chk_error([ValInStrCheck(exChk.value.edge, bad_edge)], exChk.value)
+        ex_chk = raises(exception.BadEdgeError, read_file, "edges", in_file)
+        chk_error([ValInStrCheck(ex_chk.value.edge, bad_edge)], ex_chk.value)
 
     def test_three_identical_edges_are_detected(self):
         """Test loading three identical edges with the same units.
@@ -419,10 +419,10 @@ class TestUnits:
         `dup_unit` is the duplicate unit.
 
         """
-        exChk = raises(exception.DupElemError, read_file, "units", in_file)
+        ex_chk = raises(exception.DupElemError, read_file, "units", in_file)
         chk_error(
-            [ValInStrCheck(exChk.value.new_element, dup_unit),
-             ValInStrCheck(exChk.value.old_element, "fullSys")], exChk.value)
+            [ValInStrCheck(ex_chk.value.new_element, dup_unit),
+             ValInStrCheck(ex_chk.value.old_element, "fullSys")], ex_chk.value)
 
 
 class TestWidth:
@@ -442,12 +442,13 @@ class TestWidth:
         `max_width` is the processor maximum bus width.
 
         """
-        exChk = raises(exception.BlockedCapError, read_file, "widths", in_file)
-        chk_error([ValInStrCheck("Capability " + exChk.value.capability,
+        ex_chk = raises(
+            exception.BlockedCapError, read_file, "widths", in_file)
+        chk_error([ValInStrCheck("Capability " + ex_chk.value.capability,
                                  "Capability MEM"), ValInStrCheck(
-            "port " + exChk.value.port, "port input"), ValInStrCheck(
-            exChk.value.capacity, capacity), ValInStrCheck(
-            exChk.value.max_width, max_width)], exChk.value)
+            "port " + ex_chk.value.port, "port input"), ValInStrCheck(
+            ex_chk.value.capacity, capacity), ValInStrCheck(
+            ex_chk.value.max_width, max_width)], ex_chk.value)
 
     def test_width_less_than_fused_input_capacity_raises_TightWidthError(self):
         """Test a processor with a width less than its fused capacity.
@@ -459,10 +460,10 @@ class TestWidth:
         output.
 
         """
-        exChk = raises(exception.TightWidthError, read_file, "widths",
-                       "fusedCapacityLargerThanBusWidth.yaml")
-        chk_error([ValInStrCheck(exChk.value.needed_width, 2),
-                   ValInStrCheck(exChk.value.actual_width, 1)], exChk.value)
+        ex_chk = raises(exception.TightWidthError, read_file, "widths",
+                        "fusedCapacityLargerThanBusWidth.yaml")
+        chk_error([ValInStrCheck(ex_chk.value.needed_width, 2),
+                   ValInStrCheck(ex_chk.value.actual_width, 1)], ex_chk.value)
 
 
 def main():
