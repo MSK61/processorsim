@@ -47,40 +47,6 @@ import itertools
 import program_defs
 
 
-class _LineInfo(object):
-
-    """Source line information"""
-
-    def __init__(self, instr, operands):
-        """Set source line information.
-
-        `self` is this source line information.
-        `instr` is the instruction.
-        `operands` are the instruction operands.
-
-        """
-        self._instruction = instr
-        self._operands = operands
-
-    @property
-    def instruction(self):
-        """Relevant instruction
-
-        `self` is this source line information.
-
-        """
-        return self._instruction
-
-    @property
-    def operands(self):
-        """Relevant instruction operands
-
-        `self` is this source line information.
-
-        """
-        return self._operands
-
-
 class SyntaxError(RuntimeError):
 
     """Syntax error"""
@@ -121,6 +87,40 @@ class SyntaxError(RuntimeError):
 
         """
         return self._line
+
+
+class _LineInfo(object):
+
+    """Source line information"""
+
+    def __init__(self, instr, operands):
+        """Set source line information.
+
+        `self` is this source line information.
+        `instr` is the instruction.
+        `operands` are the instruction operands.
+
+        """
+        self._instruction = instr
+        self._operands = operands
+
+    @property
+    def instruction(self):
+        """Relevant instruction
+
+        `self` is this source line information.
+
+        """
+        return self._instruction
+
+    @property
+    def operands(self):
+        """Relevant instruction operands
+
+        `self` is this source line information.
+
+        """
+        return self._operands
 
 
 def compile(prog, isa):
