@@ -51,6 +51,7 @@ from container_utils import contains
 import errors
 from program_defs import HwInstruction
 import program_utils
+from test_utils import ValInStrCheck
 import unittest
 
 
@@ -128,7 +129,9 @@ class TestSyntax:
         `operand` is the one-based index of the empty operand.
 
         """
-        self._run_syn_err(prog_file, line_num, [instr, str(operand)])
+        exChk = raises(program_utils.SyntaxError, _read_file, prog_file)
+        self._chk_syn_err(exChk.value, line_num, instr)
+        assert str(operand) in str(exChk.value)
 
     @mark.parametrize("prog_file, line_num, instr",
                       [("firstInstructionWithNoOperands.asm", 1, "ADD"),
@@ -144,21 +147,21 @@ class TestSyntax:
         `instr` is the instruction missing operands.
 
         """
-        self._run_syn_err(prog_file, line_num, [instr])
+        self._chk_syn_err(raises(program_utils.SyntaxError, _read_file,
+                                 prog_file).value, line_num, instr)
 
     @staticmethod
-    def _run_syn_err(prog_file, line_num, err_details):
-        """Test loading a program with a syntax error.
+    def _chk_syn_err(syn_err, line_num, instr):
+        """Check the properties of a syntax error.
 
-        `prog_file` is the program file.
+        `syn_err` is the syntax error.
         `line_num` is the one-based number of the line containing the
                    instruction with the empty operand.
-        `err_details` are the syntax error details.
+        `instr` is the instruction with the syntax error.
 
         """
-        exChk = raises(program_utils.SyntaxError, _read_file, prog_file)
-        assert exChk.value.line == line_num
-        assert contains(str(exChk.value), [str(line_num)] + err_details)
+        test_utils.chk_error([ValInStrCheck(syn_err.instruction, instr),
+                              ValInStrCheck(syn_err.line, line_num)], syn_err)
 
 
 def main():

@@ -85,17 +85,33 @@ class SyntaxError(RuntimeError):
 
     """Syntax error"""
 
-    def __init__(self, msg_tmpl, line):
+    # parameter indices in format message
+    LINE_NUM_IDX = 0
+
+    INSTR_IDX = 1
+
+    def __init__(self, msg_tmpl, line, instr):
         """Create a syntax error.
 
         `self` is this syntax error.
         `msg_tmpl` is the error format message taking the line number as
                    a positional argument.
         `line` is the number of the line containing the error.
+        `instr` is the instruction causing the error.
 
         """
-        RuntimeError.__init__(self, msg_tmpl.format(line))
+        RuntimeError.__init__(self, msg_tmpl.format(line, instr))
         self._line = line
+        self._instruction = instr
+
+    @property
+    def instruction(self):
+        """Instruction where the error is encountered
+
+        `self` is this syntax error.
+
+        """
+        return self._instruction
 
     @property
     def line(self):
@@ -168,8 +184,9 @@ def _get_line_parts(src_line_info):
 
     if len(line_parts) == 1:
         raise SyntaxError(
-            "No operands provided for instruction {} at line {{}}".format(
-                line_parts[0]), src_line_info[0] + 1)
+            "No operands provided for instruction {{{}}} at line "
+            "{{{}}}".format(SyntaxError.INSTR_IDX, SyntaxError.LINE_NUM_IDX),
+            src_line_info[0] + 1, line_parts[0])
 
     return _LineInfo(*line_parts)
 
@@ -189,10 +206,11 @@ def _get_operands(src_line_info, line_num):
     operand_indices = xrange(len(operands))
     try:
         raise SyntaxError(
-            "Operand {} empty for instruction {} at line {{}}".format(
-                itertools.ifilterfalse(lambda operand_idx: operands[
-                    operand_idx], operand_indices).next() + 1,
-                src_line_info.instruction), line_num)
+            "Operand {} empty for instruction {{{}}} at line {{{}}}".format(
+                itertools.ifilterfalse(
+                    lambda operand_idx: operands[operand_idx],
+                    operand_indices).next() + 1, SyntaxError.INSTR_IDX,
+                SyntaxError.LINE_NUM_IDX), line_num, src_line_info.instruction)
     except StopIteration:  # all operands present
         return operands
 
