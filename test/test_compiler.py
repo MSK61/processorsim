@@ -156,7 +156,7 @@ class TestSyntax:
 
         `syn_err` is the syntax error.
         `line_num` is the one-based number of the line containing the
-                   instruction with the empty operand.
+                   syntax error.
         `instr` is the instruction with the syntax error.
 
         """
