@@ -104,10 +104,10 @@ class TestProgLoad:
                    unknown instruction missing operands.
 
         """
-        exChk = raises(errors.UndefElemError, compile_program,
-                       _read_file(prog_file), {"ADD": "ALU"})
-        assert exChk.value.element == instr
-        assert contains(str(exChk.value), [instr, str(line_num)])
+        ex_chk = raises(errors.UndefElemError, compile_program,
+                        _read_file(prog_file), {"ADD": "ALU"})
+        assert ex_chk.value.element == instr
+        assert contains(str(ex_chk.value), [instr, str(line_num)])
 
 
 class TestSyntax:
@@ -129,9 +129,9 @@ class TestSyntax:
         `operand` is the one-based index of the empty operand.
 
         """
-        exChk = raises(CodeError, _read_file, prog_file)
-        self._chk_syn_err(exChk.value, line_num, instr)
-        assert str(operand) in str(exChk.value)
+        ex_chk = raises(CodeError, _read_file, prog_file)
+        self._chk_syn_err(ex_chk.value, line_num, instr)
+        assert str(operand) in str(ex_chk.value)
 
     @mark.parametrize("prog_file, line_num, instr",
                       [("firstInstructionWithNoOperands.asm", 1, "ADD"),
