@@ -47,7 +47,7 @@ import itertools
 import program_defs
 
 
-class SyntaxError(RuntimeError):
+class CodeError(RuntimeError):
 
     """Syntax error"""
 
@@ -123,7 +123,7 @@ class _LineInfo(object):
         return self._operands
 
 
-def compile(prog, isa):
+def compile_program(prog, isa):
     """Compile the program using the given instruction set.
 
     `prog` is the program to compile.
@@ -175,17 +175,16 @@ def _get_line_parts(src_line_info):
 
     `src_line_info` is the source line information.
     The function returns the structured line information. It raises a
-    SyntaxError if there's a problem extracting components from the
-    line.
+    CodeError if there's a problem extracting components from the line.
 
     """
     line_parts = src_line_info[1].split()
     assert line_parts
 
     if len(line_parts) == 1:
-        raise SyntaxError(
+        raise CodeError(
             "No operands provided for instruction {{{}}} at line "
-            "{{{}}}".format(SyntaxError.INSTR_IDX, SyntaxError.LINE_NUM_IDX),
+            "{{{}}}".format(CodeError.INSTR_IDX, CodeError.LINE_NUM_IDX),
             src_line_info[0] + 1, line_parts[0])
 
     return _LineInfo(*line_parts)
@@ -197,7 +196,7 @@ def _get_operands(src_line_info, line_num):
     `src_line_info` is the source line information.
     `line_num` is the line number in the original input.
     The function returns the relevant instruction operands as extracted
-    from the line. It raises a SyntaxError if any of the operands is
+    from the line. It raises a CodeError if any of the operands is
     invalid.
 
     """
@@ -205,12 +204,12 @@ def _get_operands(src_line_info, line_num):
     operands = src_line_info.operands.split(operand_sep)
     operand_indices = xrange(len(operands))
     try:
-        raise SyntaxError(
+        raise CodeError(
             "Operand {} empty for instruction {{{}}} at line {{{}}}".format(
                 itertools.ifilterfalse(
                     lambda operand_idx: operands[operand_idx],
-                    operand_indices).next() + 1, SyntaxError.INSTR_IDX,
-                SyntaxError.LINE_NUM_IDX), line_num, src_line_info.instruction)
+                    operand_indices).next() + 1, CodeError.INSTR_IDX,
+                CodeError.LINE_NUM_IDX), line_num, src_line_info.instruction)
     except StopIteration:  # all operands present
         return operands
 
@@ -220,7 +219,7 @@ def _create_instr(src_line_info):
 
     `src_line_info` is the program instruction line information.
     The function returns the created program instruction. It raises a
-    SyntaxError if the instruction is malformed.
+    CodeError if the instruction is malformed.
 
     """
     line_num = src_line_info[0] + 1

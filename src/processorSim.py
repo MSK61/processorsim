@@ -108,9 +108,8 @@ def run(processor_file, program_file):
     """
     proc_desc = processor.read_processor(processor_file)
     prog = program_utils.read_program(program_file)
-    _print_sim_res(
-        processor.simulate(
-            program_utils.compile(prog, proc_desc.isa), proc_desc.hw_desc))
+    _print_sim_res(processor.simulate(
+        program_utils.compile_program(prog, proc_desc.isa), proc_desc.hw_desc))
 
 
 def _print_sim_res(sim_res):

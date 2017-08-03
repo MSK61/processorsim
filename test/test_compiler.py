@@ -51,6 +51,7 @@ from container_utils import contains
 import errors
 from program_defs import HwInstruction
 import program_utils
+from program_utils import CodeError, compile_program
 from test_utils import ValInStrCheck
 import unittest
 
@@ -86,8 +87,7 @@ class TestProgLoad:
         `compiled_prog` is the compiled program.
 
         """
-        assert program_utils.compile(
-            _read_file(prog_file), isa) == compiled_prog
+        assert compile_program(_read_file(prog_file), isa) == compiled_prog
 
     @mark.parametrize(
         "prog_file, instr, line_num",
@@ -104,7 +104,7 @@ class TestProgLoad:
                    unknown instruction missing operands.
 
         """
-        exChk = raises(errors.UndefElemError, program_utils.compile,
+        exChk = raises(errors.UndefElemError, compile_program,
                        _read_file(prog_file), {"ADD": "ALU"})
         assert exChk.value.element == instr
         assert contains(str(exChk.value), [instr, str(line_num)])
@@ -129,7 +129,7 @@ class TestSyntax:
         `operand` is the one-based index of the empty operand.
 
         """
-        exChk = raises(program_utils.SyntaxError, _read_file, prog_file)
+        exChk = raises(CodeError, _read_file, prog_file)
         self._chk_syn_err(exChk.value, line_num, instr)
         assert str(operand) in str(exChk.value)
 
@@ -147,8 +147,8 @@ class TestSyntax:
         `instr` is the instruction missing operands.
 
         """
-        self._chk_syn_err(raises(program_utils.SyntaxError, _read_file,
-                                 prog_file).value, line_num, instr)
+        self._chk_syn_err(
+            raises(CodeError, _read_file, prog_file).value, line_num, instr)
 
     @staticmethod
     def _chk_syn_err(syn_err, line_num, instr):
