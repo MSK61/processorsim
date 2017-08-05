@@ -4,13 +4,13 @@
 
 program execution simulator on processors
 
-prerequisites
--------------
+Requirements
+------------
 
-### development/run-time requirements
+### Development/Run-time Requirements
 Please refer to requirements.txt for the list of dependency packages.
 
-### testing requirements
+### Testing Requirements
 
 - pytest
 - mock
