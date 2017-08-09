@@ -75,7 +75,8 @@ class TestProgLoad:
     """Test case for loading programs"""
 
     @mark.parametrize("prog_file", [
-        "singleInstruction.asm", "lowerCaseSingleInstruction.asm"])
+        "singleInstruction.asm", "lowerCaseSingleInstruction.asm",
+        "instructionWithOneSpaceBeforeComma.asm"])
     def test_add_prog(self, prog_file):
         """Test loading a single-instruction ADD program.
 
