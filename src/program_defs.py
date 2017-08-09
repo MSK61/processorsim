@@ -97,7 +97,7 @@ class HwInstruction(_Instruction):
         `dst` is the register written by the instruction.
 
         """
-        _Instruction.__init__(self, sources, dst)
+        _Instruction.__init__(self, frozenset(sources), dst)
         self._categ = categ
 
     def __eq__(self, other):

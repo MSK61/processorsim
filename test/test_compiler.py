@@ -74,11 +74,12 @@ class TestProgLoad:
 
     """Test case for loading programs"""
 
-    @mark.parametrize("prog_file, isa, compiled_prog", [
-        ("empty.asm", {}, []), ("singleInstruction.asm", {"ADD": "ALU"},
-                                [HwInstruction("ALU", ["R11", "R15"], "R14")]),
-        ("lowerCaseSingleInstruction.asm", {"ADD": "ALU"}, [HwInstruction(
-            "ALU", ["R11", "R15"], "R14")]), ("emptyLineOnly.asm", {}, [])])
+    @mark.parametrize("prog_file, isa, compiled_prog", [("empty.asm", {}, [
+        ]), ("singleInstruction.asm", {"ADD": "ALU"}, [HwInstruction("ALU", [
+            "R11", "R15"], "R14")]), ("lowerCaseSingleInstruction.asm", {
+                "ADD": "ALU"}, [HwInstruction("ALU", ["R11", "R15"], "R14")]),
+        ("emptyLineOnly.asm", {}, []), ("duplicateInputsInstruction.asm", {
+            "ADD": "ALU"}, [HwInstruction("ALU", ["R11"], "R14")])])
     def test_program(self, prog_file, isa, compiled_prog):
         """Test loading a program.
 
