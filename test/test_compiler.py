@@ -43,6 +43,7 @@
 #
 ############################################################
 
+import itertools
 import os.path
 import pytest
 from pytest import mark, raises
@@ -160,8 +161,9 @@ class TestSyntax:
         `instr` is the instruction with the syntax error.
 
         """
-        test_utils.chk_error([ValInStrCheck(syn_err.instruction, instr),
-                              ValInStrCheck(syn_err.line, line_num)], syn_err)
+        test_utils.chk_error(itertools.imap(lambda err_params: ValInStrCheck(
+            *err_params), [
+            [syn_err.instruction, instr], [syn_err.line, line_num]]), syn_err)
 
 
 def main():
