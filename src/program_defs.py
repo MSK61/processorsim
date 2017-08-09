@@ -146,6 +146,16 @@ class ProgInstruction(_Instruction):
         self._line = line
         self._name = name
 
+    def __eq__(self, other):
+        """Test if the two program instructions are identical.
+
+        `self` is this program instruction.
+        `other` is the other program instruction.
+
+        """
+        return _Instruction.__eq__(self, other) and (
+            self._line, self._name) == (other.line, other.name)
+
     @property
     def line(self):
         """Number of the source line containing the instruction

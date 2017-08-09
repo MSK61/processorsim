@@ -48,12 +48,12 @@ import os.path
 import pytest
 from pytest import mark, raises
 import test_utils
-from container_utils import contains
+import container_utils
 import errors
+import program_defs
 from program_defs import HwInstruction
 import program_utils
 from program_utils import CodeError, compile_program
-from test_utils import ValInStrCheck
 import unittest
 
 
@@ -74,33 +74,23 @@ class TestProgLoad:
 
     """Test case for loading programs"""
 
-    @mark.parametrize("prog_file", [
-        "singleInstruction.asm", "lowerCaseSingleInstruction.asm",
-        "instructionWithOneSpaceBeforeComma.asm"])
-    def test_add_prog(self, prog_file):
-        """Test loading a single-instruction ADD program.
+    def test_duplicate_inputs_are_stored_only_once(self):
+        """Test loading a program with duplicate inputs.
 
         `self` is this test case.
-        `prog_file` is the program file.
+        The functions tests loading a program where one instruction takes both
+        inputs from the same register.
 
         """
-        self.test_program(prog_file, {"ADD": "ALU"},
-                          [HwInstruction("ALU", ["R11", "R15"], "R14")])
+        self._test_program("duplicateInputsInstruction.asm", ["R11"])
 
-    @mark.parametrize(
-        "prog_file, isa, compiled_prog", [("empty.asm", {}, []), (
-            "emptyLineOnly.asm", {}, []), ("duplicateInputsInstruction.asm", {
-                "ADD": "ALU"}, [HwInstruction("ALU", ["R11"], "R14")])])
-    def test_program(self, prog_file, isa, compiled_prog):
-        """Test loading a program.
+    def test_lower_case_instruction(self):
+        """Test loading a lower case instruction.
 
         `self` is this test case.
-        `prog_file` is the program file.
-        `isa` is the instruction set.
-        `compiled_prog` is the compiled program.
 
         """
-        assert compile_program(_read_file(prog_file), isa) == compiled_prog
+        self._test_program("lowerCaseInstruction.asm", ["R11", "R15"])
 
     @mark.parametrize(
         "prog_file, instr, line_num",
@@ -120,12 +110,34 @@ class TestProgLoad:
         ex_chk = raises(errors.UndefElemError, compile_program,
                         _read_file(prog_file), {"ADD": "ALU"})
         assert ex_chk.value.element == instr
-        assert contains(str(ex_chk.value), [instr, str(line_num)])
+        assert container_utils.contains(
+            str(ex_chk.value), [instr, str(line_num)])
+
+    @staticmethod
+    def _test_program(prog_file, inputs):
+        """Test loading a program.
+
+        `prog_file` is the program file.
+        `inputs` are the instruction inputs.
+
+        """
+        assert compile_program(_read_file(prog_file), {"ADD": "ALU"}) == [
+            HwInstruction("ALU", inputs, "R14")]
 
 
 class TestSyntax:
 
     """Test case for syntax errors"""
+
+    @mark.parametrize("prog_file", ["empty.asm", "emptyLineOnly.asm"])
+    def test_empty_program(self, prog_file):
+        """Test loading an empty program.
+
+        `self` is this test case.
+        `prog_file` is the program file.
+
+        """
+        self._test_program(prog_file, [])
 
     @mark.parametrize("prog_file, line_num, instr, operand", [
         ("firstInstructionWithSecondOpernadEmpty.asm", 1, "ADD", 2),
@@ -163,6 +175,18 @@ class TestSyntax:
         self._chk_syn_err(
             raises(CodeError, _read_file, prog_file).value, line_num, instr)
 
+    @mark.parametrize("prog_file", [
+        "singleInstruction.asm", "instructionWithOneSpaceBeforeComma.asm"])
+    def test_well_formed_instruction(self, prog_file):
+        """Test loading a single-instruction program.
+
+        `self` is this test case.
+        `prog_file` is the program file.
+
+        """
+        self._test_program(prog_file, [
+            program_defs.ProgInstruction("ADD", 1, ["R11", "R15"], "R14")])
+
     @staticmethod
     def _chk_syn_err(syn_err, line_num, instr):
         """Check the properties of a syntax error.
@@ -173,9 +197,21 @@ class TestSyntax:
         `instr` is the instruction with the syntax error.
 
         """
-        test_utils.chk_error(itertools.imap(lambda err_params: ValInStrCheck(
-            *err_params), [
-            [syn_err.instruction, instr], [syn_err.line, line_num]]), syn_err)
+        test_utils.chk_error(
+            itertools.imap(
+                lambda err_params: test_utils.ValInStrCheck(*err_params),
+                [[syn_err.instruction, instr], [syn_err.line, line_num]]),
+            syn_err)
+
+    @staticmethod
+    def _test_program(prog_file, loaded_prog):
+        """Test loading a program.
+
+        `prog_file` is the program file.
+        `loaded_prog` is the loaded program.
+
+        """
+        assert _read_file(prog_file) == loaded_prog
 
 
 def main():
