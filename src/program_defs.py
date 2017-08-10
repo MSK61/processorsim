@@ -156,6 +156,15 @@ class ProgInstruction(_Instruction):
         return _Instruction.__eq__(self, other) and (
             self._line, self._name) == (other.line, other.name)
 
+    def __repr__(self):
+        """Return the official string of this program instruction.
+
+        `self` is this program instruction.
+
+        """
+        return '{}({}, {}, {})'.format(type(self).__name__, repr(self._name),
+                                       self._sources, repr(self._dst))
+
     @property
     def line(self):
         """Number of the source line containing the instruction

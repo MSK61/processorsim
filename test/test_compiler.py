@@ -176,7 +176,12 @@ class TestSyntax:
             raises(CodeError, _read_file, prog_file).value, line_num, instr)
 
     @mark.parametrize("prog_file", [
-        "singleInstruction.asm", "instructionWithOneSpaceBeforeComma.asm"])
+        "singleInstruction.asm", "instructionWithOneSpaceBeforeComma.asm",
+        "instructionWithOneSpaceAfterComma.asm",
+        "instructionWithTwoSpacesBeforeComma.asm",
+        "instructionWithTwoSpacesAfterComma.asm",
+        "instructionWithOneTabBeforeComma.asm",
+        "instructionWithOneTabAfterComma.asm"])
     def test_well_formed_instruction(self, prog_file):
         """Test loading a single-instruction program.
 

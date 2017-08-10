@@ -202,7 +202,7 @@ def _get_operands(src_line_info, line_num):
     invalid.
 
     """
-    sep_pat = " ?,"
+    sep_pat = "\s*,\s*"
     operands = re.split(sep_pat, src_line_info.operands)
     operand_indices = xrange(len(operands))
     try:
