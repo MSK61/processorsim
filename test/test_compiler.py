@@ -51,7 +51,7 @@ import test_utils
 import container_utils
 import errors
 import program_defs
-from program_defs import HwInstruction
+from program_defs import HwInstruction, ProgInstruction
 import program_utils
 from program_utils import CodeError, compile_program
 import unittest
@@ -68,6 +68,14 @@ class CoverageTest(unittest.TestCase):
 
         """
         repr(HwInstruction("ALU", [], "R1"))
+
+    def test_ProgInstruction_repr(self):
+        """Test ProgInstruction representation.
+
+        `self` is this test case.
+
+        """
+        repr(ProgInstruction("ADD", 1, ["R1"], "R1"))
 
 
 class TestProgLoad:
@@ -192,8 +200,8 @@ class TestSyntax:
         `prog_file` is the program file.
 
         """
-        self._test_program(prog_file, [
-            program_defs.ProgInstruction("ADD", 1, ["R11", "R15"], "R14")])
+        self._test_program(
+            prog_file, [ProgInstruction("ADD", 1, ["R11", "R15"], "R14")])
 
     @staticmethod
     def _chk_syn_err(syn_err, line_num, instr):
