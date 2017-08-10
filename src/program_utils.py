@@ -45,7 +45,7 @@
 import errors
 import itertools
 import program_defs
-import re
+from re import split
 
 
 class CodeError(RuntimeError):
@@ -179,8 +179,8 @@ def _get_line_parts(src_line_info):
     CodeError if there's a problem extracting components from the line.
 
     """
-    sep = ' '
-    line_parts = src_line_info[1].split(sep, 1)
+    sep_pat = "\s+"
+    line_parts = split(sep_pat, src_line_info[1], 1)
     assert line_parts
 
     if len(line_parts) == 1:
@@ -203,7 +203,7 @@ def _get_operands(src_line_info, line_num):
 
     """
     sep_pat = "\s*,\s*"
-    operands = re.split(sep_pat, src_line_info.operands)
+    operands = split(sep_pat, src_line_info.operands)
     operand_indices = xrange(len(operands))
     try:
         raise CodeError(

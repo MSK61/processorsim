@@ -182,7 +182,9 @@ class TestSyntax:
         "instructionWithTwoSpacesBeforeComma.asm",
         "instructionWithTwoSpacesAfterComma.asm",
         "instructionWithOneTabBeforeComma.asm",
-        "instructionWithOneTabAfterComma.asm"])
+        "instructionWithOneTabAfterComma.asm",
+        "instructionWithTwoSpacesBeforeOperands.asm",
+        "instructionWithOneTabBeforeOperands.asm"])
     def test_well_formed_instruction(self, prog_file):
         """Test loading a single-instruction program.
 
