@@ -50,7 +50,6 @@ from pytest import mark, raises
 import test_utils
 import container_utils
 import errors
-import program_defs
 from program_defs import HwInstruction, ProgInstruction
 import program_utils
 from program_utils import CodeError, compile_program
