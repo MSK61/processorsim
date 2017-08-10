@@ -176,7 +176,8 @@ class TestSyntax:
             raises(CodeError, _read_file, prog_file).value, line_num, instr)
 
     @mark.parametrize("prog_file", [
-        "singleInstruction.asm", "instructionWithOneSpaceBeforeComma.asm",
+        "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
+        "instructionWithOneSpaceBeforeComma.asm",
         "instructionWithOneSpaceAfterComma.asm",
         "instructionWithTwoSpacesBeforeComma.asm",
         "instructionWithTwoSpacesAfterComma.asm",
