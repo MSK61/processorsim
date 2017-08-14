@@ -44,10 +44,10 @@
 ############################################################
 
 import os.path
+import test_utils
 import processor
 import processor_utils
 import program_utils
-import test_utils
 from test_utils import read_file
 import unittest
 
