@@ -48,7 +48,6 @@ import test_utils
 import processor
 import processor_utils
 import program_utils
-from test_utils import read_file
 import unittest
 
 
@@ -62,7 +61,7 @@ class SimTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        cpu = read_file("processors", "singleUnitALUProcessor.yaml")
+        cpu = test_utils.read_file("processors", "singleUnitALUProcessor.yaml")
         prog = program_utils.compile_program(
             program_utils.read_program(
                 os.path.join(test_utils.TEST_DATA_DIR, "programs",
