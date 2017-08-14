@@ -33,6 +33,8 @@
 #
 # environment:  Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Fedora release 25 (Twenty Five)
+#               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
+#               Ubuntu 17.04
 #
 # notes:        This is a private program.
 #
@@ -41,8 +43,9 @@
 from os.path import join
 import test_env
 import processor_utils
+import program_utils
 import yaml
-TEST_DATA_DIR = join(test_env.TEST_DIR, "data")
+_TEST_DATA_DIR = join(test_env.TEST_DIR, "data")
 
 
 class ValInStrCheck:
@@ -92,19 +95,30 @@ def chk_error(verify_points, error):
         idx = cur_point.check(error, idx)
 
 
-def load_yaml(test_dir, file_name):
-    """Read a test YAML file.
+def compile_prog(prog_file, isa):
+    """Compile a file using the given instruction set.
 
-    `test_dir` is the directory containing the YAML file.
-    `file_name` is the YAML file name.
-    The function returns the loaded YAML object.
+    `prog_file` is the program file.
+    `isa` is the instruction set.
 
     """
-    with open(join(TEST_DATA_DIR, test_dir, file_name)) as test_file:
-        return yaml.load(test_file)
+    return program_utils.compile_program(read_prog_file(prog_file), isa)
 
 
-def read_file(proc_dir, file_name):
+def read_isa_file(file_name, capabilities):
+    """Read an instruction set file.
+
+    `file_name` is the instruction set file name.
+    `capabilities` are supported capabilities.
+    The function returns the instruction set mapping.
+
+    """
+    test_dir = "ISA"
+    return processor_utils.load_isa(
+        _load_yaml(test_dir, file_name), capabilities)
+
+
+def read_proc_file(proc_dir, file_name):
     """Read a processor description file.
 
     `proc_dir` is the directory containing the processor description file.
@@ -112,4 +126,28 @@ def read_file(proc_dir, file_name):
     The function returns the processor description.
 
     """
-    return processor_utils.load_proc_desc(load_yaml(proc_dir, file_name))
+    return processor_utils.load_proc_desc(_load_yaml(proc_dir, file_name))
+
+
+def read_prog_file(file_name):
+    """Read a program file.
+
+    `file_name` is the program file name.
+    The function returns the loaded program.
+
+    """
+    test_dir = "programs"
+    return program_utils.read_program(
+        join(_TEST_DATA_DIR, test_dir, file_name))
+
+
+def _load_yaml(test_dir, file_name):
+    """Read a test YAML file.
+
+    `test_dir` is the directory containing the YAML file.
+    `file_name` is the YAML file name.
+    The function returns the loaded YAML object.
+
+    """
+    with open(join(_TEST_DATA_DIR, test_dir, file_name)) as test_file:
+        return yaml.load(test_file)

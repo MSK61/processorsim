@@ -43,11 +43,9 @@
 
 import pytest
 from pytest import raises
-import test_utils
+from test_utils import chk_error, read_isa_file, ValInStrCheck
 import errors
-import processor_utils
-from processor_utils import exception
-from test_utils import chk_error, ValInStrCheck
+import processor_utils.exception
 
 
 class TestIsa:
@@ -60,7 +58,7 @@ class TestIsa:
         `self` is this test case.
 
         """
-        ex_chk = raises(errors.UndefElemError, self._read_file,
+        ex_chk = raises(errors.UndefElemError, read_isa_file,
                         "singleInstructionISA.yaml", ["MEM"])
         chk_error([ValInStrCheck(ex_chk.value.element, "ALU")], ex_chk.value)
 
@@ -78,7 +76,7 @@ class TestIsa:
         `exp_isa` is the expected instruction set.
 
         """
-        assert self._read_file(in_file, supported_caps) == exp_isa
+        assert read_isa_file(in_file, supported_caps) == exp_isa
 
     def test_two_instructions_with_same_name_raise_DupElemError(self):
         """Test loading two instructions with the same name.
@@ -86,24 +84,11 @@ class TestIsa:
         `self` is this test case.
 
         """
-        ex_chk = raises(exception.DupElemError, self._read_file,
+        ex_chk = raises(processor_utils.exception.DupElemError, read_isa_file,
                         "twoInstructionsWithSameNameAndCase.yaml", ["ALU"])
         chk_error(
             [ValInStrCheck(ex_chk.value.new_element, "add"),
              ValInStrCheck(ex_chk.value.old_element, "ADD")], ex_chk.value)
-
-    @staticmethod
-    def _read_file(file_name, capabilities):
-        """Read an instruction set file.
-
-        `file_name` is the instruction set file name.
-        `capabilities` are supported capabilities.
-        The function returns the instruction set mapping.
-
-        """
-        test_dir = "ISA"
-        return processor_utils.load_isa(
-            test_utils.load_yaml(test_dir, file_name), capabilities)
 
 
 def main():

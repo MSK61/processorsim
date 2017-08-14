@@ -49,7 +49,7 @@ from mock import patch
 import networkx
 import pytest
 from pytest import mark, raises
-from test_utils import chk_error, read_file, ValInStrCheck
+from test_utils import chk_error, read_proc_file, ValInStrCheck
 import container_utils
 import errors
 from processor_utils import exception, ProcessorDesc
@@ -72,7 +72,7 @@ class CleanTest(TestCase):
 
         """
         with patch("logging.warning") as warn_mock:
-            proc_desc = read_file(
+            proc_desc = read_proc_file(
                 "optimization", "pathThatGetsCutOffItsOutput.yaml")
         assert proc_desc == ProcessorDesc([UnitModel("input", 1, ["ALU"])], [
             FuncUnit(UnitModel("output 1", 1, ["ALU"]), proc_desc.in_ports)],
@@ -86,7 +86,7 @@ class CleanTest(TestCase):
 
         """
         with patch("logging.warning") as warn_mock:
-            proc_desc = read_file(
+            proc_desc = read_proc_file(
                 "optimization", "incompatibleEdgeProcessor.yaml")
         name_input_map = dict(
             imap(lambda in_port: (in_port.name, in_port), proc_desc.in_ports))
@@ -104,7 +104,7 @@ class CleanTest(TestCase):
 
         """
         in_file = "oneCapabilityInputAndTwoCapabilitiesOutput.yaml"
-        proc_desc = read_file("optimization", in_file)
+        proc_desc = read_proc_file("optimization", in_file)
         assert proc_desc == ProcessorDesc(
             [UnitModel("input", 1, ["ALU"])], [FuncUnit(
                 UnitModel("output", 1, ["ALU"]), proc_desc.in_ports)], [], [])
@@ -116,8 +116,9 @@ class CleanTest(TestCase):
 
         """
         with patch("logging.warning") as warn_mock:
-            assert read_file("optimization",
-                             "unitWithNoCapabilities.yaml") == ProcessorDesc(
+            assert read_proc_file(
+                "optimization",
+                "unitWithNoCapabilities.yaml") == ProcessorDesc(
                 [], [], [UnitModel("core 1", 1, ["ALU"])], [])
         _chk_warn(["core 2"], warn_mock.call_args)
 
@@ -183,7 +184,7 @@ class TestBlocking:
 
         """
         ex_chk = raises(
-            exception.DeadInputError, read_file, "blocking", in_file)
+            exception.DeadInputError, read_proc_file, "blocking", in_file)
         chk_error(
             [ValInStrCheck(ex_chk.value.port, isolated_input)], ex_chk.value)
 
@@ -205,7 +206,7 @@ class TestCaps:
         `err_tag` is the port type tag in the error message.
 
         """
-        assert err_tag in str(raises(exception.EmptyProcError, read_file,
+        assert err_tag in str(raises(exception.EmptyProcError, read_proc_file,
                                      "capabilities", in_file).value).lower()
 
     def test_same_capability_with_different_case_in_two_units_is_detected(
@@ -217,7 +218,7 @@ class TestCaps:
         """
         in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits.yaml"
         with patch("logging.warning") as warn_mock:
-            assert read_file("capabilities", in_file) == ProcessorDesc(
+            assert read_proc_file("capabilities", in_file) == ProcessorDesc(
                 [], [], [UnitModel("core 1", 1, ["ALU"]),
                          UnitModel("core 2", 1, ["ALU"])], [])
         _chk_warn(["ALU", "core 1", "alu", "core 2"], warn_mock.call_args)
@@ -252,7 +253,7 @@ class TestCaps:
 
         """
         ex_chk = raises(
-            exception.BadWidthError, read_file, "capabilities", in_file)
+            exception.BadWidthError, read_proc_file, "capabilities", in_file)
         chk_error([ValInStrCheck(ex_chk.value.unit, "fullSys"),
                    ValInStrCheck(ex_chk.value.width, bad_width)], ex_chk.value)
 
@@ -267,7 +268,7 @@ class TestEdges:
         `self` is this test case.
 
         """
-        ex_chk = raises(errors.UndefElemError, read_file, "edges",
+        ex_chk = raises(errors.UndefElemError, read_proc_file, "edges",
                         "edgeWithUnknownUnit.yaml")
         chk_error([ValInStrCheck(ex_chk.value.element, "input")], ex_chk.value)
 
@@ -282,7 +283,8 @@ class TestEdges:
         `bad_edge` is the bad edge.
 
         """
-        ex_chk = raises(exception.BadEdgeError, read_file, "edges", in_file)
+        ex_chk = raises(
+            exception.BadEdgeError, read_proc_file, "edges", in_file)
         chk_error([ValInStrCheck(ex_chk.value.edge, bad_edge)], ex_chk.value)
 
     def test_three_identical_edges_are_detected(self):
@@ -349,7 +351,7 @@ class TestLoop:
         `in_file` is the processor description file.
 
         """
-        raises(networkx.NetworkXUnfeasible, read_file, "loops", in_file)
+        raises(networkx.NetworkXUnfeasible, read_proc_file, "loops", in_file)
 
 
 class TestProcessors:
@@ -362,7 +364,7 @@ class TestProcessors:
         `self` is this test case.
 
         """
-        read_file("processors", "oneInputTwoOutputProcessor.yaml")
+        read_proc_file("processors", "oneInputTwoOutputProcessor.yaml")
 
     def test_processor_with_four_connected_functional_units(self):
         """Test loading a processor with four functional units.
@@ -370,7 +372,8 @@ class TestProcessors:
         `self` is this test case.
 
         """
-        proc_desc = read_file("processors", "4ConnectedUnitsProcessor.yaml")
+        proc_desc = read_proc_file(
+            "processors", "4ConnectedUnitsProcessor.yaml")
         assert not proc_desc.in_out_ports
         out_ports = FuncUnit(
             UnitModel("output 1", 1, ["ALU"]), proc_desc.in_ports), FuncUnit(
@@ -419,7 +422,8 @@ class TestUnits:
         `dup_unit` is the duplicate unit.
 
         """
-        ex_chk = raises(exception.DupElemError, read_file, "units", in_file)
+        ex_chk = raises(
+            exception.DupElemError, read_proc_file, "units", in_file)
         chk_error(
             [ValInStrCheck(ex_chk.value.new_element, dup_unit),
              ValInStrCheck(ex_chk.value.old_element, "fullSys")], ex_chk.value)
@@ -443,7 +447,7 @@ class TestWidth:
 
         """
         ex_chk = raises(
-            exception.BlockedCapError, read_file, "widths", in_file)
+            exception.BlockedCapError, read_proc_file, "widths", in_file)
         chk_error([ValInStrCheck("Capability " + ex_chk.value.capability,
                                  "Capability MEM"), ValInStrCheck(
             "port " + ex_chk.value.port, "port input"), ValInStrCheck(
@@ -460,7 +464,7 @@ class TestWidth:
         output.
 
         """
-        ex_chk = raises(exception.TightWidthError, read_file, "widths",
+        ex_chk = raises(exception.TightWidthError, read_proc_file, "widths",
                         "fusedCapacityLargerThanBusWidth.yaml")
         chk_error([ValInStrCheck(ex_chk.value.needed_width, 2),
                    ValInStrCheck(ex_chk.value.actual_width, 1)], ex_chk.value)
@@ -478,7 +482,7 @@ def _chk_one_unit(proc_dir, proc_file):
     `proc_file` is the processor description file.
 
     """
-    assert read_file(proc_dir, proc_file) == ProcessorDesc(
+    assert read_proc_file(proc_dir, proc_file) == ProcessorDesc(
         [], [], [UnitModel("fullSys", 1, ["ALU"])], [])
 
 
@@ -491,7 +495,7 @@ def _chk_two_units(proc_dir, proc_file):
     among them.
 
     """
-    proc_desc = read_file(proc_dir, proc_file)
+    proc_desc = read_proc_file(proc_dir, proc_file)
     assert proc_desc == ProcessorDesc([UnitModel("input", 1, ["ALU"])], [
         FuncUnit(UnitModel("output", 1, ["ALU"]), proc_desc.in_ports)], [], [])
 

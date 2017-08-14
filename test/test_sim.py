@@ -43,11 +43,9 @@
 #
 ############################################################
 
-import os.path
 import test_utils
 import processor
 import processor_utils
-import program_utils
 import unittest
 
 
@@ -61,14 +59,12 @@ class SimTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        cpu = test_utils.read_file("processors", "singleUnitALUProcessor.yaml")
-        prog = program_utils.compile_program(
-            program_utils.read_program(
-                os.path.join(test_utils.TEST_DATA_DIR, "programs",
-                             "empty.asm")), processor_utils.load_isa(
-                test_utils.load_yaml("ISA", "emptyISA.yaml"),
-                processor_utils.get_abilities(cpu)))
-        assert processor.simulate(prog, cpu) == []
+        cpu = test_utils.read_proc_file(
+            "processors", "singleUnitALUProcessor.yaml")
+        capabilities = processor_utils.get_abilities(cpu)
+        assert processor.simulate(
+            test_utils.compile_prog("empty.asm", test_utils.read_isa_file(
+                "emptyISA.yaml", capabilities)), cpu) == []
 
 
 def main():

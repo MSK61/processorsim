@@ -44,7 +44,6 @@
 ############################################################
 
 import itertools
-import os.path
 import pytest
 from pytest import mark, raises
 import test_utils
@@ -52,7 +51,8 @@ import container_utils
 import errors
 from program_defs import HwInstruction, ProgInstruction
 import program_utils
-from program_utils import CodeError, compile_program
+from program_utils import CodeError
+from test_utils import read_prog_file
 import unittest
 
 
@@ -114,8 +114,8 @@ class TestProgLoad:
                    unknown instruction missing operands.
 
         """
-        ex_chk = raises(errors.UndefElemError, compile_program,
-                        _read_file(prog_file), {"ADD": "ALU"})
+        ex_chk = raises(errors.UndefElemError, program_utils.compile_program,
+                        read_prog_file(prog_file), {"ADD": "ALU"})
         assert ex_chk.value.element == instr
         assert container_utils.contains(
             str(ex_chk.value), [instr, str(line_num)])
@@ -128,7 +128,7 @@ class TestProgLoad:
         `inputs` are the instruction inputs.
 
         """
-        assert compile_program(_read_file(prog_file), {"ADD": "ALU"}) == [
+        assert test_utils.compile_prog(prog_file, {"ADD": "ALU"}) == [
             HwInstruction("ALU", inputs, "R14")]
 
 
@@ -161,7 +161,7 @@ class TestSyntax:
         `operand` is the one-based index of the empty operand.
 
         """
-        ex_chk = raises(CodeError, _read_file, prog_file)
+        ex_chk = raises(CodeError, read_prog_file, prog_file)
         self._chk_syn_err(ex_chk.value, line_num, instr)
         assert str(operand) in str(ex_chk.value)
 
@@ -179,8 +179,8 @@ class TestSyntax:
         `instr` is the instruction missing operands.
 
         """
-        self._chk_syn_err(
-            raises(CodeError, _read_file, prog_file).value, line_num, instr)
+        self._chk_syn_err(raises(CodeError, read_prog_file, prog_file).value,
+                          line_num, instr)
 
     @mark.parametrize("prog_file", [
         "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
@@ -226,24 +226,12 @@ class TestSyntax:
         `loaded_prog` is the loaded program.
 
         """
-        assert _read_file(prog_file) == loaded_prog
+        assert read_prog_file(prog_file) == loaded_prog
 
 
 def main():
     """entry point for running test in this module"""
     pytest.main(__file__)
-
-
-def _read_file(file_name):
-    """Read a program file.
-
-    `file_name` is the program file name.
-    The function returns the loaded program.
-
-    """
-    test_dir = "programs"
-    return program_utils.read_program(
-        os.path.join(test_utils.TEST_DATA_DIR, test_dir, file_name))
 
 
 if __name__ == '__main__':
