@@ -82,3 +82,4 @@ def simulate(program, processor):
     The function returns the pipeline diagram.
 
     """
+    return []

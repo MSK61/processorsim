@@ -36,12 +36,19 @@
 #               Fedora release 25 (Twenty Five)
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Fedora release 25 (Twenty Five)
+#               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
+#               Ubuntu 17.04
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import os.path
 import processor
+import processor_utils
+import program_utils
+import test_utils
+from test_utils import read_file
 import unittest
 
 
@@ -49,13 +56,20 @@ class SimTest(unittest.TestCase):
 
     """Test case for program simulation"""
 
-    def test_single_instruction_program(self):
-        """Test simulating a single instruction program.
+    def test_empty_program(self):
+        """Test simulating an empty program.
 
         `self` is this test case.
 
         """
-        processor.read_processor(None)
+        cpu = read_file("processors", "singleUnitALUProcessor.yaml")
+        prog = program_utils.compile_program(
+            program_utils.read_program(
+                os.path.join(test_utils.TEST_DATA_DIR, "programs",
+                             "empty.asm")), processor_utils.load_isa(
+                test_utils.load_yaml("ISA", "emptyISA.yaml"),
+                processor_utils.get_abilities(cpu)))
+        assert processor.simulate(prog, cpu) == []
 
 
 def main():
