@@ -462,7 +462,7 @@ class TestWidth:
 
 def main():
     """entry point for running test in this module"""
-    pytest.main(__file__)
+    pytest.main([__file__])
 
 
 def _chk_one_unit(proc_dir, proc_file):
