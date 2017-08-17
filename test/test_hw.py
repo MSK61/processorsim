@@ -39,8 +39,10 @@
 #
 ############################################################
 
+import itertools
 from mock import patch
 import os.path
+import pytest
 import test_utils
 import processor
 from processor import HwDesc
@@ -48,10 +50,9 @@ from processor_utils import ProcessorDesc
 import processor_utils.units
 from processor_utils.units import UnitModel
 import unittest
-from unittest import TestCase
 
 
-class CoverageTest(TestCase):
+class CoverageTest(unittest.TestCase):
 
     """Test case for fulfilling complete code coverage"""
 
@@ -110,44 +111,49 @@ class _MockCheck(object):
         return self._params
 
 
-class HwDescLoadTest(TestCase):
+class TestHwDescLoad:
 
     """Test case for loading complete hardware description files"""
 
-    def test_hw_load_calls_into_processor_and_isa_load_functions(self):
+    @pytest.mark.parametrize("capability, instructions, hw_file", [
+        ("ALU", [], "singleUnitProcessorWithEmptyISA.yaml"),
+        ("MEM", ["LW"], "singleUnitProcessorWithSingleInstructionISA.yaml")])
+    def test_hw_load_calls_into_processor_and_isa_load_functions(
+            self, capability, instructions, hw_file):
         """Test loading a full hardware description file.
 
         `self` is this test case.
+        `capability` is the hardware sole capability.
+        `instructions` are the supported instructions.
+        `hw_file` is the hardware description file.
         The method tests appropriate calls are made to load the
         processor and ISA descriptions.
 
         """
-        with patch(
-            "processor_utils.load_proc_desc",
-            return_value=ProcessorDesc([], [], [
-                UnitModel("fullSys", 1, ["ALU"])], [])) as proc_mock, patch(
+        isa_dict = dict(
+            itertools.imap(lambda instr: (instr, capability), instructions))
+        with patch("processor_utils.load_proc_desc",
+                   return_value=ProcessorDesc([], [], [UnitModel(
+                    "fullSys", 1, [capability])], [])) as proc_mock, patch(
             "processor_utils.get_abilities",
-            return_value=frozenset(["ALU"])) as ability_mock, patch(
-                "processor_utils.load_isa", return_value={}) as isa_mock:
+            return_value=frozenset([capability])) as ability_mock, patch(
+                "processor_utils.load_isa", return_value=isa_dict) as isa_mock:
             assert processor.read_processor(os.path.join(
-                test_utils.TEST_DATA_DIR, "fullHwDesc",
-                "singleUnitProcessorWithEmptyISA.yaml")) == HwDesc(
-                ProcessorDesc([], [], [UnitModel("fullSys", 1, ["ALU"])], []),
-                {})
+                test_utils.TEST_DATA_DIR, "fullHwDesc", hw_file)) == HwDesc(
+                proc_mock.return_value, isa_mock.return_value)
 
         for mock_chk in [
-            _MockCheck(
-                proc_mock,
-                [{"units": [{"name": "fullSys", "width": 1, "capabilities": [
-                    "ALU"]}], "dataPath": []}]), _MockCheck(ability_mock, [
-                ProcessorDesc([], [], [UnitModel("fullSys", 1, ["ALU"])], [
-                    ])]), _MockCheck(isa_mock, [{}, frozenset(["ALU"])])]:
+            _MockCheck(proc_mock, [
+                {"units": [{"name": "fullSys", "width": 1,
+                            "capabilities": [capability]}], "dataPath": []}]),
+            _MockCheck(ability_mock, [proc_mock.return_value]),
+                _MockCheck(isa_mock, [isa_dict, ability_mock.return_value])]:
             mock_chk.mock.assert_called_with(*(mock_chk.params))
 
 
 def main():
     """entry point for running test in this module"""
-    unittest.main()
+    pytest.main([__file__])
 
 if __name__ == '__main__':
     main()

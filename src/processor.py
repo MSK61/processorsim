@@ -44,6 +44,7 @@
 ############################################################
 
 import processor_utils
+import yaml
 
 
 class HwDesc(object):
@@ -115,14 +116,13 @@ def read_processor(proc_file):
     given processor description file. It returns a processor description.
 
     """
-    processor_utils.load_proc_desc(
-        {"units": [{"name": "fullSys", "width": 1, "capabilities": ["ALU"]}],
-         "dataPath": []})
-    processor = processor_utils.ProcessorDesc(
-        [], [], [processor_utils.units.UnitModel("fullSys", 1, ["ALU"])], [])
-    processor_utils.get_abilities(processor)
-    processor_utils.load_isa({}, frozenset(["ALU"]))
-    return HwDesc(processor, {})
+    with open(proc_file) as proc_file:
+        yaml_desc = yaml.load(proc_file)
+    microarch_key = "microarch"
+    processor = processor_utils.load_proc_desc(yaml_desc[microarch_key])
+    isa_key = "ISA"
+    return HwDesc(processor, processor_utils.load_isa(
+        yaml_desc[isa_key], processor_utils.get_abilities(processor)))
 
 
 def simulate(program, processor):
