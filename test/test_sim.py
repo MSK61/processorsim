@@ -60,7 +60,7 @@ class SimTest(unittest.TestCase):
 
         """
         cpu = test_utils.read_proc_file(
-            "processors", "singleUnitALUProcessor.yaml")
+            "processors", "singleALUUnitProcessor.yaml")
         capabilities = processor_utils.get_abilities(cpu)
         assert processor.simulate(
             test_utils.compile_prog("empty.asm", test_utils.read_isa_file(

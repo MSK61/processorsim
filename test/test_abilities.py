@@ -51,8 +51,8 @@ class TestAbilities:
     """Test case for extracting processor capabilities"""
 
     @pytest.mark.parametrize(
-        "in_file, capabilities", [("singleUnitALUProcessor.yaml", ["ALU"]), (
-            "singleUnitMemProcessor.yaml", ["MEM"]),
+        "in_file, capabilities", [("singleALUUnitProcessor.yaml", ["ALU"]), (
+            "singleMemUnitProcessor.yaml", ["MEM"]),
             ("dualCoreALUProcessor.yaml", ["ALU", "MEM"]),
             ("twoConnectedUnitsProcessor.yaml", ["ALU"])])
     def test_abilities(self, in_file, capabilities):

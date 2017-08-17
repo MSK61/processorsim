@@ -452,7 +452,7 @@ class TestProcessors:
         `self` is this test case.
 
         """
-        _chk_one_unit("processors", "singleUnitALUProcessor.yaml")
+        _chk_one_unit("processors", "singleALUUnitProcessor.yaml")
 
 
 class TestUnits:
