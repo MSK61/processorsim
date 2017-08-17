@@ -36,31 +36,75 @@
 #               Fedora release 25 (Twenty Five)
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Fedora release 25 (Twenty Five)
+#               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
+#               Ubuntu 17.04
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import processor_utils
 
-class _ProcessorDesc(object):
 
-    """Processor description"""
+class HwDesc(object):
 
-    @property
-    def hw_desc(self):
-        """Hardware description
+    """Hardware description"""
 
-        `self` is this processor description.
+    def __init__(self, processor, isa):
+        """Create a hardware description.
+
+        `self` is this hardware description.
+        `processor` is the processor description.
+        `isa` is the instruction set architecture.
 
         """
+        self._processor = processor
+        self._isa = isa
+
+    def __eq__(self, other):
+        """Test if the two hardware descriptions are identical.
+
+        `self` is this hardware description.
+        `other` is the other hardware description.
+
+        """
+        return (self._processor, self._isa) == (other.processor, other.isa)
+
+    def __ne__(self, other):
+        """Test if the two hardware descriptions are different.
+
+        `self` is this hardware description.
+        `other` is the other hardware description.
+
+        """
+        return not self == other
+
+    def __repr__(self):
+        """Return the official string of this hardware description.
+
+        `self` is this hardware description.
+
+        """
+        return '{}({}, {})'.format(
+            type(self).__name__, self._processor, self._isa)
 
     @property
     def isa(self):
         """Instruction set architecture
 
-        `self` is this processor description.
+        `self` is this hardware description.
 
         """
+        return self._isa
+
+    @property
+    def processor(self):
+        """Processor description
+
+        `self` is this hardware description.
+
+        """
+        return self._processor
 
 
 def read_processor(proc_file):
@@ -71,7 +115,14 @@ def read_processor(proc_file):
     given processor description file. It returns a processor description.
 
     """
-    return _ProcessorDesc()
+    processor_utils.load_proc_desc(
+        {"units": [{"name": "fullSys", "width": 1, "capabilities": ["ALU"]}],
+         "dataPath": []})
+    cpu = processor_utils.ProcessorDesc(
+        [], [], [processor_utils.units.UnitModel("fullSys", 1, ["ALU"])], [])
+    processor_utils.get_abilities(cpu)
+    processor_utils.load_isa({}, frozenset(["ALU"]))
+    return HwDesc(cpu, {})
 
 
 def simulate(program, processor):

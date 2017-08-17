@@ -45,7 +45,7 @@ import test_env
 import processor_utils
 import program_utils
 import yaml
-_TEST_DATA_DIR = join(test_env.TEST_DIR, "data")
+TEST_DATA_DIR = join(test_env.TEST_DIR, "data")
 
 
 class ValInStrCheck:
@@ -137,8 +137,7 @@ def read_prog_file(file_name):
 
     """
     test_dir = "programs"
-    return program_utils.read_program(
-        join(_TEST_DATA_DIR, test_dir, file_name))
+    return program_utils.read_program(join(TEST_DATA_DIR, test_dir, file_name))
 
 
 def _load_yaml(test_dir, file_name):
@@ -149,5 +148,5 @@ def _load_yaml(test_dir, file_name):
     The function returns the loaded YAML object.
 
     """
-    with open(join(_TEST_DATA_DIR, test_dir, file_name)) as test_file:
+    with open(join(TEST_DATA_DIR, test_dir, file_name)) as test_file:
         return yaml.load(test_file)
