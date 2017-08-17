@@ -45,20 +45,15 @@
 
 import itertools
 from itertools import imap
-import mock
 from mock import patch
 import networkx
-import os.path
 import pytest
 from pytest import mark, raises
-import test_utils
+from test_utils import chk_error, read_proc_file, ValInStrCheck
 import container_utils
 import errors
-import processor
-from processor import HwDesc
 from processor_utils import exception, ProcessorDesc
 from processor_utils.units import FuncUnit, UnitModel
-from test_utils import chk_error, read_proc_file, ValInStrCheck
 from unittest import TestCase
 
 
@@ -141,25 +136,6 @@ class CoverageTest(TestCase):
         assert FuncUnit(UnitModel("", 1, [""]), []) != FuncUnit(
             UnitModel("input", 1, [""]), [])
 
-    def test_HwDesc_ne_operator(self):
-        """Test HwDesc != operator.
-
-        `self` is this test case.
-
-        """
-        assert HwDesc(ProcessorDesc([], [], [], []), {}) != HwDesc(
-            ProcessorDesc([UnitModel("", 1, [""])], [], [], []), {})
-
-    def test_HwDesc_repr(self):
-        """Test HwDesc representation.
-
-        `self` is this test case.
-
-        """
-        in_port = UnitModel("", 1, [""])
-        out_port = FuncUnit(UnitModel("output", 1, [""]), [in_port])
-        repr(HwDesc(ProcessorDesc([in_port], [out_port], [], []), {}))
-
     def test_ProcessorDesc_ne_operator(self):
         """Test ProcessorDesc != operator.
 
@@ -176,41 +152,6 @@ class CoverageTest(TestCase):
 
         """
         assert UnitModel("", 1, [""]) != UnitModel("input", 1, [""])
-
-
-class HwDescLoadTest(TestCase):
-
-    """Test case for loading complete hardware description files"""
-
-    def test_hw_load_calls_into_processor_and_isa_load_functions(self):
-        """Test loading a full hardware description file.
-
-        `self` is this test case.
-        The method tests appropriate calls are made to load the
-        processor and ISA descriptions.
-
-        """
-        with patch(
-            "processor_utils.load_proc_desc",
-            return_value=ProcessorDesc([], [], [
-                UnitModel("fullSys", 1, ["ALU"])], [])) as proc_mock, patch(
-            "processor_utils.get_abilities",
-            return_value=frozenset(["ALU"])) as ability_mock, patch(
-                "processor_utils.load_isa", return_value={}) as isa_mock:
-            assert processor.read_processor(os.path.join(
-                test_utils.TEST_DATA_DIR, "fullHwDesc",
-                "singleUnitProcessorWithEmptyISA.yaml")) == HwDesc(
-                ProcessorDesc([], [], [UnitModel("fullSys", 1, ["ALU"])], []),
-                {})
-
-        for mock_chk in [
-            [
-                proc_mock, {"units": [{"name": "fullSys", "width": 1,
-                                       "capabilities": ["ALU"]}], "dataPath":
-                            []}], [
-                ability_mock, ProcessorDesc([], [], [UnitModel("fullSys", 1, [
-                    "ALU"])], [])], [isa_mock, {}, frozenset(["ALU"])]]:
-            mock.MagicMock.assert_called_with(*mock_chk)
 
 
 class TestBlocking:
