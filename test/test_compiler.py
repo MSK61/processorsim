@@ -49,7 +49,7 @@ from pytest import mark, raises
 import test_utils
 import container_utils
 import errors
-from program_defs import HwInstruction, ProgInstruction
+from program_defs import HwInstruction, Instruction, ProgInstruction
 import program_utils
 from program_utils import CodeError
 from test_utils import read_prog_file
@@ -60,6 +60,14 @@ class CoverageTest(unittest.TestCase):
 
     """Test case for fulfilling complete code coverage"""
 
+    def test_HwInstruction_ne_operator(self):
+        """Test HwInstruction != operator.
+
+        `self` is this test case.
+
+        """
+        assert HwInstruction("ALU", [], "R1") != HwInstruction("ALU", [], "R2")
+
     def test_HwInstruction_repr(self):
         """Test HwInstruction representation.
 
@@ -67,6 +75,23 @@ class CoverageTest(unittest.TestCase):
 
         """
         repr(HwInstruction("ALU", [], "R1"))
+
+    def test_Instruction_ne_operator(self):
+        """Test Instruction != operator.
+
+        `self` is this test case.
+
+        """
+        assert Instruction([], "R1") != Instruction([], "R2")
+
+    def test_ProgInstruction_ne_operator(self):
+        """Test ProgInstruction != operator.
+
+        `self` is this test case.
+
+        """
+        assert ProgInstruction("ADD", 1, [], "R1") != ProgInstruction(
+            "ADD", 2, [], "R1")
 
     def test_ProgInstruction_repr(self):
         """Test ProgInstruction representation.

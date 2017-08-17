@@ -41,7 +41,7 @@
 ############################################################
 
 
-class _Instruction(object):
+class Instruction(object):
 
     """Instruction"""
 
@@ -65,6 +65,15 @@ class _Instruction(object):
         """
         return (self._sources, self._dst) == (other.sources, other.destination)
 
+    def __ne__(self, other):
+        """Test if the two instructions are different.
+
+        `self` is this instruction.
+        `other` is the other instruction.
+
+        """
+        return not self == other
+
     @property
     def destination(self):
         """Destination operand
@@ -84,7 +93,7 @@ class _Instruction(object):
         return self._sources
 
 
-class HwInstruction(_Instruction):
+class HwInstruction(Instruction):
 
     """Hardware instruction"""
 
@@ -97,7 +106,7 @@ class HwInstruction(_Instruction):
         `dst` is the register written by the instruction.
 
         """
-        _Instruction.__init__(self, frozenset(sources), dst)
+        Instruction.__init__(self, frozenset(sources), dst)
         self._categ = categ
 
     def __eq__(self, other):
@@ -107,7 +116,16 @@ class HwInstruction(_Instruction):
         `other` is the other hardware instruction.
 
         """
-        return _Instruction.__eq__(self, other) and self._categ == other.categ
+        return Instruction.__eq__(self, other) and self._categ == other.categ
+
+    def __ne__(self, other):
+        """Test if the two hardware instructions are different.
+
+        `self` is this hardware instruction.
+        `other` is the other hardware instruction.
+
+        """
+        return not self == other
 
     def __repr__(self):
         """Return the official string of this hardware instruction.
@@ -128,7 +146,7 @@ class HwInstruction(_Instruction):
         return self._categ
 
 
-class ProgInstruction(_Instruction):
+class ProgInstruction(Instruction):
 
     """Program instruction"""
 
@@ -142,7 +160,7 @@ class ProgInstruction(_Instruction):
         `dst` is the register written by the instruction.
 
         """
-        _Instruction.__init__(self, sources, dst)
+        Instruction.__init__(self, sources, dst)
         self._line = line
         self._name = name
 
@@ -153,8 +171,17 @@ class ProgInstruction(_Instruction):
         `other` is the other program instruction.
 
         """
-        return _Instruction.__eq__(self, other) and (
+        return Instruction.__eq__(self, other) and (
             self._line, self._name) == (other.line, other.name)
+
+    def __ne__(self, other):
+        """Test if the two program instructions are different.
+
+        `self` is this program instruction.
+        `other` is the other program instruction.
+
+        """
+        return not self == other
 
     def __repr__(self):
         """Return the official string of this program instruction.
