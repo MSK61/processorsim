@@ -5,4 +5,5 @@ microarch:
           capabilities:
             - ALU
     dataPath: []
-ISA: {}
+ISA:
+    ADD: ALU

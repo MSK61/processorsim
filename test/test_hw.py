@@ -39,7 +39,6 @@
 #
 ############################################################
 
-import itertools
 from mock import patch
 import os.path
 import pytest
@@ -115,23 +114,22 @@ class TestHwDescLoad:
 
     """Test case for loading complete hardware description files"""
 
-    @pytest.mark.parametrize("capability, instructions, hw_file", [
-        ("ALU", [], "singleUnitProcessorWithEmptyISA.yaml"),
-        ("MEM", ["LW"], "singleUnitProcessorWithSingleInstructionISA.yaml")])
+    @pytest.mark.parametrize("capability, instr, hw_file",
+                             [("ALU", "ADD", "processorWithALUISA.yaml"),
+                              ("MEM", "LW", "processorWithMemISA.yaml")])
     def test_hw_load_calls_into_processor_and_isa_load_functions(
-            self, capability, instructions, hw_file):
+            self, capability, instr, hw_file):
         """Test loading a full hardware description file.
 
         `self` is this test case.
         `capability` is the hardware sole capability.
-        `instructions` are the supported instructions.
+        `instr` is the sole supported instruction.
         `hw_file` is the hardware description file.
         The method tests appropriate calls are made to load the
         processor and ISA descriptions.
 
         """
-        isa_dict = dict(
-            itertools.imap(lambda instr: (instr, capability), instructions))
+        isa_dict = {instr: capability}
         with patch("processor_utils.load_proc_desc",
                    return_value=ProcessorDesc([], [], [UnitModel(
                     "fullSys", 1, [capability])], [])) as proc_mock, patch(
