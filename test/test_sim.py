@@ -46,30 +46,35 @@
 import test_utils
 import processor
 import processor_utils
-import unittest
+import pytest
 
 
-class SimTest(unittest.TestCase):
+class TestSim:
 
     """Test case for program simulation"""
 
-    def test_empty_program(self):
-        """Test simulating an empty program.
+    @pytest.mark.parametrize("prog_file, util_info", [("empty.asm", []), (
+        "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
+        [{"fullSys": 0}])])
+    def test_single_unit_processor(self, prog_file, util_info):
+        """Test simulating a program on a single-unit processor.
 
         `self` is this test case.
+        `prog_file` is the program file.
+        `util_info` is the expected utilization information.
 
         """
         cpu = test_utils.read_proc_file(
             "processors", "singleALUUnitProcessor.yaml")
         capabilities = processor_utils.get_abilities(cpu)
         assert processor.simulate(
-            test_utils.compile_prog("empty.asm", test_utils.read_isa_file(
-                "emptyISA.yaml", capabilities)), cpu) == []
+            test_utils.compile_prog(prog_file, test_utils.read_isa_file(
+                "singleInstructionISA.yaml", capabilities)), cpu) == util_info
 
 
 def main():
     """entry point for running test in this module"""
-    unittest.main()
+    pytest.main([__file__])
 
 if __name__ == '__main__':
     main()

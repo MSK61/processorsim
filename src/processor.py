@@ -43,6 +43,7 @@
 #
 ############################################################
 
+import itertools
 import processor_utils
 import yaml
 
@@ -133,4 +134,18 @@ def simulate(program, processor):
     The function returns the pipeline diagram.
 
     """
-    return []
+    return map(lambda instr_idx:
+               dict(_make_unit_map(processor.in_out_ports, instr_idx)),
+               xrange(len(program)))
+
+
+def _make_unit_map(hw_units, val):
+    """Create a map whose all units point to the same value.
+
+    `hw_units` are the processing units to create keys from.
+    `val` is the single value to which all keys point to.
+    The function returns an iterator over key-value pairs containing the
+    given units all pointing to the given value.
+
+    """
+    return itertools.imap(lambda unit: (unit.name, val), hw_units)
