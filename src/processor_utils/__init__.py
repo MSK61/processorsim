@@ -773,7 +773,7 @@ def _chk_non_empty(processor, in_ports):
     """Check if the processor still has input ports.
 
     `processor` is the processor to check.
-    `in_ports` is the processor original input ports.
+    `in_ports` are the processor original input ports.
     The function raises an EmptyProcError if no input ports still exist.
 
     """
@@ -939,8 +939,8 @@ def _coll_cap_edges(graph):
 def _create_graph(hw_units, links):
     """Create a data flow graph for a processor.
 
-    `hw_units` is the processor functional units.
-    `links` is the connections between the functional units.
+    `hw_units` are the processor functional units.
+    `links` are the connections between the functional units.
     The function returns a directed graph representing the reverse data
     flow through the processor functional units.
 
