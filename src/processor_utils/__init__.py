@@ -125,13 +125,13 @@ class ProcessorDesc(object):
         return tuple(units.sorted_models(models))
 
     @staticmethod
-    def _sorted_units(units):
+    def _sorted_units(hw_units):
         """Create a sorted list of the given units.
 
-        `models` are the units to create a sorted list of.
+        `hw_units` are the units to create a sorted list of.
 
         """
-        return tuple(sorted(units, key=lambda unit: unit.model.name))
+        return tuple(sorted(hw_units, key=lambda unit: unit.model.name))
 
     @property
     def in_out_ports(self):
@@ -295,10 +295,10 @@ def _get_anal_graph(processor):
 
     """
     width_graph = DiGraph()
-    units = enumerate(processor.nodes_iter())
+    hw_units = enumerate(processor.nodes_iter())
     new_nodes = {}
 
-    for idx, unit in units:
+    for idx, unit in hw_units:
         _update_graph(idx, unit, processor, width_graph, new_nodes)
 
     width_graph.add_edges_from(imap(
@@ -894,9 +894,9 @@ def _clean_struct(processor):
     connecting units having no capabilities in common).
 
     """
-    units = networkx.topological_sort(processor)
+    hw_units = networkx.topological_sort(processor)
 
-    for unit in units:
+    for unit in hw_units:
         if processor.in_degree(unit):  # Skip in-ports.
             _clean_unit(processor, unit)
 
@@ -936,10 +936,10 @@ def _coll_cap_edges(graph):
     return frozenset(cap_edges)
 
 
-def _create_graph(units, links):
+def _create_graph(hw_units, links):
     """Create a data flow graph for a processor.
 
-    `units` is the processor functional units.
+    `hw_units` is the processor functional units.
     `links` is the connections between the functional units.
     The function returns a directed graph representing the reverse data
     flow through the processor functional units.
@@ -951,7 +951,7 @@ def _create_graph(units, links):
         lambda edge: tuple(imap(unit_registry.get, edge)))
     cap_registry = IndexedSet(lambda cap: cap.name.lower())
 
-    for cur_unit in units:
+    for cur_unit in hw_units:
         _add_unit(flow_graph, cur_unit, unit_registry, cap_registry)
 
     for cur_link in links:
