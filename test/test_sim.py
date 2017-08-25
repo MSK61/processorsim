@@ -51,6 +51,7 @@ from processor import simulate
 import processor_utils
 from program_defs import HwInstruction
 import pytest
+from pytest import mark
 from test_utils import read_proc_file
 
 
@@ -58,7 +59,21 @@ class TestSim:
 
     """Test case for program simulation"""
 
-    @pytest.mark.parametrize("prog_file, util_info", [("empty.asm", []), (
+    @mark.parametrize(
+        "prog, cpu, util_tbl",
+        [([HwInstruction("alu", ["R11", "R15"], "R14")], read_proc_file(
+            "processors", "singleALUUnitProcessor.yaml"), [{"fullSys": 0}])])
+    def test_sim(self, prog, cpu, util_tbl):
+        """Test executing a program.
+
+        `prog` is the program to run.
+        `cpu` is the processor to run the program on.
+        `util_tbl` is the expected utilization table.
+
+        """
+        assert simulate(prog, cpu) == util_tbl
+
+    @mark.parametrize("prog_file, util_info", [("empty.asm", []), (
         "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
         [{"fullSys": 0}])])
     def test_single_unit_processor(self, prog_file, util_info):
@@ -71,22 +86,9 @@ class TestSim:
         """
         cpu = read_proc_file("processors", "singleALUUnitProcessor.yaml")
         capabilities = processor_utils.get_abilities(cpu)
-        assert simulate(
+        self.test_sim(
             test_utils.compile_prog(prog_file, test_utils.read_isa_file(
-                "singleInstructionISA.yaml", capabilities)), cpu) == util_info
-
-    def test_supported_instruction_with_different_case(self):
-        """Test executing a supported instruction with different case.
-
-        `self` is this test case.
-        The function tests executing an instruction matching a supported
-        instruction yet with a different case.
-
-        """
-        assert simulate(
-            [HwInstruction("alu", ["R11", "R15"], "R14")],
-            read_proc_file("processors", "singleALUUnitProcessor.yaml")) == [
-            {"fullSys": 0}]
+                "singleInstructionISA.yaml", capabilities)), cpu, util_info)
 
     def test_unsupported_instruction_raises_InvalidOpError(self):
         """Test executing an invalid instruction.
