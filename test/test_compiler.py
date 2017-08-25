@@ -174,7 +174,7 @@ class TestSyntax:
     @mark.parametrize("prog_file, line_num, instr, operand", [
         ("firstInstructionWithSecondOpernadEmpty.asm", 1, "ADD", 2),
         ("secondInstructionWithFirstOpernadEmpty.asm", 2, "SUB", 1)])
-    def test_instruction_with_empty_operand_raises_SyntaxError(
+    def test_instruction_with_empty_operand_raises_CodeError(
             self, prog_file, line_num, instr, operand):
         """Test loading an instruction with an empty operand.
 
@@ -193,7 +193,7 @@ class TestSyntax:
     @mark.parametrize("prog_file, line_num, instr",
                       [("firstInstructionWithNoOperands.asm", 1, "ADD"),
                        ("secondInstructionWithNoOperands.asm", 2, "SUB")])
-    def test_instruction_with_no_operands_raises_SyntaxError(
+    def test_instruction_with_no_operands_raises_CodeError(
             self, prog_file, line_num, instr):
         """Test loading an instruction with no operands.
 
