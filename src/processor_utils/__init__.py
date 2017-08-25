@@ -37,6 +37,8 @@
 #               Fedora release 25 (Twenty Five)
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Ubuntu 17.04
+#               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
+#               Fedora release 26 (Twenty Six)
 #
 # notes:        This is a private program.
 #
@@ -267,8 +269,8 @@ def load_isa(raw_desc, capabilities):
     `raw_desc` is the raw description to extract an instruction set
                from.
     `capabilities` are the supported unique capabilities.
-    The function returns a mapping between supported instructions and
-    their capabilities.
+    The function returns a mapping between upper-case supported
+    instructions and their capabilities.
 
     """
     return _create_isa(raw_desc, _init_cap_reg(capabilities))
@@ -965,8 +967,8 @@ def _create_isa(isa_dict, cap_registry):
 
     `isa_dict` is the ISA dictionary to normalize.
     `cap_registry` is the store of supported capabilities.
-    The function returns the ISA dictionary with standard capability
-    names.
+    The function returns the ISA dictionary with upper-case instructions
+    and standard capability names.
 
     """
     instr_registry = LowerIndexSet()

@@ -37,6 +37,8 @@
 #               Fedora release 25 (Twenty Five)
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Ubuntu 17.04
+#               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
+#               Fedora release 26 (Twenty Six)
 #
 # notes:        This is a private program.
 #
@@ -128,7 +130,7 @@ def compile_program(prog, isa):
     """Compile the program using the given instruction set.
 
     `prog` is the program to compile.
-    `isa` is the instruction set.
+    `isa` is the instruction set containing upper-case instructions.
     The function validates and translates the given program into a
     sequence that can be directly fed into a processor understanding the
     given instruction set and returns that sequence. The function raises an
@@ -157,7 +159,7 @@ def read_program(prog_file):
 def _get_cap(isa, instr):
     """Get the ISA capability of the given instruction.
 
-    `isa` is the instruction set.
+    `isa` is the instruction set containing upper-case instructions.
     `instr` is the program instruction to get whose capability.
     The function raises an UndefElemError if an unsupported instruction
     is encountered.
