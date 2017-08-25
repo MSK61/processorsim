@@ -38,6 +38,8 @@
 #               Fedora release 25 (Twenty Five)
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Ubuntu 17.04
+#               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
+#               Fedora release 26 (Twenty Six)
 #
 # notes:        This is a private program.
 #
@@ -45,8 +47,11 @@
 
 import test_utils
 import processor
+from processor import simulate
 import processor_utils
+import program_defs
 import pytest
+from test_utils import read_proc_file
 
 
 class TestSim:
@@ -64,12 +69,23 @@ class TestSim:
         `util_info` is the expected utilization information.
 
         """
-        cpu = test_utils.read_proc_file(
-            "processors", "singleALUUnitProcessor.yaml")
+        cpu = read_proc_file("processors", "singleALUUnitProcessor.yaml")
         capabilities = processor_utils.get_abilities(cpu)
-        assert processor.simulate(
+        assert simulate(
             test_utils.compile_prog(prog_file, test_utils.read_isa_file(
                 "singleInstructionISA.yaml", capabilities)), cpu) == util_info
+
+    def test_unsupported_instruction_raises_InvalidOpError(self):
+        """Test executing an invalid instruction.
+
+        `self` is this test case.
+
+        """
+        ex_chk = pytest.raises(processor.InvalidOpError, simulate, [
+            program_defs.HwInstruction("MEM", [], "R14")], read_proc_file(
+            "processors", "singleALUUnitProcessor.yaml"))
+        test_utils.chk_error([test_utils.ValInStrCheck(
+            ex_chk.value.operation, "MEM")], ex_chk.value)
 
 
 def main():

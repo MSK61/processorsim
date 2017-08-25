@@ -38,6 +38,8 @@
 #               Fedora release 25 (Twenty Five)
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Ubuntu 17.04
+#               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
+#               Fedora release 26 (Twenty Six)
 #
 # notes:        This is a private program.
 #
@@ -109,12 +111,39 @@ class HwDesc(object):
         return self._processor
 
 
+class InvalidOpError(RuntimeError):
+
+    """Invalid operation error"""
+
+    def __init__(self, msg_tmpl, operation):
+        """Create an invalid operation error.
+
+        `self` is this invalid operation error.
+        `msg_tmpl` is the error format message taking the invalid
+                   operation as a positional argument.
+        `operation` is the invalid operation.
+
+        """
+        RuntimeError.__init__(self, msg_tmpl.format(operation))
+        self._operation = operation
+
+    @property
+    def operation(self):
+        """Invalid operation
+
+        `self` is this invalid operation error.
+
+        """
+        return self._operation
+
+
 def read_processor(proc_file):
     """Read the processor description from the given file.
 
     `proc_file` is the YAML file containing the processor description.
     The function constructs necessary processing structures from the
-    given processor description file. It returns a processor description.
+    given processor description file. It returns a processor
+    description.
 
     """
     with open(proc_file) as proc_file:
@@ -134,16 +163,51 @@ def simulate(program, processor):
     The function returns the pipeline diagram.
 
     """
-    return map(lambda instr_idx:
-               dict(_make_unit_map(processor.in_out_ports, instr_idx)),
-               xrange(len(program)))
+    capabilities = processor_utils.get_abilities(processor)
+    return map(
+        lambda instr_entry:
+            dict(_get_util_map(processor.in_out_ports, instr_entry,
+                               capabilities)), enumerate(program))
+
+
+def _get_instr_idx(instr_entry, capabilities):
+    """Retrieve the instruction index.
+
+    `instr_entry` is the entry of the instruction to retrieve whose
+                  index.
+    `capabilities` are supported capabilities.
+    The function validates the instruction against supported
+    capabilities.
+
+    """
+    instr_info_idx = 1
+
+    if instr_entry[instr_info_idx].categ in capabilities:
+        return instr_entry[0]
+
+    raise InvalidOpError(
+        "Invalid operation {}", instr_entry[instr_info_idx].categ)
+
+
+def _get_util_map(hw_units, instr_entry, capabilities):
+    """Create a map whose all units point to the same instruction.
+
+    `hw_units` are the processing units to create keys from.
+    `instr_entry` is the entry of the single instruction to which all
+                  units point to.
+    `capabilities` are supported capabilities.
+    The function returns an iterator over key-value pairs containing the
+    given units all pointing to the given instruction.
+
+    """
+    return _make_unit_map(hw_units, _get_instr_idx(instr_entry, capabilities))
 
 
 def _make_unit_map(hw_units, val):
     """Create a map whose all units point to the same value.
 
     `hw_units` are the processing units to create keys from.
-    `val` is the single value to which all keys point to.
+    `val` is the single value to which all units point to.
     The function returns an iterator over key-value pairs containing the
     given units all pointing to the given value.
 
