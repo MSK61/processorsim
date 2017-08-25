@@ -38,6 +38,8 @@
 #               Fedora release 25 (Twenty Five)
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Ubuntu 17.04
+#               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
+#               Fedora release 26 (Twenty Six)
 #
 # notes:        This is a private program.
 #
@@ -106,23 +108,19 @@ class TestProgLoad:
 
     """Test case for loading programs"""
 
-    def test_duplicate_inputs_are_stored_only_once(self):
-        """Test loading a program with duplicate inputs.
+    @mark.parametrize(
+        "prog_file, inputs", [("duplicateInputsInstruction.asm", ["R11"]),
+                              ("lowerCaseInstruction.asm", ["R11", "R15"])])
+    def test_program(self, prog_file, inputs):
+        """Test loading a program.
 
         `self` is this test case.
-        The functions tests loading a program where one instruction takes both
-        inputs from the same register.
+        `prog_file` is the program file.
+        `inputs` are the instruction inputs.
 
         """
-        self._test_program("duplicateInputsInstruction.asm", ["R11"])
-
-    def test_lower_case_instruction(self):
-        """Test loading a lower case instruction.
-
-        `self` is this test case.
-
-        """
-        self._test_program("lowerCaseInstruction.asm", ["R11", "R15"])
+        assert test_utils.compile_prog(prog_file, {"ADD": "ALU"}) == [
+            HwInstruction("ALU", inputs, "R14")]
 
     @mark.parametrize(
         "prog_file, instr, line_num",
@@ -144,17 +142,6 @@ class TestProgLoad:
         assert ex_chk.value.element == instr
         assert container_utils.contains(
             str(ex_chk.value), [instr, str(line_num)])
-
-    @staticmethod
-    def _test_program(prog_file, inputs):
-        """Test loading a program.
-
-        `prog_file` is the program file.
-        `inputs` are the instruction inputs.
-
-        """
-        assert test_utils.compile_prog(prog_file, {"ADD": "ALU"}) == [
-            HwInstruction("ALU", inputs, "R14")]
 
 
 class TestSyntax:
