@@ -49,7 +49,7 @@ import test_utils
 import processor
 from processor import simulate
 import processor_utils
-import program_defs
+from program_defs import HwInstruction
 import pytest
 from test_utils import read_proc_file
 
@@ -75,6 +75,19 @@ class TestSim:
             test_utils.compile_prog(prog_file, test_utils.read_isa_file(
                 "singleInstructionISA.yaml", capabilities)), cpu) == util_info
 
+    def test_supported_instruction_with_different_case(self):
+        """Test executing a supported instruction with different case.
+
+        `self` is this test case.
+        The function tests executing an instruction matching a supported
+        instruction yet with a different case.
+
+        """
+        assert simulate(
+            [HwInstruction("alu", ["R11", "R15"], "R14")],
+            read_proc_file("processors", "singleALUUnitProcessor.yaml")) == [
+            {"fullSys": 0}]
+
     def test_unsupported_instruction_raises_InvalidOpError(self):
         """Test executing an invalid instruction.
 
@@ -82,7 +95,7 @@ class TestSim:
 
         """
         ex_chk = pytest.raises(processor.InvalidOpError, simulate, [
-            program_defs.HwInstruction("MEM", [], "R14")], read_proc_file(
+            HwInstruction("MEM", [], "R14")], read_proc_file(
             "processors", "singleALUUnitProcessor.yaml"))
         test_utils.chk_error([test_utils.ValInStrCheck(
             ex_chk.value.operation, "MEM")], ex_chk.value)

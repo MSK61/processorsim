@@ -45,7 +45,7 @@
 #
 ############################################################
 
-import itertools
+from itertools import imap
 import processor_utils
 import yaml
 
@@ -180,9 +180,10 @@ def _get_instr_idx(instr_entry, capabilities):
     capabilities.
 
     """
+    capabilities = imap(str.lower, capabilities)
     instr_info_idx = 1
 
-    if instr_entry[instr_info_idx].categ in capabilities:
+    if instr_entry[instr_info_idx].categ.lower() in capabilities:
         return instr_entry[0]
 
     raise InvalidOpError(
@@ -212,4 +213,4 @@ def _make_unit_map(hw_units, val):
     given units all pointing to the given value.
 
     """
-    return itertools.imap(lambda unit: (unit.name, val), hw_units)
+    return imap(lambda unit: (unit.name, val), hw_units)
