@@ -68,9 +68,7 @@ class TestSim:
         ("3InstructionProgram.asm", "dualCoreALUProcessor.yaml",
          [{"core 1": 0, "core 2": 1}, {"core 1": 2}]),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         "dualCoreMemALUProcessor.yaml", [{"core 2": 0}]),
-        ("2InstructionProgram.asm", "dualCoreALUMemProcessor.yaml",
-         [{"core 1": 0}, {"core 1": 1}])])
+         "dualCoreMemALUProcessor.yaml", [{"core 2": 0}])])
     def test_processor(self, prog_file, proc_file, util_info):
         """Test simulating a program on the given processor.
 
