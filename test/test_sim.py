@@ -48,11 +48,11 @@
 import test_utils
 import processor
 from processor import simulate
-from processor_utils import get_abilities
+import processor_utils
 from program_defs import HwInstruction
 import pytest
 from pytest import mark
-from test_utils import compile_prog, read_isa_file, read_proc_file
+from test_utils import read_proc_file
 
 
 class TestSim:
@@ -63,8 +63,8 @@ class TestSim:
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
          [{"core 1": 0}]), ("3InstructionProgram.asm",
                             [{"core 1": 0, "core 2": 1}, {"core 1": 2}])])
-    def test_dual_core_processor(self, prog_file, util_info):
-        """Test simulating a program on a dual core processor.
+    def test_dual_core_alu_processor(self, prog_file, util_info):
+        """Test simulating a program on a dual core ALU processor.
 
         `self` is this test case.
         `prog_file` is the program file.
@@ -72,6 +72,16 @@ class TestSim:
 
         """
         self._test_processor(prog_file, "dualCoreALUProcessor.yaml", util_info)
+
+    def test_dual_core_mem_alu_processor(self):
+        """Test simulating a program on a dual core Mem+ALU processor.
+
+        `self` is this test case.
+
+        """
+        self._test_processor(
+            "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
+            "dualCoreMemALUProcessor.yaml", [{"core 2": 0}])
 
     @mark.parametrize(
         "prog, cpu, util_tbl",
@@ -123,9 +133,10 @@ class TestSim:
 
         """
         cpu = read_proc_file("processors", proc_file)
-        capabilities = get_abilities(cpu)
-        self.test_sim(compile_prog(prog_file, read_isa_file(
-            "singleInstructionISA.yaml", capabilities)), cpu, util_info)
+        capabilities = processor_utils.get_abilities(cpu)
+        self.test_sim(
+            test_utils.compile_prog(prog_file, test_utils.read_isa_file(
+                "singleInstructionISA.yaml", capabilities)), cpu, util_info)
 
 
 def main():
