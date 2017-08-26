@@ -59,29 +59,30 @@ class TestSim:
 
     """Test case for program simulation"""
 
-    @mark.parametrize("prog_file, util_info", [
+    @mark.parametrize("prog_file, proc_file, util_info", [
+        ("empty.asm", "singleALUUnitProcessor.yaml", []),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         [{"core 1": 0}]), ("3InstructionProgram.asm",
-                            [{"core 1": 0, "core 2": 1}, {"core 1": 2}])])
-    def test_dual_core_alu_processor(self, prog_file, util_info):
-        """Test simulating a program on a dual core ALU processor.
+         "singleALUUnitProcessor.yaml", [{"fullSys": 0}]),
+        ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
+         "dualCoreALUProcessor.yaml", [{"core 1": 0}]),
+        ("3InstructionProgram.asm", "dualCoreALUProcessor.yaml",
+         [{"core 1": 0, "core 2": 1}, {"core 1": 2}]),
+        ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
+         "dualCoreMemALUProcessor.yaml", [{"core 2": 0}])])
+    def test_processor(self, prog_file, proc_file, util_info):
+        """Test simulating a program on the given processor.
 
         `self` is this test case.
         `prog_file` is the program file.
+        `proc_file` is the processor description file.
         `util_info` is the expected utilization information.
 
         """
-        self._test_processor(prog_file, "dualCoreALUProcessor.yaml", util_info)
-
-    def test_dual_core_mem_alu_processor(self):
-        """Test simulating a program on a dual core Mem+ALU processor.
-
-        `self` is this test case.
-
-        """
-        self._test_processor(
-            "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-            "dualCoreMemALUProcessor.yaml", [{"core 2": 0}])
+        cpu = read_proc_file("processors", proc_file)
+        capabilities = processor_utils.get_abilities(cpu)
+        self.test_sim(
+            test_utils.compile_prog(prog_file, test_utils.read_isa_file(
+                "singleInstructionISA.yaml", capabilities)), cpu, util_info)
 
     @mark.parametrize(
         "prog, cpu, util_tbl",
@@ -97,20 +98,6 @@ class TestSim:
         """
         assert simulate(prog, cpu) == util_tbl
 
-    @mark.parametrize("prog_file, util_info", [("empty.asm", []), (
-        "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-        [{"fullSys": 0}])])
-    def test_single_unit_processor(self, prog_file, util_info):
-        """Test simulating a program on a single-unit processor.
-
-        `self` is this test case.
-        `prog_file` is the program file.
-        `util_info` is the expected utilization information.
-
-        """
-        self._test_processor(
-            prog_file, "singleALUUnitProcessor.yaml", util_info)
-
     def test_unsupported_instruction_raises_InvalidOpError(self):
         """Test executing an invalid instruction.
 
@@ -122,21 +109,6 @@ class TestSim:
             "processors", "singleALUUnitProcessor.yaml"))
         test_utils.chk_error([test_utils.ValInStrCheck(
             ex_chk.value.operation, "MEM")], ex_chk.value)
-
-    def _test_processor(self, prog_file, proc_file, util_info):
-        """Test simulating a program on the given processor.
-
-        `self` is this test case.
-        `prog_file` is the program file.
-        `proc_file` is the processor description file.
-        `util_info` is the expected utilization information.
-
-        """
-        cpu = read_proc_file("processors", proc_file)
-        capabilities = processor_utils.get_abilities(cpu)
-        self.test_sim(
-            test_utils.compile_prog(prog_file, test_utils.read_isa_file(
-                "singleInstructionISA.yaml", capabilities)), cpu, util_info)
 
 
 def main():
