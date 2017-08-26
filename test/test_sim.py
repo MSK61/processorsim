@@ -59,18 +59,19 @@ class TestSim:
 
     """Test case for program simulation"""
 
-    def test_dual_core_processor(self):
+    @mark.parametrize("prog_file, util_info", [
+        ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
+         [{"core 1": 0}]), ("3InstructionProgram.asm",
+                            [{"core 1": 0, "core 2": 1}, {"core 1": 2}])])
+    def test_dual_core_processor(self, prog_file, util_info):
         """Test simulating a program on a dual core processor.
 
         `self` is this test case.
+        `prog_file` is the program file.
+        `util_info` is the expected utilization information.
 
         """
-        cpu = read_proc_file("processors", "dualCoreALUProcessor.yaml")
-        capabilities = get_abilities(cpu)
-        self.test_sim(compile_prog(
-            "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-            read_isa_file("singleInstructionISA.yaml", capabilities)), cpu,
-                      [{"core 1": 0}])
+        self._test_processor(prog_file, "dualCoreALUProcessor.yaml", util_info)
 
     @mark.parametrize(
         "prog, cpu, util_tbl",
@@ -97,10 +98,8 @@ class TestSim:
         `util_info` is the expected utilization information.
 
         """
-        cpu = read_proc_file("processors", "singleALUUnitProcessor.yaml")
-        capabilities = get_abilities(cpu)
-        self.test_sim(compile_prog(prog_file, read_isa_file(
-            "singleInstructionISA.yaml", capabilities)), cpu, util_info)
+        self._test_processor(
+            prog_file, "singleALUUnitProcessor.yaml", util_info)
 
     def test_unsupported_instruction_raises_InvalidOpError(self):
         """Test executing an invalid instruction.
@@ -113,6 +112,20 @@ class TestSim:
             "processors", "singleALUUnitProcessor.yaml"))
         test_utils.chk_error([test_utils.ValInStrCheck(
             ex_chk.value.operation, "MEM")], ex_chk.value)
+
+    def _test_processor(self, prog_file, proc_file, util_info):
+        """Test simulating a program on the given processor.
+
+        `self` is this test case.
+        `prog_file` is the program file.
+        `proc_file` is the processor description file.
+        `util_info` is the expected utilization information.
+
+        """
+        cpu = read_proc_file("processors", proc_file)
+        capabilities = get_abilities(cpu)
+        self.test_sim(compile_prog(prog_file, read_isa_file(
+            "singleInstructionISA.yaml", capabilities)), cpu, util_info)
 
 
 def main():
