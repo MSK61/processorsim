@@ -1,0 +1,10 @@
+units:
+    - name: core 1
+      width: 1
+      capabilities:
+        - ALU
+    - name: core 2
+      width: 1
+      capabilities:
+        - ALU
+dataPath: []

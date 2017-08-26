@@ -48,16 +48,29 @@
 import test_utils
 import processor
 from processor import simulate
-import processor_utils
+from processor_utils import get_abilities
 from program_defs import HwInstruction
 import pytest
 from pytest import mark
-from test_utils import read_proc_file
+from test_utils import compile_prog, read_isa_file, read_proc_file
 
 
 class TestSim:
 
     """Test case for program simulation"""
+
+    def test_dual_core_processor(self):
+        """Test simulating a program on a dual core processor.
+
+        `self` is this test case.
+
+        """
+        cpu = read_proc_file("processors", "dualCoreALUProcessor.yaml")
+        capabilities = get_abilities(cpu)
+        self.test_sim(compile_prog(
+            "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
+            read_isa_file("singleInstructionISA.yaml", capabilities)), cpu,
+                      [{"core 1": 0}])
 
     @mark.parametrize(
         "prog, cpu, util_tbl",
@@ -85,10 +98,9 @@ class TestSim:
 
         """
         cpu = read_proc_file("processors", "singleALUUnitProcessor.yaml")
-        capabilities = processor_utils.get_abilities(cpu)
-        self.test_sim(
-            test_utils.compile_prog(prog_file, test_utils.read_isa_file(
-                "singleInstructionISA.yaml", capabilities)), cpu, util_info)
+        capabilities = get_abilities(cpu)
+        self.test_sim(compile_prog(prog_file, read_isa_file(
+            "singleInstructionISA.yaml", capabilities)), cpu, util_info)
 
     def test_unsupported_instruction_raises_InvalidOpError(self):
         """Test executing an invalid instruction.

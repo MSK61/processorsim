@@ -45,7 +45,7 @@
 #
 ############################################################
 
-from itertools import imap
+import itertools
 import processor_utils
 import yaml
 
@@ -137,6 +137,65 @@ class InvalidOpError(RuntimeError):
         return self._operation
 
 
+class _IssueInfo(object):
+
+    """Instruction issue information record"""
+
+    def __init__(self):
+        """Create an issue information record.
+
+        `self` is this issue information record.
+
+        """
+        self._instr = 0
+
+    def bump_instr(self):
+        """Increment the instruction index.
+
+        `self` is this issue information record.
+
+        """
+        self._instr += 1
+
+    def can_issue(self, max_instr):
+        """Determine if more instructions can be issued.
+
+        `self` is this issue information record.
+        `max_instr` is the instruction index upper bound.
+        Depending on the last issue operation as well as the program
+        counter, the method determines if more instructions can be still
+        issued.
+
+        """
+        return self.last_issue_good() and self.has_next_issue(max_instr)
+
+    def has_next_issue(self, max_instr):
+        """Determine if more instructions still need to be issued.
+
+        `self` is this issue information record.
+        `max_instr` is the instruction index upper bound.
+
+        """
+        return self._instr < max_instr
+
+    def last_issue_good(self):
+        """Determine if the last issue operation was successful.
+
+        `self` is this issue information record.
+
+        """
+        return self.unit >= 0
+
+    @property
+    def instr(self):
+        """Instruction index
+
+        `self` is this issue information record.
+
+        """
+        return self._instr
+
+
 def read_processor(proc_file):
     """Read the processor description from the given file.
 
@@ -163,54 +222,94 @@ def simulate(program, processor):
     The function returns the pipeline diagram.
 
     """
-    capabilities = processor_utils.get_abilities(processor)
-    return map(
-        lambda instr_entry:
-            dict(_get_util_map(processor.in_out_ports, instr_entry,
-                               capabilities)), enumerate(program))
+    util_tbl = []
+    issue_rec = _IssueInfo()
+    prog_len = len(program)
+
+    while issue_rec.has_next_issue(prog_len):
+        util_tbl.append(_chk_stall(
+            util_tbl, _get_cp_util(program, processor.in_out_ports, issue_rec),
+            program, issue_rec.instr))
+
+    return util_tbl
 
 
-def _get_instr_idx(instr_entry, capabilities):
-    """Retrieve the instruction index.
+def _get_cp_util(program, hw_units, issue_rec):
+    """Calculate the utilization of a new clock pulse.
 
-    `instr_entry` is the entry of the instruction to retrieve whose
-                  index.
-    `capabilities` are supported capabilities.
-    The function validates the instruction against supported
-    capabilities.
-
-    """
-    capabilities = imap(str.lower, capabilities)
-    instr_info_idx = 1
-
-    if instr_entry[instr_info_idx].categ.lower() in capabilities:
-        return instr_entry[0]
-
-    raise InvalidOpError(
-        "Invalid operation {}", instr_entry[instr_info_idx].categ)
-
-
-def _get_util_map(hw_units, instr_entry, capabilities):
-    """Create a map whose all units point to the same instruction.
-
-    `hw_units` are the processing units to create keys from.
-    `instr_entry` is the entry of the single instruction to which all
-                  units point to.
-    `capabilities` are supported capabilities.
-    The function returns an iterator over key-value pairs containing the
-    given units all pointing to the given instruction.
+    `program` is the program being executed.
+    `hw_units` are the processing units to execute the program on.
+    `issue_rec` is the issue record.
+    The function returns utilization information for the next clock pulse.
 
     """
-    return _make_unit_map(hw_units, _get_instr_idx(instr_entry, capabilities))
+    util_info = {}
+    hw_units = list(hw_units)
+    issue_rec.unit = 0
+    prog_len = len(program)
+
+    while issue_rec.can_issue(prog_len):
+        _issue_instr(
+            program[issue_rec.instr].categ, hw_units, util_info, issue_rec)
+
+    return util_info
 
 
-def _make_unit_map(hw_units, val):
-    """Create a map whose all units point to the same value.
+def _chk_stall(util_tbl, new_util, program, next_instr):
+    """Check if the processor has stalled.
 
-    `hw_units` are the processing units to create keys from.
-    `val` is the single value to which all units point to.
-    The function returns an iterator over key-value pairs containing the
-    given units all pointing to the given value.
+    `util_tbl` is the utilization table so far.
+    `new_util` is the new utilization information of the current clock
+               pulse.
+    `program` is the program being executed.
+    `next_instr` is the index of the next instruction to be executed.
+    The function analyzes existing and new utilization information and
+    determines if the processor is in stall. It throws an InvalidOpError
+    if the next instruction can't be executed due to a stall, otherwise
+    returns the new utilization information.
 
     """
-    return imap(lambda unit: (unit.name, val), hw_units)
+    if new_util == util_tbl[-1] if util_tbl else not new_util:
+        raise InvalidOpError("Invalid operation {}", program[next_instr].categ)
+
+    return new_util
+
+
+def _find_unit(hw_units, capability):
+    """Find the index of the first unit matching the given capability.
+
+    `hw_units` are the processing units to search.
+    `capability` is the capability to find a matching unit for.
+    The function returns the index of the first matching unit, or -1 if
+    no matching unit is found.
+
+    """
+    capability = capability.lower()
+    num_of_units = len(hw_units)
+    return next(
+        itertools.ifilter(
+            lambda unit_idx: capability in itertools.imap(str.lower, hw_units[
+                unit_idx].capabilities), xrange(num_of_units)), -1)
+
+
+def _issue_instr(instr, vacant_units, util_info, issue_rec):
+    """Issue an instruction to enter an appropriate hardware unit.
+
+    `instr` is the instruction to issue.
+    `vacant_units` are the vacant processing units to select from.
+    `util_info` is the unit utilization information during the current
+                clock pulse.
+    `issue_rec` is the issue record.
+    The function tries to find an appropriate unit to issue the
+    instruction to. It then updates the list of vacant units and the
+    utilization information and records the selected unit and the new
+    instruction index in the issue record.
+
+    """
+    issue_rec.unit = _find_unit(vacant_units, instr)
+
+    if issue_rec.last_issue_good():
+
+        util_info[vacant_units[issue_rec.unit].name] = issue_rec.instr
+        vacant_units.pop(issue_rec.unit)
+        issue_rec.bump_instr()
