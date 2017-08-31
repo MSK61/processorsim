@@ -157,27 +157,6 @@ class _IssueInfo(object):
         """
         self._instr += 1
 
-    def can_issue(self, max_instr):
-        """Determine if more instructions can be issued.
-
-        `self` is this issue information record.
-        `max_instr` is the instruction index upper bound.
-        Depending on the last issue operation as well as the program
-        counter, the method determines if more instructions can be still
-        issued.
-
-        """
-        return self.last_issue_good() and self.has_next_issue(max_instr)
-
-    def has_next_issue(self, max_instr):
-        """Determine if more instructions still need to be issued.
-
-        `self` is this issue information record.
-        `max_instr` is the instruction index upper bound.
-
-        """
-        return self._instr < max_instr
-
     def last_issue_good(self):
         """Determine if the last issue operation was successful.
 
@@ -226,7 +205,7 @@ def simulate(program, processor):
     issue_rec = _IssueInfo()
     prog_len = len(program)
 
-    while issue_rec.has_next_issue(prog_len):
+    while issue_rec.instr < prog_len:
         util_tbl.append(_chk_stall(
             util_tbl, _get_cp_util(program, processor.in_out_ports, issue_rec),
             program, issue_rec.instr))
@@ -248,7 +227,7 @@ def _get_cp_util(program, hw_units, issue_rec):
     issue_rec.unit = 0
     prog_len = len(program)
 
-    while issue_rec.can_issue(prog_len):
+    while issue_rec.last_issue_good() and issue_rec.instr < prog_len:
         _issue_instr(
             program[issue_rec.instr].categ, hw_units, util_info, issue_rec)
 
