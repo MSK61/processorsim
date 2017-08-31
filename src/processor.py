@@ -46,6 +46,7 @@
 ############################################################
 
 import itertools
+from itertools import imap
 import processor_utils
 import yaml
 
@@ -175,6 +176,53 @@ class _IssueInfo(object):
         return self._instr
 
 
+class _Unit(object):
+
+    """Unit capabilities for executing instructions"""
+
+    def __init__(self, name, instructions, capabilities):
+        """Create a new unit.
+
+        `self` is this unit.
+        `name` is the unit name.
+        `instructions` is the number of instructions that can be
+                       executed simultaneously by the unit.
+        `capabilities` are the capabilities of instructions supported by
+                       this unit model.
+
+        """
+        self._name = name
+        self._instructions = instructions
+        self._capabilities = capabilities
+
+    def can_exec(self, instr):
+        """Determine if this unit can execute the given instruction.
+
+        `self` is this unit.
+        `instr` is the lower-case instruction to test for execution.
+
+        """
+        return self._instructions and instr in imap(
+            str.lower, self._capabilities)
+
+    def exec_instr(self):
+        """Execute an instruction in this unit.
+
+        `self` is this unit.
+
+        """
+        self._instructions -= 1
+
+    @property
+    def name(self):
+        """Unit name
+
+        `self` is this unit.
+
+        """
+        return self._name
+
+
 def read_processor(proc_file):
     """Read the processor description from the given file.
 
@@ -223,7 +271,8 @@ def _get_cp_util(program, hw_units, issue_rec):
 
     """
     util_info = {}
-    hw_units = list(hw_units)
+    hw_units = map(
+        lambda unit: _Unit(unit.name, unit.width, unit.capabilities), hw_units)
     issue_rec.unit = 0
     prog_len = len(program)
 
@@ -231,7 +280,7 @@ def _get_cp_util(program, hw_units, issue_rec):
         _issue_instr(
             program[issue_rec.instr].categ, hw_units, util_info, issue_rec)
 
-    return util_info
+    return dict(imap(_sorted_val, util_info.iteritems()))
 
 
 def _chk_stall(util_tbl, new_util, program, next_instr):
@@ -265,10 +314,8 @@ def _find_unit(hw_units, capability):
     """
     capability = capability.lower()
     num_of_units = len(hw_units)
-    return next(
-        itertools.ifilter(
-            lambda unit_idx: capability in itertools.imap(str.lower, hw_units[
-                unit_idx].capabilities), xrange(num_of_units)), -1)
+    return next(itertools.ifilter(lambda unit_idx: hw_units[unit_idx].can_exec(
+        capability), xrange(num_of_units)), -1)
 
 
 def _issue_instr(instr, vacant_units, util_info, issue_rec):
@@ -289,6 +336,18 @@ def _issue_instr(instr, vacant_units, util_info, issue_rec):
 
     if issue_rec.last_issue_good():
 
-        util_info[vacant_units[issue_rec.unit].name] = issue_rec.instr
-        vacant_units.pop(issue_rec.unit)
+        util_info.setdefault(vacant_units[issue_rec.unit].name, []).append(
+            issue_rec.instr)
+        vacant_units[issue_rec.unit].exec_instr()
         issue_rec.bump_instr()
+
+
+def _sorted_val(entry):
+    """Sort the value part of the given entry.
+
+    `entry` is the key-value pair to sort whose value.
+    The function returns the given key-value pair after sorting its
+    value.
+
+    """
+    return entry[0], sorted(entry[1])

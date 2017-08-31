@@ -62,13 +62,15 @@ class TestSim:
     @mark.parametrize("prog_file, proc_file, util_info", [
         ("empty.asm", "singleALUUnitProcessor.yaml", []),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         "singleALUUnitProcessor.yaml", [{"fullSys": 0}]),
+         "singleALUUnitProcessor.yaml", [{"fullSys": [0]}]),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         "dualCoreALUProcessor.yaml", [{"core 1": 0}]),
+         "dualCoreALUProcessor.yaml", [{"core 1": [0]}]),
         ("3InstructionProgram.asm", "dualCoreALUProcessor.yaml",
-         [{"core 1": 0, "core 2": 1}, {"core 1": 2}]),
+         [{"core 1": [0], "core 2": [1]}, {"core 1": [2]}]),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         "dualCoreMemALUProcessor.yaml", [{"core 2": 0}])])
+         "dualCoreMemALUProcessor.yaml", [{"core 2": [0]}]),
+        ("2InstructionProgram.asm", "2WideALUUnitProcessor.yaml",
+         [{"fullSys": [0, 1]}])])
     def test_processor(self, prog_file, proc_file, util_info):
         """Test simulating a program on the given processor.
 
@@ -87,7 +89,7 @@ class TestSim:
     @mark.parametrize(
         "prog, cpu, util_tbl",
         [([HwInstruction("alu", ["R11", "R15"], "R14")], read_proc_file(
-            "processors", "singleALUUnitProcessor.yaml"), [{"fullSys": 0}])])
+            "processors", "singleALUUnitProcessor.yaml"), [{"fullSys": [0]}])])
     def test_sim(self, prog, cpu, util_tbl):
         """Test executing a program.
 
