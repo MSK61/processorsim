@@ -220,22 +220,20 @@ class _Unit(object):
         self._instructions = instructions
         self._capabilities = map(str.lower, capabilities)
 
-    def can_exec(self, instr):
-        """Determine if this unit can execute the given instruction.
+    def exec_instr(self, instr):
+        """Try to execute the instruction in this unit.
 
         `self` is this unit.
         `instr` is the lower-case instruction to test for execution.
+        The method returns True if the instruction could be fed for
+        execution to this unit, otherwise it returns False.
 
         """
-        return self._instructions and instr in self._capabilities
+        if not (self._instructions and instr in self._capabilities):
+            return False
 
-    def exec_instr(self):
-        """Execute an instruction in this unit.
-
-        `self` is this unit.
-
-        """
         self._instructions -= 1
+        return True
 
     @property
     def name(self):
@@ -332,8 +330,8 @@ def _find_unit(hw_units, capability):
 
     """
     num_of_units = len(hw_units)
-    return next(itertools.ifilter(lambda unit_idx: hw_units[unit_idx].can_exec(
-        capability), xrange(num_of_units)), -1)
+    return next(itertools.ifilter(lambda unit_idx: hw_units[
+        unit_idx].exec_instr(capability), xrange(num_of_units)), -1)
 
 
 def _issue_instr(hw_units, util_info, issue_rec):
@@ -355,7 +353,6 @@ def _issue_instr(hw_units, util_info, issue_rec):
 
         util_info.setdefault(hw_units[issue_rec.unit].name, []).append(
             issue_rec.instr[0])
-        hw_units[issue_rec.unit].exec_instr()
         issue_rec.bump_instr()
 
 
