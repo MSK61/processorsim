@@ -46,7 +46,6 @@
 ############################################################
 
 import itertools
-from itertools import imap
 import processor_utils
 import yaml
 
@@ -142,21 +141,47 @@ class _IssueInfo(object):
 
     """Instruction issue information record"""
 
-    def __init__(self):
+    def __init__(self, instr_seq):
         """Create an issue information record.
 
         `self` is this issue information record.
+        `instr_seq` is the sequence of instructions to be issued.
 
         """
-        self._instr = 0
+        self._instr_seq = instr_seq
+        self.bump_instr()
 
     def bump_instr(self):
-        """Increment the instruction index.
+        """Retrieve the next instruction.
 
         `self` is this issue information record.
 
         """
-        self._instr += 1
+        try:
+            self._instr = self._instr_seq.next()
+        except StopIteration:
+            self._instr_valid = False
+        else:
+            self._instr_valid = True
+
+    def can_issue(self):
+        """Determine if more instructions can be issued.
+
+        `self` is this issue information record.
+        Depending on the last issue operation as well as the program
+        counter, the method determines if more instructions can be still
+        issued.
+
+        """
+        return self.last_issue_good() and self.has_next_issue()
+
+    def has_next_issue(self):
+        """Determine if more instructions still need to be issued.
+
+        `self` is this issue information record.
+
+        """
+        return self._instr_valid
 
     def last_issue_good(self):
         """Determine if the last issue operation was successful.
@@ -193,7 +218,7 @@ class _Unit(object):
         """
         self._name = name
         self._instructions = instructions
-        self._capabilities = capabilities
+        self._capabilities = map(str.lower, capabilities)
 
     def can_exec(self, instr):
         """Determine if this unit can execute the given instruction.
@@ -202,8 +227,7 @@ class _Unit(object):
         `instr` is the lower-case instruction to test for execution.
 
         """
-        return self._instructions and instr in imap(
-            str.lower, self._capabilities)
+        return self._instructions and instr in self._capabilities
 
     def exec_instr(self):
         """Execute an instruction in this unit.
@@ -250,21 +274,18 @@ def simulate(program, processor):
 
     """
     util_tbl = []
-    issue_rec = _IssueInfo()
-    prog_len = len(program)
+    issue_rec = _IssueInfo(enumerate(program))
 
-    while issue_rec.instr < prog_len:
-        util_tbl.append(_chk_stall(
-            util_tbl, _get_cp_util(program, processor.in_out_ports, issue_rec),
-            program, issue_rec.instr))
+    while issue_rec.has_next_issue():
+        util_tbl.append(_chk_stall(util_tbl, _get_cp_util(
+            processor.in_out_ports, issue_rec), issue_rec.instr[1].categ))
 
     return util_tbl
 
 
-def _get_cp_util(program, hw_units, issue_rec):
+def _get_cp_util(hw_units, issue_rec):
     """Calculate the utilization of a new clock pulse.
 
-    `program` is the program being executed.
     `hw_units` are the processing units to execute the program on.
     `issue_rec` is the issue record.
     The function returns utilization information for the next clock pulse.
@@ -274,23 +295,20 @@ def _get_cp_util(program, hw_units, issue_rec):
     hw_units = map(
         lambda unit: _Unit(unit.name, unit.width, unit.capabilities), hw_units)
     issue_rec.unit = 0
-    prog_len = len(program)
 
-    while issue_rec.last_issue_good() and issue_rec.instr < prog_len:
-        _issue_instr(
-            program[issue_rec.instr].categ, hw_units, util_info, issue_rec)
+    while issue_rec.can_issue():
+        _issue_instr(hw_units, util_info, issue_rec)
 
-    return dict(imap(_sorted_val, util_info.iteritems()))
+    return dict(itertools.imap(_sorted_val, util_info.iteritems()))
 
 
-def _chk_stall(util_tbl, new_util, program, next_instr):
+def _chk_stall(util_tbl, new_util, next_instr):
     """Check if the processor has stalled.
 
     `util_tbl` is the utilization table so far.
     `new_util` is the new utilization information of the current clock
                pulse.
-    `program` is the program being executed.
-    `next_instr` is the index of the next instruction to be executed.
+    `next_instr` is the next instruction to be executed.
     The function analyzes existing and new utilization information and
     determines if the processor is in stall. It throws an InvalidOpError
     if the next instruction can't be executed due to a stall, otherwise
@@ -298,7 +316,7 @@ def _chk_stall(util_tbl, new_util, program, next_instr):
 
     """
     if new_util == util_tbl[-1] if util_tbl else not new_util:
-        raise InvalidOpError("Invalid operation {}", program[next_instr].categ)
+        raise InvalidOpError("Invalid operation {}", next_instr)
 
     return new_util
 
@@ -307,38 +325,37 @@ def _find_unit(hw_units, capability):
     """Find the index of the first unit matching the given capability.
 
     `hw_units` are the processing units to search.
-    `capability` is the capability to find a matching unit for.
+    `capability` is the lower-case capability to find a matching unit
+                 for.
     The function returns the index of the first matching unit, or -1 if
     no matching unit is found.
 
     """
-    capability = capability.lower()
     num_of_units = len(hw_units)
     return next(itertools.ifilter(lambda unit_idx: hw_units[unit_idx].can_exec(
         capability), xrange(num_of_units)), -1)
 
 
-def _issue_instr(instr, vacant_units, util_info, issue_rec):
+def _issue_instr(hw_units, util_info, issue_rec):
     """Issue an instruction to enter an appropriate hardware unit.
 
-    `instr` is the instruction to issue.
-    `vacant_units` are the vacant processing units to select from.
+    `hw_units` are the processing units to select from.
     `util_info` is the unit utilization information during the current
                 clock pulse.
     `issue_rec` is the issue record.
     The function tries to find an appropriate unit to issue the
-    instruction to. It then updates the list of vacant units and the
-    utilization information and records the selected unit and the new
-    instruction index in the issue record.
+    instruction to. It then updates the vacant instruction slots in the
+    found unit and the utilization information and records the selected
+    unit and the new instruction index in the issue record.
 
     """
-    issue_rec.unit = _find_unit(vacant_units, instr)
+    issue_rec.unit = _find_unit(hw_units, issue_rec.instr[1].categ.lower())
 
     if issue_rec.last_issue_good():
 
-        util_info.setdefault(vacant_units[issue_rec.unit].name, []).append(
-            issue_rec.instr)
-        vacant_units[issue_rec.unit].exec_instr()
+        util_info.setdefault(hw_units[issue_rec.unit].name, []).append(
+            issue_rec.instr[0])
+        hw_units[issue_rec.unit].exec_instr()
         issue_rec.bump_instr()
 
 
