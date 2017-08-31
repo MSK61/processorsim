@@ -319,6 +319,21 @@ def _chk_stall(util_tbl, new_util, next_instr):
     return new_util
 
 
+def _feed_instr(util_info, unit, issue_rec):
+    """Feed an instruction to the designated unit.
+
+    `util_info` is the unit utilization information during the current
+                clock pulse.
+    `unit` is the designated unit to feed the instruction into.
+    `issue_rec` is the issue record.
+    The function moves an instruction from the program to the designated
+    unit.
+
+    """
+    util_info.setdefault(unit, []).append(issue_rec.instr[0])
+    issue_rec.bump_instr()
+
+
 def _find_unit(hw_units, capability):
     """Find the index of the first unit matching the given capability.
 
@@ -350,10 +365,7 @@ def _issue_instr(hw_units, util_info, issue_rec):
     issue_rec.unit = _find_unit(hw_units, issue_rec.instr[1].categ.lower())
 
     if issue_rec.last_issue_good():
-
-        util_info.setdefault(hw_units[issue_rec.unit].name, []).append(
-            issue_rec.instr[0])
-        issue_rec.bump_instr()
+        _feed_instr(util_info, hw_units[issue_rec.unit].name, issue_rec)
 
 
 def _sorted_val(entry):
