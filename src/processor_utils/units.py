@@ -33,6 +33,8 @@
 #
 # environment:  Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Fedora release 25 (Twenty Five)
+#               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
+#               Fedora release 26 (Twenty Six)
 #
 # notes:        This is a private program.
 #
@@ -52,8 +54,8 @@ class FuncUnit(object):
 
         `self` is this functional unit.
         `model` is the unit model.
-        `preds` is the list of units whose outputs are connected to the
-                input of this unit.
+        `preds` are the units whose outputs are connected to the input
+                of this unit.
 
         """
         self._model = model
@@ -119,8 +121,8 @@ class UnitModel(object):
         `self` is this functional unit model.
         `name` is the unit model name.
         `width` is the unit model capacity.
-        `capabilities` is the list of capabilities of instructions
-                       supported by this unit model.
+        `capabilities` are the capabilities of instructions supported by
+                       this unit model.
 
         """
         self._name = name
