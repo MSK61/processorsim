@@ -148,12 +148,9 @@ def read_program(prog_file):
     The function returns the program instructions.
 
     """
-    with open(prog_file) as program:
-
-        program = itertools.imap(str.strip, program)
-        return map(
-            _create_instr, itertools.ifilter(
-                lambda line_info: line_info[1], enumerate(program)))
+    program = itertools.imap(str.strip, prog_file)
+    return map(_create_instr, itertools.ifilter(
+        lambda line_info: line_info[1], enumerate(program)))
 
 
 def _get_cap(isa, instr):

@@ -35,6 +35,8 @@
 #               Fedora release 25 (Twenty Five)
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Ubuntu 17.04
+#               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
+#               Fedora release 26 (Twenty Six)
 #
 # notes:        This is a private program.
 #
@@ -137,7 +139,8 @@ def read_prog_file(file_name):
 
     """
     test_dir = "programs"
-    return program_utils.read_program(join(TEST_DATA_DIR, test_dir, file_name))
+    with open(join(TEST_DATA_DIR, test_dir, file_name)) as prog_file:
+        return program_utils.read_program(prog_file)
 
 
 def _load_yaml(test_dir, file_name):
