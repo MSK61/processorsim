@@ -254,8 +254,7 @@ def read_processor(proc_file):
     description.
 
     """
-    with open(proc_file) as proc_file:
-        yaml_desc = yaml.load(proc_file)
+    yaml_desc = yaml.load(proc_file)
     microarch_key = "microarch"
     processor = processor_utils.load_proc_desc(yaml_desc[microarch_key])
     isa_key = "ISA"

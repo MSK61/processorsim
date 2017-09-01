@@ -34,6 +34,8 @@
 #
 # environment:  Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Ubuntu 17.04
+#               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
+#               Fedora release 26 (Twenty Six)
 #
 # notes:        This is a private program.
 #
@@ -130,14 +132,15 @@ class TestHwDescLoad:
 
         """
         isa_dict = {instr: capability}
-        with patch("processor_utils.load_proc_desc",
-                   return_value=ProcessorDesc([], [], [UnitModel(
+        with open(os.path.join(test_utils.TEST_DATA_DIR, "fullHwDesc",
+                               hw_file)) as hw_file, patch(
+                "processor_utils.load_proc_desc",
+                return_value=ProcessorDesc([], [], [UnitModel(
                     "fullSys", 1, [capability])], [])) as proc_mock, patch(
             "processor_utils.get_abilities",
             return_value=frozenset([capability])) as ability_mock, patch(
                 "processor_utils.load_isa", return_value=isa_dict) as isa_mock:
-            assert processor.read_processor(os.path.join(
-                test_utils.TEST_DATA_DIR, "fullHwDesc", hw_file)) == HwDesc(
+            assert processor.read_processor(hw_file) == HwDesc(
                 proc_mock.return_value, isa_mock.return_value)
 
         for mock_chk in [
