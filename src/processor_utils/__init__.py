@@ -46,7 +46,7 @@
 
 import exception
 from exception import BadWidthError, BlockedCapError, ComponentInfo, \
-    DupElemError, TightWidthError
+    DupElemError
 import itertools
 from itertools import ifilter, imap
 import logging
@@ -577,36 +577,6 @@ def _add_unit(processor, unit, unit_registry, cap_registry):
     unit_registry.add(unit[_UNIT_NAME_KEY])
 
 
-def _analyze_flow(processor):
-    """Check the flow of every supported capability in every input port.
-
-    `processor` is the processor to check whose capability flow.
-    The function tests the flow of every supported capability through
-    every compatible input port. If any capability through any input
-    port can't flow with the full capacity of this input port to the
-    output ports, the function raises a BlockedCapError. It then tests
-    the flow of a virtual fused capability across all inputs(i.e. as if
-    all capabilities became a single capability) and raises a
-    BlockedCapError if the input width exceeds the minimum fused bus
-    width.
-
-    """
-    _chk_caps_flow(processor)
-    _chk_fused_flow(processor)
-
-
-def _aug_in_ports(processor):
-    """Unify the input ports in the processor.
-
-    `processor` is the processor to weld whose input ports.
-    The function connects the processor input ports into a single input
-    port and returns that single port.
-
-    """
-    return _aug_terminals(
-        processor, _in_port_list(processor), lambda *inputs: reversed(inputs))
-
-
 def _aug_out_ports(processor, out_ports):
     """Unify the output ports in the processor.
 
@@ -659,8 +629,8 @@ def _chk_cap_flow(
     `in_ports` are the input ports supporting the given capability.
     `port_name_func` is the port reporting name function.
     The function raises a BlockedCapError if the capability through any
-    input port can't flow with the full capacity of this input port to
-    the output ports.
+    input port can't flow with full or partial capacity from this input
+    port to the output ports.
 
     """
     _chk_ports_flow(_get_anal_graph(cap_graph), capability_info, in_ports,
@@ -672,8 +642,8 @@ def _chk_caps_flow(processor):
 
     `processor` is the processor to check.
     The function raises a BlockedCapError if any capability through any
-    supporting input port can't flow with the full capacity of this
-    input port to the output ports.
+    supporting input port can't flow with full or partial capacity from
+    this input port to the output ports.
 
     """
     cap_units = _get_cap_units(processor)
@@ -720,37 +690,12 @@ def _chk_flow(processor):
     `processor` is the processor to check whose capability flow.
     The function tests the flow of every supported capability through
     every compatible input port. If any capability through any input
-    port can't flow with the full capacity of this input port to the
-    output ports, the function raises a BlockedCapError. It then tests
-    the flow of a virtual fused capability across all inputs(i.e. as if
-    all capabilities became a single capability) and raises a
-    BlockedCapError if the input width exceeds the minimum fused bus
-    width.
+    port can't flow with full or partial capacity from this input port
+    to the output ports, the function raises a BlockedCapError.
 
     """
     if processor.number_of_nodes() > 1:
-        _analyze_flow(processor)
-
-
-def _chk_fused_flow(processor):
-    """Check the flow for all capabilities fused.
-
-    `processor` is the processor to check.
-    The function raises a BlockedCapError if input width exceeds the
-    minimum bus width after testing the processor as if it had a single
-    capability across all units.
-
-    """
-    anal_graph = _get_anal_graph(processor)
-    try:
-        _chk_cap_flow(anal_graph, anal_graph,
-                      ComponentInfo("fused capability", "All capabilities"),
-                      [_aug_in_ports(anal_graph)], lambda port: "all ports")
-    except BlockedCapError as err:
-        raise TightWidthError(
-            "Input width {{{}}} exceeding supported width {{{}}}".format(
-                TightWidthError.REQ_WIDTH_IDX, TightWidthError.REAL_WIDTH_IDX),
-            err.max_width, err.capacity)
+        _chk_caps_flow(processor)
 
 
 def _chk_instr(instr, instr_registry):
@@ -795,8 +740,8 @@ def _chk_ports_flow(
     `out_ports` are the output ports of the original processor.
     `port_name_func` is the port reporting name function.
     The function raises a BlockedCapError if the capability through any
-    input port can't flow with the full capacity of this input port to
-    the output ports.
+    input port can't flow with full or partial capacity from this input
+    port to the output ports.
 
     """
     unit_anal_map = dict(
@@ -807,11 +752,9 @@ def _chk_ports_flow(
     _dist_edge_caps(anal_graph)
 
     for cur_port in in_ports:
-        _chk_unit_flow(
-            networkx.maximum_flow_value(
-                anal_graph, unit_anal_map[cur_port], unified_out),
-            anal_graph.node[unit_anal_map[cur_port]][_UNIT_WIDTH_KEY],
-            capability_info, ComponentInfo(cur_port, port_name_func(cur_port)))
+        _chk_unit_flow(networkx.maximum_flow_value(
+            anal_graph, unit_anal_map[cur_port], unified_out), capability_info,
+                       ComponentInfo(cur_port, port_name_func(cur_port)))
 
 
 def _chk_terminals(processor, orig_port_info):
@@ -831,27 +774,23 @@ def _chk_terminals(processor, orig_port_info):
         _rm_dead_end(processor, out_port, orig_port_info.in_ports)
 
 
-def _chk_unit_flow(min_width, in_width, capability_info, port_info):
+def _chk_unit_flow(min_width, capability_info, port_info):
     """Check the flow volume from an input port to outputs.
 
     `min_width` is the minimum bus width.
-    `in_width` is the input port width.
     `capability_info` is the information of the capability whose flow is
                       checked.
     `port_info` is the information of the port the flow is checked
                 starting from.
-    The function raises a BlockedCapError if the input port width
-    exceeds the minimum bus width.
+    The function raises a BlockedCapError if the minimum bus width is
+    zero.
 
     """
-    if min_width < in_width:
+    if not min_width:
         raise BlockedCapError(
-            "{{{}}} from {{{}}} with width {{{}}} exceeding minimum width "
-            "{{{}}}".format(
-                BlockedCapError.CAPABILITY_IDX, BlockedCapError.PORT_IDX,
-                BlockedCapError.CAPACITY_IDX, BlockedCapError.MAX_WIDTH_IDX),
-            exception.CapPortInfo(capability_info, port_info, in_width),
-            min_width)
+            "{{{}}} blocked from {{{}}}".format(
+                BlockedCapError.CAPABILITY_IDX, BlockedCapError.PORT_IDX),
+            exception.CapPortInfo(capability_info, port_info))
 
 
 def _chk_unit_name(name, name_registry):

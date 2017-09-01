@@ -38,6 +38,8 @@
 #               Fedora release 25 (Twenty Five)
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Ubuntu 17.04
+#               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
+#               Fedora release 26 (Twenty Six)
 #
 # notes:        This is a private program.
 #
@@ -348,14 +350,6 @@ class TestProcessors:
 
     """Test case for loading valid processors"""
 
-    def test_processor_with_one_two_wide_input_and_two_one_wide_outputs(self):
-        """Test loading a processor with an input and two outputs.
-
-        `self` is this test case.
-
-        """
-        read_proc_file("processors", "oneInputTwoOutputProcessor.yaml")
-
     def test_processor_with_four_connected_functional_units(self):
         """Test loading a processor with four functional units.
 
@@ -395,6 +389,18 @@ class TestProcessors:
         """
         _chk_one_unit("processors", "singleALUUnitProcessor.yaml")
 
+    @mark.parametrize(
+        "in_file", ["oneInputTwoOutputProcessor.yaml",
+                    "inputPortWithPartiallyConsumedCapability.yaml"])
+    def test_valid_processor_raises_no_exceptions(self, in_file):
+        """Test loading a valid processor raises no exceptions.
+
+        `self` is this test case.
+        `in_file` is the processor description file.
+
+        """
+        read_proc_file("processors", in_file)
+
 
 class TestUnits:
 
@@ -423,41 +429,17 @@ class TestWidth:
 
     """Test case for checking data path width"""
 
-    @mark.parametrize("in_file, capacity, max_width", [
-        ("inputPortWithUnconsumedCapability.yaml", 1, 0),
-        ("inputPortWithPartiallyConsumedCapability.yaml", 2, 1)])
-    def test_not_fully_consumed_capabilitiy_raises_BlockedCapError(
-            self, in_file, capacity, max_width):
-        """Test an input with a capability not fully consumed.
+    def test_unconsumed_capabilitiy_raises_BlockedCapError(self):
+        """Test an input with a capability not consumed at all.
 
         `self` is this test case.
-        `in_file` is the processor description file.
-        `capacity` is the blocked port capacity.
-        `max_width` is the processor maximum bus width.
 
         """
-        ex_chk = raises(
-            exception.BlockedCapError, read_proc_file, "widths", in_file)
+        ex_chk = raises(exception.BlockedCapError, read_proc_file, "widths",
+                        "inputPortWithUnconsumedCapability.yaml")
         chk_error([ValInStrCheck("Capability " + ex_chk.value.capability,
                                  "Capability MEM"), ValInStrCheck(
-            "port " + ex_chk.value.port, "port input"), ValInStrCheck(
-            ex_chk.value.capacity, capacity), ValInStrCheck(
-            ex_chk.value.max_width, max_width)], ex_chk.value)
-
-    def test_width_less_than_fused_input_capacity_raises_TightWidthError(self):
-        """Test a processor with a width less than its fused capacity.
-
-        `self` is this test case.
-        The test runs a scenario where only fused capability flow will
-        suffer a tight width problem. Each single capability in this
-        scenario can already fully flow with full capacity to the
-        output.
-
-        """
-        ex_chk = raises(exception.TightWidthError, read_proc_file, "widths",
-                        "fusedCapacityLargerThanBusWidth.yaml")
-        chk_error([ValInStrCheck(ex_chk.value.needed_width, 2),
-                   ValInStrCheck(ex_chk.value.actual_width, 1)], ex_chk.value)
+            "port " + ex_chk.value.port, "port input")], ex_chk.value)
 
 
 def main():
