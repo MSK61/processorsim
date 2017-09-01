@@ -253,8 +253,8 @@ def _print_tbl_data(flights):
     `flights` are the instruction flight entries.
 
     """
-    for flight_idx, cur_flight in flights:
-        _print_flight(flight_idx, cur_flight)
+    for cur_flight in flights:
+        _print_flight(*cur_flight)
 
 
 def _print_tbl_hdr(flights):
