@@ -145,7 +145,9 @@ class _IssueInfo(object):
         """Create an issue information record.
 
         `self` is this issue information record.
-        `instr_seq` is the sequence of instructions to be issued.
+        `instr_seq` is the sequence of instruction entries to be issued.
+                    Each entry is a tuple of the instruction index and
+                    the instruction itself.
 
         """
         self._instr_seq = instr_seq
@@ -158,11 +160,9 @@ class _IssueInfo(object):
 
         """
         try:
-            self._instr = self._instr_seq.next()
+            self._instr_index, self._instr = self._instr_seq.next()
         except StopIteration:
-            self._instr_valid = False
-        else:
-            self._instr_valid = True
+            self._instr_index = -1
 
     def can_issue(self):
         """Determine if more instructions can be issued.
@@ -181,7 +181,7 @@ class _IssueInfo(object):
         `self` is this issue information record.
 
         """
-        return self._instr_valid
+        return self._instr_index >= 0
 
     def last_issue_good(self):
         """Determine if the last issue operation was successful.
@@ -193,12 +193,21 @@ class _IssueInfo(object):
 
     @property
     def instr(self):
-        """Instruction index
+        """Instruction being issued
 
         `self` is this issue information record.
 
         """
         return self._instr
+
+    @property
+    def instr_index(self):
+        """Index of the instruction being issued
+
+        `self` is this issue information record.
+
+        """
+        return self._instr_index
 
 
 class _Unit(object):
@@ -275,7 +284,7 @@ def simulate(program, processor):
 
     while issue_rec.has_next_issue():
         util_tbl.append(_chk_stall(util_tbl, _get_cp_util(
-            processor.in_out_ports, issue_rec), issue_rec.instr[1].categ))
+            processor.in_out_ports, issue_rec), issue_rec.instr.categ))
 
     return util_tbl
 
@@ -329,7 +338,7 @@ def _feed_instr(util_info, unit, issue_rec):
     unit.
 
     """
-    util_info.setdefault(unit, []).append(issue_rec.instr[0])
+    util_info.setdefault(unit, []).append(issue_rec.instr_index)
     issue_rec.bump_instr()
 
 
@@ -361,7 +370,7 @@ def _issue_instr(hw_units, util_info, issue_rec):
     unit and the new instruction index in the issue record.
 
     """
-    issue_rec.unit = _find_unit(hw_units, issue_rec.instr[1].categ.lower())
+    issue_rec.unit = _find_unit(hw_units, issue_rec.instr.categ.lower())
 
     if issue_rec.last_issue_good():
         _feed_instr(util_info, hw_units[issue_rec.unit].name, issue_rec)
