@@ -46,6 +46,7 @@
 
 import errors
 import itertools
+import operator
 import program_defs
 from re import split
 
@@ -149,8 +150,8 @@ def read_program(prog_file):
 
     """
     program = itertools.imap(str.strip, prog_file)
-    return map(_create_instr, itertools.ifilter(
-        lambda line_info: line_info[1], enumerate(program)))
+    return map(_create_instr,
+               itertools.ifilter(operator.itemgetter(1), enumerate(program)))
 
 
 def _get_cap(isa, instr):

@@ -383,7 +383,7 @@ def _get_preds(processor, unit, unit_map):
     The function returns an iterable of predecessor units.
 
     """
-    return imap(lambda pred: unit_map[pred], processor.predecessors_iter(unit))
+    return imap(unit_map.get, processor.predecessors_iter(unit))
 
 
 def _get_std_edge(edge, unit_registry):
@@ -802,8 +802,7 @@ def _chk_ports_flow(
     unit_anal_map = dict(
         imap(lambda anal_entry: (anal_entry[1][_OLD_NODE_KEY], anal_entry[0]),
              anal_graph.nodes_iter(True)))
-    unified_out = _aug_out_ports(anal_graph, map(lambda old_port:
-                                 unit_anal_map[old_port], out_ports))
+    unified_out = _aug_out_ports(anal_graph, map(unit_anal_map.get, out_ports))
     unified_out = _split_nodes(anal_graph)[unified_out]
     _dist_edge_caps(anal_graph)
 
