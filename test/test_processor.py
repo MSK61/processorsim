@@ -387,7 +387,7 @@ class TestProcessors:
         `self` is this test case.
 
         """
-        _chk_one_unit("processors", "singleALUUnitProcessor.yaml")
+        _chk_one_unit("processors", "singleALUProcessor.yaml")
 
     @mark.parametrize(
         "in_file", ["oneInputTwoOutputProcessor.yaml",

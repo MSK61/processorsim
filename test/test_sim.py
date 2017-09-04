@@ -60,11 +60,11 @@ class TestSim:
     """Test case for program simulation"""
 
     @mark.parametrize("prog_file, proc_file, isa_file, util_info", [
-        ("empty.asm", "singleALUUnitProcessor.yaml",
-         "singleInstructionISA.yaml", []),
+        ("empty.asm", "singleALUProcessor.yaml", "singleInstructionISA.yaml",
+         []),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         "singleALUUnitProcessor.yaml", "singleInstructionISA.yaml", [{
-            "fullSys": [0]}]),
+         "singleALUProcessor.yaml", "singleInstructionISA.yaml",
+         [{"fullSys": [0]}]),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
          "dualCoreALUProcessor.yaml", "singleInstructionISA.yaml",
          [{"core 1": [0]}]),
@@ -74,7 +74,7 @@ class TestSim:
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
          "dualCoreMemALUProcessor.yaml", "singleInstructionISA.yaml",
          [{"core 2": [0]}]),
-        ("2InstructionProgram.asm", "2WideALUUnitProcessor.yaml",
+        ("2InstructionProgram.asm", "2WideALUProcessor.yaml",
          "singleInstructionISA.yaml", [{"fullSys": [0, 1]}]),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
          "twoConnectedUnitsProcessor.yaml", "singleInstructionISA.yaml",
@@ -101,7 +101,7 @@ class TestSim:
     @mark.parametrize(
         "prog, cpu, util_tbl",
         [([HwInstruction("alu", ["R11", "R15"], "R14")], read_proc_file(
-            "processors", "singleALUUnitProcessor.yaml"), [{"fullSys": [0]}])])
+            "processors", "singleALUProcessor.yaml"), [{"fullSys": [0]}])])
     def test_sim(self, prog, cpu, util_tbl):
         """Test executing a program.
 
@@ -123,7 +123,7 @@ class TestSim:
         """
         ex_chk = pytest.raises(processor.StallError, simulate, valid_prog + [
             HwInstruction("MEM", [], "R14")], read_proc_file(
-            "processors", "singleALUUnitProcessor.yaml"))
+            "processors", "singleALUProcessor.yaml"))
         test_utils.chk_error([test_utils.ValInStrCheck(
             ex_chk.value.processor_state, len(valid_prog))], ex_chk.value)
 
