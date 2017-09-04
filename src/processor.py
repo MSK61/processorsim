@@ -45,7 +45,8 @@
 #
 ############################################################
 
-import itertools
+import copy
+from itertools import ifilter, imap
 import processor_utils
 import yaml
 
@@ -141,117 +142,49 @@ class _IssueInfo(object):
 
     """Instruction issue information record"""
 
-    def __init__(self, instr_seq):
+    def __init__(self):
         """Create an issue information record.
 
         `self` is this issue information record.
-        `instr_seq` is the sequence of instruction entries to be issued.
-                    Each entry is a tuple of the instruction index and
-                    the instruction itself.
 
         """
-        self._instr_seq = instr_seq
-        self.bump_instr()
+        self._entered = 0
+        self._exited = 0
 
-    def bump_instr(self):
-        """Retrieve the next instruction.
+    def bump_input(self):
+        """Increment the entered instructions index.
 
         `self` is this issue information record.
 
         """
-        try:
-            self._instr_index, self._instr = self._instr_seq.next()
-        except StopIteration:
-            self._instr_index = -1
+        self._entered += 1
 
-    def can_issue(self):
-        """Determine if more instructions can be issued.
+    def pump_outputs(self, outputs):
+        """Pump outputs out of the pipeline.
 
         `self` is this issue information record.
-        Depending on the last issue operation as well as the program
-        counter, the method determines if more instructions can be still
-        issued.
+        `outputs` is the number of outputs to pump out of the pipeline.
 
         """
-        return self.last_issue_good() and self.has_next_issue()
-
-    def has_next_issue(self):
-        """Determine if more instructions still need to be issued.
-
-        `self` is this issue information record.
-
-        """
-        return self._instr_index >= 0
-
-    def last_issue_good(self):
-        """Determine if the last issue operation was successful.
-
-        `self` is this issue information record.
-
-        """
-        return self.unit >= 0
+        self._exited += outputs
 
     @property
-    def instr(self):
-        """Instruction being issued
+    def entered(self):
+        """Instruction index
 
         `self` is this issue information record.
 
         """
-        return self._instr
+        return self._entered
 
     @property
-    def instr_index(self):
-        """Index of the instruction being issued
+    def in_flight(self):
+        """True if there're in-flight instructions, otherwise False
 
         `self` is this issue information record.
 
         """
-        return self._instr_index
-
-
-class _Unit(object):
-
-    """Unit capabilities for executing instructions"""
-
-    def __init__(self, name, instructions, capabilities):
-        """Create a new unit.
-
-        `self` is this unit.
-        `name` is the unit name.
-        `instructions` is the number of instructions that can be
-                       executed simultaneously by the unit.
-        `capabilities` are the capabilities of instructions supported by
-                       this unit model.
-
-        """
-        self._name = name
-        self._instructions = instructions
-        self._capabilities = map(str.lower, capabilities)
-
-    def exec_instr(self, instr):
-        """Try to execute the instruction in this unit.
-
-        `self` is this unit.
-        `instr` is the lower-case instruction to test for execution.
-        The method returns True if the instruction could be fed for
-        execution to this unit, otherwise it returns False.
-
-        """
-        if not (self._instructions and instr in self._capabilities):
-            return False
-
-        self._instructions -= 1
-        return True
-
-    @property
-    def name(self):
-        """Unit name
-
-        `self` is this unit.
-
-        """
-        return self._name
+        return self._exited < self._entered
 
 
 def read_processor(proc_file):
@@ -280,108 +213,250 @@ def simulate(program, processor):
 
     """
     util_tbl = []
-    issue_rec = _IssueInfo(enumerate(program))
+    issue_rec = _IssueInfo()
+    prog_len = len(program)
 
-    while issue_rec.has_next_issue():
-        util_tbl.append(_chk_stall(util_tbl, _get_cp_util(
-            processor.in_out_ports, issue_rec), issue_rec.instr.categ))
+    while issue_rec.entered < prog_len or issue_rec.in_flight:
+        _run_cycle(program, processor, util_tbl, issue_rec)
 
     return util_tbl
 
 
-def _get_cp_util(hw_units, issue_rec):
-    """Calculate the utilization of a new clock pulse.
+def _accept_instr(instr, instr_index, unit, util_info):
+    """Try to accept the given instruction to the unit.
 
-    `hw_units` are the processing units to execute the program on.
-    `issue_rec` is the issue record.
-    The function returns utilization information for the next clock pulse.
+    `instr` is the lower-case instruction to try to accept.
+    `instr_index` is the index of the instruction to try to accept.
+    `unit` is the unit to accept the instruction to.
+    `util_info` is the unit utilization information.
+    The function assumes the target unit already has space to accept new
+    instructions. It updates the utilization information and returns
+    True if the instruction is accepted; otherwise returns False.
 
     """
-    util_info = {}
-    hw_units = map(
-        lambda unit: _Unit(unit.name, unit.width, unit.capabilities), hw_units)
-    issue_rec.unit = 0
+    assert instr == instr.lower()
 
-    while issue_rec.can_issue():
-        _issue_instr(hw_units, util_info, issue_rec)
+    if not _can_accept(instr, unit):
+        return False
 
-    return dict(itertools.imap(_sorted_val, util_info.iteritems()))
+    util_info.setdefault(unit.name, []).append(instr_index)
+    return True
 
 
-def _chk_stall(util_tbl, new_util, next_instr):
+def _can_accept(instr, unit):
+    """Determine if the unit can accept the given instruction.
+
+    `instr` is the lower-case instruction to test for acceptance.
+    `unit` is the unit to test whose acceptance.
+    The function assumes the target unit already has space to accept new
+    instructions.
+
+    """
+    assert instr == instr.lower()
+    return instr in imap(str.lower, unit.capabilities)
+
+
+def _chk_stall(old_util, new_util, program, next_instr):
     """Check if the processor has stalled.
 
-    `util_tbl` is the utilization table so far.
+    `old_util` is the old utilization information of the previous clock
+               pulse.
     `new_util` is the new utilization information of the current clock
                pulse.
-    `next_instr` is the next instruction to be executed.
-    The function analyzes existing and new utilization information and
+    `program` is the program to execute.
+    `next_instr` is the index of the next instruction to be executed.
+    The function analyzes old and new utilization information and
     determines if the processor is in stall. It throws an InvalidOpError
-    if the next instruction can't be executed due to a stall, otherwise
-    returns the new utilization information.
+    if the next instruction can't be executed due to a stall.
 
     """
-    if new_util == util_tbl[-1] if util_tbl else not new_util:
-        raise InvalidOpError("Invalid operation {}", next_instr)
-
-    return new_util
+    if new_util == old_util:
+        raise InvalidOpError("Invalid operation {}", program[next_instr].categ)
 
 
-def _feed_instr(util_info, unit, issue_rec):
-    """Feed an instruction to the designated unit.
+def _count_outputs(outputs, util_info):
+    """Count the number of active outputs.
 
-    `util_info` is the unit utilization information during the current
-                clock pulse.
-    `unit` is the designated unit to feed the instruction into.
-    `issue_rec` is the issue record.
-    The function moves an instruction from the program to the designated
-    unit.
+    `outputs` are all the output units.
+    `util_info` is the unit utilization information.
 
     """
-    util_info.setdefault(unit, []).append(issue_rec.instr_index)
-    issue_rec.bump_instr()
+    return sum(imap(lambda out_port: len(util_info[out_port.name]) if
+                    out_port.name in util_info else 0, outputs))
 
 
-def _find_unit(hw_units, capability):
-    """Find the index of the first unit matching the given capability.
+def _fill_cp_util(processor, program, util_info, issue_rec):
+    """Calculate the utilization of a new clock pulse.
 
-    `hw_units` are the processing units to search.
-    `capability` is the lower-case capability to find a matching unit
-                 for.
-    The function returns the index of the first matching unit, or -1 if
-    no matching unit is found.
-
-    """
-    num_of_units = len(hw_units)
-    return next(itertools.ifilter(lambda unit_idx: hw_units[
-        unit_idx].exec_instr(capability), xrange(num_of_units)), -1)
-
-
-def _issue_instr(hw_units, util_info, issue_rec):
-    """Issue an instruction to enter an appropriate hardware unit.
-
-    `hw_units` are the processing units to select from.
+    `processor` is the processor to fill the utilization of whose units
+                at the current clock pulse.
+    `program` is the program to execute.
     `util_info` is the unit utilization information during the current
                 clock pulse.
     `issue_rec` is the issue record.
+
+    """
+    out_ports = processor.in_out_ports + tuple(
+        imap(lambda port: port.model, processor.out_ports))
+    _flush_outputs(out_ports, util_info)
+    _mov_flights(processor.out_ports, program, util_info)
+    _fill_inputs(processor.in_out_ports + processor.in_ports, program,
+                 util_info, issue_rec)
+    issue_rec.pump_outputs(_count_outputs(out_ports, util_info))
+    _sort_vals(util_info)
+
+
+def _fill_inputs(inputs, program, util_info, issue_rec):
+    """Fetch new program instructions into the pipeline.
+
+    `inputs` are the input processing units.
+    `program` is the program to fill the input units from whose
+              instructions.
+    `util_info` is the unit utilization information.
+    `issue_rec` is the issue record.
+
+    """
+    prog_len = len(program)
+
+    while issue_rec.entered < prog_len and _issue_instr(
+        program[issue_rec.entered].categ.lower(), issue_rec.entered, inputs,
+            util_info):
+        issue_rec.bump_input()
+
+
+def _fill_unit(unit, program, util_info):
+    """Fill an output with instructions from its predecessors.
+
+    `unit` is the output unit to fill.
+    `program` is the master instruction list.
+    `util_info` is the unit utilization information.
+
+    """
+    sources = ifilter(lambda pred: pred.name in util_info, unit.predecessors)
+    try:
+        while _space_avail(unit.model, util_info):
+            _mov_payload(sources.next().name, unit.model, program, util_info)
+    except StopIteration:
+        pass
+
+
+def _flush_outputs(out_units, unit_util):
+    """Flush output units in preparation for a new cycle.
+
+    `out_units` are the output processing units.
+    `util_info` is the unit utilization information during the current
+                clock pulse.
+
+    """
+    for cur_out in out_units:
+        if cur_out.name in unit_util:
+            del unit_util[cur_out.name]
+
+
+def _issue_instr(instr, instr_index, inputs, util_info):
+    """Issue an instruction to an appropriate input unit.
+
+    `instr` is the lower-case instruction to issue.
+    `instr_index` is the index of the instruction to try to accept.
+    `inputs` are the input processing units to select from for issuing
+             the instruction.
+    `util_info` is the unit utilization information.
     The function tries to find an appropriate unit to issue the
-    instruction to. It then updates the vacant instruction slots in the
-    found unit and the utilization information and records the selected
-    unit and the new instruction index in the issue record.
+    instruction to. It then updates the utilization information. It
+    returns True if the instruction is issued to a unit, otherwise
+    returns False.
 
     """
-    issue_rec.unit = _find_unit(hw_units, issue_rec.instr.categ.lower())
+    assert instr == instr.lower()
+    return next(
+        ifilter(lambda unit: _space_avail(unit, util_info) and _accept_instr(
+            instr, instr_index, unit, util_info), inputs), False)
 
-    if issue_rec.last_issue_good():
-        _feed_instr(util_info, hw_units[issue_rec.unit].name, issue_rec)
 
+def _mov_flights(out_units, program, util_info):
+    """Move the instructions inside the pipeline.
 
-def _sorted_val(entry):
-    """Sort the value part of the given entry.
-
-    `entry` is the key-value pair to sort whose value.
-    The function returns the given key-value pair after sorting its
-    value.
+    `out_units` are the output processing units.
+    `program` is the master instruction list.
+    `util_info` is the unit utilization information.
 
     """
-    return entry[0], sorted(entry[1])
+    for cur_out in out_units:
+        _fill_unit(cur_out, program, util_info)
+
+
+def _mov_payload(src, dst, program, util_info):
+    """Move all compatible instructions between the given units.
+
+    `src` is the unit to select a compatible instruction from.
+    `dst` is the unit to move the instruction to.
+    `program` is the master instruction list.
+    `util_info` is the unit utilization in the current clock pulse.
+    The function tries to move all compatible instructions with the
+    destination unit from the source unit.
+
+    """
+    cur_instr = 0
+
+    while _space_avail(dst, util_info) and cur_instr < len(util_info[src]):
+        if _accept_instr(program[util_info[src][cur_instr]].categ.lower(),
+                         util_info[src][cur_instr], dst, util_info):
+            _rm_util(util_info, src, cur_instr)
+        else:
+            cur_instr += 1
+
+
+def _rm_util(util_info, unit, instr_index):
+    """Remove the given instruction from the unit utilization.
+
+    `util_info` is the current utilization of all units.
+    `unit` is the unit to clear the instruction in whose utilization.
+    `instr_index` is the index of the instruction to remove from the
+                  unit utilization.
+
+    """
+    util_info[unit].pop(instr_index)
+
+    if not util_info[unit]:
+        del util_info[unit]
+
+
+def _run_cycle(program, processor, util_tbl, issue_rec):
+    """Run a single clock cycle.
+
+    `program` is the program to run whose instructions.
+    `processor` is the processor to run whose pipeline for a clock
+                pulse.
+    `util_tbl` is the utilization table.
+    `issue_rec` is the issue record.
+
+    """
+    old_util = util_tbl[-1] if util_tbl else {}
+    cp_util = copy.deepcopy(old_util)
+    _fill_cp_util(processor, program, cp_util, issue_rec)
+    _chk_stall(old_util, cp_util, program, issue_rec.entered)
+    util_tbl.append(cp_util)
+
+
+def _sort_vals(val_dict):
+    """Sort the value part of the given dictionary.
+
+    `val_dict` is the dictionary of unsorted values.
+    The function returns the given dictionary after sorting the values
+    corresponding to all keys in it.
+
+    """
+    dict_items = val_dict.iteritems()
+
+    for cur_key, cur_val in dict_items:
+        val_dict[cur_key] = sorted(cur_val)
+
+
+def _space_avail(unit, util_info):
+    """Determine if the unit can still accept instructions.
+
+    `unit` is the unit to test whose free space.
+    `util_info` is the current utilization of all units.
+
+    """
+    return unit.name not in util_info or len(util_info[unit.name]) < unit.width
