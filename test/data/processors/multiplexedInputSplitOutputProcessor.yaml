@@ -1,0 +1,17 @@
+units:
+    - name: input
+      width: 2
+      capabilities:
+        - ALU
+        - MEM
+    - name: ALU output
+      width: 1
+      capabilities:
+        - ALU
+    - name: MEM output
+      width: 1
+      capabilities:
+        - MEM
+dataPath:
+    - [input, ALU output]
+    - [input, MEM output]

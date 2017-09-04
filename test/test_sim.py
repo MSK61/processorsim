@@ -59,27 +59,36 @@ class TestSim:
 
     """Test case for program simulation"""
 
-    @mark.parametrize("prog_file, proc_file, util_info", [
-        ("empty.asm", "singleALUUnitProcessor.yaml", []),
+    @mark.parametrize("prog_file, proc_file, isa_file, util_info", [
+        ("empty.asm", "singleALUUnitProcessor.yaml",
+         "singleInstructionISA.yaml", []),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         "singleALUUnitProcessor.yaml", [{"fullSys": [0]}]),
+         "singleALUUnitProcessor.yaml", "singleInstructionISA.yaml", [{
+            "fullSys": [0]}]),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         "dualCoreALUProcessor.yaml", [{"core 1": [0]}]),
+         "dualCoreALUProcessor.yaml", "singleInstructionISA.yaml",
+         [{"core 1": [0]}]),
         ("3InstructionProgram.asm", "dualCoreALUProcessor.yaml",
+         "singleInstructionISA.yaml",
          [{"core 1": [0], "core 2": [1]}, {"core 1": [2]}]),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         "dualCoreMemALUProcessor.yaml", [{"core 2": [0]}]),
+         "dualCoreMemALUProcessor.yaml", "singleInstructionISA.yaml",
+         [{"core 2": [0]}]),
         ("2InstructionProgram.asm", "2WideALUUnitProcessor.yaml",
-         [{"fullSys": [0, 1]}]),
+         "singleInstructionISA.yaml", [{"fullSys": [0, 1]}]),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         "twoConnectedUnitsProcessor.yaml",
-         [{"input": [0]}, {"output": [0]}])])
-    def test_processor(self, prog_file, proc_file, util_info):
+         "twoConnectedUnitsProcessor.yaml", "singleInstructionISA.yaml",
+         [{"input": [0]}, {"output": [0]}]),
+        ("MemALUProgram.asm", "multiplexedInputSplitOutputProcessor.yaml",
+         "ALUMemISA.yaml",
+         [{"input": [0, 1]}, {"ALU output": [1], "MEM output": [0]}])])
+    def test_processor(self, prog_file, proc_file, isa_file, util_info):
         """Test simulating a program on the given processor.
 
         `self` is this test case.
         `prog_file` is the program file.
         `proc_file` is the processor description file.
+        `isa_file` is the instruction set description file.
         `util_info` is the expected utilization information.
 
         """
@@ -87,7 +96,7 @@ class TestSim:
         capabilities = processor_utils.get_abilities(cpu)
         self.test_sim(
             test_utils.compile_prog(prog_file, test_utils.read_isa_file(
-                "singleInstructionISA.yaml", capabilities)), cpu, util_info)
+                isa_file, capabilities)), cpu, util_info)
 
     @mark.parametrize(
         "prog, cpu, util_tbl",
