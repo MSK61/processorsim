@@ -112,32 +112,6 @@ class HwDesc(object):
         return self._processor
 
 
-class InvalidOpError(RuntimeError):
-
-    """Invalid operation error"""
-
-    def __init__(self, msg_tmpl, operation):
-        """Create an invalid operation error.
-
-        `self` is this invalid operation error.
-        `msg_tmpl` is the error format message taking the invalid
-                   operation as a positional argument.
-        `operation` is the invalid operation.
-
-        """
-        RuntimeError.__init__(self, msg_tmpl.format(operation))
-        self._operation = operation
-
-    @property
-    def operation(self):
-        """Invalid operation
-
-        `self` is this invalid operation error.
-
-        """
-        return self._operation
-
-
 class _IssueInfo(object):
 
     """Instruction issue information record"""
@@ -185,6 +159,32 @@ class _IssueInfo(object):
 
         """
         return self._exited < self._entered
+
+
+class StallError(RuntimeError):
+
+    """Stalled processor error"""
+
+    def __init__(self, msg_tmpl, stalled_state):
+        """Create a stalled processor error.
+
+        `self` is this stalled processor error.
+        `msg_tmpl` is the error format message taking the stalled
+                   processor state as a positional argument.
+        `stalled_state` is the stalled processor state.
+
+        """
+        RuntimeError.__init__(self, msg_tmpl.format(stalled_state))
+        self._stalled_state = stalled_state
+
+    @property
+    def processor_state(self):
+        """Stalled processor state
+
+        `self` is this stalled processor error.
+
+        """
+        return self._stalled_state
 
 
 def read_processor(proc_file):
@@ -256,22 +256,21 @@ def _can_accept(instr, unit):
     return instr in imap(str.lower, unit.capabilities)
 
 
-def _chk_stall(old_util, new_util, program, next_instr):
+def _chk_stall(old_util, new_util, consumed):
     """Check if the processor has stalled.
 
     `old_util` is the old utilization information of the previous clock
                pulse.
     `new_util` is the new utilization information of the current clock
                pulse.
-    `program` is the program to execute.
-    `next_instr` is the index of the next instruction to be executed.
-    The function analyzes old and new utilization information and
-    determines if the processor is in stall. It throws an InvalidOpError
-    if the next instruction can't be executed due to a stall.
+    `consumed` is the number of instructions fed to the pipeline so far.
+    The function analyzes old and new utilization information and throws
+    a StallError if a stall is detected.
 
     """
     if new_util == old_util:
-        raise InvalidOpError("Invalid operation {}", program[next_instr].categ)
+        raise StallError(
+            "Processor stalled after being fed {} instructions", consumed)
 
 
 def _count_outputs(outputs, util_info):
@@ -434,7 +433,7 @@ def _run_cycle(program, processor, util_tbl, issue_rec):
     old_util = util_tbl[-1] if util_tbl else {}
     cp_util = copy.deepcopy(old_util)
     _fill_cp_util(processor, program, cp_util, issue_rec)
-    _chk_stall(old_util, cp_util, program, issue_rec.entered)
+    _chk_stall(old_util, cp_util, issue_rec.entered)
     util_tbl.append(cp_util)
 
 

@@ -112,17 +112,20 @@ class TestSim:
         """
         assert simulate(prog, cpu) == util_tbl
 
-    def test_unsupported_instruction_raises_InvalidOpError(self):
-        """Test executing an invalid instruction.
+    @mark.parametrize(
+        "valid_prog", [[], [HwInstruction("ALU", ["R11", "R15"], "R14")]])
+    def test_unsupported_instruction_stalls_pipeline(self, valid_prog):
+        """Test executing an invalid instruction after a valid program.
 
         `self` is this test case.
+        `valid_prog` is a sequence of valid instructions.
 
         """
-        ex_chk = pytest.raises(processor.InvalidOpError, simulate, [
+        ex_chk = pytest.raises(processor.StallError, simulate, valid_prog + [
             HwInstruction("MEM", [], "R14")], read_proc_file(
             "processors", "singleALUUnitProcessor.yaml"))
         test_utils.chk_error([test_utils.ValInStrCheck(
-            ex_chk.value.operation, "MEM")], ex_chk.value)
+            ex_chk.value.processor_state, len(valid_prog))], ex_chk.value)
 
 
 def main():
