@@ -59,18 +59,6 @@ class TestSim:
 
     """Test case for program simulation"""
 
-    def test_flight_control_skips_predecessors_with_incompatible_instructions(
-            self):
-        """Test propagating instructions among units is selective.
-
-        `self` is this test case.
-
-        """
-        self.test_sim([HwInstruction("MEM", [], "R12"), HwInstruction(
-            "ALU", ["R11", "R15"], "R14")], read_proc_file(
-            "processors", "multiplexedInputSplitOutputProcessor.yaml"),
-            [{"input": [0, 1]}, {"ALU output": [1], "MEM output": [0]}])
-
     @mark.parametrize("prog_file, proc_file, util_info", [
         ("empty.asm", "singleALUProcessor.yaml", []),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
@@ -104,7 +92,11 @@ class TestSim:
     @mark.parametrize(
         "prog, cpu, util_tbl",
         [([HwInstruction("alu", ["R11", "R15"], "R14")], read_proc_file(
-            "processors", "singleALUProcessor.yaml"), [{"fullSys": [0]}])])
+            "processors", "singleALUProcessor.yaml"), [{"fullSys": [0]}]),
+            ([HwInstruction("MEM", [], "R12"),
+              HwInstruction("ALU", ["R11", "R15"], "R14")], read_proc_file(
+                "processors", "multiplexedInputSplitOutputProcessor.yaml"),
+                [{"input": [0, 1]}, {"ALU output": [1], "MEM output": [0]}])])
     def test_sim(self, prog, cpu, util_tbl):
         """Test executing a program.
 
