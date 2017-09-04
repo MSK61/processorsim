@@ -59,7 +59,7 @@ class FuncUnit(object):
 
         """
         self._model = model
-        self._preds = tuple(preds)
+        self._preds = tuple(sorted(preds))
 
     def __eq__(self, other):
         """Test if the two functional units are identical.
@@ -71,8 +71,8 @@ class FuncUnit(object):
         criteria = imap(
             lambda attrs: (attrs[0], len(attrs[1])),
             [(self._model, self._preds), (other.model, other.predecessors)])
-        pred_lists = imap(sorted, [self._preds, other.predecessors])
-        return operator.eq(*criteria) and all(imap(operator.is_, *pred_lists))
+        return operator.eq(*criteria) and all(
+            imap(operator.is_, self._preds, other.predecessors))
 
     def __ne__(self, other):
         """Test if the two functional units are different.
