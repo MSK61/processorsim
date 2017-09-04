@@ -57,6 +57,7 @@ import os
 from sets import IndexedSet, LowerIndexSet
 import sys
 import units
+from units import sorted_models
 __all__ = ["exception", "load_proc_desc", "ProcessorDesc", "units"]
 _OLD_NODE_KEY = "old_node"
 # unit attributes
@@ -81,9 +82,9 @@ class ProcessorDesc(object):
                          as inputs or outputs.
 
         """
-        self._in_ports = self._sorted_models(in_ports)
+        self._in_ports = sorted_models(in_ports)
         self._out_ports = self._sorted_units(out_ports)
-        self._in_out_ports = self._sorted_models(in_out_ports)
+        self._in_out_ports = sorted_models(in_out_ports)
         self._internal_units = self._sorted_units(internal_untis)
 
     def __eq__(self, other):
@@ -116,15 +117,6 @@ class ProcessorDesc(object):
         return "{}({}, {}, {}, {})".format(
             type(self).__name__, self._in_ports, self._out_ports,
             self._in_out_ports, self._internal_units)
-
-    @staticmethod
-    def _sorted_models(models):
-        """Create a sorted list of the given models.
-
-        `models` are the models to create a sorted list of.
-
-        """
-        return tuple(units.sorted_models(models))
 
     @staticmethod
     def _sorted_units(hw_units):

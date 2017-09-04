@@ -59,7 +59,7 @@ class FuncUnit(object):
 
         """
         self._model = model
-        self._preds = tuple(sorted(preds))
+        self._preds = sorted_models(preds)
 
     def __eq__(self, other):
         """Test if the two functional units are identical.
@@ -90,7 +90,7 @@ class FuncUnit(object):
 
         """
         return '{}({}, {})'.format(
-            type(self).__name__, self._model, sorted_models(self._preds))
+            type(self).__name__, self._model, self._preds)
 
     @property
     def model(self):
@@ -191,4 +191,4 @@ def sorted_models(models):
     `models` are the models to create a sorted list of.
 
     """
-    return sorted(models, key=lambda model: model.name)
+    return tuple(sorted(models, key=lambda model: model.name))

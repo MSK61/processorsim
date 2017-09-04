@@ -49,6 +49,7 @@ import test_utils
 import processor
 from processor import simulate
 import processor_utils
+from processor_utils.units import UnitModel
 from program_defs import HwInstruction
 import pytest
 from pytest import mark
@@ -58,6 +59,22 @@ from test_utils import read_proc_file
 class TestSim:
 
     """Test case for program simulation"""
+
+    def test_predecessors_are_selected_lexicographically(self):
+        """Test instructions are selected from sorted predecessors.
+
+        `self` is this test case.
+
+        """
+        inputs = [UnitModel("ALU input", 1, ["ALU"]),
+                  UnitModel("MEM input", 1, ["MEM"])]
+        output = processor_utils.units.FuncUnit(
+            UnitModel("output", 1, ["ALU", "MEM"]), reversed(inputs))
+        self.test_sim(
+            [HwInstruction("ALU", ["R11", "R15"], "R14"),
+             HwInstruction("MEM", [], "R12")], processor_utils.ProcessorDesc(
+                inputs, [output], [], []), [{"ALU input": [0], "MEM input": [
+                    1]}, {"output": [0], "MEM input": [1]}, {"output": [1]}])
 
     @mark.parametrize("prog_file, proc_file, util_info", [
         ("empty.asm", "singleALUProcessor.yaml", []),
