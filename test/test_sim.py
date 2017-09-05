@@ -66,10 +66,10 @@ class TestSim:
         `self` is this test case.
 
         """
-        inputs = [UnitModel("ALU input", 1, ["ALU"]),
-                  UnitModel("MEM input", 1, ["MEM"])]
+        inputs = [UnitModel("MEM input", 1, ["MEM"]),
+                  UnitModel("ALU input", 1, ["ALU"])]
         output = processor_utils.units.FuncUnit(
-            UnitModel("output", 1, ["ALU", "MEM"]), reversed(inputs))
+            UnitModel("output", 1, ["ALU", "MEM"]), inputs)
         self.test_sim(
             [HwInstruction("ALU", ["R11", "R15"], "R14"),
              HwInstruction("MEM", [], "R12")], processor_utils.ProcessorDesc(
