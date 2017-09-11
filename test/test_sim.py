@@ -60,21 +60,20 @@ class TestSim:
 
     """Test case for program simulation"""
 
-    def test_predecessors_are_selected_lexicographically(self):
-        """Test instructions are selected from sorted predecessors.
+    def test_earlier_instructions_are_propagated_first(self):
+        """Test earlier instructions are selected first.
 
         `self` is this test case.
 
         """
-        inputs = [UnitModel("MEM input", 1, ["MEM"]),
-                  UnitModel("ALU input", 1, ["ALU"])]
+        inputs = [UnitModel("ALU input", 1, ["ALU"]),
+                  UnitModel("MEM input", 1, ["MEM"])]
         output = processor_utils.units.FuncUnit(
             UnitModel("output", 1, ["ALU", "MEM"]), inputs)
-        self.test_sim(
-            [HwInstruction("ALU", ["R11", "R15"], "R14"),
-             HwInstruction("MEM", [], "R12")], processor_utils.ProcessorDesc(
-                inputs, [output], [], []), [{"ALU input": [0], "MEM input": [
-                    1]}, {"output": [0], "MEM input": [1]}, {"output": [1]}])
+        self.test_sim([HwInstruction("MEM", [], "R12"), HwInstruction(
+            "ALU", ["R11", "R15"], "R14")], processor_utils.ProcessorDesc(
+            inputs, [output], [], []), [{"MEM input": [0], "ALU input": [1]}, {
+                "output": [0], "ALU input": [1]}, {"output": [1]}])
 
     @mark.parametrize("prog_file, proc_file, util_info", [
         ("empty.asm", "singleALUProcessor.yaml", []),

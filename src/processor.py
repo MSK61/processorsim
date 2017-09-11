@@ -46,6 +46,7 @@
 ############################################################
 
 import copy
+import itertools
 from itertools import ifilter, imap
 import processor_utils
 import yaml
@@ -110,6 +111,41 @@ class HwDesc(object):
 
         """
         return self._processor
+
+
+class _HostedInstr(object):
+
+    """Instruction hosted inside a functional unit"""
+
+    def __init__(self, unit, local_index):
+        """Set hosted instruction information.
+
+        `self` is this hosted instruction information.
+        `unit` is the hosting functional unit.
+        `local_index` is the instruction index in the host unit
+                      execution buffer.
+
+        """
+        self._host = unit
+        self._local_index = local_index
+
+    @property
+    def host(self):
+        """Hosting functional util
+
+        `self` is this hosted instruction information.
+
+        """
+        return self._host
+
+    @property
+    def index_in_host(self):
+        """Instruction index in the host internal execution buffer
+
+        `self` is this hosted instruction information.
+
+        """
+        return self._local_index
 
 
 class _IssueInfo(object):
@@ -222,6 +258,30 @@ def simulate(program, processor):
     return util_tbl
 
 
+def _get_candidates(predecessors, util_info):
+    """Find candidate instructions in the predecessors of a unit.
+
+    `predecessors` are the unit predecessors.
+    `util_info` is the unit utilization information.
+
+    """
+    candidates = imap(lambda src_unit: imap(
+        lambda instr_idx: _HostedInstr(src_unit.name, instr_idx), _get_indices(
+            util_info[src_unit.name])), ifilter(
+        lambda pred: pred.name in util_info, predecessors))
+    return sorted(itertools.chain(*candidates), key=lambda instr_info:
+                  util_info[instr_info.host][instr_info.index_in_host])
+
+
+def _get_indices(arr):
+    """Generate an iterator over the array indices.
+
+    `arr` is the array to generate whose indices.
+
+    """
+    return xrange(len(arr))
+
+
 def _accept_instr(instr, instr_index, unit, util_info):
     """Try to accept the given instruction to the unit.
 
@@ -273,6 +333,20 @@ def _chk_stall(old_util, new_util, consumed):
             "Processor stalled after being fed {} instructions", consumed)
 
 
+def _clr_src_units(instructions, util_info):
+    """Clear the utilization of units releasing instructions.
+
+    `instructions` is the information if instructions being moved from
+                   one unit to a predecessor.
+    `util_info` is the unit utilization information.
+    The function clears the utilization information of units from which
+    instructions were moved to predecessor units.
+
+    """
+    for cur_instr in instructions:
+        _rm_util(util_info, cur_instr.host, cur_instr.index_in_host)
+
+
 def _count_outputs(outputs, util_info):
     """Count the number of active outputs.
 
@@ -282,6 +356,28 @@ def _count_outputs(outputs, util_info):
     """
     return sum(imap(lambda out_port: len(util_info[out_port.name]) if
                     out_port.name in util_info else 0, outputs))
+
+
+def _feed_instr(instr, hosting_info, unit, util_info, feed_list):
+    """Feed the given instruction to the given unit.
+
+    `instr` is the lower-case instruction to feed.
+    `hosting_info` is the instruction hosting information in its current
+                   host unit.
+    `unit` is the unit to feed the instruction into.
+    `util_info` is the unit utilization information.
+    `matches` is the unit utilization information.
+    `matches` is the list of instruction fed to the unit so far.
+    The function updates both the utilization information and the feed
+    list if the instruction is successfully fed to the unit. It always
+    returns 1.
+
+    """
+    if _accept_instr(instr, util_info[hosting_info.host][
+            hosting_info.index_in_host], unit, util_info):
+        feed_list.append(hosting_info)
+
+    return 1
 
 
 def _fill_cp_util(processor, program, util_info, issue_rec):
@@ -302,7 +398,6 @@ def _fill_cp_util(processor, program, util_info, issue_rec):
     _fill_inputs(processor.in_out_ports + processor.in_ports, program,
                  util_info, issue_rec)
     issue_rec.pump_outputs(_count_outputs(out_ports, util_info))
-    _sort_vals(util_info)
 
 
 def _fill_inputs(inputs, program, util_info, issue_rec):
@@ -331,12 +426,9 @@ def _fill_unit(unit, program, util_info):
     `util_info` is the unit utilization information.
 
     """
-    sources = ifilter(lambda pred: pred.name in util_info, unit.predecessors)
-    try:
-        while _space_avail(unit.model, util_info):
-            _mov_payload(sources.next().name, unit.model, program, util_info)
-    except StopIteration:
-        pass
+    candidates = _get_candidates(unit.predecessors, util_info)
+    _clr_src_units(reversed(_mov_candidates(
+        candidates, unit.model, program, util_info)), util_info)
 
 
 def _flush_outputs(out_units, unit_util):
@@ -384,25 +476,28 @@ def _mov_flights(out_units, program, util_info):
         _fill_unit(cur_out, program, util_info)
 
 
-def _mov_payload(src, dst, program, util_info):
-    """Move all compatible instructions between the given units.
+def _mov_candidates(candidates, unit, program, util_info):
+    """Move candidate instructions between units.
 
-    `src` is the unit to select a compatible instruction from.
-    `dst` is the unit to move the instruction to.
+    `candidates` are the candidate instructions to move.
+    `unit` is the destination unit.
     `program` is the master instruction list.
-    `util_info` is the unit utilization in the current clock pulse.
-    The function tries to move all compatible instructions with the
-    destination unit from the source unit.
+    `util_info` is the unit utilization information.
+    The function returns a list of moved instructions sorted by their
+    program index.
 
     """
-    cur_instr = 0
+    cur_candid = 0
+    num_of_candids = len(candidates)
+    matches = []
 
-    while _space_avail(dst, util_info) and cur_instr < len(util_info[src]):
-        if _accept_instr(program[util_info[src][cur_instr]].categ.lower(),
-                         util_info[src][cur_instr], dst, util_info):
-            _rm_util(util_info, src, cur_instr)
-        else:
-            cur_instr += 1
+    while _space_avail(unit, util_info) and cur_candid < num_of_candids:
+        cur_candid += _feed_instr(
+            program[util_info[candidates[cur_candid].host][
+                candidates[cur_candid].index_in_host]].categ.lower(),
+            candidates[cur_candid], unit, util_info, matches)
+
+    return matches
 
 
 def _rm_util(util_info, unit, instr_index):
@@ -435,20 +530,6 @@ def _run_cycle(program, processor, util_tbl, issue_rec):
     _fill_cp_util(processor, program, cp_util, issue_rec)
     _chk_stall(old_util, cp_util, issue_rec.entered)
     util_tbl.append(cp_util)
-
-
-def _sort_vals(val_dict):
-    """Sort the value part of the given dictionary.
-
-    `val_dict` is the dictionary of unsorted values.
-    The function returns the given dictionary after sorting the values
-    corresponding to all keys in it.
-
-    """
-    dict_items = val_dict.iteritems()
-
-    for cur_key, cur_val in dict_items:
-        val_dict[cur_key] = sorted(cur_val)
 
 
 def _space_avail(unit, util_info):
