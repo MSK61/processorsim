@@ -204,14 +204,14 @@ def _get_operands(src_line_info, line_num):
     """
     sep_pat = "\s*,\s*"
     operands = split(sep_pat, src_line_info.operands)
-    operand_indices = xrange(len(operands))
+    operand_entries = enumerate(operands)
     try:
         raise CodeError(
             "Operand {} empty for instruction {{{}}} at line {{{}}}".format(
                 itertools.ifilterfalse(
-                    lambda operand_idx: operands[operand_idx],
-                    operand_indices).next() + 1, CodeError.INSTR_IDX,
-                CodeError.LINE_NUM_IDX), line_num, src_line_info.instruction)
+                    lambda op_entry: op_entry[1], operand_entries).next()[0] +
+                1, CodeError.INSTR_IDX, CodeError.LINE_NUM_IDX), line_num,
+            src_line_info.instruction)
     except StopIteration:  # all operands present
         return operands
 
