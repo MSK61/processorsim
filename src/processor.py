@@ -258,35 +258,43 @@ def simulate(program, processor):
     return util_tbl
 
 
-def _get_candidates(predecessors, util_info):
+def _get_accepted(instructions, program, capabilities):
+    """Generate an iterator over compatible instructions.
+
+    `instructions` are the instructions to filter.
+    `program` is the master instruction list.
+    `capabilities` are the capabilities to match instructions against.
+    The function returns an iterator over tuples of the instruction
+    index and the instruction itself.
+
+    """
+    return ifilter(lambda instr: _instr_in_caps(program[instr[1]].categ.lower(
+        ), capabilities), enumerate(instructions))
+
+
+def _get_candidates(unit, program, util_info):
     """Find candidate instructions in the predecessors of a unit.
 
-    `predecessors` are the unit predecessors.
+    `unit` is the unit to match instructions from predecessors against.
+    `program` is the master instruction list.
     `util_info` is the unit utilization information.
 
     """
-    candidates = imap(lambda src_unit: imap(
-        lambda instr_idx: _HostedInstr(src_unit.name, instr_idx), _get_indices(
-            util_info[src_unit.name])), ifilter(
-        lambda pred: pred.name in util_info, predecessors))
+    candidates = imap(
+        lambda src_unit:
+            imap(lambda instr_info: _HostedInstr(src_unit.name, instr_info[0]),
+                 _get_accepted(util_info[src_unit.name], program,
+                               unit.model.capabilities)),
+            ifilter(lambda pred: pred.name in util_info, unit.predecessors))
     return sorted(itertools.chain(*candidates), key=lambda instr_info:
                   util_info[instr_info.host][instr_info.index_in_host])
-
-
-def _get_indices(arr):
-    """Generate an iterator over the array indices.
-
-    `arr` is the array to generate whose indices.
-
-    """
-    return xrange(len(arr))
 
 
 def _accept_instr(instr, instr_index, unit, util_info):
     """Try to accept the given instruction to the unit.
 
     `instr` is the lower-case instruction to try to accept.
-    `instr_index` is the index of the instruction to try to accept.
+    `instr_index` is the index of the instruction in the program.
     `unit` is the unit to accept the instruction to.
     `util_info` is the unit utilization information.
     The function assumes the target unit already has space to accept new
@@ -296,24 +304,22 @@ def _accept_instr(instr, instr_index, unit, util_info):
     """
     assert instr == instr.lower()
 
-    if not _can_accept(instr, unit):
+    if not _instr_in_caps(instr, unit.capabilities):
         return False
 
-    util_info.setdefault(unit.name, []).append(instr_index)
+    _add_instr_util(instr_index, unit.name, util_info)
     return True
 
 
-def _can_accept(instr, unit):
-    """Determine if the unit can accept the given instruction.
+def _add_instr_util(instr_index, unit, util_info):
+    """Register the given instruction in the unit.
 
-    `instr` is the lower-case instruction to test for acceptance.
-    `unit` is the unit to test whose acceptance.
-    The function assumes the target unit already has space to accept new
-    instructions.
+    `instr_index` is the index of the instruction in the program.
+    `unit` is the unit to register the instruction in.
+    `util_info` is the unit utilization information.
 
     """
-    assert instr == instr.lower()
-    return instr in imap(str.lower, unit.capabilities)
+    util_info.setdefault(unit, []).append(instr_index)
 
 
 def _chk_stall(old_util, new_util, consumed):
@@ -344,7 +350,7 @@ def _clr_src_units(instructions, util_info):
 
     """
     for cur_instr in instructions:
-        _rm_util(util_info, cur_instr.host, cur_instr.index_in_host)
+        _rm_util(util_info, cur_instr)
 
 
 def _count_outputs(outputs, util_info):
@@ -358,7 +364,7 @@ def _count_outputs(outputs, util_info):
                     out_port.name in util_info else 0, outputs))
 
 
-def _feed_instr(instr, hosting_info, unit, util_info, feed_list):
+def _feed_instr(instr, hosting_info, unit, util_info):
     """Feed the given instruction to the given unit.
 
     `instr` is the lower-case instruction to feed.
@@ -366,17 +372,11 @@ def _feed_instr(instr, hosting_info, unit, util_info, feed_list):
                    host unit.
     `unit` is the unit to feed the instruction into.
     `util_info` is the unit utilization information.
-    `matches` is the unit utilization information.
-    `matches` is the list of instruction fed to the unit so far.
-    The function updates both the utilization information and the feed
-    list if the instruction is successfully fed to the unit. It always
-    returns 1.
+    The function updates the utilization information.
 
     """
-    if _accept_instr(instr, util_info[hosting_info.host][
-            hosting_info.index_in_host], unit, util_info):
-        feed_list.append(hosting_info)
-
+    _add_instr_util(util_info[hosting_info.host][hosting_info.index_in_host],
+                    unit, util_info)
     return 1
 
 
@@ -426,9 +426,11 @@ def _fill_unit(unit, program, util_info):
     `util_info` is the unit utilization information.
 
     """
-    candidates = _get_candidates(unit.predecessors, util_info)
-    _clr_src_units(reversed(_mov_candidates(
-        candidates, unit.model, program, util_info)), util_info)
+    candidates = _get_candidates(unit, program, util_info)
+    _clr_src_units(
+        itertools.islice(reversed(candidates), len(candidates) -
+                         _mov_candidates(candidates, unit.model, program,
+                                         util_info), None), util_info)
 
 
 def _flush_outputs(out_units, unit_util):
@@ -442,6 +444,18 @@ def _flush_outputs(out_units, unit_util):
     for cur_out in out_units:
         if cur_out.name in unit_util:
             del unit_util[cur_out.name]
+
+
+def _instr_in_caps(instr, capabilities):
+    """Determine if the instruction belongs to the given capabilities.
+
+    `instr` is the lower-case instruction to test.
+    `capabilities` are the capabilities to match the instruction
+                   against.
+
+    """
+    assert instr == instr.lower()
+    return instr in imap(str.lower, capabilities)
 
 
 def _issue_instr(instr, instr_index, inputs, util_info):
@@ -483,36 +497,32 @@ def _mov_candidates(candidates, unit, program, util_info):
     `unit` is the destination unit.
     `program` is the master instruction list.
     `util_info` is the unit utilization information.
-    The function returns a list of moved instructions sorted by their
-    program index.
+    The function returns the number of moved instructions.
 
     """
     cur_candid = 0
     num_of_candids = len(candidates)
-    matches = []
 
     while _space_avail(unit, util_info) and cur_candid < num_of_candids:
         cur_candid += _feed_instr(
             program[util_info[candidates[cur_candid].host][
                 candidates[cur_candid].index_in_host]].categ.lower(),
-            candidates[cur_candid], unit, util_info, matches)
+            candidates[cur_candid], unit.name, util_info)
 
-    return matches
+    return cur_candid
 
 
-def _rm_util(util_info, unit, instr_index):
+def _rm_util(util_info, hosted_instr):
     """Remove the given instruction from the unit utilization.
 
     `util_info` is the current utilization of all units.
-    `unit` is the unit to clear the instruction in whose utilization.
-    `instr_index` is the index of the instruction to remove from the
-                  unit utilization.
+    `hosted_instr` is the hosted instruction information.
 
     """
-    util_info[unit].pop(instr_index)
+    util_info[hosted_instr.host].pop(hosted_instr.index_in_host)
 
-    if not util_info[unit]:
-        del util_info[unit]
+    if not util_info[hosted_instr.host]:
+        del util_info[hosted_instr.host]
 
 
 def _run_cycle(program, processor, util_tbl, issue_rec):
