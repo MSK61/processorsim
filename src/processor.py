@@ -307,8 +307,7 @@ def _accept_instr(instr, instr_index, unit, util_info):
     if not _instr_in_caps(instr, unit.capabilities):
         return False
 
-    _add_instr_util(instr_index, unit.name, util_info)
-    return True
+    return _add_instr_util(instr_index, unit.name, util_info)
 
 
 def _add_instr_util(instr_index, unit, util_info):
@@ -317,9 +316,11 @@ def _add_instr_util(instr_index, unit, util_info):
     `instr_index` is the index of the instruction in the program.
     `unit` is the unit to register the instruction in.
     `util_info` is the unit utilization information.
+    The function always returns 1.
 
     """
     util_info.setdefault(unit, []).append(instr_index)
+    return 1
 
 
 def _chk_stall(old_util, new_util, consumed):
@@ -362,22 +363,6 @@ def _count_outputs(outputs, util_info):
     """
     return sum(imap(lambda out_port: len(util_info[out_port.name]) if
                     out_port.name in util_info else 0, outputs))
-
-
-def _feed_instr(instr, hosting_info, unit, util_info):
-    """Feed the given instruction to the given unit.
-
-    `instr` is the lower-case instruction to feed.
-    `hosting_info` is the instruction hosting information in its current
-                   host unit.
-    `unit` is the unit to feed the instruction into.
-    `util_info` is the unit utilization information.
-    The function updates the utilization information.
-
-    """
-    _add_instr_util(util_info[hosting_info.host][hosting_info.index_in_host],
-                    unit, util_info)
-    return 1
 
 
 def _fill_cp_util(processor, program, util_info, issue_rec):
@@ -429,8 +414,8 @@ def _fill_unit(unit, program, util_info):
     candidates = _get_candidates(unit, program, util_info)
     _clr_src_units(
         itertools.islice(reversed(candidates), len(candidates) -
-                         _mov_candidates(candidates, unit.model, program,
-                                         util_info), None), util_info)
+                         _mov_candidates(candidates, unit.model, util_info),
+                         None), util_info)
 
 
 def _flush_outputs(out_units, unit_util):
@@ -490,12 +475,11 @@ def _mov_flights(out_units, program, util_info):
         _fill_unit(cur_out, program, util_info)
 
 
-def _mov_candidates(candidates, unit, program, util_info):
+def _mov_candidates(candidates, unit, util_info):
     """Move candidate instructions between units.
 
     `candidates` are the candidate instructions to move.
     `unit` is the destination unit.
-    `program` is the master instruction list.
     `util_info` is the unit utilization information.
     The function returns the number of moved instructions.
 
@@ -504,10 +488,8 @@ def _mov_candidates(candidates, unit, program, util_info):
     num_of_candids = len(candidates)
 
     while _space_avail(unit, util_info) and cur_candid < num_of_candids:
-        cur_candid += _feed_instr(
-            program[util_info[candidates[cur_candid].host][
-                candidates[cur_candid].index_in_host]].categ.lower(),
-            candidates[cur_candid], unit.name, util_info)
+        cur_candid += _add_instr_util(util_info[candidates[cur_candid].host][
+            candidates[cur_candid].index_in_host], unit.name, util_info)
 
     return cur_candid
 
