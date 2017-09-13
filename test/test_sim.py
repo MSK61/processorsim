@@ -87,6 +87,8 @@ class TestSim:
          "dualCoreMemALUProcessor.yaml", [{"core 2": [0]}]),
         ("2InstructionProgram.asm", "2WideALUProcessor.yaml",
          [{"fullSys": [0, 1]}]),
+        ("3InstructionProgram.asm", "2WideALUProcessor.yaml",
+         [{"fullSys": [0, 1]}, {"fullSys": [2]}]),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
          "twoConnectedUnitsProcessor.yaml",
          [{"input": [0]}, {"output": [0]}])])
