@@ -46,6 +46,7 @@
 ############################################################
 
 import copy
+import heapq
 import itertools
 from itertools import ifilter, imap
 import processor_utils
@@ -286,8 +287,10 @@ def _get_candidates(unit, program, util_info):
                  _get_accepted(util_info[src_unit.name], program,
                                unit.model.capabilities)),
             ifilter(lambda pred: pred.name in util_info, unit.predecessors))
-    return sorted(itertools.chain(*candidates), key=lambda instr_info:
-                  util_info[instr_info.host][instr_info.index_in_host])
+    return heapq.nsmallest(
+        _space_avail(unit.model, util_info), itertools.chain(*candidates),
+        key=lambda instr_info:
+            util_info[instr_info.host][instr_info.index_in_host])
 
 
 def _accept_instr(instr, instr_index, unit, util_info):
@@ -307,7 +310,8 @@ def _accept_instr(instr, instr_index, unit, util_info):
     if not _instr_in_caps(instr, unit.capabilities):
         return False
 
-    return _add_instr_util(instr_index, unit.name, util_info)
+    _add_instr_util(instr_index, unit.name, util_info)
+    return True
 
 
 def _add_instr_util(instr_index, unit, util_info):
@@ -316,11 +320,9 @@ def _add_instr_util(instr_index, unit, util_info):
     `instr_index` is the index of the instruction in the program.
     `unit` is the unit to register the instruction in.
     `util_info` is the unit utilization information.
-    The function always returns 1.
 
     """
     util_info.setdefault(unit, []).append(instr_index)
-    return 1
 
 
 def _chk_stall(old_util, new_util, consumed):
@@ -344,12 +346,17 @@ def _clr_src_units(instructions, util_info):
     """Clear the utilization of units releasing instructions.
 
     `instructions` is the information if instructions being moved from
-                   one unit to a predecessor.
+                   one unit to a predecessor, sorted by their program
+                   index.
     `util_info` is the unit utilization information.
     The function clears the utilization information of units from which
     instructions were moved to predecessor units.
 
     """
+    # Delete later indices first to keep information about earlier ones
+    # valid.
+    instructions = reversed(instructions)
+
     for cur_instr in instructions:
         _rm_util(util_info, cur_instr)
 
@@ -412,10 +419,8 @@ def _fill_unit(unit, program, util_info):
 
     """
     candidates = _get_candidates(unit, program, util_info)
-    _clr_src_units(
-        itertools.islice(reversed(candidates), len(candidates) -
-                         _mov_candidates(candidates, unit.model, util_info),
-                         None), util_info)
+    _mov_candidates(candidates, unit.model.name, util_info)
+    _clr_src_units(candidates, util_info)
 
 
 def _flush_outputs(out_units, unit_util):
@@ -481,17 +486,11 @@ def _mov_candidates(candidates, unit, util_info):
     `candidates` are the candidate instructions to move.
     `unit` is the destination unit.
     `util_info` is the unit utilization information.
-    The function returns the number of moved instructions.
 
     """
-    cur_candid = 0
-    num_of_candids = len(candidates)
-
-    while _space_avail(unit, util_info) and cur_candid < num_of_candids:
-        cur_candid += _add_instr_util(util_info[candidates[cur_candid].host][
-            candidates[cur_candid].index_in_host], unit.name, util_info)
-
-    return cur_candid
+    for cur_candid in candidates:
+        _add_instr_util(util_info[cur_candid.host][cur_candid.index_in_host],
+                        unit, util_info)
 
 
 def _rm_util(util_info, hosted_instr):
@@ -525,10 +524,11 @@ def _run_cycle(program, processor, util_tbl, issue_rec):
 
 
 def _space_avail(unit, util_info):
-    """Determine if the unit can still accept instructions.
+    """Calculate the free space for receiving instructions in the unit.
 
     `unit` is the unit to test whose free space.
     `util_info` is the current utilization of all units.
 
     """
-    return unit.name not in util_info or len(util_info[unit.name]) < unit.width
+    return unit.width - (
+        len(util_info[unit.name]) if unit.name in util_info else 0)
