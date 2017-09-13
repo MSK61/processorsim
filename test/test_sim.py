@@ -56,6 +56,29 @@ from pytest import mark
 from test_utils import read_proc_file
 
 
+class TestBasic:
+
+    """Test case for basic simulation scenarios"""
+
+    @mark.parametrize(
+        "prog, cpu, util_tbl",
+        [([HwInstruction("alu", ["R11", "R15"], "R14")], read_proc_file(
+            "processors", "singleALUProcessor.yaml"), [{"fullSys": [0]}]),
+            ([HwInstruction("MEM", [], "R12"),
+              HwInstruction("ALU", ["R11", "R15"], "R14")], read_proc_file(
+                "processors", "multiplexedInputSplitOutputProcessor.yaml"),
+                [{"input": [0, 1]}, {"ALU output": [1], "MEM output": [0]}])])
+    def test_sim(self, prog, cpu, util_tbl):
+        """Test executing a program.
+
+        `prog` is the program to run.
+        `cpu` is the processor to run the program on.
+        `util_tbl` is the expected utilization table.
+
+        """
+        assert simulate(prog, cpu) == util_tbl
+
+
 class TestSim:
 
     """Test case for program simulation"""
@@ -70,7 +93,7 @@ class TestSim:
                   UnitModel("MEM input", 1, ["MEM"])]
         output = processor_utils.units.FuncUnit(
             UnitModel("output", 1, ["ALU", "MEM"]), inputs)
-        self.test_sim([HwInstruction("MEM", [], "R12"), HwInstruction(
+        TestBasic().test_sim([HwInstruction("MEM", [], "R12"), HwInstruction(
             "ALU", ["R11", "R15"], "R14")], processor_utils.ProcessorDesc(
             inputs, [output], [], []), [{"MEM input": [0], "ALU input": [1]}, {
                 "output": [0], "ALU input": [1]}, {"output": [1]}])
@@ -103,27 +126,9 @@ class TestSim:
         """
         cpu = read_proc_file("processors", proc_file)
         capabilities = processor_utils.get_abilities(cpu)
-        self.test_sim(
+        TestBasic().test_sim(
             test_utils.compile_prog(prog_file, test_utils.read_isa_file(
                 "singleInstructionISA.yaml", capabilities)), cpu, util_info)
-
-    @mark.parametrize(
-        "prog, cpu, util_tbl",
-        [([HwInstruction("alu", ["R11", "R15"], "R14")], read_proc_file(
-            "processors", "singleALUProcessor.yaml"), [{"fullSys": [0]}]),
-            ([HwInstruction("MEM", [], "R12"),
-              HwInstruction("ALU", ["R11", "R15"], "R14")], read_proc_file(
-                "processors", "multiplexedInputSplitOutputProcessor.yaml"),
-                [{"input": [0, 1]}, {"ALU output": [1], "MEM output": [0]}])])
-    def test_sim(self, prog, cpu, util_tbl):
-        """Test executing a program.
-
-        `prog` is the program to run.
-        `cpu` is the processor to run the program on.
-        `util_tbl` is the expected utilization table.
-
-        """
-        assert simulate(prog, cpu) == util_tbl
 
     @mark.parametrize(
         "valid_prog", [[], [HwInstruction("ALU", ["R11", "R15"], "R14")]])
