@@ -1,0 +1,16 @@
+units:
+    - name: input
+      width: 1
+      capabilities:
+        - ALU
+    - name: middle
+      width: 1
+      capabilities:
+        - ALU
+    - name: output
+      width: 1
+      capabilities:
+        - ALU
+dataPath:
+    - [input, middle]
+    - [middle, output]

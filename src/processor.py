@@ -386,7 +386,8 @@ def _fill_cp_util(processor, program, util_info, issue_rec):
     out_ports = processor.in_out_ports + tuple(
         imap(lambda port: port.model, processor.out_ports))
     _flush_outputs(out_ports, util_info)
-    _mov_flights(processor.out_ports, program, util_info)
+    _mov_flights(
+        processor.out_ports + processor.internal_units, program, util_info)
     _fill_inputs(processor.in_out_ports + processor.in_ports, program,
                  util_info, issue_rec)
     issue_rec.pump_outputs(_count_outputs(out_ports, util_info))
