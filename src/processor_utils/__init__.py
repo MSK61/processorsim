@@ -289,14 +289,14 @@ def _get_anal_graph(processor):
 
     """
     width_graph = DiGraph()
-    hw_units = enumerate(processor.nodes_iter())
+    hw_units = enumerate(processor)
     new_nodes = {}
 
     for idx, unit in hw_units:
         _update_graph(idx, unit, processor, width_graph, new_nodes)
 
-    width_graph.add_edges_from(imap(
-        lambda edge: itemgetter(*edge)(new_nodes), processor.edges_iter()))
+    width_graph.add_edges_from(
+        imap(lambda edge: itemgetter(*edge)(new_nodes), processor.edges))
     return width_graph
 
 
@@ -343,7 +343,7 @@ def _get_in_ports(processor):
     The function returns an iterator over the processor input ports.
 
     """
-    return _get_ports(processor.in_degree_iter())
+    return _get_ports(processor.in_degree())
 
 
 def _get_out_ports(processor):
@@ -353,7 +353,7 @@ def _get_out_ports(processor):
     The function returns an iterator over the processor output ports.
 
     """
-    return _get_ports(processor.out_degree_iter())
+    return _get_ports(processor.out_degree())
 
 
 def _get_ports(degrees):
@@ -375,7 +375,7 @@ def _get_preds(processor, unit, unit_map):
     The function returns an iterable of predecessor units.
 
     """
-    return imap(unit_map.get, processor.predecessors_iter(unit))
+    return imap(unit_map.get, processor.predecessors(unit))
 
 
 def _get_std_edge(edge, unit_registry):
@@ -564,7 +564,7 @@ def _add_unit(processor, unit, unit_registry, cap_registry):
     """
     _chk_unit_name(unit[_UNIT_NAME_KEY], unit_registry)
     _chk_unit_width(unit)
-    processor.add_node(unit[_UNIT_NAME_KEY], {_UNIT_WIDTH_KEY: unit[
+    processor.add_node(unit[_UNIT_NAME_KEY], **{_UNIT_WIDTH_KEY: unit[
         _UNIT_WIDTH_KEY], _UNIT_CAPS_KEY: _load_caps(unit, cap_registry)})
     unit_registry.add(unit[_UNIT_NAME_KEY])
 
@@ -738,7 +738,7 @@ def _chk_ports_flow(
     """
     unit_anal_map = dict(
         imap(lambda anal_entry: (anal_entry[1][_OLD_NODE_KEY], anal_entry[0]),
-             anal_graph.nodes_iter(True)))
+             anal_graph.nodes(True)))
     unified_out = _aug_out_ports(anal_graph, map(unit_anal_map.get, out_ports))
     unified_out = _split_nodes(anal_graph)[unified_out]
     _dist_edge_caps(anal_graph)
@@ -861,10 +861,10 @@ def _coll_cap_edges(graph):
 
     """
     out_degrees = graph.out_degree()
-    cap_edges = imap(lambda in_deg: (graph.in_edges_iter if in_deg[1] == 1 else
-                                     graph.out_edges_iter)(in_deg[0]).next(),
-                     ifilter(lambda in_deg: in_deg[1] == 1 or out_degrees[
-                        in_deg[0]] == 1, graph.in_degree_iter()))
+    cap_edges = imap(lambda in_deg: iter((graph.in_edges if in_deg[1] == 1 else
+                                          graph.out_edges)(in_deg[0])).next(),
+                     ifilter(lambda in_deg: in_deg[1] == 1 or
+                             out_degrees[in_deg[0]] == 1, graph.in_degree()))
     return frozenset(cap_edges)
 
 
@@ -974,8 +974,8 @@ def _make_cap_graph(processor, capability):
     """
     cap_graph = DiGraph(
         ifilter(lambda edge: _cap_in_edge(processor, capability, edge),
-                processor.edges_iter()))
-    cap_graph.add_nodes_from(processor.nodes_iter(True))  # for in-out ports
+                processor.edges))
+    cap_graph.add_nodes_from(processor.nodes(True))  # for in-out ports
     return cap_graph
 
 
@@ -1039,7 +1039,7 @@ def _post_order(graph):
 
     """
     unit_map = dict(imap(lambda unit: _get_unit_entry(unit, graph.node[unit]),
-                         graph.nodes_iter()))
+                         graph))
     return map(lambda name: units.FuncUnit(unit_map[name], _get_preds(
         graph, name, unit_map)), networkx.dfs_postorder_nodes(graph))
 
@@ -1131,7 +1131,7 @@ def _split_node(graph, old_node, new_node):
 
     """
     graph.add_node(
-        new_node, {_UNIT_WIDTH_KEY: graph.node[old_node][_UNIT_WIDTH_KEY]})
+        new_node, **{_UNIT_WIDTH_KEY: graph.node[old_node][_UNIT_WIDTH_KEY]})
     _mov_out_links(graph, graph.out_edges(old_node), new_node)
     graph.add_edge(old_node, new_node)
     return new_node
@@ -1155,7 +1155,7 @@ def _split_nodes(graph):
          _split_node(graph, in_deg_item[0], len(out_degrees) + in_deg_item[
             0]) if in_deg_item[1] != 1 and out_degrees[in_deg_item[0]] != 1 and
          (in_deg_item[1] or out_degrees[in_deg_item[0]]) else in_deg_item[0]),
-        list(graph.in_degree_iter()))
+        list(graph.in_degree()))
     return dict(out_twins)
 
 
@@ -1172,7 +1172,7 @@ def _unify_ports(graph, ports, edge_func):
 
     """
     unified_port = graph.number_of_nodes()
-    graph.add_node(unified_port, {_UNIT_WIDTH_KEY: 0})
+    graph.add_node(unified_port, **{_UNIT_WIDTH_KEY: 0})
 
     for cur_port in ports:
         _add_port_link(
@@ -1192,7 +1192,7 @@ def _update_graph(idx, unit, processor, width_graph, unit_idx_map):
 
     """
     width_graph.add_node(
-        idx, dict(processor.node[unit], **{_OLD_NODE_KEY: unit}))
+        idx, **dict(processor.node[unit], **{_OLD_NODE_KEY: unit}))
     unit_idx_map[unit] = idx
 
 _add_src_path()
