@@ -1,4 +1,4 @@
-networkx
+networkx ~= 1.11
 pytest-cov
 pytest-flakes
 pytest-pep8
