@@ -39,6 +39,8 @@
 #               Ubuntu 17.04
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Fedora release 26 (Twenty Six)
+#               Komodo IDE, version 11.1.0 build 91033, python 2.7.15,
+#               Fedora release 29 (Twenty Nine)
 #
 # notes:        This is a private program.
 #
