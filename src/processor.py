@@ -273,7 +273,7 @@ def _accept_instr(instr, instr_index, unit, util_info):
     True if the instruction is accepted; otherwise returns False.
 
     """
-    assert instr == instr.lower()
+    _chk_instr_name(instr)
 
     if not _instr_in_caps(instr, unit.capabilities):
         return False
@@ -308,6 +308,15 @@ def _chk_stall(old_util, new_util, consumed):
     if new_util == old_util:
         raise StallError(
             "Processor stalled after being fed {} instructions", consumed)
+
+
+def _chk_instr_name(instr):
+    """Check the given instruction name.
+
+    `instr` is the instruction name to check.
+
+    """
+    assert instr == instr.lower()
 
 
 def _clr_src_units(instructions, util_info):
@@ -447,7 +456,7 @@ def _instr_in_caps(instr, capabilities):
                    against.
 
     """
-    assert instr == instr.lower()
+    _chk_instr_name(instr)
     return instr in imap(str.lower, capabilities)
 
 
@@ -465,7 +474,7 @@ def _issue_instr(instr, instr_index, inputs, util_info):
     returns False.
 
     """
-    assert instr == instr.lower()
+    _chk_instr_name(instr)
     return next(
         ifilter(lambda unit: _space_avail(unit, util_info) and _accept_instr(
             instr, instr_index, unit, util_info), inputs), False)
