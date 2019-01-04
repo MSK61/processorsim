@@ -39,6 +39,8 @@
 #               Ubuntu 17.04
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Fedora release 26 (Twenty Six)
+#               Komodo IDE, version 11.1.0 build 91033, python 2.7.15,
+#               Fedora release 29 (Twenty Nine)
 #
 # notes:        This is a private program.
 #
@@ -154,6 +156,21 @@ def read_program(prog_file):
                itertools.ifilter(operator.itemgetter(1), enumerate(program)))
 
 
+def _create_instr(src_line_info):
+    """Convert the source line to a program instruction.
+
+    `src_line_info` is the program instruction line information.
+    The function returns the created program instruction. It raises a
+    CodeError if the instruction is malformed.
+
+    """
+    line_num = src_line_info[0] + 1
+    src_line_info = _get_line_parts(src_line_info)
+    operands = _get_operands(src_line_info, line_num)
+    return program_defs.ProgInstruction(
+        src_line_info.instruction, line_num, operands[1:], operands[0])
+
+
 def _get_cap(isa, instr):
     """Get the ISA capability of the given instruction.
 
@@ -214,18 +231,3 @@ def _get_operands(src_line_info, line_num):
             src_line_info.instruction)
     except StopIteration:  # all operands present
         return operands
-
-
-def _create_instr(src_line_info):
-    """Convert the source line to a program instruction.
-
-    `src_line_info` is the program instruction line information.
-    The function returns the created program instruction. It raises a
-    CodeError if the instruction is malformed.
-
-    """
-    line_num = src_line_info[0] + 1
-    src_line_info = _get_line_parts(src_line_info)
-    operands = _get_operands(src_line_info, line_num)
-    return program_defs.ProgInstruction(
-        src_line_info.instruction, line_num, operands[1:], operands[0])

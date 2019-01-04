@@ -284,156 +284,6 @@ def load_proc_desc(raw_desc):
     return _make_processor(proc_desc, _post_order(proc_desc))
 
 
-def _get_anal_graph(processor):
-    """Create a processor bus width analysis graph.
-
-    `processor` is the processor to build an analysis graph from.
-
-    """
-    width_graph = DiGraph()
-    hw_units = enumerate(processor)
-    new_nodes = {}
-
-    for idx, unit in hw_units:
-        _update_graph(idx, unit, processor, width_graph, new_nodes)
-
-    width_graph.add_edges_from(
-        imap(lambda edge: itemgetter(*edge)(new_nodes), processor.edges))
-    return width_graph
-
-
-def _get_cap_name(capability, cap_registry):
-    """Return a supported capability name.
-
-    `capability` is the name of the capability to validate.
-    `cap_registry` is the store of supported capabilities.
-    The function raises an UndefElemError if no capability with this
-    name is supported, otherwise returns the supported capability name.
-
-    """
-    import errors
-    std_cap = cap_registry.get(capability)
-
-    if std_cap is None:
-        raise errors.UndefElemError("Unsupported capability {}", capability)
-
-    return std_cap
-
-
-def _get_cap_units(processor):
-    """Create a mapping between capabilities and supporting input ports.
-
-    `processor` is the processor to create a capability-port map for.
-    The function return an iterable of tuples; each tuple represents a
-    capability and its supporting units.
-
-    """
-    cap_unit_map = {}
-    in_ports = _get_in_ports(processor)
-
-    for cur_port in in_ports:
-        for cur_cap in processor.node[cur_port][_UNIT_CAPS_KEY]:
-            cap_unit_map.setdefault(cur_cap, []).append(cur_port)
-
-    return cap_unit_map.iteritems()
-
-
-def _get_in_ports(processor):
-    """Find the input ports.
-
-    `processor` is the processor to find whose input ports.
-    The function returns an iterator over the processor input ports.
-
-    """
-    return _get_ports(processor.in_degree())
-
-
-def _get_out_ports(processor):
-    """Find the output ports.
-
-    `processor` is the processor to find whose output ports.
-    The function returns an iterator over the processor output ports.
-
-    """
-    return _get_ports(processor.out_degree())
-
-
-def _get_ports(degrees):
-    """Find the ports with respect to the given degrees.
-
-    `degrees` are the degrees of all units.
-    A port is a unit with zero degree.
-
-    """
-    return imap(itemgetter(0), itertools.ifilterfalse(itemgetter(1), degrees))
-
-
-def _get_preds(processor, unit, unit_map):
-    """Retrieve the predecessor units of the given unit.
-
-    `processor` is the processor containing the unit.
-    `unit` is the unit to retrieve whose predecessors.
-    `unit_map` is mapping between names and units.
-    The function returns an iterable of predecessor units.
-
-    """
-    return imap(unit_map.get, processor.predecessors(unit))
-
-
-def _get_std_edge(edge, unit_registry):
-    """Return a validated edge.
-
-    `edge` is the edge to validate.
-    `unit_registry` is the store of defined units.
-    The function raises an UndefElemError if an undefined unit is
-    encountered.
-
-    """
-    return imap(lambda unit: _get_unit_name(unit, unit_registry), edge)
-
-
-def _get_unit_entry(name, attrs):
-    """Create a unit map entry from the given attributes.
-
-    `name` is the unit name.
-    `attrs` are the unit attribute dictionary.
-    The function returns a tuple of the unit name and model.
-
-    """
-    return name, units.UnitModel(
-        name, *(itemgetter(_UNIT_WIDTH_KEY, _UNIT_CAPS_KEY)(attrs)))
-
-
-def _get_unit_name(unit, unit_registry):
-    """Return a validated unit name.
-
-    `unit` is the name of the unit to validate.
-    `unit_registry` is the store of defined units.
-    The function raises an UndefElemError if no unit exists with this
-    name, otherwise returns the validated unit name.
-
-    """
-    import errors
-    std_name = unit_registry.get(unit)
-
-    if std_name is None:
-        raise errors.UndefElemError("Undefined functional unit {}", unit)
-
-    return std_name
-
-
-def _set_capacities(graph, cap_edges):
-    """Assign capacities to capping edges.
-
-    `graph` is the graph containing edges.
-    `cap_edges` are the capping edges.
-
-    """
-    for cur_edge in cap_edges:
-        graph[cur_edge[0]][cur_edge[1]]["capacity"] = min(
-            imap(lambda unit: graph.node[unit][_UNIT_WIDTH_KEY], cur_edge))
-
-
 def _add_capability(unit, cap, cap_list, unit_cap_reg, global_cap_reg):
     """Add a capability to the given unit.
 
@@ -918,6 +768,144 @@ def _dist_edge_caps(graph):
     _set_capacities(graph, _coll_cap_edges(graph))
 
 
+def _get_anal_graph(processor):
+    """Create a processor bus width analysis graph.
+
+    `processor` is the processor to build an analysis graph from.
+
+    """
+    width_graph = DiGraph()
+    hw_units = enumerate(processor)
+    new_nodes = {}
+
+    for idx, unit in hw_units:
+        _update_graph(idx, unit, processor, width_graph, new_nodes)
+
+    width_graph.add_edges_from(
+        imap(lambda edge: itemgetter(*edge)(new_nodes), processor.edges))
+    return width_graph
+
+
+def _get_cap_name(capability, cap_registry):
+    """Return a supported capability name.
+
+    `capability` is the name of the capability to validate.
+    `cap_registry` is the store of supported capabilities.
+    The function raises an UndefElemError if no capability with this
+    name is supported, otherwise returns the supported capability name.
+
+    """
+    import errors
+    std_cap = cap_registry.get(capability)
+
+    if std_cap is None:
+        raise errors.UndefElemError("Unsupported capability {}", capability)
+
+    return std_cap
+
+
+def _get_cap_units(processor):
+    """Create a mapping between capabilities and supporting input ports.
+
+    `processor` is the processor to create a capability-port map for.
+    The function return an iterable of tuples; each tuple represents a
+    capability and its supporting units.
+
+    """
+    cap_unit_map = {}
+    in_ports = _get_in_ports(processor)
+
+    for cur_port in in_ports:
+        for cur_cap in processor.node[cur_port][_UNIT_CAPS_KEY]:
+            cap_unit_map.setdefault(cur_cap, []).append(cur_port)
+
+    return cap_unit_map.iteritems()
+
+
+def _get_in_ports(processor):
+    """Find the input ports.
+
+    `processor` is the processor to find whose input ports.
+    The function returns an iterator over the processor input ports.
+
+    """
+    return _get_ports(processor.in_degree())
+
+
+def _get_out_ports(processor):
+    """Find the output ports.
+
+    `processor` is the processor to find whose output ports.
+    The function returns an iterator over the processor output ports.
+
+    """
+    return _get_ports(processor.out_degree())
+
+
+def _get_ports(degrees):
+    """Find the ports with respect to the given degrees.
+
+    `degrees` are the degrees of all units.
+    A port is a unit with zero degree.
+
+    """
+    return imap(itemgetter(0), itertools.ifilterfalse(itemgetter(1), degrees))
+
+
+def _get_preds(processor, unit, unit_map):
+    """Retrieve the predecessor units of the given unit.
+
+    `processor` is the processor containing the unit.
+    `unit` is the unit to retrieve whose predecessors.
+    `unit_map` is mapping between names and units.
+    The function returns an iterable of predecessor units.
+
+    """
+    return imap(unit_map.get, processor.predecessors(unit))
+
+
+def _get_std_edge(edge, unit_registry):
+    """Return a validated edge.
+
+    `edge` is the edge to validate.
+    `unit_registry` is the store of defined units.
+    The function raises an UndefElemError if an undefined unit is
+    encountered.
+
+    """
+    return imap(lambda unit: _get_unit_name(unit, unit_registry), edge)
+
+
+def _get_unit_entry(name, attrs):
+    """Create a unit map entry from the given attributes.
+
+    `name` is the unit name.
+    `attrs` are the unit attribute dictionary.
+    The function returns a tuple of the unit name and model.
+
+    """
+    return name, units.UnitModel(
+        name, *(itemgetter(_UNIT_WIDTH_KEY, _UNIT_CAPS_KEY)(attrs)))
+
+
+def _get_unit_name(unit, unit_registry):
+    """Return a validated unit name.
+
+    `unit` is the name of the unit to validate.
+    `unit_registry` is the store of defined units.
+    The function raises an UndefElemError if no unit exists with this
+    name, otherwise returns the validated unit name.
+
+    """
+    import errors
+    std_name = unit_registry.get(unit)
+
+    if std_name is None:
+        raise errors.UndefElemError("Undefined functional unit {}", unit)
+
+    return std_name
+
+
 def _init_cap_reg(capabilities):
     """Initialize a capability registry.
 
@@ -1121,6 +1109,18 @@ def _rm_empty_units(processor):
     for unit, attrs in unit_entries:
         if not attrs[_UNIT_CAPS_KEY]:
             _rm_empty_unit(processor, unit)
+
+
+def _set_capacities(graph, cap_edges):
+    """Assign capacities to capping edges.
+
+    `graph` is the graph containing edges.
+    `cap_edges` are the capping edges.
+
+    """
+    for cur_edge in cap_edges:
+        graph[cur_edge[0]][cur_edge[1]]["capacity"] = min(
+            imap(lambda unit: graph.node[unit][_UNIT_WIDTH_KEY], cur_edge))
 
 
 def _split_node(graph, old_node, new_node):

@@ -40,6 +40,8 @@
 #               Ubuntu 17.04
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Fedora release 26 (Twenty Six)
+#               Komodo IDE, version 11.1.0 build 91033, python 2.7.15,
+#               Fedora release 29 (Twenty Nine)
 #
 # notes:        This is a private program.
 #
@@ -259,40 +261,6 @@ def simulate(program, processor):
     return util_tbl
 
 
-def _get_accepted(instructions, program, capabilities):
-    """Generate an iterator over compatible instructions.
-
-    `instructions` are the instructions to filter.
-    `program` is the master instruction list.
-    `capabilities` are the capabilities to match instructions against.
-    The function returns an iterator over tuples of the instruction
-    index and the instruction itself.
-
-    """
-    return ifilter(lambda instr: _instr_in_caps(program[instr[1]].categ.lower(
-        ), capabilities), enumerate(instructions))
-
-
-def _get_candidates(unit, program, util_info):
-    """Find candidate instructions in the predecessors of a unit.
-
-    `unit` is the unit to match instructions from predecessors against.
-    `program` is the master instruction list.
-    `util_info` is the unit utilization information.
-
-    """
-    candidates = imap(
-        lambda src_unit:
-            imap(lambda instr_info: _HostedInstr(src_unit.name, instr_info[0]),
-                 _get_accepted(util_info[src_unit.name], program,
-                               unit.model.capabilities)),
-            ifilter(lambda pred: pred.name in util_info, unit.predecessors))
-    return heapq.nsmallest(
-        _space_avail(unit.model, util_info), itertools.chain(*candidates),
-        key=lambda instr_info:
-            util_info[instr_info.host][instr_info.index_in_host])
-
-
 def _accept_instr(instr, instr_index, unit, util_info):
     """Try to accept the given instruction to the unit.
 
@@ -435,6 +403,40 @@ def _flush_outputs(out_units, unit_util):
     for cur_out in out_units:
         if cur_out.name in unit_util:
             del unit_util[cur_out.name]
+
+
+def _get_accepted(instructions, program, capabilities):
+    """Generate an iterator over compatible instructions.
+
+    `instructions` are the instructions to filter.
+    `program` is the master instruction list.
+    `capabilities` are the capabilities to match instructions against.
+    The function returns an iterator over tuples of the instruction
+    index and the instruction itself.
+
+    """
+    return ifilter(lambda instr: _instr_in_caps(program[instr[1]].categ.lower(
+        ), capabilities), enumerate(instructions))
+
+
+def _get_candidates(unit, program, util_info):
+    """Find candidate instructions in the predecessors of a unit.
+
+    `unit` is the unit to match instructions from predecessors against.
+    `program` is the master instruction list.
+    `util_info` is the unit utilization information.
+
+    """
+    candidates = imap(
+        lambda src_unit:
+            imap(lambda instr_info: _HostedInstr(src_unit.name, instr_info[0]),
+                 _get_accepted(util_info[src_unit.name], program,
+                               unit.model.capabilities)),
+            ifilter(lambda pred: pred.name in util_info, unit.predecessors))
+    return heapq.nsmallest(
+        _space_avail(unit.model, util_info), itertools.chain(*candidates),
+        key=lambda instr_info:
+            util_info[instr_info.host][instr_info.index_in_host])
 
 
 def _instr_in_caps(instr, capabilities):
