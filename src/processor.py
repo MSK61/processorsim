@@ -356,8 +356,8 @@ def _count_outputs(outputs, util_info):
     `util_info` is the unit utilization information.
 
     """
-    return sum(imap(lambda out_port: len(util_info[out_port.name]) if
-                    out_port.name in util_info else 0, outputs))
+    return sum(imap(
+        lambda out_port: _get_unit_util(out_port.name, util_info), outputs))
 
 
 def _fill_cp_util(processor, program, util_info, issue_rec):
@@ -459,6 +459,16 @@ def _get_candidates(unit, program, util_info):
             util_info[instr_info.host][instr_info.index_in_host])
 
 
+def _get_unit_util(unit, util_info):
+    """Retrieve the given unit current utilization level.
+
+    `unit` is the unit to get whose utilization level.
+    `util_info` is the unit utilization information.
+
+    """
+    return len(util_info.get(unit, []))
+
+
 def _instr_in_caps(instr, capabilities):
     """Determine if the instruction belongs to the given capabilities.
 
@@ -555,5 +565,4 @@ def _space_avail(unit, util_info):
     `util_info` is the current utilization of all units.
 
     """
-    return unit.width - (
-        len(util_info[unit.name]) if unit.name in util_info else 0)
+    return unit.width - _get_unit_util(unit.name, util_info)
