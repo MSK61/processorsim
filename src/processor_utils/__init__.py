@@ -857,7 +857,7 @@ def _get_preds(processor, unit, unit_map):
 
     `processor` is the processor containing the unit.
     `unit` is the unit to retrieve whose predecessors.
-    `unit_map` is mapping between names and units.
+    `unit_map` is the mapping between names and units.
     The function returns an iterable of predecessor units.
 
     """
