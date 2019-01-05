@@ -261,25 +261,21 @@ def simulate(program, processor):
     return util_tbl
 
 
-def _accept_instr(instr, instr_index, unit, util_info):
+def _accept_instr(instr, instr_index, cap_unit_map, util_info):
     """Try to accept the given instruction to the unit.
 
-    `instr` is the lower-case instruction to try to accept.
-    `instr_index` is the index of the instruction in the program.
-    `unit` is the unit to accept the instruction to.
+    `instr` is the lower-case instruction to issue.
+    `instr_index` is the index of the instruction to try to accept.
+    `cap_unit_map` is the mapping between capabilities and units.
     `util_info` is the unit utilization information.
-    The function assumes the target unit already has space to accept new
-    instructions. It updates the utilization information and returns
-    True if the instruction is accepted; otherwise returns False.
+    The function tries to find an appropriate unit to issue the
+    instruction to. It then updates the utilization information. It
+    returns True if the instruction is issued to a unit, otherwise
+    returns False.
 
     """
     _chk_instr_cap(instr)
-
-    if not _instr_in_caps(instr, unit.capabilities):
-        return False
-
-    _add_instr_util(instr_index, unit.name, util_info)
-    return True
+    return _issue_instr(instr_index, cap_unit_map.get(instr, []), util_info)
 
 
 def _add_instr_util(instr_index, unit, util_info):
@@ -291,6 +287,21 @@ def _add_instr_util(instr_index, unit, util_info):
 
     """
     util_info.setdefault(unit, []).append(instr_index)
+
+
+def _build_cap_map(inputs):
+    """Build the capability map for input units.
+
+    `inputs` are the input processing units.
+
+    """
+    cap_map = {}
+
+    for unit in inputs:
+        for cap in unit.capabilities:
+            cap_map.setdefault(cap.lower(), []).append(unit)
+
+    return cap_map
 
 
 def _chk_instr_cap(cap):
@@ -365,15 +376,15 @@ def _fill_cp_util(processor, program, util_info, issue_rec):
     _flush_outputs(out_ports, util_info)
     _mov_flights(
         processor.out_ports + processor.internal_units, program, util_info)
-    _fill_inputs(processor.in_out_ports + processor.in_ports, program,
-                 util_info, issue_rec)
+    _fill_inputs(_build_cap_map(processor.in_out_ports + processor.in_ports),
+                 program, util_info, issue_rec)
     issue_rec.pump_outputs(_count_outputs(out_ports, util_info))
 
 
-def _fill_inputs(inputs, program, util_info, issue_rec):
+def _fill_inputs(cap_unit_map, program, util_info, issue_rec):
     """Fetch new program instructions into the pipeline.
 
-    `inputs` are the input processing units.
+    `cap_unit_map` is the mapping between capabilities and units.
     `program` is the program to fill the input units from whose
               instructions.
     `util_info` is the unit utilization information.
@@ -382,9 +393,9 @@ def _fill_inputs(inputs, program, util_info, issue_rec):
     """
     prog_len = len(program)
 
-    while issue_rec.entered < prog_len and _issue_instr(
-        program[issue_rec.entered].categ.lower(), issue_rec.entered, inputs,
-            util_info):
+    while issue_rec.entered < prog_len and _accept_instr(
+        program[issue_rec.entered].categ.lower(), issue_rec.entered,
+            cap_unit_map, util_info):
         issue_rec.bump_input()
 
 
@@ -460,10 +471,9 @@ def _instr_in_caps(instr, capabilities):
     return instr in imap(str.lower, capabilities)
 
 
-def _issue_instr(instr, instr_index, inputs, util_info):
+def _issue_instr(instr_index, inputs, util_info):
     """Issue an instruction to an appropriate input unit.
 
-    `instr` is the lower-case instruction to issue.
     `instr_index` is the index of the instruction to try to accept.
     `inputs` are the input processing units to select from for issuing
              the instruction.
@@ -474,10 +484,13 @@ def _issue_instr(instr, instr_index, inputs, util_info):
     returns False.
 
     """
-    _chk_instr_cap(instr)
-    return next(
-        ifilter(lambda unit: _space_avail(unit, util_info) and _accept_instr(
-            instr, instr_index, unit, util_info), inputs), False)
+    try:
+        acceptor = next(
+            ifilter(lambda unit: _space_avail(unit, util_info), inputs))
+    except StopIteration:  # No unit accepted the instruction.
+        return False
+    _add_instr_util(instr_index, acceptor.name, util_info)
+    return True
 
 
 def _mov_flights(out_units, program, util_info):
