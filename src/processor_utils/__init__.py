@@ -72,7 +72,7 @@ class ProcessorDesc(object):
 
     """Processor description"""
 
-    def __init__(self, in_ports, out_ports, in_out_ports, internal_untis):
+    def __init__(self, in_ports, out_ports, in_out_ports, internal_units):
         """Create a processor.
 
         `self` is this processor.
@@ -80,14 +80,14 @@ class ProcessorDesc(object):
         `out_ports` are the output-only ports.
         `in_out_ports` are the ports that act as both inputs and
                        outputs.
-        `internal_untis` are the internal units that are neither exposed
+        `internal_units` are the internal units that are neither exposed
                          as inputs or outputs.
 
         """
-        self._in_ports = sorted_models(in_ports)
-        self._out_ports = self._sorted_units(out_ports)
-        self._in_out_ports = sorted_models(in_out_ports)
-        self._internal_units = self._sorted_units(internal_untis)
+        self._in_ports, self._in_out_ports = imap(
+            sorted_models, [in_ports, in_out_ports])
+        self._out_ports, self._internal_units = imap(
+            self._sorted_units, [out_ports, internal_units])
 
     def __eq__(self, other):
         """Test if the two processors are identical.
