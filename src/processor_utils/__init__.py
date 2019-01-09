@@ -81,7 +81,7 @@ class ProcessorDesc(object):
         `in_out_ports` are the ports that act as both inputs and
                        outputs.
         `internal_units` are the internal units that are neither exposed
-                         as inputs or outputs.
+                         as inputs nor outputs.
 
         """
         self._in_ports, self._in_out_ports = imap(
