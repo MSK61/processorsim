@@ -81,13 +81,16 @@ class ProcessorDesc(object):
         `in_out_ports` are the ports that act as both inputs and
                        outputs.
         `internal_units` are the internal units that are neither exposed
-                         as inputs nor outputs.
+                         as inputs nor outputs. Internal units should be
+                         specified in post-order with respect to their
+                         connecting edges(directed from the producing
+                         unit to the consuming one).
 
         """
         self._in_ports, self._in_out_ports = imap(
             sorted_models, [in_ports, in_out_ports])
-        self._out_ports, self._internal_units = imap(
-            self._sorted_units, [out_ports, internal_units])
+        self._out_ports = self._sorted_units(out_ports)
+        self._internal_units = tuple(internal_units)
 
     def __eq__(self, other):
         """Test if the two processors are identical.

@@ -49,7 +49,8 @@ import test_utils
 import processor
 from processor import simulate
 import processor_utils
-from processor_utils.units import UnitModel
+from processor_utils import ProcessorDesc
+from processor_utils.units import FuncUnit, UnitModel
 from program_defs import HwInstruction
 import pytest
 from pytest import mark
@@ -91,10 +92,9 @@ class TestSim:
         """
         inputs = [UnitModel("ALU input", 1, ["ALU"]),
                   UnitModel("MEM input", 1, ["MEM"])]
-        output = processor_utils.units.FuncUnit(
-            UnitModel("output", 1, ["ALU", "MEM"]), inputs)
+        output = FuncUnit(UnitModel("output", 1, ["ALU", "MEM"]), inputs)
         TestBasic().test_sim([HwInstruction("MEM", [], "R12"), HwInstruction(
-            "ALU", ["R11", "R15"], "R14")], processor_utils.ProcessorDesc(
+            "ALU", ["R11", "R15"], "R14")], ProcessorDesc(
             inputs, [output], [], []), [{"MEM input": [0], "ALU input": [1]}, {
                 "output": [0], "ALU input": [1]}, {"output": [1]}])
 
@@ -147,6 +147,21 @@ class TestSim:
             "processors", "singleALUProcessor.yaml"))
         test_utils.chk_error([test_utils.ValInStrCheck(
             ex_chk.value.processor_state, len(valid_prog))], ex_chk.value)
+
+    def test_with_lexicographical_unit_order_different_from_post_order(self):
+        """Test order is kept among units to ensure instruction flow.
+
+        `self` is this test case.
+
+        """
+        in_unit = UnitModel("input", 1, ["ALU"])
+        mid1 = UnitModel("middle 1", 1, ["ALU"])
+        mid2 = UnitModel("middle 2", 1, ["ALU"])
+        out_unit = UnitModel("output", 1, ["ALU"])
+        assert simulate([HwInstruction("ALU", [], "R1")], ProcessorDesc(
+            [in_unit], [FuncUnit(out_unit, [mid2])], [], [FuncUnit(mid2, [
+                mid1]), FuncUnit(mid1, [in_unit])])) == [{"input": [0]}, {
+                    "middle 1": [0]}, {"middle 2": [0]}, {"output": [0]}]
 
 
 def main():
