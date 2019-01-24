@@ -40,6 +40,8 @@
 #               Ubuntu 17.04
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Fedora release 26 (Twenty Six)
+#               Komodo IDE, version 11.1.0 build 91033, python 2.7.15,
+#               Fedora release 29 (Twenty Nine)
 #
 # notes:        This is a private program.
 #
@@ -137,15 +139,6 @@ class CoverageTest(TestCase):
         """
         assert FuncUnit(UnitModel("", 1, [""]), []) != FuncUnit(
             UnitModel("input", 1, [""]), [])
-
-    def test_ProcessorDesc_ne_operator(self):
-        """Test ProcessorDesc != operator.
-
-        `self` is this test case.
-
-        """
-        assert ProcessorDesc([], [], [], []) != ProcessorDesc(
-            [UnitModel("", 1, [""])], [], [], [])
 
     def test_UnitModel_ne_operator(self):
         """Test UnitModel != operator.

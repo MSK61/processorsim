@@ -40,6 +40,8 @@
 #               Ubuntu 17.04
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Fedora release 26 (Twenty Six)
+#               Komodo IDE, version 11.1.0 build 91033, python 2.7.15,
+#               Fedora release 29 (Twenty Nine)
 #
 # notes:        This is a private program.
 #
@@ -149,19 +151,21 @@ class TestSim:
             ex_chk.value.processor_state, len(valid_prog))], ex_chk.value)
 
     def test_with_lexicographical_unit_order_different_from_post_order(self):
-        """Test order is kept among units to ensure instruction flow.
+        """Test order is kept among units.
 
         `self` is this test case.
 
         """
         in_unit = UnitModel("input", 1, ["ALU"])
+        in_units = [in_unit]
         mid1 = UnitModel("middle 1", 1, ["ALU"])
+        mid1_unit = FuncUnit(mid1, [in_unit])
         mid2 = UnitModel("middle 2", 1, ["ALU"])
-        out_unit = UnitModel("output", 1, ["ALU"])
-        assert simulate([HwInstruction("ALU", [], "R1")], ProcessorDesc(
-            [in_unit], [FuncUnit(out_unit, [mid2])], [], [FuncUnit(mid2, [
-                mid1]), FuncUnit(mid1, [in_unit])])) == [{"input": [0]}, {
-                    "middle 1": [0]}, {"middle 2": [0]}, {"output": [0]}]
+        mid2_unit = FuncUnit(mid2, [mid1])
+        out_units = [FuncUnit(UnitModel("output", 1, ["ALU"]), [mid2])]
+        assert ProcessorDesc(
+            in_units, out_units, [], [mid2_unit, mid1_unit]) != ProcessorDesc(
+            in_units, out_units, [], [mid1_unit, mid2_unit])
 
 
 def main():
