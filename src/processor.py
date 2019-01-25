@@ -278,15 +278,15 @@ def _accept_instr(instr, instr_index, cap_unit_map, util_info):
     return _issue_instr(instr_index, cap_unit_map.get(instr, []), util_info)
 
 
-def _add_instr_util(instr_index, unit, util_info):
+def _add_instr_util(instr, unit, util_info):
     """Register the given instruction in the unit.
 
-    `instr_index` is the index of the instruction in the program.
+    `instr` is the index of the instruction in the program.
     `unit` is the unit to register the instruction in.
     `util_info` is the unit utilization information.
 
     """
-    util_info.setdefault(unit, []).append(instr_index)
+    util_info.setdefault(unit, []).append(instr)
 
 
 def _build_cap_map(inputs):
@@ -481,10 +481,10 @@ def _instr_in_caps(instr, capabilities):
     return instr in imap(str.lower, capabilities)
 
 
-def _issue_instr(instr_index, inputs, util_info):
+def _issue_instr(instr, inputs, util_info):
     """Issue an instruction to an appropriate input unit.
 
-    `instr_index` is the index of the instruction to try to accept.
+    `instr` is the index of the instruction to try to accept.
     `inputs` are the input processing units to select from for issuing
              the instruction.
     `util_info` is the unit utilization information.
@@ -499,7 +499,7 @@ def _issue_instr(instr_index, inputs, util_info):
             ifilter(lambda unit: _space_avail(unit, util_info), inputs))
     except StopIteration:  # No unit accepted the instruction.
         return False
-    _add_instr_util(instr_index, acceptor.name, util_info)
+    _add_instr_util(instr, acceptor.name, util_info)
     return True
 
 
