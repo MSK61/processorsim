@@ -116,6 +116,32 @@ class HwDesc(object):
         return self._processor
 
 
+class StallError(RuntimeError):
+
+    """Stalled processor error"""
+
+    def __init__(self, msg_tmpl, stalled_state):
+        """Create a stalled processor error.
+
+        `self` is this stalled processor error.
+        `msg_tmpl` is the error format message taking the stalled
+                   processor state as a positional argument.
+        `stalled_state` is the stalled processor state.
+
+        """
+        RuntimeError.__init__(self, msg_tmpl.format(stalled_state))
+        self._stalled_state = stalled_state
+
+    @property
+    def processor_state(self):
+        """Stalled processor state
+
+        `self` is this stalled processor error.
+
+        """
+        return self._stalled_state
+
+
 class _HostedInstr(object):
 
     """Instruction hosted inside a functional unit"""
@@ -198,32 +224,6 @@ class _IssueInfo(object):
 
         """
         return self._exited < self._entered
-
-
-class StallError(RuntimeError):
-
-    """Stalled processor error"""
-
-    def __init__(self, msg_tmpl, stalled_state):
-        """Create a stalled processor error.
-
-        `self` is this stalled processor error.
-        `msg_tmpl` is the error format message taking the stalled
-                   processor state as a positional argument.
-        `stalled_state` is the stalled processor state.
-
-        """
-        RuntimeError.__init__(self, msg_tmpl.format(stalled_state))
-        self._stalled_state = stalled_state
-
-    @property
-    def processor_state(self):
-        """Stalled processor state
-
-        `self` is this stalled processor error.
-
-        """
-        return self._stalled_state
 
 
 def read_processor(proc_file):
