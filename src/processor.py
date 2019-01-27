@@ -116,6 +116,55 @@ class HwDesc(object):
         return self._processor
 
 
+class InstrState(object):
+
+    """Instruction state"""
+
+    def __init__(self, instr):
+        """Initialize an instruction state.
+
+        `self` is this instruction state.
+        `instr` is the index of the instruction in the program.
+
+        """
+        self._instr = instr
+
+    def __eq__(self, other):
+        """Test if the two instruction states are identical.
+
+        `self` is this instruction state.
+        `other` is the other instruction state.
+
+        """
+        return self._instr == other.instr
+
+    def __ne__(self, other):
+        """Test if the two instruction states are different.
+
+        `self` is this instruction state.
+        `other` is the other instruction state.
+
+        """
+        return not self == other
+
+    def __repr__(self):
+        """Return the official string of this instruction state.
+
+        `self` is this instruction state.
+
+        """
+        return '{}({})'.format(type(self).__name__, self._instr)
+
+    @property
+    def instr(self):
+        """Index of the instruction in the program
+
+        `self` is this instruction state.
+
+        """
+        return self._instr
+
+
 class StallError(RuntimeError):
 
     """Stalled processor error"""
@@ -281,7 +330,7 @@ def _accept_instr(instr, instr_index, cap_unit_map, util_info):
 def _add_instr_util(instr, unit, util_info):
     """Register the given instruction in the unit.
 
-    `instr` is the index of the instruction in the program.
+    `instr` is the instruction state.
     `unit` is the unit to register the instruction in.
     `util_info` is the unit utilization information.
 
@@ -435,8 +484,8 @@ def _get_accepted(instructions, program, capabilities):
     index and the instruction itself.
 
     """
-    return ifilter(lambda instr: _instr_in_caps(program[instr[1]].categ.lower(
-        ), capabilities), enumerate(instructions))
+    return ifilter(lambda instr: _instr_in_caps(program[
+        instr[1].instr].categ.lower(), capabilities), enumerate(instructions))
 
 
 def _get_candidates(unit, program, util_info):
@@ -456,7 +505,7 @@ def _get_candidates(unit, program, util_info):
     return heapq.nsmallest(
         _space_avail(unit.model, util_info), itertools.chain(*candidates),
         key=lambda instr_info:
-            util_info[instr_info.host][instr_info.index_in_host])
+            util_info[instr_info.host][instr_info.index_in_host].instr)
 
 
 def _get_unit_util(unit, util_info):
@@ -499,7 +548,7 @@ def _issue_instr(instr, inputs, util_info):
             ifilter(lambda unit: _space_avail(unit, util_info), inputs))
     except StopIteration:  # No unit accepted the instruction.
         return False
-    _add_instr_util(instr, acceptor.name, util_info)
+    _add_instr_util(InstrState(instr), acceptor.name, util_info)
     return True
 
 

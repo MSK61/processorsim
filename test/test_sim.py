@@ -49,7 +49,7 @@
 
 import test_utils
 import processor
-from processor import simulate
+from processor import InstrState, simulate
 import processor_utils
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, UnitModel
@@ -57,6 +57,28 @@ from program_defs import HwInstruction
 import pytest
 from pytest import mark
 from test_utils import read_proc_file
+import unittest
+
+
+class CoverageTest(unittest.TestCase):
+
+    """Test case for fulfilling complete code coverage"""
+
+    def test_InstrState_ne_operator(self):
+        """Test InstrState != operator.
+
+        `self` is this test case.
+
+        """
+        assert InstrState(0) != InstrState(1)
+
+    def test_InstrState_repr(self):
+        """Test InstrState representation.
+
+        `self` is this test case.
+
+        """
+        repr(InstrState(0))
 
 
 class TestBasic:
@@ -66,11 +88,12 @@ class TestBasic:
     @mark.parametrize(
         "prog, cpu, util_tbl",
         [([HwInstruction("alu", ["R11", "R15"], "R14")], read_proc_file(
-            "processors", "singleALUProcessor.yaml"), [{"fullSys": [0]}]),
-            ([HwInstruction("MEM", [], "R12"),
-              HwInstruction("ALU", ["R11", "R15"], "R14")], read_proc_file(
-                "processors", "multiplexedInputSplitOutputProcessor.yaml"),
-                [{"input": [0, 1]}, {"ALU output": [1], "MEM output": [0]}])])
+            "processors", "singleALUProcessor.yaml"), [{"fullSys": [InstrState(
+                0)]}]), ([HwInstruction("MEM", [], "R12"), HwInstruction(
+                    "ALU", ["R11", "R15"], "R14")], read_proc_file(
+                    "processors", "multiplexedInputSplitOutputProcessor.yaml"),
+            [{"input": [InstrState(0), InstrState(1)]}, {"ALU output": [
+                InstrState(1)], "MEM output": [InstrState(0)]}])])
     def test_sim(self, prog, cpu, util_tbl):
         """Test executing a program.
 
@@ -95,31 +118,35 @@ class TestSim:
         inputs = [UnitModel("ALU input", 1, ["ALU"]),
                   UnitModel("MEM input", 1, ["MEM"])]
         output = FuncUnit(UnitModel("output", 1, ["ALU", "MEM"]), inputs)
-        TestBasic().test_sim([HwInstruction("MEM", [], "R12"), HwInstruction(
-            "ALU", ["R11", "R15"], "R14")], ProcessorDesc(
-            inputs, [output], [], []), [{"MEM input": [0], "ALU input": [1]}, {
-                "output": [0], "ALU input": [1]}, {"output": [1]}])
+        TestBasic().test_sim(
+            [HwInstruction("MEM", [], "R12"),
+             HwInstruction("ALU", ["R11", "R15"], "R14")],
+            ProcessorDesc(inputs, [output], [], []),
+            [{"MEM input": [InstrState(0)], "ALU input": [InstrState(1)]},
+                {"output": [InstrState(0)], "ALU input": [InstrState(1)]},
+                {"output": [InstrState(1)]}])
 
     @mark.parametrize("prog_file, proc_file, util_info", [
         ("empty.asm", "singleALUProcessor.yaml", []),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         "singleALUProcessor.yaml", [{"fullSys": [0]}]),
+         "singleALUProcessor.yaml", [{"fullSys": [InstrState(0)]}]),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         "dualCoreALUProcessor.yaml", [{"core 1": [0]}]),
+         "dualCoreALUProcessor.yaml", [{"core 1": [InstrState(0)]}]),
         ("3InstructionProgram.asm", "dualCoreALUProcessor.yaml",
-         [{"core 1": [0], "core 2": [1]}, {"core 1": [2]}]),
+         [{"core 1": [InstrState(0)], "core 2": [InstrState(1)]},
+          {"core 1": [InstrState(2)]}]),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         "dualCoreMemALUProcessor.yaml", [{"core 2": [0]}]),
+         "dualCoreMemALUProcessor.yaml", [{"core 2": [InstrState(0)]}]),
         ("2InstructionProgram.asm", "2WideALUProcessor.yaml",
-         [{"fullSys": [0, 1]}]),
-        ("3InstructionProgram.asm", "2WideALUProcessor.yaml",
-         [{"fullSys": [0, 1]}, {"fullSys": [2]}]),
+         [{"fullSys": [InstrState(0), InstrState(1)]}]),
+        ("3InstructionProgram.asm", "2WideALUProcessor.yaml", [{"fullSys": [
+            InstrState(0), InstrState(1)]}, {"fullSys": [InstrState(2)]}]),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
          "twoConnectedUnitsProcessor.yaml",
-         [{"input": [0]}, {"output": [0]}]),
+         [{"input": [InstrState(0)]}, {"output": [InstrState(0)]}]),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         "3StageProcessor.yaml",
-         [{"input": [0]}, {"middle": [0]}, {"output": [0]}])])
+         "3StageProcessor.yaml", [{"input": [InstrState(0)]}, {
+            "middle": [InstrState(0)]}, {"output": [InstrState(0)]}])])
     def test_processor(self, prog_file, proc_file, util_info):
         """Test simulating a program on the given processor.
 
