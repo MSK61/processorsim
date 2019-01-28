@@ -97,6 +97,7 @@ class TestBasic:
     def test_sim(self, prog, cpu, util_tbl):
         """Test executing a program.
 
+        `self` is this test case.
         `prog` is the program to run.
         `cpu` is the processor to run the program on.
         `util_tbl` is the expected utilization table.
