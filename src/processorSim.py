@@ -80,7 +80,7 @@ class _InstrFlight(object):
 
         """
         self._start_time = start_time
-        self._units = tuple(units)
+        self._stops = tuple(units)
 
     @property
     def start_time(self):
@@ -92,13 +92,36 @@ class _InstrFlight(object):
         return self._start_time
 
     @property
-    def units(self):
+    def stops(self):
         """Instruction itinerary
 
         `self` is this instruction flight.
 
         """
-        return self._units
+        return self._stops
+
+
+class _InstrPosition(object):
+
+    """Instruction position"""
+
+    def __init__(self, unit):
+        """Create an instruction position.
+
+        `self` is this instruction position.
+        `unit` is the unit hosting the instruction.
+
+        """
+        self._unit = unit
+
+    @property
+    def unit(self):
+        """Unit hosting this instruction
+
+        `self` is this instruction position.
+
+        """
+        return self._unit
 
 
 def get_in_files(argv):
@@ -227,7 +250,7 @@ def _fill_cp_util(cp, cp_util, ixcxu):
     """
     for unit, instr_lst in cp_util:
         for instr in instr_lst:
-            ixcxu[instr.instr][cp] = unit
+            ixcxu[instr.instr][cp] = _InstrPosition(unit)
 
 
 def _get_flight_row(flight):
@@ -236,7 +259,8 @@ def _get_flight_row(flight):
     `flight` is the flight to convert.
 
     """
-    return [""] * flight.start_time + list(flight.units)
+    return [""] * flight.start_time + map(
+        lambda path_stop: path_stop.unit, flight.stops)
 
 
 def _get_last_tick(sim_res):
