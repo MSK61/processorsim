@@ -451,7 +451,7 @@ def _fill_inputs(cap_unit_map, program, util_info, issue_rec):
 def _fill_unit(unit, program, util_info):
     """Fill an output with instructions from its predecessors.
 
-    `unit` is the output unit to fill.
+    `unit` is the destination unit to fill.
     `program` is the master instruction list.
     `util_info` is the unit utilization information.
 
@@ -552,16 +552,16 @@ def _issue_instr(instr, inputs, util_info):
     return True
 
 
-def _mov_flights(out_units, program, util_info):
+def _mov_flights(dst_units, program, util_info):
     """Move the instructions inside the pipeline.
 
-    `out_units` are the output processing units.
+    `dst_units` are the destination processing units.
     `program` is the master instruction list.
     `util_info` is the unit utilization information.
 
     """
-    for cur_out in out_units:
-        _fill_unit(cur_out, program, util_info)
+    for cur_dst in dst_units:
+        _fill_unit(cur_dst, program, util_info)
 
 
 def _mov_candidates(candidates, unit, util_info):
