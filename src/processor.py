@@ -382,7 +382,7 @@ def _chk_stall(old_util, new_util, consumed):
 def _clr_src_units(instructions, util_info):
     """Clear the utilization of units releasing instructions.
 
-    `instructions` is the information if instructions being moved from
+    `instructions` is the information of instructions being moved from
                    one unit to a predecessor, sorted by their program
                    index.
     `util_info` is the unit utilization information.
