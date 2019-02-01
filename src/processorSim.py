@@ -44,12 +44,13 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #               Ubuntu 17.04
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Fedora release 26 (Twenty Six)
+#               Komodo IDE, version 11.1.1 build 91033, python 2.7.15,
+#               Fedora release 29 (Twenty Nine)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import itertools
 from itertools import chain, imap
 import logging
 import operator
@@ -100,6 +101,34 @@ class _InstrFlight(object):
         return self._units
 
 
+def get_in_files(argv):
+    """Create input file objects from the given arguments.
+
+    `argv` is the list of arguments.
+
+    """
+    args = process_command_line(argv)
+    return operator.attrgetter(_PROC_OPT_VAR, _PROG_OPT_VAR)(args)
+
+
+def get_sim_res(processor_file, program_file):
+    """Calculate the simulation result table.
+
+    `processor_file` is the file containing the processor architecture.
+    `program_file` is the file containing the program to simulate.
+    The function reads the program file and simulates its execution on
+    the processor defined by the architecture provided in the given
+    processor description file.
+
+    """
+    proc_desc = processor.read_processor(processor_file)
+    prog = program_utils.read_program(program_file)
+    compiled_prog = program_utils.compile_program(prog, proc_desc.isa)
+    return _get_sim_rows(
+        enumerate(processor.simulate(compiled_prog, proc_desc.processor)),
+        len(prog))
+
+
 def process_command_line(argv):
     """
     Return args object.
@@ -130,10 +159,8 @@ def process_command_line(argv):
 
 
 def main(argv=None):
-    args = process_command_line(argv)
+    processor_file, program_file = get_in_files(argv)
     logging.basicConfig(level=logging.INFO)
-    processor_file, program_file = operator.attrgetter(
-        _PROC_OPT_VAR, _PROG_OPT_VAR)(args)
     with processor_file, program_file:
         run(processor_file, program_file)
     return 0        # success
@@ -149,10 +176,7 @@ def run(processor_file, program_file):
     processor description file.
 
     """
-    proc_desc = processor.read_processor(processor_file)
-    prog = program_utils.read_program(program_file)
-    _print_sim_res(processor.simulate(program_utils.compile_program(
-        prog, proc_desc.isa), proc_desc.processor), len(prog))
+    _print_sim_res(get_sim_res(processor_file, program_file))
 
 
 def _create_flight(instr_util):
@@ -175,7 +199,7 @@ def _cui_to_flights(cxuxi, instructions):
     `instructions` is the total number of instructions.
 
     """
-    return _icu_to_flights(_cui_to_icu(enumerate(cxuxi), instructions))
+    return _icu_to_flights(_cui_to_icu(cxuxi, instructions))
 
 
 def _cui_to_icu(cxuxi, instructions):
@@ -203,7 +227,46 @@ def _fill_cp_util(cp, cp_util, ixcxu):
     """
     for unit, instr_lst in cp_util:
         for instr in instr_lst:
-            ixcxu[instr][cp] = unit
+            ixcxu[instr.instr][cp] = unit
+
+
+def _get_flight_row(flight):
+    """Convert the given flight to a row.
+
+    `flight` is the flight to convert.
+
+    """
+    return [""] * flight.start_time + list(flight.units)
+
+
+def _get_last_tick(sim_res):
+    """Calculate the last clock cycle in the simulation.
+
+    `sim_res` is the simulation result.
+
+    """
+    return max(chain([0], imap(len, sim_res)))
+
+
+def _get_sim_rows(sim_res, instructions):
+    """Calculate the simulation rows.
+
+    `sim_res` is the simulation result.
+    `instructions` is the total number of instructions.
+
+    """
+    return map(_get_flight_row, _cui_to_flights(sim_res, instructions))
+
+
+def _get_ticks(sim_res):
+    """Retrieve the clock cycles.
+
+    `sim_res` is the simulation result.
+    The function calculates the clock cycles necessary to run the whole
+    simulation and returns an iterator over them.
+
+    """
+    return imap(str, xrange(1, _get_last_tick(sim_res) + 1))
 
 
 def _icu_to_flights(ixcxu):
@@ -215,58 +278,43 @@ def _icu_to_flights(ixcxu):
     return map(_create_flight, ixcxu)
 
 
-def _print_flight(flight_index, flight):
-    """Print the given instruction flight.
+def _print_res_row(row_index, res_row):
+    """Print the given simulation row.
 
-    `flight_index` is the index of the flight to print.
-    `flight` is the flight to print.
-
-    """
-    dead_time = ""
-    print _COL_SEP.join(chain(['I' + str(flight_index + 1)], itertools.repeat(
-        dead_time, flight.start_time), flight.units))
-
-
-def _print_flights(flights):
-    """Print the given instruction flights.
-
-    `flights` are the instruction flights to print.
+    `row_index` is the index of the simulation row.
+    `res_row` is the simulation row.
 
     """
-    _print_tbl_hdr(flights)
-    _print_tbl_data(enumerate(flights))
+    print _COL_SEP.join(chain(['I' + str(row_index + 1)], res_row))
 
 
-def _print_sim_res(sim_res, instructions):
+def _print_sim_res(sim_res):
     """Print the simulation result.
 
     `sim_res` is the simulation result to print.
-    `instructions` is the total number of instructions.
 
     """
-    _print_flights(_cui_to_flights(sim_res, instructions))
+    _print_tbl_hdr(sim_res)
+    _print_tbl_data(enumerate(sim_res))
 
 
-def _print_tbl_data(flights):
-    """Print the flights table rows.
+def _print_tbl_data(sim_res):
+    """Print the simulation table rows.
 
-    `flights` are the instruction flight entries.
-
-    """
-    for cur_flight in flights:
-        _print_flight(*cur_flight)
-
-
-def _print_tbl_hdr(flights):
-    """Print the flights table header.
-
-    `flights` are the instruction flights.
+    `sim_res` is the simulation result.
 
     """
-    end_times = imap(
-        lambda flight: flight.start_time + len(flight.units), flights)
-    time_span = xrange(1, max(chain([0], end_times)) + 1)
-    print _COL_SEP.join(chain([""], imap(str, time_span)))
+    for res_row in sim_res:
+        _print_res_row(*res_row)
+
+
+def _print_tbl_hdr(sim_res):
+    """Print the simulation table header.
+
+    `sim_res` is the simulation result.
+
+    """
+    print _COL_SEP.join(chain([""], _get_ticks(sim_res)))
 
 
 if __name__ == '__main__':
