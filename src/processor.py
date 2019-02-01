@@ -390,10 +390,6 @@ def _clr_src_units(instructions, util_info):
     instructions were moved to predecessor units.
 
     """
-    # Delete later indices first to keep information about earlier ones
-    # valid.
-    instructions = reversed(instructions)
-
     for cur_instr in instructions:
         _rm_util(util_info, cur_instr)
 
@@ -457,8 +453,10 @@ def _fill_unit(unit, program, util_info):
 
     """
     candidates = _get_candidates(unit, program, util_info)
+    # We have to add instructions in order but remove them in reverse order
+    # (, hence two different steps).
     _mov_candidates(candidates, unit.model.name, util_info)
-    _clr_src_units(candidates, util_info)
+    _clr_src_units(reversed(candidates), util_info)
 
 
 def _flush_outputs(out_units, unit_util):
