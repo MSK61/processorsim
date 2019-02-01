@@ -552,18 +552,6 @@ def _issue_instr(instr, inputs, util_info):
     return True
 
 
-def _mov_flights(dst_units, program, util_info):
-    """Move the instructions inside the pipeline.
-
-    `dst_units` are the destination processing units.
-    `program` is the master instruction list.
-    `util_info` is the unit utilization information.
-
-    """
-    for cur_dst in dst_units:
-        _fill_unit(cur_dst, program, util_info)
-
-
 def _mov_candidates(candidates, unit, util_info):
     """Move candidate instructions between units.
 
@@ -575,6 +563,18 @@ def _mov_candidates(candidates, unit, util_info):
     for cur_candid in candidates:
         _add_instr_util(util_info[cur_candid.host][cur_candid.index_in_host],
                         unit, util_info)
+
+
+def _mov_flights(dst_units, program, util_info):
+    """Move the instructions inside the pipeline.
+
+    `dst_units` are the destination processing units.
+    `program` is the master instruction list.
+    `util_info` is the unit utilization information.
+
+    """
+    for cur_dst in dst_units:
+        _fill_unit(cur_dst, program, util_info)
 
 
 def _rm_util(util_info, hosted_instr):
