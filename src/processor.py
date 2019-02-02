@@ -411,8 +411,7 @@ def _fill_cp_util(processor, program, util_info, issue_rec):
     `processor` is the processor to fill the utilization of whose units
                 at the current clock pulse.
     `program` is the program to execute.
-    `util_info` is the unit utilization information during the current
-                clock pulse.
+    `util_info` is the unit utilization information to fill.
     `issue_rec` is the issue record.
 
     """
@@ -463,8 +462,7 @@ def _flush_outputs(out_units, unit_util):
     """Flush output units in preparation for a new cycle.
 
     `out_units` are the output processing units.
-    `util_info` is the unit utilization information during the current
-                clock pulse.
+    `unit_util` is the utilization information of the given unit.
 
     """
     for cur_out in out_units:
@@ -578,7 +576,7 @@ def _mov_flights(dst_units, program, util_info):
 def _rm_util(util_info, hosted_instr):
     """Remove the given instruction from the unit utilization.
 
-    `util_info` is the current utilization of all units.
+    `util_info` is the unit utilization information.
     `hosted_instr` is the hosted instruction information.
 
     """
@@ -609,7 +607,7 @@ def _space_avail(unit, util_info):
     """Calculate the free space for receiving instructions in the unit.
 
     `unit` is the unit to test whose free space.
-    `util_info` is the current utilization of all units.
+    `util_info` is the unit utilization information.
 
     """
     return unit.width - _get_unit_util(unit.name, util_info)
