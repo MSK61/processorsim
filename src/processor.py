@@ -120,14 +120,16 @@ class InstrState(object):
 
     """Instruction state"""
 
-    def __init__(self, instr):
+    def __init__(self, instr, stalled=False):
         """Initialize an instruction state.
 
         `self` is this instruction state.
         `instr` is the index of the instruction in the program.
+        `stalled` is the instruction stall state.
 
         """
         self._instr = instr
+        self._stalled = stalled
 
     def __eq__(self, other):
         """Test if the two instruction states are identical.
@@ -136,7 +138,7 @@ class InstrState(object):
         `other` is the other instruction state.
 
         """
-        return self._instr == other.instr
+        return (self._instr, self._stalled) == (other.instr, other.stalled)
 
     def __ne__(self, other):
         """Test if the two instruction states are different.
@@ -153,7 +155,16 @@ class InstrState(object):
         `self` is this instruction state.
 
         """
-        return '{}({})'.format(type(self).__name__, self._instr)
+        return '{}({}, {})'.format(
+            type(self).__name__, self._instr, self._stalled)
+
+    def stall(self):
+        """Stall this instruction.
+
+        `self` is this instruction state.
+
+        """
+        self._stalled = True
 
     @property
     def instr(self):
@@ -163,6 +174,15 @@ class InstrState(object):
 
         """
         return self._instr
+
+    @property
+    def stalled(self):
+        """Stall state of the instruction
+
+        `self` is this instruction state.
+
+        """
+        return self._stalled
 
 
 class StallError(RuntimeError):
@@ -420,6 +440,7 @@ def _fill_cp_util(processor, program, util_info, issue_rec):
     _flush_outputs(out_ports, util_info)
     _mov_flights(
         processor.out_ports + processor.internal_units, program, util_info)
+    _stall_units(processor.in_ports, util_info)
     _fill_inputs(_build_cap_map(processor.in_out_ports + processor.in_ports),
                  program, util_info, issue_rec)
     issue_rec.pump_outputs(_count_outputs(out_ports, util_info))
@@ -557,8 +578,8 @@ def _mov_candidates(candidates, unit, util_info):
 
     """
     for cur_candid in candidates:
-        _add_instr_util(util_info[cur_candid.host][cur_candid.index_in_host],
-                        unit, util_info)
+        _add_instr_util(InstrState(util_info[cur_candid.host][
+            cur_candid.index_in_host].instr), unit, util_info)
 
 
 def _mov_flights(dst_units, program, util_info):
@@ -611,3 +632,27 @@ def _space_avail(unit, util_info):
 
     """
     return unit.width - _get_unit_util(unit.name, util_info)
+
+
+def _stall_unit(unit, util_info):
+    """Mark instructions in the given unit as stalled.
+
+    `unit` is the unit to mark instructions in.
+    `util_info` is the unit utilization information.
+
+    """
+    instructions = util_info.get(unit, [])
+
+    for instr in instructions:
+        instr.stall()
+
+
+def _stall_units(units, util_info):
+    """Mark instructions in the given units as stalled.
+
+    `units` are the units to mark instructions in.
+    `util_info` is the unit utilization information.
+
+    """
+    for unit in units:
+            _stall_unit(unit.name, util_info)

@@ -123,8 +123,8 @@ class TestSim:
             [HwInstruction("MEM", [], "R12"),
              HwInstruction("ALU", ["R11", "R15"], "R14")],
             ProcessorDesc(inputs, [output], [], []),
-            [{"MEM input": [InstrState(0)], "ALU input": [InstrState(1)]},
-                {"output": [InstrState(0)], "ALU input": [InstrState(1)]},
+            [{"MEM input": [InstrState(0)], "ALU input": [InstrState(1)]}, {
+                "output": [InstrState(0)], "ALU input": [InstrState(1, True)]},
                 {"output": [InstrState(1)]}])
 
     @mark.parametrize("prog_file, proc_file, util_info", [
