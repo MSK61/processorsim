@@ -352,12 +352,12 @@ def _accept_instr(instr, instr_index, cap_unit_map, util_info):
 def _add_instr_util(instr, unit, util_info):
     """Register the given instruction in the unit.
 
-    `instr` is the instruction state.
+    `instr` is the index of the instruction in the program.
     `unit` is the unit to register the instruction in.
     `util_info` is the unit utilization information.
 
     """
-    util_info.setdefault(unit, []).append(instr)
+    util_info.setdefault(unit, []).append(InstrState(instr))
 
 
 def _build_cap_map(inputs):
@@ -567,7 +567,7 @@ def _issue_instr(instr, inputs, util_info):
             ifilter(lambda unit: _space_avail(unit, util_info), inputs))
     except StopIteration:  # No unit accepted the instruction.
         return False
-    _add_instr_util(InstrState(instr), acceptor.name, util_info)
+    _add_instr_util(instr, acceptor.name, util_info)
     return True
 
 
@@ -580,8 +580,8 @@ def _mov_candidates(candidates, unit, util_info):
 
     """
     for cur_candid in candidates:
-        _add_instr_util(InstrState(util_info[cur_candid.host][
-            cur_candid.index_in_host].instr), unit, util_info)
+        _add_instr_util(util_info[cur_candid.host][
+            cur_candid.index_in_host].instr, unit, util_info)
 
 
 def _mov_flights(dst_units, program, util_info):
