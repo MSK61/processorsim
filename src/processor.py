@@ -97,8 +97,9 @@ class HwDesc(object):
         `self` is this hardware description.
 
         """
-        return '{}({}, {})'.format(
-            type(self).__name__, self._processor, self._isa)
+        sep = ", "
+        return '{}({})'.format(type(self).__name__, sep.join(
+            map(str, [self._processor, self._isa])))
 
     @property
     def isa(self):
@@ -158,8 +159,9 @@ class InstrState(object):
         `self` is this instruction state.
 
         """
-        return '{}({}, {})'.format(
-            type(self).__name__, self._instr, self._stalled)
+        sep = ", "
+        return '{}({})'.format(type(self).__name__, sep.join(
+            map(str, [self._instr, self._stalled])))
 
     def stall(self):
         """Stall this instruction.

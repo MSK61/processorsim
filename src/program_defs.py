@@ -35,6 +35,8 @@
 #               Fedora release 25 (Twenty Five)
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Ubuntu 17.04
+#               Komodo IDE, version 11.1.1 build 91033, python 2.7.15,
+#               Fedora release 29 (Twenty Nine)
 #
 # notes:        This is a private program.
 #
@@ -133,8 +135,9 @@ class HwInstruction(Instruction):
         `self` is this hardware instruction.
 
         """
-        return '{}({}, {}, {})'.format(type(self).__name__, repr(self._categ),
-                                       self._sources, repr(self._dst))
+        sep = ", "
+        return '{}({})'.format(type(self).__name__, sep.join(
+            map(repr, [self._categ, self._sources, self._dst])))
 
     @property
     def categ(self):
@@ -189,8 +192,9 @@ class ProgInstruction(Instruction):
         `self` is this program instruction.
 
         """
-        return '{}({}, {}, {})'.format(type(self).__name__, repr(self._name),
-                                       self._sources, repr(self._dst))
+        sep = ", "
+        return '{}({})'.format(type(self).__name__, sep.join(
+            map(repr, [self._name, self._sources, self._dst])))
 
     @property
     def line(self):

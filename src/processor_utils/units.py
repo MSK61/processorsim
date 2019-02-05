@@ -35,6 +35,8 @@
 #               Fedora release 25 (Twenty Five)
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Fedora release 26 (Twenty Six)
+#               Komodo IDE, version 11.1.1 build 91033, python 2.7.15,
+#               Fedora release 29 (Twenty Nine)
 #
 # notes:        This is a private program.
 #
@@ -89,8 +91,9 @@ class FuncUnit(object):
         `self` is this functional unit.
 
         """
-        return '{}({}, {})'.format(
-            type(self).__name__, self._model, self._preds)
+        sep = ", "
+        return '{}({})'.format(type(self).__name__,
+                               sep.join(map(str, [self._model, self._preds])))
 
     @property
     def model(self):
@@ -154,8 +157,9 @@ class UnitModel(object):
         `self` is this functional unit model.
 
         """
-        return '{}({}, {}, {})'.format(type(self).__name__, repr(self._name),
-                                       self._width, self._capabilities)
+        sep = ", "
+        return '{}({})'.format(type(self).__name__, sep.join(
+            map(repr, [self._name, self._width, self._capabilities])))
 
     @property
     def capabilities(self):

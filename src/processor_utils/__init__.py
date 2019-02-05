@@ -41,6 +41,8 @@
 #               Fedora release 26 (Twenty Six)
 #               Komodo IDE, version 11.1.0 build 91033, python 2.7.15,
 #               Fedora release 29 (Twenty Nine)
+#               Komodo IDE, version 11.1.1 build 91033, python 2.7.15,
+#               Fedora release 29 (Twenty Nine)
 #
 # notes:        This is a private program.
 #
@@ -119,9 +121,10 @@ class ProcessorDesc(object):
         `self` is this processor.
 
         """
-        return "{}({}, {}, {}, {})".format(
-            type(self).__name__, self._in_ports, self._out_ports,
-            self._in_out_ports, self._internal_units)
+        sep = ", "
+        return '{}({})'.format(type(self).__name__, sep.join(
+            map(str, [self._in_ports, self._out_ports, self._in_out_ports,
+                      self._internal_units])))
 
     @staticmethod
     def _sorted_units(hw_units):
