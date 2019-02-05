@@ -51,7 +51,7 @@
 
 import test_utils
 import processor
-from processor import InstrState, simulate
+from processor import InstrState, simulate, UtilizationReg
 import processor_utils
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, UnitModel
@@ -81,6 +81,22 @@ class CoverageTest(unittest.TestCase):
 
         """
         repr(InstrState(0))
+
+    def test_UtilizationReg_ne_operator(self):
+        """Test UtilizationReg != operator.
+
+        `self` is this test case.
+
+        """
+        assert UtilizationReg() != {"fullSys": [InstrState(0)]}
+
+    def test_UtilizationReg_repr(self):
+        """Test UtilizationReg representation.
+
+        `self` is this test case.
+
+        """
+        repr(UtilizationReg())
 
 
 class TestBasic:
