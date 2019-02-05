@@ -53,6 +53,7 @@ import copy
 import heapq
 import itertools
 from itertools import ifilter, imap
+from operator import eq
 import processor_utils
 import yaml
 
@@ -213,6 +214,112 @@ class StallError(RuntimeError):
         return self._stalled_state
 
 
+class UtilizationReg:
+
+    """Unit utilization registry"""
+
+    def __init__(self):
+        """Create an empty unit utilization registry.
+
+        `self` is this unit utilization registry.
+
+        """
+        self._reg = {}
+
+    def __getitem__(self, unit):
+        """Retrieve the instructions currently in the given unit.
+
+        `self` is this unit utilization registry.
+        `unit` is the unit to retrieve the instructions currently
+               executing in.
+
+        """
+        # We deliberately don't throw exceptions here since a
+        # non-existing unit is considered to have an empty list of
+        # instructions.
+        return tuple(self._reg.get(unit, []))
+
+    def __delitem__(self, unit):
+        """Flush all instructions in the given unit.
+
+        `self` is this unit utilization registry.
+        `unit` is the unit to flush.
+
+        """
+        del self._reg[unit]
+
+    def __eq__(self, other):
+        """Test if the two utilization registries are identical.
+
+        `self` is this unit utilization registry.
+        `other` is the other unit utilization registry.
+
+        """
+        lst_pairs = imap(lambda pair: imap(
+            lambda instr_lst: sorted(instr_lst, key=lambda instr: instr.instr),
+            [pair[1], other[pair[0]]]), self._reg.iteritems())
+        return eq(*(imap(len, [self, other]))) and all(
+            imap(lambda instr_lists: eq(*instr_lists), lst_pairs))
+
+    def __iter__(self):
+        """Retrieve an iterator over this registry.
+
+        `self` is this unit utilization registry.
+
+        """
+        return iter(self._reg)
+
+    def __len__(self):
+        """Retrieve the number of units in this registry.
+
+        `self` is this unit utilization registry.
+
+        """
+        return len(self._reg)
+
+    def __ne__(self, other):
+        """Test if the two utilization registries are different.
+
+        `self` is this unit utilization registry.
+        `other` is the other unit utilization registry.
+
+        """
+        return not self == other
+
+    def __repr__(self):
+        """Return the official string of this unit utilization registry.
+
+        `self` is this unit utilization registry.
+
+        """
+        return '{}({})'.format(self.__class__.__name__, self._reg)
+
+    def add(self, unit, instr):
+        """Assign the instruction to the unit.
+
+        `self` is this unit utilization registry.
+        `unit` is the unit to assign the instruction to.
+        `instr` is the instruction to assign to the unit.
+
+        """
+        self._reg.setdefault(unit, []).append(InstrState(instr))
+
+    def remove(self, unit, instr_index):
+        """Remove the instruction from the unit.
+
+        `self` is this unit utilization registry.
+        `unit` is the unit to remove the instruction from.
+        `instr_index` is the instruction index in the list currently
+                      hosted by the unit.
+
+        """
+        assert instr_index >= 0 and instr_index < self[unit]
+        self._reg[unit].pop(instr_index)
+
+        if not self._reg[unit]:
+            del self._reg[unit]
+
+
 class _HostedInstr(object):
 
     """Instruction hosted inside a functional unit"""
@@ -349,17 +456,6 @@ def _accept_instr(instr, instr_index, cap_unit_map, util_info):
     return _issue_instr(instr_index, cap_unit_map.get(instr, []), util_info)
 
 
-def _add_instr_util(instr, unit, util_info):
-    """Register the given instruction in the unit.
-
-    `instr` is the index of the instruction in the program.
-    `unit` is the unit to register the instruction in.
-    `util_info` is the unit utilization information.
-
-    """
-    util_info.setdefault(unit, []).append(InstrState(instr))
-
-
 def _build_cap_map(inputs):
     """Build the capability map for input units.
 
@@ -413,7 +509,7 @@ def _clr_src_units(instructions, util_info):
 
     """
     for cur_instr in instructions:
-        _rm_util(util_info, cur_instr)
+        util_info.remove(cur_instr.host, cur_instr.index_in_host)
 
 
 def _count_outputs(outputs, util_info):
@@ -534,7 +630,7 @@ def _get_unit_util(unit, util_info):
     `util_info` is the unit utilization information.
 
     """
-    return len(util_info.get(unit, []))
+    return len(util_info[unit])
 
 
 def _instr_in_caps(instr, capabilities):
@@ -567,7 +663,7 @@ def _issue_instr(instr, inputs, util_info):
             ifilter(lambda unit: _space_avail(unit, util_info), inputs))
     except StopIteration:  # No unit accepted the instruction.
         return False
-    _add_instr_util(instr, acceptor.name, util_info)
+    util_info.add(acceptor.name, instr)
     return True
 
 
@@ -580,8 +676,8 @@ def _mov_candidates(candidates, unit, util_info):
 
     """
     for cur_candid in candidates:
-        _add_instr_util(util_info[cur_candid.host][
-            cur_candid.index_in_host].instr, unit, util_info)
+        util_info.add(
+            unit, util_info[cur_candid.host][cur_candid.index_in_host].instr)
 
 
 def _mov_flights(dst_units, program, util_info):
@@ -596,19 +692,6 @@ def _mov_flights(dst_units, program, util_info):
         _fill_unit(cur_dst, program, util_info)
 
 
-def _rm_util(util_info, hosted_instr):
-    """Remove the given instruction from the unit utilization.
-
-    `util_info` is the unit utilization information.
-    `hosted_instr` is the hosted instruction information.
-
-    """
-    util_info[hosted_instr.host].pop(hosted_instr.index_in_host)
-
-    if not util_info[hosted_instr.host]:
-        del util_info[hosted_instr.host]
-
-
 def _run_cycle(program, processor, util_tbl, issue_rec):
     """Run a single clock cycle.
 
@@ -619,7 +702,7 @@ def _run_cycle(program, processor, util_tbl, issue_rec):
     `issue_rec` is the issue record.
 
     """
-    old_util = util_tbl[-1] if util_tbl else {}
+    old_util = util_tbl[-1] if util_tbl else UtilizationReg()
     cp_util = copy.deepcopy(old_util)
     _fill_cp_util(processor, program, cp_util, issue_rec)
     _chk_stall(old_util, cp_util, issue_rec.entered)
@@ -643,9 +726,7 @@ def _stall_unit(unit, util_info):
     `util_info` is the unit utilization information.
 
     """
-    instructions = util_info.get(unit, [])
-
-    for instr in instructions:
+    for instr in util_info[unit]:
         instr.stall()
 
 
