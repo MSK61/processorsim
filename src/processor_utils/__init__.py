@@ -59,6 +59,7 @@ from networkx import DiGraph
 from operator import itemgetter
 import os
 from sets import IndexedSet, LowerIndexSet
+import str_conv
 import sys
 import units
 from units import sorted_models
@@ -121,10 +122,9 @@ class ProcessorDesc(object):
         `self` is this processor.
 
         """
-        sep = ", "
-        return '{}({})'.format(type(self).__name__, sep.join(
-            map(str, [self._in_ports, self._out_ports, self._in_out_ports,
-                      self._internal_units])))
+        return str_conv.get_string(
+            type(self).__name__, [self._in_ports, self._out_ports,
+                                  self._in_out_ports, self._internal_units])
 
     @staticmethod
     def _sorted_units(hw_units):

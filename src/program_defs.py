@@ -42,6 +42,8 @@
 #
 ############################################################
 
+from str_conv import get_string
+
 
 class Instruction(object):
 
@@ -135,9 +137,8 @@ class HwInstruction(Instruction):
         `self` is this hardware instruction.
 
         """
-        sep = ", "
-        return '{}({})'.format(type(self).__name__, sep.join(
-            map(repr, [self._categ, self._sources, self._dst])))
+        return get_string(
+            type(self).__name__, [self._categ, self._sources, self._dst])
 
     @property
     def categ(self):
@@ -192,9 +193,8 @@ class ProgInstruction(Instruction):
         `self` is this program instruction.
 
         """
-        sep = ", "
-        return '{}({})'.format(type(self).__name__, sep.join(
-            map(repr, [self._name, self._sources, self._dst])))
+        return get_string(
+            type(self).__name__, [self._name, self._sources, self._dst])
 
     @property
     def line(self):

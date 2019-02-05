@@ -55,6 +55,7 @@ import itertools
 from itertools import ifilter, imap
 from operator import eq
 import processor_utils
+from str_conv import get_string
 import yaml
 
 
@@ -97,9 +98,7 @@ class HwDesc(object):
         `self` is this hardware description.
 
         """
-        sep = ", "
-        return '{}({})'.format(type(self).__name__, sep.join(
-            map(str, [self._processor, self._isa])))
+        return get_string(type(self).__name__, [self._processor, self._isa])
 
     @property
     def isa(self):
@@ -159,9 +158,7 @@ class InstrState(object):
         `self` is this instruction state.
 
         """
-        sep = ", "
-        return '{}({})'.format(type(self).__name__, sep.join(
-            map(str, [self._instr, self._stalled])))
+        return get_string(type(self).__name__, [self._instr, self._stalled])
 
     def stall(self):
         """Stall this instruction.
@@ -294,7 +291,7 @@ class UtilizationReg:
         `self` is this unit utilization registry.
 
         """
-        return '{}({})'.format(self.__class__.__name__, self._reg)
+        return get_string(self.__class__.__name__, [self._reg])
 
     def add(self, unit, instr):
         """Assign the instruction to the unit.
