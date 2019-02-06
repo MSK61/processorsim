@@ -33,12 +33,118 @@
 #
 # environment:  Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Ubuntu 17.04
+#               Komodo IDE, version 11.1.1 build 91033, python 2.7.15,
+#               Fedora release 29 (Twenty Nine)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import itertools
+from itertools import imap
+from operator import eq
+import str_conv
+
+
+class LstValDict:
+
+    """Dictionary with lists as values"""
+
+    def __init__(self):
+        """Create an empty dictionary.
+
+        `self` is this dictionary.
+
+        """
+        self._dict = {}
+
+    def __getitem__(self, key):
+        """Retrieve the list of the given key.
+
+        `self` is this dictionary.
+        `key` is the key to retrieve whose list.
+
+        """
+        # We deliberately don't throw exceptions here since a
+        # non-existing key is considered to have an empty list.
+        return tuple(self._dict.get(key, []))
+
+    def __delitem__(self, key):
+        """Delete the list of the given key.
+
+        `self` is this dictionary.
+        `key` is the key to remove whose list.
+
+        """
+        del self._dict[key]
+
+    def __eq__(self, other):
+        """Test if the two dictionaries are identical.
+
+        `self` is this dictionary.
+        `other` is the other dictionary.
+
+        """
+        lst_pairs = imap(lambda pair: imap(lambda lst: sorted(lst), [
+            pair[1], other[pair[0]]]), self._dict.iteritems())
+        return eq(*(imap(len, [self, other]))) and all(
+            imap(lambda elem_lists: eq(*elem_lists), lst_pairs))
+
+    def __iter__(self):
+        """Retrieve an iterator over this dictionary.
+
+        `self` is this dictionary.
+
+        """
+        return iter(self._dict)
+
+    def __len__(self):
+        """Retrieve the number of keys in this dictionary.
+
+        `self` is this dictionary.
+
+        """
+        return len(self._dict)
+
+    def __ne__(self, other):
+        """Test if the two dictionaries are different.
+
+        `self` is this dictionary.
+        `other` is the other dictionary.
+
+        """
+        return not self == other
+
+    def __repr__(self):
+        """Return the official string of this dictionary.
+
+        `self` is this dictionary.
+
+        """
+        return str_conv.get_string(self.__class__.__name__, [self._dict])
+
+    def add(self, key, elem):
+        """Append the element to the key list.
+
+        `self` is this dictionary.
+        `key` is the key to append the element to whose list.
+        `elem` is the element to append.
+
+        """
+        self._dict.setdefault(key, []).append(elem)
+
+    def remove(self, key, elem_index):
+        """Remove the element from the key list.
+
+        `self` is this dictionary.
+        `key` is the key to remove the element from whose list.
+        `elem_index` is the element index in the key list.
+
+        """
+        assert elem_index >= 0 and elem_index < self[key]
+        self._dict[key].pop(elem_index)
+
+        if not self._dict[key]:
+            del self._dict[key]
 
 
 def contains(container, elems):
@@ -48,4 +154,4 @@ def contains(container, elems):
     `elems` are the elements to check.
 
     """
-    return all(itertools.imap(lambda cur_elem: cur_elem in container, elems))
+    return all(imap(lambda cur_elem: cur_elem in container, elems))

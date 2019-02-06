@@ -49,11 +49,11 @@
 #
 ############################################################
 
+from container_utils import LstValDict
 import copy
 import heapq
 import itertools
 from itertools import ifilter, imap
-from operator import eq
 import processor_utils
 from str_conv import get_string
 import yaml
@@ -222,85 +222,9 @@ class StallError(RuntimeError):
         return self._stalled_state
 
 
-class UtilizationReg:
+class UtilizationReg(LstValDict):
 
     """Unit utilization registry"""
-
-    def __init__(self):
-        """Create an empty unit utilization registry.
-
-        `self` is this unit utilization registry.
-
-        """
-        self._reg = {}
-
-    def __getitem__(self, unit):
-        """Retrieve the instructions currently in the given unit.
-
-        `self` is this unit utilization registry.
-        `unit` is the unit to retrieve the instructions currently
-               executing in.
-
-        """
-        # We deliberately don't throw exceptions here since a
-        # non-existing unit is considered to have an empty list of
-        # instructions.
-        return tuple(self._reg.get(unit, []))
-
-    def __delitem__(self, unit):
-        """Flush all instructions in the given unit.
-
-        `self` is this unit utilization registry.
-        `unit` is the unit to flush.
-
-        """
-        del self._reg[unit]
-
-    def __eq__(self, other):
-        """Test if the two utilization registries are identical.
-
-        `self` is this unit utilization registry.
-        `other` is the other unit utilization registry.
-
-        """
-        lst_pairs = imap(lambda pair: imap(
-            lambda instr_lst: sorted(instr_lst),
-            [pair[1], other[pair[0]]]), self._reg.iteritems())
-        return eq(*(imap(len, [self, other]))) and all(
-            imap(lambda instr_lists: eq(*instr_lists), lst_pairs))
-
-    def __iter__(self):
-        """Retrieve an iterator over this registry.
-
-        `self` is this unit utilization registry.
-
-        """
-        return iter(self._reg)
-
-    def __len__(self):
-        """Retrieve the number of units in this registry.
-
-        `self` is this unit utilization registry.
-
-        """
-        return len(self._reg)
-
-    def __ne__(self, other):
-        """Test if the two utilization registries are different.
-
-        `self` is this unit utilization registry.
-        `other` is the other unit utilization registry.
-
-        """
-        return not self == other
-
-    def __repr__(self):
-        """Return the official string of this unit utilization registry.
-
-        `self` is this unit utilization registry.
-
-        """
-        return get_string(self.__class__.__name__, [self._reg])
 
     def add(self, unit, instr):
         """Assign the instruction to the unit.
@@ -310,22 +234,7 @@ class UtilizationReg:
         `instr` is the instruction to assign to the unit.
 
         """
-        self._reg.setdefault(unit, []).append(InstrState(instr))
-
-    def remove(self, unit, instr_index):
-        """Remove the instruction from the unit.
-
-        `self` is this unit utilization registry.
-        `unit` is the unit to remove the instruction from.
-        `instr_index` is the instruction index in the list currently
-                      hosted by the unit.
-
-        """
-        assert instr_index >= 0 and instr_index < self[unit]
-        self._reg[unit].pop(instr_index)
-
-        if not self._reg[unit]:
-            del self._reg[unit]
+        LstValDict.add(self, unit, InstrState(instr))
 
 
 class _HostedInstr(object):
