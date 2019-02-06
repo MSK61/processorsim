@@ -134,6 +134,15 @@ class InstrState(object):
         self._instr = instr
         self._stalled = stalled
 
+    def __cmp__(self, other):
+        """Compare the two instruction states.
+
+        `self` is this instruction state.
+        `other` is the other instruction state.
+
+        """
+        return cmp(self._instr, other.instr)
+
     def __eq__(self, other):
         """Test if the two instruction states are identical.
 
@@ -255,7 +264,7 @@ class UtilizationReg:
 
         """
         lst_pairs = imap(lambda pair: imap(
-            lambda instr_lst: sorted(instr_lst, key=lambda instr: instr.instr),
+            lambda instr_lst: sorted(instr_lst),
             [pair[1], other[pair[0]]]), self._reg.iteritems())
         return eq(*(imap(len, [self, other]))) and all(
             imap(lambda instr_lists: eq(*instr_lists), lst_pairs))
