@@ -110,7 +110,7 @@ class TestBasic:
                 0)]}]), ([HwInstruction("MEM", [], "R12"), HwInstruction(
                     "ALU", ["R11", "R15"], "R14")], read_proc_file(
                     "processors", "multiplexedInputSplitOutputProcessor.yaml"),
-            [{"input": [InstrState(0), InstrState(1)]}, {"ALU output": [
+            [{"input": [InstrState(1), InstrState(0)]}, {"ALU output": [
                 InstrState(1)], "MEM output": [InstrState(0)]}])])
     def test_sim(self, prog, cpu, util_tbl):
         """Test executing a program.
