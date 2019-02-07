@@ -399,6 +399,23 @@ class TestUnits:
 
     """Test case for loading processor units"""
 
+    def test_processor_retains_unit_post_order(self):
+        """Test order is kept among units.
+
+        `self` is this test case.
+
+        """
+        in_unit = UnitModel("input", 1, ["ALU"])
+        in_units = [in_unit]
+        mid1 = UnitModel("middle 1", 1, ["ALU"])
+        mid1_unit = FuncUnit(mid1, [in_unit])
+        mid2 = UnitModel("middle 2", 1, ["ALU"])
+        mid2_unit = FuncUnit(mid2, [mid1])
+        out_units = [FuncUnit(UnitModel("output", 1, ["ALU"]), [mid2])]
+        assert ProcessorDesc(
+            in_units, out_units, [], [mid2_unit, mid1_unit]) != ProcessorDesc(
+            in_units, out_units, [], [mid1_unit, mid2_unit])
+
     @mark.parametrize("in_file, dup_unit", [
         ("twoUnitsWithSameNameAndCase.yaml", "fullSys"),
         ("twoUnitsWithSameNameAndDifferentCase.yaml", "FULLsYS")])

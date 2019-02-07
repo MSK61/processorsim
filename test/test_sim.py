@@ -53,8 +53,7 @@ import test_utils
 import processor
 from processor import InstrState, simulate, UtilizationReg
 import processor_utils
-from processor_utils import ProcessorDesc
-from processor_utils.units import FuncUnit, UnitModel
+from processor_utils.units import UnitModel
 from program_defs import HwInstruction
 import pytest
 from pytest import mark
@@ -136,11 +135,12 @@ class TestSim:
         """
         inputs = [UnitModel("ALU input", 1, ["ALU"]),
                   UnitModel("MEM input", 1, ["MEM"])]
-        output = FuncUnit(UnitModel("output", 1, ["ALU", "MEM"]), inputs)
+        output = processor_utils.units.FuncUnit(
+            UnitModel("output", 1, ["ALU", "MEM"]), inputs)
         TestBasic().test_sim(
             [HwInstruction("MEM", [], "R12"),
              HwInstruction("ALU", ["R11", "R15"], "R14")],
-            ProcessorDesc(inputs, [output], [], []),
+            processor_utils.ProcessorDesc(inputs, [output], [], []),
             [{"MEM input": [InstrState(0)], "ALU input": [InstrState(1)]}, {
                 "output": [InstrState(0)], "ALU input": [InstrState(1, True)]},
                 {"output": [InstrState(1)]}])
@@ -195,23 +195,6 @@ class TestSim:
             "processors", "singleALUProcessor.yaml"))
         test_utils.chk_error([test_utils.ValInStrCheck(
             ex_chk.value.processor_state, len(valid_prog))], ex_chk.value)
-
-    def test_with_lexicographical_unit_order_different_from_post_order(self):
-        """Test order is kept among units.
-
-        `self` is this test case.
-
-        """
-        in_unit = UnitModel("input", 1, ["ALU"])
-        in_units = [in_unit]
-        mid1 = UnitModel("middle 1", 1, ["ALU"])
-        mid1_unit = FuncUnit(mid1, [in_unit])
-        mid2 = UnitModel("middle 2", 1, ["ALU"])
-        mid2_unit = FuncUnit(mid2, [mid1])
-        out_units = [FuncUnit(UnitModel("output", 1, ["ALU"]), [mid2])]
-        assert ProcessorDesc(
-            in_units, out_units, [], [mid2_unit, mid1_unit]) != ProcessorDesc(
-            in_units, out_units, [], [mid1_unit, mid2_unit])
 
 
 def main():
