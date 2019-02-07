@@ -400,7 +400,7 @@ class TestUnits:
     """Test case for loading processor units"""
 
     def test_processor_retains_unit_post_order(self):
-        """Test order is kept among units.
+        """Test retaining post-order among units.
 
         `self` is this test case.
 
