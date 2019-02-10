@@ -605,7 +605,7 @@ def _mov_flights(dst_units, program, util_info):
 
     """
     for cur_dst in dst_units:
-        _fill_unit(cur_dst, program, util_info)
+        _update_flights(cur_dst, program, util_info)
 
 
 def _run_cycle(program, processor, util_tbl, issue_rec):
@@ -655,3 +655,15 @@ def _stall_units(units, util_info):
     """
     for unit in units:
             _stall_unit(unit.name, util_info)
+
+
+def _update_flights(unit, program, util_info):
+    """Update instruction in the given unit.
+
+    `unit` is the unit to update instructions in.
+    `program` is the master instruction list.
+    `util_info` is the unit utilization information.
+
+    """
+    _stall_unit(unit.model.name, util_info)
+    _fill_unit(unit, program, util_info)

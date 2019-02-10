@@ -53,7 +53,8 @@ import test_utils
 import processor
 from processor import InstrState, simulate, UtilizationReg
 import processor_utils
-from processor_utils.units import UnitModel
+from processor_utils import ProcessorDesc
+from processor_utils.units import FuncUnit, UnitModel
 from program_defs import HwInstruction
 import pytest
 from pytest import mark
@@ -135,12 +136,11 @@ class TestSim:
         """
         inputs = [UnitModel("ALU input", 1, ["ALU"]),
                   UnitModel("MEM input", 1, ["MEM"])]
-        output = processor_utils.units.FuncUnit(
-            UnitModel("output", 1, ["ALU", "MEM"]), inputs)
+        output = FuncUnit(UnitModel("output", 1, ["ALU", "MEM"]), inputs)
         TestBasic().test_sim(
             [HwInstruction("MEM", [], "R12"),
              HwInstruction("ALU", ["R11", "R15"], "R14")],
-            processor_utils.ProcessorDesc(inputs, [output], [], []),
+            ProcessorDesc(inputs, [output], [], []),
             [{"MEM input": [InstrState(0)], "ALU input": [InstrState(1)]}, {
                 "output": [InstrState(0)], "ALU input": [InstrState(1, True)]},
                 {"output": [InstrState(1)]}])
@@ -195,6 +195,28 @@ class TestSim:
             "processors", "singleALUProcessor.yaml"))
         test_utils.chk_error([test_utils.ValInStrCheck(
             ex_chk.value.processor_state, len(valid_prog))], ex_chk.value)
+
+
+class TestStall:
+
+    """Test case for stalled instructions"""
+
+    def test_internal_stall_is_detected(self):
+        """Test detecting stalls in internal units.
+
+        `self` is this test case.
+
+        """
+        in_unit = UnitModel("input", 2, ["ALU"])
+        mid = UnitModel("middle", 2, ["ALU"])
+        out_unit = UnitModel("output", 1, ["ALU"])
+        assert simulate([HwInstruction("ALU", [], "R1"),
+                         HwInstruction("ALU", [], "R2")], ProcessorDesc(
+            [in_unit], [FuncUnit(out_unit, [mid])], [], [FuncUnit(
+                mid, [in_unit])])) == [{"input": [InstrState(0), InstrState(
+                    1)]}, {"middle": [InstrState(0), InstrState(1)]},
+            {"middle": [InstrState(1, True)], "output": [InstrState(0)]},
+            {"output": [InstrState(1)]}]
 
 
 def main():
