@@ -75,7 +75,8 @@ class LstValDict:
         `key` is the key to remove whose list.
 
         """
-        del self._dict[key]
+        if key in self._dict:  # Ignore non-existing keys.
+            del self._dict[key]
 
     def __eq__(self, other):
         """Test if the two dictionaries are identical.

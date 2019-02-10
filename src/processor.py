@@ -502,8 +502,7 @@ def _flush_outputs(out_units, unit_util):
 
     """
     for cur_out in out_units:
-        if cur_out.name in unit_util:
-            del unit_util[cur_out.name]
+        del unit_util[cur_out.name]
 
 
 def _get_accepted(instructions, program, capabilities):
