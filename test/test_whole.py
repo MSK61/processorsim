@@ -51,8 +51,8 @@ class TestWhole:
 
     @pytest.mark.parametrize("prog_file_name, sim_res", [
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         [["fullSys"]]),
-        ("2InstructionProgram.asm", [["fullSys"], ["", "fullSys"]])])
+         [["U:fullSys"]]),
+        ("2InstructionProgram.asm", [["U:fullSys"], ["", "U:fullSys"]])])
     def test_sim(self, prog_file_name, sim_res):
         """Test executing a program.
 

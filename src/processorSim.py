@@ -260,7 +260,7 @@ def _get_flight_row(flight):
 
     """
     return [""] * flight.start_time + map(
-        lambda path_stop: path_stop.unit, flight.stops)
+        lambda path_stop: "U:" + path_stop.unit, flight.stops)
 
 
 def _get_last_tick(sim_res):
