@@ -141,7 +141,6 @@ class LstValDict:
         `elem_index` is the element index in the key list.
 
         """
-        assert elem_index >= 0 and elem_index < self[key]
         self._dict[key].pop(elem_index)
 
         if not self._dict[key]:
