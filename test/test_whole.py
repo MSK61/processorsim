@@ -49,11 +49,15 @@ class TestWhole:
 
     """Test case for the whole program functionality"""
 
-    @pytest.mark.parametrize("prog_file_name, sim_res", [
-        ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
+    @pytest.mark.parametrize("proc_file_name, prog_file_name, sim_res", [
+        ("processorWithALUISA.yaml",
+         "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
          [["U:fullSys"]]),
-        ("2InstructionProgram.asm", [["U:fullSys"], ["", "U:fullSys"]])])
-    def test_sim(self, prog_file_name, sim_res):
+        ("processorWithALUISA.yaml", "2InstructionProgram.asm",
+         [["U:fullSys"], ["", "U:fullSys"]]),
+        ("2WideInput1WideOutputProcessor.yaml", "2InstructionProgram.asm", [[
+            "U:input", "U:output"], ["U:input", "S", "U:output"]])])
+    def test_sim(self, proc_file_name, prog_file_name, sim_res):
         """Test executing a program.
 
         `self` is this test case.
@@ -62,8 +66,7 @@ class TestWhole:
 
         """
         processor_file, program_file = processorSim.get_in_files(
-            ["--processor",
-             join(TEST_DATA_DIR, "fullHwDesc", "processorWithALUISA.yaml"),
+            ["--processor", join(TEST_DATA_DIR, "fullHwDesc", proc_file_name),
              join(TEST_DATA_DIR, "programs", prog_file_name)])
         with processor_file, program_file:
             assert processorSim.get_sim_res(

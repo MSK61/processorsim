@@ -105,14 +105,25 @@ class _InstrPosition(object):
 
     """Instruction position"""
 
-    def __init__(self, unit):
+    def __init__(self, unit, stalled):
         """Create an instruction position.
 
         `self` is this instruction position.
         `unit` is the unit hosting the instruction.
+        `unit` is the instruction stall status.
 
         """
         self._unit = unit
+        self._stalled = stalled
+
+    @property
+    def stalled(self):
+        """Instruction stall status
+
+        `self` is this instruction position.
+
+        """
+        return self._stalled
 
     @property
     def unit(self):
@@ -250,7 +261,7 @@ def _fill_cp_util(cp, cp_util, ixcxu):
     """
     for unit in cp_util:
         for instr in cp_util[unit]:
-            ixcxu[instr.instr][cp] = _InstrPosition(unit)
+            ixcxu[instr.instr][cp] = _InstrPosition(unit, instr.stalled)
 
 
 def _get_flight_row(flight):
@@ -259,8 +270,10 @@ def _get_flight_row(flight):
     `flight` is the flight to convert.
 
     """
+    stall_label = 'S'
     return [""] * flight.start_time + map(
-        lambda path_stop: "U:" + path_stop.unit, flight.stops)
+        lambda path_stop: stall_label if path_stop.stalled else (
+            "U:" + path_stop.unit), flight.stops)
 
 
 def _get_last_tick(sim_res):

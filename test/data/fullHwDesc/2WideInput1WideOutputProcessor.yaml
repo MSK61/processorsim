@@ -1,0 +1,14 @@
+microarch:
+    units:
+        - name: input
+          width: 2
+          capabilities:
+            - ALU
+        - name: output
+          width: 1
+          capabilities:
+            - ALU
+    dataPath:
+        - [input, output]
+ISA:
+    ADD: ALU
