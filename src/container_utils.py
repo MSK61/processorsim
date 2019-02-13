@@ -89,8 +89,8 @@ class BagValDict:
 
         """
         assert other.__class__.__name__ == self.__class__.__name__
-        lst_pairs = imap(lambda pair: imap(lambda lst: sorted(lst), [
-            pair[1], other[pair[0]]]), self._dict.iteritems())
+        lst_pairs = imap(lambda pair: imap(sorted, [pair[1], other[pair[0]]]),
+                         self._dict.iteritems())
         return eq(*(imap(len, [self, other]))) and all(
             imap(lambda elem_lists: eq(*elem_lists), lst_pairs))
 
