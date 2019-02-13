@@ -42,7 +42,7 @@
 #
 ############################################################
 
-from str_conv import get_string
+from str_conv import get_obj_repr
 
 
 class Instruction(object):
@@ -137,7 +137,7 @@ class HwInstruction(Instruction):
         `self` is this hardware instruction.
 
         """
-        return get_string(
+        return get_obj_repr(
             type(self).__name__, [self._categ, self._sources, self._dst])
 
     @property
@@ -193,7 +193,7 @@ class ProgInstruction(Instruction):
         `self` is this program instruction.
 
         """
-        return get_string(
+        return get_obj_repr(
             type(self).__name__, [self._name, self._sources, self._dst])
 
     @property

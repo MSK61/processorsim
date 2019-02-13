@@ -41,21 +41,24 @@
 ############################################################
 
 from itertools import imap
+import operator
 from operator import eq
 import str_conv
 
 
-class LstValDict:
+class BagValDict:
 
-    """Dictionary with lists as values"""
+    """Dictionary with(unsorted) lists as values"""
 
-    def __init__(self):
+    def __init__(self, initial_dict=None):
         """Create an empty dictionary.
 
         `self` is this dictionary.
+        `initial_dict` is the initial dictionary contents, defaulting to
+                       an empty dictionary.
 
         """
-        self._dict = {}
+        self._dict = initial_dict or {}
 
     def __getitem__(self, key):
         """Retrieve the list of the given key.
@@ -85,6 +88,7 @@ class LstValDict:
         `other` is the other dictionary.
 
         """
+        assert other.__class__.__name__ == self.__class__.__name__
         lst_pairs = imap(lambda pair: imap(lambda lst: sorted(lst), [
             pair[1], other[pair[0]]]), self._dict.iteritems())
         return eq(*(imap(len, [self, other]))) and all(
@@ -121,7 +125,8 @@ class LstValDict:
         `self` is this dictionary.
 
         """
-        return str_conv.get_string(self.__class__.__name__, [self._dict])
+        return str_conv.format_obj(
+            self.__class__.__name__, [self._format_dict()])
 
     def add(self, key, elem):
         """Append the element to the key list.
@@ -145,6 +150,27 @@ class LstValDict:
 
         if not self._dict[key]:
             del self._dict[key]
+
+    def _format_dict(self):
+        """Format this dictionary.
+
+        `self` is this dictionary.
+
+        """
+        return "{{{}}}".format(self._format_elems())
+
+    def _format_elems(self):
+        """Format the elements of this dictionary.
+
+        `self` is this dictionary.
+
+        """
+        items = imap(
+            lambda item: (item[0], sorted(item[1])), self._dict.iteritems())
+        item_strings = imap(lambda item: "{}: {}".format(
+            repr(item[0]), item[1]), sorted(items, key=operator.itemgetter(0)))
+        sep = ", "
+        return sep.join(item_strings)
 
 
 def contains(container, elems):

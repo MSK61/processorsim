@@ -49,13 +49,13 @@
 #
 ############################################################
 
-from container_utils import LstValDict
+from container_utils import BagValDict
 import copy
 import heapq
 import itertools
 from itertools import ifilter, imap
 import processor_utils
-from str_conv import get_string
+from str_conv import get_obj_repr
 import yaml
 
 
@@ -98,7 +98,7 @@ class HwDesc(object):
         `self` is this hardware description.
 
         """
-        return get_string(type(self).__name__, [self._processor, self._isa])
+        return get_obj_repr(type(self).__name__, [self._processor, self._isa])
 
     @property
     def isa(self):
@@ -167,7 +167,7 @@ class InstrState(object):
         `self` is this instruction state.
 
         """
-        return get_string(type(self).__name__, [self._instr, self._stalled])
+        return get_obj_repr(type(self).__name__, [self._instr, self._stalled])
 
     def stall(self):
         """Stall this instruction.
@@ -222,7 +222,7 @@ class StallError(RuntimeError):
         return self._stalled_state
 
 
-class UtilizationReg(LstValDict):
+class UtilizationReg(BagValDict):
 
     """Unit utilization registry"""
 
@@ -234,7 +234,7 @@ class UtilizationReg(LstValDict):
         `instr` is the instruction to assign to the unit.
 
         """
-        LstValDict.add(self, unit, InstrState(instr))
+        BagValDict.add(self, unit, InstrState(instr))
 
 
 class _HostedInstr(object):

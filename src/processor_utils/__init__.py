@@ -122,7 +122,7 @@ class ProcessorDesc(object):
         `self` is this processor.
 
         """
-        return str_conv.get_string(
+        return str_conv.get_obj_repr(
             type(self).__name__, [self._in_ports, self._out_ports,
                                   self._in_out_ports, self._internal_units])
 

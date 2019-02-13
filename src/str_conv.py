@@ -39,12 +39,22 @@
 ############################################################
 
 
-def get_string(cls_name, fields):
+def format_obj(cls_name, field_strings):
+    """Construct a string representation for the given object.
+
+    `cls_name` is the class name.
+    `fields` are the string representations of the object fields.
+
+    """
+    sep = ", "
+    return '{}({})'.format(cls_name, sep.join(field_strings))
+
+
+def get_obj_repr(cls_name, fields):
     """Construct a string representation for the given object.
 
     `cls_name` is the class name.
     `fields` are the object fields.
 
     """
-    sep = ", "
-    return '{}({})'.format(cls_name, sep.join(map(repr, fields)))
+    return format_obj(cls_name, map(repr, fields))

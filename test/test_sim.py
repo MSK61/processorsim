@@ -88,7 +88,7 @@ class CoverageTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        assert UtilizationReg() != {"fullSys": [InstrState(0)]}
+        assert UtilizationReg() != UtilizationReg({"fullSys": [InstrState(0)]})
 
     def test_UtilizationReg_repr(self):
         """Test UtilizationReg representation.
@@ -121,7 +121,7 @@ class TestBasic:
         `util_tbl` is the expected utilization table.
 
         """
-        assert simulate(prog, cpu) == util_tbl
+        assert simulate(prog, cpu) == map(UtilizationReg, util_tbl)
 
 
 class TestSim:
@@ -210,13 +210,13 @@ class TestStall:
         in_unit = UnitModel("input", 2, ["ALU"])
         mid = UnitModel("middle", 2, ["ALU"])
         out_unit = UnitModel("output", 1, ["ALU"])
-        assert simulate([HwInstruction("ALU", [], "R1"),
-                         HwInstruction("ALU", [], "R2")], ProcessorDesc(
-            [in_unit], [FuncUnit(out_unit, [mid])], [], [FuncUnit(
-                mid, [in_unit])])) == [{"input": [InstrState(0), InstrState(
-                    1)]}, {"middle": [InstrState(0), InstrState(1)]},
-            {"middle": [InstrState(1, True)], "output": [InstrState(0)]},
-            {"output": [InstrState(1)]}]
+        assert simulate([HwInstruction("ALU", [], "R1"), HwInstruction("ALU", [
+            ], "R2")], ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])],
+                                     [], [FuncUnit(mid, [in_unit])])) == [
+            UtilizationReg({"input": [InstrState(0), InstrState(1)]}),
+            UtilizationReg({"middle": [InstrState(0), InstrState(1)]}),
+            UtilizationReg({"middle": [InstrState(1, True)], "output": [
+                InstrState(0)]}), UtilizationReg({"output": [InstrState(1)]})]
 
 
 def main():

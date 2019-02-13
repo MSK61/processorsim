@@ -44,7 +44,7 @@
 
 from itertools import imap
 import operator
-from str_conv import get_string
+from str_conv import get_obj_repr
 __all__ = ["FuncUnit", "UnitModel"]
 
 
@@ -92,7 +92,7 @@ class FuncUnit(object):
         `self` is this functional unit.
 
         """
-        return get_string(type(self).__name__, [self._model, self._preds])
+        return get_obj_repr(type(self).__name__, [self._model, self._preds])
 
     @property
     def model(self):
@@ -156,7 +156,7 @@ class UnitModel(object):
         `self` is this functional unit model.
 
         """
-        return get_string(
+        return get_obj_repr(
             type(self).__name__, [self._name, self._width, self._capabilities])
 
     @property
