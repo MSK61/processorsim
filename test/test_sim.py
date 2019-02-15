@@ -124,6 +124,43 @@ class TestBasic:
         assert simulate(prog, cpu) == map(UtilizationReg, util_tbl)
 
 
+class TestPipeline:
+
+    """Test case for instruction flow in the pipeline"""
+
+    def test_instructions_flow_seamlessly(self):
+        """Test instructions are moved successfully along the pipeline.
+
+        `self` is this test case.
+
+        """
+        big_input = UnitModel("big input", 4, ["ALU"])
+        small_input1 = UnitModel("small input 1", 1, ["ALU"])
+        mid1 = UnitModel("middle 1", 1, ["ALU"])
+        small_input2 = UnitModel("small input 2", 1, ["ALU"])
+        mid2 = UnitModel("middle 2", 2, ["ALU"])
+        out_unit = UnitModel("output", 2, ["ALU"])
+        assert simulate(
+            [HwInstruction("ALU", [], "R1"), HwInstruction("ALU", [], "R2"),
+             HwInstruction("ALU", [], "R3"), HwInstruction("ALU", [], "R4"),
+             HwInstruction("ALU", [], "R5"), HwInstruction("ALU", [], "R6")],
+            ProcessorDesc(
+                [big_input, small_input1, small_input2],
+                [FuncUnit(out_unit, [big_input, mid2])], [],
+                [FuncUnit(mid2, [mid1, small_input2]),
+                 FuncUnit(mid1, [small_input1])])) == [
+            UtilizationReg({
+                "big input": [InstrState(0), InstrState(1), InstrState(2),
+                              InstrState(3)], "small input 1": [InstrState(4)],
+                "small input 2": [InstrState(5)]}), UtilizationReg(
+                {"big input": [InstrState(2, True), InstrState(3, True)],
+                 "output": [InstrState(0), InstrState(1)],
+                 "middle 1": [InstrState(4)], "middle 2": [InstrState(5)]}),
+            UtilizationReg({"output": [InstrState(2), InstrState(3)],
+                            "middle 2": [InstrState(5, True), InstrState(4)]}),
+            UtilizationReg({"output": [InstrState(4), InstrState(5)]})]
+
+
 class TestSim:
 
     """Test case for program simulation"""

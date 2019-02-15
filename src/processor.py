@@ -488,10 +488,12 @@ def _fill_unit(unit, program, util_info):
 
     """
     candidates = _get_candidates(unit, program, util_info)
-    # We have to add instructions in order but remove them in reverse order
-    # (, hence two different steps).
+    # instructions sorted by program index
     _mov_candidates(candidates, unit.model.name, util_info)
-    _clr_src_units(reversed(candidates), util_info)
+    # Need to sort instructions by their index in the host in a
+    # descending order.
+    _clr_src_units(sorted(candidates, key=lambda candid: candid.index_in_host,
+                          reverse=True), util_info)
 
 
 def _flush_outputs(out_units, unit_util):
