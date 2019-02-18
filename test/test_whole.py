@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Komodo IDE, version 11.1.1 build 91033, python 2.7.15,
+# environment:  Komodo IDE, version 11.1.1 build 91089, python 2.7.15,
 #               Fedora release 29 (Twenty Nine)
 #
 # notes:        This is a private program.
