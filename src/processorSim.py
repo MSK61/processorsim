@@ -79,26 +79,8 @@ class _InstrFlight(object):
                 order.
 
         """
-        self._start_time = start_time
-        self._stops = tuple(units)
-
-    @property
-    def start_time(self):
-        """Instruction flight start time
-
-        `self` is this instruction flight.
-
-        """
-        return self._start_time
-
-    @property
-    def stops(self):
-        """Instruction itinerary
-
-        `self` is this instruction flight.
-
-        """
-        return self._stops
+        self.start_time = start_time
+        self.stops = tuple(units)
 
 
 class _InstrPosition(object):
@@ -113,26 +95,8 @@ class _InstrPosition(object):
         `unit` is the instruction stall status.
 
         """
-        self._unit = unit
-        self._stalled = stalled
-
-    @property
-    def stalled(self):
-        """Instruction stall status
-
-        `self` is this instruction position.
-
-        """
-        return self._stalled
-
-    @property
-    def unit(self):
-        """Unit hosting this instruction
-
-        `self` is this instruction position.
-
-        """
-        return self._unit
+        self.unit = unit
+        self.stalled = stalled
 
 
 def get_in_files(argv):

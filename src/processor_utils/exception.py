@@ -38,6 +38,8 @@
 #               Ubuntu 17.04
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Fedora release 26 (Twenty Six)
+#               Komodo IDE, version 11.1.1 build 91033, python 2.7.15,
+#               Fedora release 29 (Twenty Nine)
 #
 # notes:        This is a private program.
 #
@@ -178,26 +180,8 @@ class CapPortInfo(object):
         `port_info` is the port information.
 
         """
-        self._cap_info = capability_info
-        self._port_info = port_info
-
-    @property
-    def capability_info(self):
-        """Capability information
-
-        `self` is this capability-port combination information.
-
-        """
-        return self._cap_info
-
-    @property
-    def port_info(self):
-        """Port information
-
-        `self` is this capability-port combination information.
-
-        """
-        return self._port_info
+        self.capability_info = capability_info
+        self.port_info = port_info
 
 
 class ComponentInfo(object):
@@ -212,26 +196,8 @@ class ComponentInfo(object):
         `reporting_name` is the component reporting name.
 
         """
-        self._std_name = std_name
-        self._rep_name = reporting_name
-
-    @property
-    def reporting_name(self):
-        """Component reporting name
-
-        `self` is this component information.
-
-        """
-        return self._rep_name
-
-    @property
-    def std_name(self):
-        """Component standard name
-
-        `self` is this component information.
-
-        """
-        return self._std_name
+        self.std_name = std_name
+        self.reporting_name = reporting_name
 
 
 class DeadInputError(RuntimeError):

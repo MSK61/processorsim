@@ -41,6 +41,8 @@
 #               Fedora release 26 (Twenty Six)
 #               Komodo IDE, version 11.1.0 build 91033, python 2.7.15,
 #               Fedora release 29 (Twenty Nine)
+#               Komodo IDE, version 11.1.1 build 91089, python 2.7.15,
+#               Fedora release 29 (Twenty Nine)
 #
 # notes:        This is a private program.
 #
@@ -107,26 +109,8 @@ class _LineInfo(object):
         `operands` are the instruction operands.
 
         """
-        self._instruction = instr
-        self._operands = operands
-
-    @property
-    def instruction(self):
-        """Relevant instruction
-
-        `self` is this source line information.
-
-        """
-        return self._instruction
-
-    @property
-    def operands(self):
-        """Relevant instruction operands
-
-        `self` is this source line information.
-
-        """
-        return self._operands
+        self.instruction = instr
+        self.operands = operands
 
 
 def compile_program(prog, isa):

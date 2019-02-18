@@ -71,8 +71,8 @@ class HwDesc(object):
         `isa` is the instruction set architecture.
 
         """
-        self._processor = processor
-        self._isa = isa
+        self.processor = processor
+        self.isa = isa
 
     def __eq__(self, other):
         """Test if the two hardware descriptions are identical.
@@ -81,7 +81,7 @@ class HwDesc(object):
         `other` is the other hardware description.
 
         """
-        return (self._processor, self._isa) == (other.processor, other.isa)
+        return (self.processor, self.isa) == (other.processor, other.isa)
 
     def __ne__(self, other):
         """Test if the two hardware descriptions are different.
@@ -98,25 +98,7 @@ class HwDesc(object):
         `self` is this hardware description.
 
         """
-        return get_obj_repr(type(self).__name__, [self._processor, self._isa])
-
-    @property
-    def isa(self):
-        """Instruction set architecture
-
-        `self` is this hardware description.
-
-        """
-        return self._isa
-
-    @property
-    def processor(self):
-        """Processor description
-
-        `self` is this hardware description.
-
-        """
-        return self._processor
+        return get_obj_repr(type(self).__name__, [self.processor, self.isa])
 
 
 class InstrState(object):
@@ -131,7 +113,7 @@ class InstrState(object):
         `stalled` is the instruction stall state.
 
         """
-        self._instr = instr
+        self.instr = instr
         self._stalled = stalled
 
     def __cmp__(self, other):
@@ -141,7 +123,7 @@ class InstrState(object):
         `other` is the other instruction state.
 
         """
-        return cmp(self._instr, other.instr)
+        return cmp(self.instr, other.instr)
 
     def __eq__(self, other):
         """Test if the two instruction states are identical.
@@ -150,7 +132,7 @@ class InstrState(object):
         `other` is the other instruction state.
 
         """
-        return (self._instr, self._stalled) == (other.instr, other.stalled)
+        return (self.instr, self._stalled) == (other.instr, other.stalled)
 
     def __ne__(self, other):
         """Test if the two instruction states are different.
@@ -167,7 +149,7 @@ class InstrState(object):
         `self` is this instruction state.
 
         """
-        return get_obj_repr(type(self).__name__, [self._instr, self._stalled])
+        return get_obj_repr(type(self).__name__, [self.instr, self._stalled])
 
     def stall(self):
         """Stall this instruction.
@@ -176,15 +158,6 @@ class InstrState(object):
 
         """
         self._stalled = True
-
-    @property
-    def instr(self):
-        """Index of the instruction in the program
-
-        `self` is this instruction state.
-
-        """
-        return self._instr
 
     @property
     def stalled(self):
@@ -250,26 +223,8 @@ class _HostedInstr(object):
                       execution buffer.
 
         """
-        self._host = unit
-        self._local_index = local_index
-
-    @property
-    def host(self):
-        """Hosting functional util
-
-        `self` is this hosted instruction information.
-
-        """
-        return self._host
-
-    @property
-    def index_in_host(self):
-        """Instruction index in the host internal execution buffer
-
-        `self` is this hosted instruction information.
-
-        """
-        return self._local_index
+        self.host = unit
+        self.index_in_host = local_index
 
 
 class _IssueInfo(object):

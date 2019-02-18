@@ -57,8 +57,8 @@ class Instruction(object):
         `dst` is the register written by the instruction.
 
         """
-        self._sources = tuple(sorted(sources))
-        self._dst = dst
+        self.sources = tuple(sorted(sources))
+        self.destination = dst
 
     def __eq__(self, other):
         """Test if the two instructions are identical.
@@ -67,7 +67,8 @@ class Instruction(object):
         `other` is the other instruction.
 
         """
-        return (self._sources, self._dst) == (other.sources, other.destination)
+        return (self.sources, self.destination) == (
+            other.sources, other.destination)
 
     def __ne__(self, other):
         """Test if the two instructions are different.
@@ -77,24 +78,6 @@ class Instruction(object):
 
         """
         return not self == other
-
-    @property
-    def destination(self):
-        """Destination operand
-
-        `self` is this instruction.
-
-        """
-        return self._dst
-
-    @property
-    def sources(self):
-        """Source operands
-
-        `self` is this instruction.
-
-        """
-        return self._sources
 
 
 class HwInstruction(Instruction):
@@ -111,7 +94,7 @@ class HwInstruction(Instruction):
 
         """
         Instruction.__init__(self, frozenset(sources), dst)
-        self._categ = categ
+        self.categ = categ
 
     def __eq__(self, other):
         """Test if the two hardware instructions are identical.
@@ -120,7 +103,7 @@ class HwInstruction(Instruction):
         `other` is the other hardware instruction.
 
         """
-        return Instruction.__eq__(self, other) and self._categ == other.categ
+        return Instruction.__eq__(self, other) and self.categ == other.categ
 
     def __ne__(self, other):
         """Test if the two hardware instructions are different.
@@ -138,16 +121,7 @@ class HwInstruction(Instruction):
 
         """
         return get_obj_repr(
-            type(self).__name__, [self._categ, self._sources, self._dst])
-
-    @property
-    def categ(self):
-        """Instruction category
-
-        `self` is this hardware instruction.
-
-        """
-        return self._categ
+            type(self).__name__, [self.categ, self.sources, self.destination])
 
 
 class ProgInstruction(Instruction):
@@ -165,8 +139,8 @@ class ProgInstruction(Instruction):
 
         """
         Instruction.__init__(self, sources, dst)
-        self._line = line
-        self._name = name
+        self.line = line
+        self.name = name
 
     def __eq__(self, other):
         """Test if the two program instructions are identical.
@@ -176,7 +150,7 @@ class ProgInstruction(Instruction):
 
         """
         return Instruction.__eq__(self, other) and (
-            self._line, self._name) == (other.line, other.name)
+            self.line, self.name) == (other.line, other.name)
 
     def __ne__(self, other):
         """Test if the two program instructions are different.
@@ -194,22 +168,4 @@ class ProgInstruction(Instruction):
 
         """
         return get_obj_repr(
-            type(self).__name__, [self._name, self._sources, self._dst])
-
-    @property
-    def line(self):
-        """Number of the source line containing the instruction
-
-        `self` is this program instruction.
-
-        """
-        return self._line
-
-    @property
-    def name(self):
-        """Instruction mnemonic
-
-        `self` is this program instruction.
-
-        """
-        return self._name
+            type(self).__name__, [self.name, self.sources, self.destination])

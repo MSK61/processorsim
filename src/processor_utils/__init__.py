@@ -90,10 +90,10 @@ class ProcessorDesc(object):
                          unit to the consuming one).
 
         """
-        self._in_ports, self._in_out_ports = imap(
+        self.in_ports, self.in_out_ports = imap(
             sorted_models, [in_ports, in_out_ports])
-        self._out_ports = self._sorted_units(out_ports)
-        self._internal_units = tuple(internal_units)
+        self.out_ports = self._sorted_units(out_ports)
+        self.internal_units = tuple(internal_units)
 
     def __eq__(self, other):
         """Test if the two processors are identical.
@@ -103,9 +103,9 @@ class ProcessorDesc(object):
 
         """
         return (
-            self._in_ports, self._out_ports, self._in_out_ports,
-            self._internal_units) == (other.in_ports, other.out_ports,
-                                      other.in_out_ports, other.internal_units)
+            self.in_ports, self.out_ports, self.in_out_ports,
+            self.internal_units) == (other.in_ports, other.out_ports,
+                                     other.in_out_ports, other.internal_units)
 
     def __ne__(self, other):
         """Test if the two processors are different.
@@ -123,8 +123,8 @@ class ProcessorDesc(object):
 
         """
         return str_conv.get_obj_repr(
-            type(self).__name__, [self._in_ports, self._out_ports,
-                                  self._in_out_ports, self._internal_units])
+            type(self).__name__, [self.in_ports, self.out_ports,
+                                  self.in_out_ports, self.internal_units])
 
     @staticmethod
     def _sorted_units(hw_units):
@@ -134,44 +134,6 @@ class ProcessorDesc(object):
 
         """
         return tuple(sorted(hw_units, key=lambda unit: unit.model.name))
-
-    @property
-    def in_out_ports(self):
-        """Processor input-output ports
-
-        `self` is this processor.
-
-        """
-        return self._in_out_ports
-
-    @property
-    def in_ports(self):
-        """Processor input-only ports
-
-        `self` is this processor.
-
-        """
-        return self._in_ports
-
-    @property
-    def internal_units(self):
-        """Processor internal units
-
-        `self` is this processor.
-        An internal unit is a unit that's neither an input nor an
-        output.
-
-        """
-        return self._internal_units
-
-    @property
-    def out_ports(self):
-        """Processor output-only ports
-
-        `self` is this processor.
-
-        """
-        return self._out_ports
 
 
 class _CapabilityInfo(object):
@@ -186,26 +148,8 @@ class _CapabilityInfo(object):
         `unit` is the unit where the capability is defined.
 
         """
-        self._name = name
-        self._unit = unit
-
-    @property
-    def name(self):
-        """Capability name
-
-        `self` is this capability.
-
-        """
-        return self._name
-
-    @property
-    def unit(self):
-        """Unit where the capability is defined
-
-        `self` is this capability.
-
-        """
-        return self._unit
+        self.name = name
+        self.unit = unit
 
 
 class _PortGroup(object):
@@ -220,8 +164,8 @@ class _PortGroup(object):
                     from.
 
         """
-        self._in_ports = _in_port_list(processor)
-        self._out_ports = self._out_port_list(processor)
+        self.in_ports = _in_port_list(processor)
+        self.out_ports = self._out_port_list(processor)
 
     @staticmethod
     def _out_port_list(processor):
@@ -233,24 +177,6 @@ class _PortGroup(object):
 
         """
         return tuple(_get_out_ports(processor))
-
-    @property
-    def in_ports(self):
-        """Input ports
-
-        `self` is this port group.
-
-        """
-        return self._in_ports
-
-    @property
-    def out_ports(self):
-        """Output ports
-
-        `self` is this port group.
-
-        """
-        return self._out_ports
 
 
 def get_abilities(processor):
