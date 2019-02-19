@@ -49,6 +49,8 @@
 #
 ############################################################
 
+import pytest
+from pytest import mark
 import test_utils
 from container_utils import BagValDict
 import processor
@@ -57,8 +59,6 @@ import processor_utils
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, UnitModel
 from program_defs import HwInstruction
-import pytest
-from pytest import mark
 from test_utils import read_proc_file
 import unittest
 
