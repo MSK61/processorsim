@@ -58,7 +58,10 @@ class BagValDict:
                        an empty dictionary.
 
         """
-        self._dict = initial_dict or {}
+        self._dict = {}
+
+        if initial_dict:
+            self._add_items(initial_dict.iteritems())
 
     def __getitem__(self, key):
         """Retrieve the list of the given key.
@@ -150,6 +153,17 @@ class BagValDict:
 
         if not self._dict[key]:
             del self._dict[key]
+
+    def _add_items(self, items):
+        """Add items to this dictionary.
+
+        `self` is this dictionary.
+        `items` are the items to add.
+
+        """
+        for key, elem_lst in items:
+            for elem in elem_lst:
+                self.add(key, elem)
 
     def _format_dict(self):
         """Format this dictionary.
