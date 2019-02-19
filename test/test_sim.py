@@ -50,8 +50,9 @@
 ############################################################
 
 import test_utils
+from container_utils import BagValDict
 import processor
-from processor import InstrState, simulate, UtilizationReg
+from processor import InstrState, simulate
 import processor_utils
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, UnitModel
@@ -65,6 +66,22 @@ import unittest
 class CoverageTest(unittest.TestCase):
 
     """Test case for fulfilling complete code coverage"""
+
+    def test_BagValDict_ne_operator(self):
+        """Test BagValDict != operator.
+
+        `self` is this test case.
+
+        """
+        assert BagValDict() != BagValDict({"fullSys": [InstrState(0)]})
+
+    def test_BagValDict_repr(self):
+        """Test BagValDict representation.
+
+        `self` is this test case.
+
+        """
+        repr(BagValDict())
 
     def test_InstrState_ne_operator(self):
         """Test InstrState != operator.
@@ -81,22 +98,6 @@ class CoverageTest(unittest.TestCase):
 
         """
         repr(InstrState(0))
-
-    def test_UtilizationReg_ne_operator(self):
-        """Test UtilizationReg != operator.
-
-        `self` is this test case.
-
-        """
-        assert UtilizationReg() != UtilizationReg({"fullSys": [InstrState(0)]})
-
-    def test_UtilizationReg_repr(self):
-        """Test UtilizationReg representation.
-
-        `self` is this test case.
-
-        """
-        repr(UtilizationReg())
 
 
 class TestBasic:
@@ -121,7 +122,7 @@ class TestBasic:
         `util_tbl` is the expected utilization table.
 
         """
-        assert simulate(prog, cpu) == map(UtilizationReg, util_tbl)
+        assert simulate(prog, cpu) == map(BagValDict, util_tbl)
 
 
 class TestPipeline:
@@ -149,16 +150,16 @@ class TestPipeline:
                 [FuncUnit(out_unit, [big_input, mid2])], [],
                 [FuncUnit(mid2, [mid1, small_input2]),
                  FuncUnit(mid1, [small_input1])])) == [
-            UtilizationReg({
+            BagValDict({
                 "big input": [InstrState(0), InstrState(1), InstrState(2),
                               InstrState(3)], "small input 1": [InstrState(4)],
-                "small input 2": [InstrState(5)]}), UtilizationReg(
+                "small input 2": [InstrState(5)]}), BagValDict(
                 {"big input": [InstrState(2, True), InstrState(3, True)],
                  "output": [InstrState(0), InstrState(1)],
                  "middle 1": [InstrState(4)], "middle 2": [InstrState(5)]}),
-            UtilizationReg({"output": [InstrState(2), InstrState(3)],
-                            "middle 2": [InstrState(5, True), InstrState(4)]}),
-            UtilizationReg({"output": [InstrState(4), InstrState(5)]})]
+            BagValDict({"output": [InstrState(2), InstrState(3)],
+                        "middle 2": [InstrState(5, True), InstrState(4)]}),
+            BagValDict({"output": [InstrState(4), InstrState(5)]})]
 
 
 class TestSim:
@@ -247,13 +248,13 @@ class TestStall:
         in_unit = UnitModel("input", 2, ["ALU"])
         mid = UnitModel("middle", 2, ["ALU"])
         out_unit = UnitModel("output", 1, ["ALU"])
-        assert simulate([HwInstruction("ALU", [], "R1"), HwInstruction("ALU", [
-            ], "R2")], ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])],
-                                     [], [FuncUnit(mid, [in_unit])])) == [
-            UtilizationReg({"input": [InstrState(0), InstrState(1)]}),
-            UtilizationReg({"middle": [InstrState(0), InstrState(1)]}),
-            UtilizationReg({"middle": [InstrState(1, True)], "output": [
-                InstrState(0)]}), UtilizationReg({"output": [InstrState(1)]})]
+        assert simulate([HwInstruction("ALU", [], "R1"), HwInstruction(
+            "ALU", [], "R2")], ProcessorDesc([in_unit], [FuncUnit(out_unit, [
+                mid])], [], [FuncUnit(mid, [in_unit])])) == [BagValDict({
+                    "input": [InstrState(0), InstrState(1)]}), BagValDict({
+                        "middle": [InstrState(0), InstrState(1)]}), BagValDict(
+                    {"middle": [InstrState(1, True)], "output": [InstrState(
+                        0)]}), BagValDict({"output": [InstrState(1)]})]
 
 
 def main():

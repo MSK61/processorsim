@@ -49,7 +49,7 @@
 #
 ############################################################
 
-from container_utils import BagValDict
+import container_utils
 import copy
 import heapq
 import itertools
@@ -114,7 +114,7 @@ class InstrState(object):
 
         """
         self.instr = instr
-        self._stalled = stalled
+        self.stalled = stalled
 
     def __cmp__(self, other):
         """Compare the two instruction states.
@@ -132,7 +132,7 @@ class InstrState(object):
         `other` is the other instruction state.
 
         """
-        return (self.instr, self._stalled) == (other.instr, other.stalled)
+        return (self.instr, self.stalled) == (other.instr, other.stalled)
 
     def __ne__(self, other):
         """Test if the two instruction states are different.
@@ -149,24 +149,7 @@ class InstrState(object):
         `self` is this instruction state.
 
         """
-        return get_obj_repr(type(self).__name__, [self.instr, self._stalled])
-
-    def stall(self):
-        """Stall this instruction.
-
-        `self` is this instruction state.
-
-        """
-        self._stalled = True
-
-    @property
-    def stalled(self):
-        """Stall state of the instruction
-
-        `self` is this instruction state.
-
-        """
-        return self._stalled
+        return get_obj_repr(type(self).__name__, [self.instr, self.stalled])
 
 
 class StallError(RuntimeError):
@@ -193,21 +176,6 @@ class StallError(RuntimeError):
 
         """
         return self._stalled_state
-
-
-class UtilizationReg(BagValDict):
-
-    """Unit utilization registry"""
-
-    def add(self, unit, instr):
-        """Assign the instruction to the unit.
-
-        `self` is this unit utilization registry.
-        `unit` is the unit to assign the instruction to.
-        `instr` is the instruction to assign to the unit.
-
-        """
-        BagValDict.add(self, unit, InstrState(instr))
 
 
 class _HostedInstr(object):
@@ -536,8 +504,20 @@ def _issue_instr(instr, inputs, util_info):
             ifilter(lambda unit: _space_avail(unit, util_info), inputs))
     except StopIteration:  # No unit accepted the instruction.
         return False
-    util_info.add(acceptor.name, instr)
+    util_info.add(acceptor.name, InstrState(instr))
     return True
+
+
+def _mov_candidate(candidate, unit, util_info):
+    """Move a candidate instruction between units.
+
+    `candidate` is the candidate instruction to move.
+    `unit` is the destination unit.
+    `util_info` is the unit utilization information.
+
+    """
+    candidate.stalled = False
+    util_info.add(unit, candidate)
 
 
 def _mov_candidates(candidates, unit, util_info):
@@ -549,8 +529,8 @@ def _mov_candidates(candidates, unit, util_info):
 
     """
     for cur_candid in candidates:
-        util_info.add(
-            unit, util_info[cur_candid.host][cur_candid.index_in_host].instr)
+        _mov_candidate(util_info[cur_candid.host][cur_candid.index_in_host],
+                       unit, util_info)
 
 
 def _mov_flights(dst_units, program, util_info):
@@ -575,7 +555,7 @@ def _run_cycle(program, processor, util_tbl, issue_rec):
     `issue_rec` is the issue record.
 
     """
-    old_util = util_tbl[-1] if util_tbl else UtilizationReg()
+    old_util = util_tbl[-1] if util_tbl else container_utils.BagValDict()
     cp_util = copy.deepcopy(old_util)
     _fill_cp_util(processor, program, cp_util, issue_rec)
     _chk_stall(old_util, cp_util, issue_rec.entered)
@@ -600,7 +580,7 @@ def _stall_unit(unit, util_info):
 
     """
     for instr in util_info[unit]:
-        instr.stall()
+        instr.stalled = True
 
 
 def _stall_units(units, util_info):
