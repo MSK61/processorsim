@@ -67,22 +67,6 @@ class CoverageTest(unittest.TestCase):
 
     """Test case for fulfilling complete code coverage"""
 
-    def test_BagValDict_ne_operator(self):
-        """Test BagValDict != operator.
-
-        `self` is this test case.
-
-        """
-        assert BagValDict() != BagValDict({"fullSys": [InstrState(0)]})
-
-    def test_BagValDict_repr(self):
-        """Test BagValDict representation.
-
-        `self` is this test case.
-
-        """
-        repr(BagValDict())
-
     def test_InstrState_ne_operator(self):
         """Test InstrState != operator.
 
