@@ -178,20 +178,18 @@ class TestCaps:
 
     """Test case for loading capabilities"""
 
-    @mark.parametrize(
-        "in_file, err_tag", [("processorWithNoCapableInputs.yaml", "input"),
-                             ("singleUnitWithNoCapabilities.yaml", "input"),
-                             ("emptyProcessor.yaml", "input")])
+    @mark.parametrize("in_file", [
+        "processorWithNoCapableInputs.yaml",
+        "singleUnitWithNoCapabilities.yaml", "emptyProcessor.yaml"])
     def test_processor_with_incapable_ports_raises_EmptyProcError(
-            self, in_file, err_tag):
+            self, in_file):
         """Test a processor with no capable ports.
 
         `self` is this test case.
         `in_file` is the processor description file.
-        `err_tag` is the port type tag in the error message.
 
         """
-        assert err_tag in str(raises(exception.EmptyProcError, read_proc_file,
+        assert "input" in str(raises(exception.EmptyProcError, read_proc_file,
                                      "capabilities", in_file).value).lower()
 
     def test_same_capability_with_different_case_in_two_units_is_detected(
