@@ -58,6 +58,7 @@ import container_utils
 import errors
 from processor_utils import exception, ProcessorDesc
 from processor_utils.units import FuncUnit, UnitModel
+import str_utils
 from unittest import TestCase
 
 
@@ -189,8 +190,9 @@ class TestCaps:
         `in_file` is the processor description file.
 
         """
-        assert "input" in str(raises(exception.EmptyProcError, read_proc_file,
-                                     "capabilities", in_file).value).lower()
+        assert "input" in str_utils.ICaseString(
+            str(raises(exception.EmptyProcError, read_proc_file,
+                       "capabilities", in_file).value))
 
     def test_same_capability_with_different_case_in_two_units_is_detected(
             self):

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""string conversion utilities"""
+"""string utilities"""
 
 ############################################################
 #
@@ -23,11 +23,11 @@
 #
 # program:      processor simulator
 #
-# file:         str_conv.py
+# file:         str_utils.py
 #
-# function:     generic string conversion utilities
+# function:     generic string utilities
 #
-# description:  contains helper string conversion functions
+# description:  contains helper string functions and classes
 #
 # author:       Mohammed El-Afifi (ME)
 #
@@ -37,6 +37,39 @@
 # notes:        This is a private program.
 #
 ############################################################
+
+
+class ICaseString:
+
+    """Case-insensitive string"""
+
+    _canonical = staticmethod(str.lower)
+
+    def __init__(self, initial_str):
+        """Create a case-insensitive string.
+
+        `self` is this case-insensitive string.
+        `initial_str` is the initial string content.
+
+        """
+        self._str = initial_str
+
+    def __contains__(self, item):
+        """Check if the item is a substring.
+
+        `self` is this case-insensitive string.
+        `item` is the substring to search for.
+
+        """
+        return self._canonical(item) in self._canonical(self._str)
+
+    def __repr__(self):
+        """Return the official string of this case-insensitive string.
+
+        `self` is this case-insensitive string.
+
+        """
+        return get_obj_repr(self.__class__.__name__, [self._str])
 
 
 def format_obj(cls_name, field_strings):

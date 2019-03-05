@@ -43,7 +43,7 @@
 from itertools import imap
 import operator
 from operator import eq
-import str_conv
+import str_utils
 
 
 class BagValDict:
@@ -128,7 +128,7 @@ class BagValDict:
         `self` is this dictionary.
 
         """
-        return str_conv.format_obj(
+        return str_utils.format_obj(
             self.__class__.__name__, [self._format_dict()])
 
     def add(self, key, elem):

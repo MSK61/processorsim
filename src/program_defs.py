@@ -42,7 +42,7 @@
 #
 ############################################################
 
-from str_conv import get_obj_repr
+from str_utils import get_obj_repr
 
 
 class Instruction(object):

@@ -44,7 +44,7 @@
 
 from itertools import imap
 import operator
-from str_conv import get_obj_repr
+from str_utils import get_obj_repr
 __all__ = ["FuncUnit", "UnitModel"]
 
 
