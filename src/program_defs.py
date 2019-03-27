@@ -57,7 +57,7 @@ class Instruction(object):
         `dst` is the register written by the instruction.
 
         """
-        self.sources = tuple(sorted(sources))
+        self._sources = tuple(sorted(sources))
         self.destination = dst
 
     def __eq__(self, other):
@@ -67,7 +67,7 @@ class Instruction(object):
         `other` is the other instruction.
 
         """
-        return (self.sources, self.destination) == (
+        return (self._sources, self.destination) == (
             other.sources, other.destination)
 
     def __ne__(self, other):
@@ -78,6 +78,15 @@ class Instruction(object):
 
         """
         return not self == other
+
+    @property
+    def sources(self):
+        """Source operands
+
+        `self` is this instruction.
+
+        """
+        return self._sources
 
 
 class HwInstruction(Instruction):

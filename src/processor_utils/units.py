@@ -62,7 +62,7 @@ class FuncUnit(object):
 
         """
         self.model = model
-        self.predecessors = sorted_models(preds)
+        self._preds = sorted_models(preds)
 
     def __eq__(self, other):
         """Test if the two functional units are identical.
@@ -71,11 +71,11 @@ class FuncUnit(object):
         `other` is the other functional unit.
 
         """
-        criteria = imap(lambda attrs: (attrs[0], len(attrs[1])),
-                        [(self.model, self.predecessors),
-                            (other.model, other.predecessors)])
+        criteria = imap(
+            lambda attrs: (attrs[0], len(attrs[1])),
+            [(self.model, self._preds), (other.model, other.predecessors)])
         return operator.eq(*criteria) and all(
-            imap(operator.is_, self.predecessors, other.predecessors))
+            imap(operator.is_, self._preds, other.predecessors))
 
     def __ne__(self, other):
         """Test if the two functional units are different.
@@ -92,8 +92,16 @@ class FuncUnit(object):
         `self` is this functional unit.
 
         """
-        return get_obj_repr(
-            type(self).__name__, [self.model, self.predecessors])
+        return get_obj_repr(type(self).__name__, [self.model, self._preds])
+
+    @property
+    def predecessors(self):
+        """Predecessor units of this functional unit
+
+        `self` is this functional unit.
+
+        """
+        return self._preds
 
 
 class UnitModel(object):
@@ -112,7 +120,7 @@ class UnitModel(object):
         """
         self.name = name
         self.width = width
-        self.capabilities = tuple(sorted(capabilities))
+        self._capabilities = tuple(sorted(capabilities))
 
     def __eq__(self, other):
         """Test if the two functional unit models are identical.
@@ -121,7 +129,7 @@ class UnitModel(object):
         `other` is the other functional unit model.
 
         """
-        return (self.name, self.width, self.capabilities) == (
+        return (self.name, self.width, self._capabilities) == (
             other.name, other.width, other.capabilities)
 
     def __ne__(self, other):
@@ -140,7 +148,16 @@ class UnitModel(object):
 
         """
         return get_obj_repr(
-            type(self).__name__, [self.name, self.width, self.capabilities])
+            type(self).__name__, [self.name, self.width, self._capabilities])
+
+    @property
+    def capabilities(self):
+        """Unit model capabilities
+
+        `self` is this functional unit model.
+
+        """
+        return self._capabilities
 
 
 def sorted_models(models):

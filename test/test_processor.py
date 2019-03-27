@@ -360,7 +360,7 @@ class TestProcessors:
         assert (proc_desc.in_ports, proc_desc.out_ports,
                 proc_desc.internal_units) == (
             (UnitModel("input", 1, ["ALU"]),), out_ports,
-            (FuncUnit(internal_unit, proc_desc.in_ports),))
+            [FuncUnit(internal_unit, proc_desc.in_ports)])
 
     @mark.parametrize(
         "in_file", ["twoConnectedUnitsProcessor.yaml",
