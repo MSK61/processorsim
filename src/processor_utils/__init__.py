@@ -163,7 +163,7 @@ class ProcessorDesc(object):
         return self._out_ports
 
 
-class _CapabilityInfo(object):
+class _CapabilityInfo:
 
     """Unit capability information"""
 

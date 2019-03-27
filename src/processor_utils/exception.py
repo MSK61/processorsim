@@ -168,7 +168,7 @@ class BlockedCapError(RuntimeError):
         return self._port
 
 
-class CapPortInfo(object):
+class CapPortInfo:
 
     """Capability-port combination information"""
 
@@ -184,7 +184,7 @@ class CapPortInfo(object):
         self.port_info = port_info
 
 
-class ComponentInfo(object):
+class ComponentInfo:
 
     """Component information"""
 

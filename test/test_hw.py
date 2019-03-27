@@ -80,7 +80,7 @@ class CoverageTest(unittest.TestCase):
         repr(HwDesc(ProcessorDesc([in_port], [out_port], [], []), {}))
 
 
-class _MockCheck(object):
+class _MockCheck:
 
     """Test case for checking mock calls"""
 

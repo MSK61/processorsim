@@ -97,7 +97,7 @@ class CodeError(RuntimeError):
         return self._line
 
 
-class _LineInfo(object):
+class _LineInfo:
 
     """Source line information"""
 

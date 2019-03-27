@@ -65,7 +65,7 @@ _PROC_OPT_VAR = "processor_file"
 _PROG_OPT_VAR = "prog_file"  # variable to receive the program file
 
 
-class _InstrFlight(object):
+class _InstrFlight:
 
     """Instruction flight"""
 
@@ -80,10 +80,10 @@ class _InstrFlight(object):
 
         """
         self.start_time = start_time
-        self.stops = tuple(units)
+        self.stops = units
 
 
-class _InstrPosition(object):
+class _InstrPosition:
 
     """Instruction position"""
 

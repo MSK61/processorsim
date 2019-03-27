@@ -59,7 +59,7 @@ from str_utils import get_obj_repr
 import yaml
 
 
-class HwDesc(object):
+class HwDesc:
 
     """Hardware description"""
 
@@ -98,10 +98,11 @@ class HwDesc(object):
         `self` is this hardware description.
 
         """
-        return get_obj_repr(type(self).__name__, [self.processor, self.isa])
+        return get_obj_repr(
+            self.__class__.__name__, [self.processor, self.isa])
 
 
-class InstrState(object):
+class InstrState:
 
     """Instruction state"""
 
@@ -149,7 +150,8 @@ class InstrState(object):
         `self` is this instruction state.
 
         """
-        return get_obj_repr(type(self).__name__, [self.instr, self.stalled])
+        return get_obj_repr(
+            self.__class__.__name__, [self.instr, self.stalled])
 
 
 class StallError(RuntimeError):
@@ -178,7 +180,7 @@ class StallError(RuntimeError):
         return self._stalled_state
 
 
-class _HostedInstr(object):
+class _HostedInstr:
 
     """Instruction hosted inside a functional unit"""
 
