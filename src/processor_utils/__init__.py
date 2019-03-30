@@ -48,6 +48,7 @@
 #
 ############################################################
 
+from errors import UndefElemError
 import exception
 from exception import BadWidthError, BlockedCapError, ComponentInfo, \
     DupElemError
@@ -773,11 +774,10 @@ def _get_cap_name(capability, cap_registry):
     name is supported, otherwise returns the supported capability name.
 
     """
-    import errors
     std_cap = cap_registry.get(capability)
 
     if std_cap is None:
-        raise errors.UndefElemError("Unsupported capability {}", capability)
+        raise UndefElemError("Unsupported capability {}", capability)
 
     return std_cap
 
@@ -875,11 +875,10 @@ def _get_unit_name(unit, unit_registry):
     name, otherwise returns the validated unit name.
 
     """
-    import errors
     std_name = unit_registry.get(unit)
 
     if std_name is None:
-        raise errors.UndefElemError("Undefined functional unit {}", unit)
+        raise UndefElemError("Undefined functional unit {}", unit)
 
     return std_name
 
