@@ -312,20 +312,20 @@ def _add_edge(processor, edge, unit_registry, edge_registry):
             "Edge %s previously added as %s, ignoring...", edge, old_edge)
 
 
-def _add_instr(isa_dict, instr, instr_registry, cap_registry):
+def _add_instr(instr_registry, cap_registry, instr, cap):
     """Add an instruction to the instruction set.
 
-    `isa_dict` is the ISA to add the instruction to.
-    `instr` is the instruction to add.
     `instr_registry` is the store of previously added instructions.
     `cap_registry` is the store of supported capabilities.
+    `instr` is the instruction to add.
+    `cap` is the instruction capability.
     The function returns a tuple of the upper-case instruction and its
     capability.
 
     """
     _chk_instr(instr, instr_registry)
     instr_registry.add(instr)
-    return instr.upper(), _get_cap_name(isa_dict[instr], cap_registry)
+    return instr.upper(), _get_cap_name(cap, cap_registry)
 
 
 def _add_new_cap(cap, cap_list, unit_cap_reg, global_cap_reg):
@@ -731,8 +731,9 @@ def _create_isa(isa_dict, cap_registry):
 
     """
     instr_registry = LowerIndexSet()
-    return dict(imap(lambda instr: _add_instr(
-        isa_dict, instr, instr_registry, cap_registry), isa_dict))
+    return dict(
+        imap(lambda isa_entry: _add_instr(
+            instr_registry, cap_registry, *isa_entry), isa_dict.iteritems()))
 
 
 def _dist_edge_caps(graph):
