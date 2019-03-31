@@ -128,9 +128,9 @@ class TestHwDescLoad:
                 proc_mock.return_value, isa_mock.return_value)
 
         for mock_chk in [
-            _MockCheck(proc_mock, [
-                {"units": [{"name": "fullSys", "width": 1,
-                            "capabilities": [capability]}], "dataPath": []}]),
+            _MockCheck(proc_mock, [{u"units": [
+                {u"name": u"fullSys", u"width": u'1',
+                 u"capabilities": [capability]}], u"dataPath": []}]),
             _MockCheck(ability_mock, [proc_mock.return_value]),
                 _MockCheck(isa_mock, [isa_dict, ability_mock.return_value])]:
             mock_chk.mock.assert_called_with(*(mock_chk.params))

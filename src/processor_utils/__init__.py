@@ -313,13 +313,13 @@ def _add_edge(processor, edge, unit_registry, edge_registry):
             "Edge %s previously added as %s, ignoring...", edge, old_edge)
 
 
-def _add_instr(instr_registry, cap_registry, instr, cap):
+def _add_instr(instr, cap, instr_registry, cap_registry):
     """Add an instruction to the instruction set.
 
-    `instr_registry` is the store of previously added instructions.
-    `cap_registry` is the store of supported capabilities.
     `instr` is the instruction to add.
     `cap` is the instruction capability.
+    `instr_registry` is the store of previously added instructions.
+    `cap_registry` is the store of supported capabilities.
     The function returns a tuple of the upper-case instruction and its
     capability.
 
@@ -392,11 +392,12 @@ def _add_unit(processor, unit, unit_registry, cap_registry):
     `cap_registry` is the store of previously added capabilities.
 
     """
-    _chk_unit_name(unit[_UNIT_NAME_KEY], unit_registry)
+    unit_name = str(unit[_UNIT_NAME_KEY])
+    _chk_unit_name(unit_name, unit_registry)
     _chk_unit_width(unit)
-    processor.add_node(unit[_UNIT_NAME_KEY], **{_UNIT_WIDTH_KEY: unit[
-        _UNIT_WIDTH_KEY], _UNIT_CAPS_KEY: _load_caps(unit, cap_registry)})
-    unit_registry.add(unit[_UNIT_NAME_KEY])
+    processor.add_node(unit_name, **{_UNIT_WIDTH_KEY: int(unit[
+        _UNIT_WIDTH_KEY]), _UNIT_CAPS_KEY: _load_caps(unit, cap_registry)})
+    unit_registry.add(unit_name)
 
 
 def _aug_out_ports(processor, out_ports):
@@ -710,7 +711,7 @@ def _create_graph(hw_units, links):
     flow_graph = DiGraph()
     unit_registry = LowerIndexSet()
     edge_registry = IndexedSet(
-        lambda edge: tuple(imap(unit_registry.get, edge)))
+        lambda edge: tuple(_get_edge_units(edge, unit_registry)))
     cap_registry = IndexedSet(lambda cap: cap.name.lower())
 
     for cur_unit in hw_units:
@@ -732,9 +733,11 @@ def _create_isa(isa_dict, cap_registry):
 
     """
     instr_registry = LowerIndexSet()
-    return dict(
-        imap(lambda isa_entry: _add_instr(
-            instr_registry, cap_registry, *isa_entry), isa_dict.iteritems()))
+    isa_spec = imap(
+        lambda isa_entry: map(str, isa_entry), isa_dict.iteritems())
+    return dict(imap(
+        lambda isa_entry: _add_instr(isa_entry[0], isa_entry[1],
+                                     instr_registry, cap_registry), isa_spec))
 
 
 def _dist_edge_caps(graph):
@@ -800,6 +803,16 @@ def _get_cap_units(processor):
     return cap_unit_map.iteritems()
 
 
+def _get_edge_units(edge, unit_registry):
+    """Return the units of an edge.
+
+    `edge` is the edge to retrieve whose units.
+    `unit_registry` is the store of units.
+
+    """
+    return imap(lambda unit: unit_registry.get(str(unit)), edge)
+
+
 def _get_in_ports(processor):
     """Find the input ports.
 
@@ -851,7 +864,7 @@ def _get_std_edge(edge, unit_registry):
     encountered.
 
     """
-    return imap(lambda unit: _get_unit_name(unit, unit_registry), edge)
+    return imap(lambda unit: _get_unit_name(str(unit), unit_registry), edge)
 
 
 def _get_unit_entry(name, attrs):
@@ -922,8 +935,8 @@ def _load_caps(unit, cap_registry):
     unit_cap_reg = LowerIndexSet()
 
     for cur_cap in unit[_UNIT_CAPS_KEY]:
-        _add_capability(unit[_UNIT_NAME_KEY], cur_cap, cap_list, unit_cap_reg,
-                        cap_registry)
+        _add_capability(unit[_UNIT_NAME_KEY], str(cur_cap), cap_list,
+                        unit_cap_reg, cap_registry)
 
     return cap_list
 
