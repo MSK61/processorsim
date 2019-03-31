@@ -78,7 +78,7 @@ def format_obj(cls_name, field_strings):
     """Construct a string representation for the given object.
 
     `cls_name` is the class name.
-    `fields` are the string representations of the object fields.
+    `field_strings` are the string representations of the object fields.
 
     """
     sep = ", "
