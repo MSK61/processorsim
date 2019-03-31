@@ -258,7 +258,7 @@ class TestEdges:
         chk_error([ValInStrCheck(ex_chk.value.element, "input")], ex_chk.value)
 
     @mark.parametrize("in_file, bad_edge", [("emptyEdge.yaml", []), (
-        "3UnitEdge.yaml", ["input", "middle", "output"])])
+        "3UnitEdge.yaml", [u"input", u"middle", u"output"])])
     def test_edge_with_wrong_number_of_units_raises_BadEdgeError(
             self, in_file, bad_edge):
         """Test loading an edge with wrong number of units.
@@ -284,19 +284,19 @@ class TestEdges:
                 "3EdgesWithSameUnitNamesAndLowerThenUpperThenMixedCase.yaml")
         assert len(warn_mock.call_args_list) == 2
         chk_entries = itertools.izip(warn_mock.call_args_list, [
-            [["input", "output"], ["INPUT", "OUTPUT"]],
-            [["input", "output"], ["Input", "Output"]]])
+            [[u"input", u"output"], [u"INPUT", u"OUTPUT"]],
+            [[u"input", u"output"], [u"Input", u"Output"]]])
 
         for cur_call, edge_pair in chk_entries:
             self._chk_edge_warn(edge_pair, cur_call)
 
     @mark.parametrize(
         "in_file, edges",
-        [("twoEdgesWithSameUnitNamesAndCase.yaml", [["input", "output"]]),
+        [("twoEdgesWithSameUnitNamesAndCase.yaml", [[u"input", u"output"]]),
             ("twoEdgesWithSameUnitNamesAndLowerThenUpperCase.yaml",
-             [["input", "output"], ["INPUT", "OUTPUT"]]),
+             [[u"input", u"output"], [u"INPUT", u"OUTPUT"]]),
             ("twoEdgesWithSameUnitNamesAndUpperThenLowerCase.yaml",
-             [["INPUT", "OUTPUT"], ["input", "output"]])])
+             [[u"INPUT", u"OUTPUT"], [u"input", u"output"]])])
     def test_two_identical_edges_are_detected(self, in_file, edges):
         """Test loading two identical edges with the same units.
 

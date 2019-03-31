@@ -641,11 +641,13 @@ def _chk_unit_width(unit):
     The function raises a BadWidthError if the width isn't positive.
 
     """
-    if unit[_UNIT_WIDTH_KEY] <= 0:
+    width = int(unit[_UNIT_WIDTH_KEY])
+
+    if width <= 0:
         raise BadWidthError(
             "Functional unit {{{}}} has a bad width {{{}}}.".format(
                 BadWidthError.UNIT_IDX, BadWidthError.WIDTH_IDX),
-            *(itemgetter(_UNIT_NAME_KEY, _UNIT_WIDTH_KEY)(unit)))
+            unit[_UNIT_NAME_KEY], width)
 
 
 def _clean_struct(processor):

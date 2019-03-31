@@ -152,4 +152,4 @@ def _load_yaml(test_dir, file_name):
 
     """
     with open(join(TEST_DATA_DIR, test_dir, file_name)) as test_file:
-        return yaml.load(test_file)
+        return yaml.load(test_file, yaml.BaseLoader)
