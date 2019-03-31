@@ -38,6 +38,8 @@
 #
 ############################################################
 
+import itertools
+
 
 class ICaseString:
 
@@ -90,4 +92,4 @@ def get_obj_repr(cls_name, fields):
     `fields` are the object fields.
 
     """
-    return format_obj(cls_name, map(repr, fields))
+    return format_obj(cls_name, itertools.imap(repr, fields))

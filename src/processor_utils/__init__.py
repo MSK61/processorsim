@@ -1020,7 +1020,7 @@ def _post_order(graph):
     """
     unit_map = dict(imap(lambda unit: _get_unit_entry(unit, graph.node[unit]),
                          graph))
-    return map(lambda name: units.FuncUnit(unit_map[name], _get_preds(
+    return imap(lambda name: units.FuncUnit(unit_map[name], _get_preds(
         graph, name, unit_map)), networkx.dfs_postorder_nodes(graph))
 
 

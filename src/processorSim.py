@@ -276,7 +276,7 @@ def _icu_to_flights(ixcxu):
     `ixcxu` is the InstructionxClockxUnit utilization map to convert.
 
     """
-    return map(_create_flight, ixcxu)
+    return imap(_create_flight, ixcxu)
 
 
 def _print_res_row(row_index, res_row):
