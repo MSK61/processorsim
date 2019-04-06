@@ -30,8 +30,10 @@
 #
 # environment:  Komodo IDE, version 11.1.0 build 91033, python 2.7.15,
 #               Fedora release 29 (Twenty Nine)
+#               Komodo IDE, version 11.1.1 build 91089, python 2.7.15,
+#               Fedora release 29 (Twenty Nine)
 #
 # notes:        This is a private program.
 #
 ############################################################
-py.test --cov src --flakes --pep8
+py.test --cov src --flakes --pep8 $*
