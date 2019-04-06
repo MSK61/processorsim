@@ -176,5 +176,5 @@ class ProgInstruction(Instruction):
         `self` is this program instruction.
 
         """
-        return get_obj_repr(
-            type(self).__name__, [self.name, self.sources, self.destination])
+        return get_obj_repr(type(self).__name__, [
+            self.name, self.line, self.sources, self.destination])
