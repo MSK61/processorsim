@@ -38,6 +38,7 @@
 #
 ############################################################
 
+import str_utils
 __all__ = []
 
 
@@ -54,6 +55,15 @@ class IndexedSet:
         """
         self._index_func = index_func
         self._std_form_map = {}
+
+    def __repr__(self):
+        """Return the official string of this indexed set.
+
+        `self` is this indexed set.
+
+        """
+        return str_utils.get_obj_repr(
+            self.__class__.__name__, [self._std_form_map])
 
     def get(self, elem):
         """Retrieve the elem in this set matching the given one.
@@ -77,14 +87,14 @@ class IndexedSet:
         self._std_form_map[self._index_func(elem)] = elem
 
 
-class LowerIndexSet(IndexedSet):
+class ICaseStrSet(IndexedSet):
 
-    """Lower-case index set"""
+    """Case-insensitive string set"""
 
     def __init__(self):
-        """Create a set with a lower-case indexing function.
+        """Create a set with a case-insensitive conversion function.
 
         `self` is this set.
 
         """
-        IndexedSet.__init__(self, str.lower)
+        IndexedSet.__init__(self, str_utils.ICaseString)

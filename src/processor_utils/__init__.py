@@ -59,7 +59,7 @@ import networkx
 from networkx import DiGraph
 from operator import itemgetter
 import os
-from sets import IndexedSet, LowerIndexSet
+from sets import ICaseStrSet, IndexedSet
 import str_utils
 import sys
 import units
@@ -711,7 +711,7 @@ def _create_graph(hw_units, links):
 
     """
     flow_graph = DiGraph()
-    unit_registry = LowerIndexSet()
+    unit_registry = ICaseStrSet()
     edge_registry = IndexedSet(
         lambda edge: tuple(_get_edge_units(edge, unit_registry)))
     cap_registry = IndexedSet(lambda cap: cap.name.lower())
@@ -734,7 +734,7 @@ def _create_isa(isa_dict, cap_registry):
     and standard capability names.
 
     """
-    instr_registry = LowerIndexSet()
+    instr_registry = ICaseStrSet()
     isa_spec = imap(
         lambda isa_entry: map(str, isa_entry), isa_dict.iteritems())
     return dict(imap(
@@ -907,7 +907,7 @@ def _init_cap_reg(capabilities):
     unique capabilities.
 
     """
-    cap_registry = LowerIndexSet()
+    cap_registry = ICaseStrSet()
 
     for cap in capabilities:
         cap_registry.add(cap)
@@ -934,7 +934,7 @@ def _load_caps(unit, cap_registry):
 
     """
     cap_list = []
-    unit_cap_reg = LowerIndexSet()
+    unit_cap_reg = ICaseStrSet()
 
     for cur_cap in unit[_UNIT_CAPS_KEY]:
         _add_capability(unit[_UNIT_NAME_KEY], str(cur_cap), cap_list,

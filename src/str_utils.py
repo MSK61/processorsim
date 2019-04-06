@@ -54,7 +54,7 @@ class ICaseString:
         `initial_str` is the initial string content.
 
         """
-        self._str = initial_str
+        self.str = initial_str
 
     def __contains__(self, item):
         """Check if the item is a substring.
@@ -63,7 +63,33 @@ class ICaseString:
         `item` is the substring to search for.
 
         """
-        return self._canonical(item) in self._canonical(self._str)
+        return self._canonical(item) in self._canonical(self.str)
+
+    def __eq__(self, other):
+        """Test if the two case-insensitive strings are identical.
+
+        `self` is this case-insensitive string.
+        `other` is the other case-insensitive string.
+
+        """
+        return self._canonical(self.str) == self._canonical(other.str)
+
+    def __hash__(self):
+        """Get the has value of this case-insensitive string.
+
+        `self` is this case-insensitive string.
+
+        """
+        return hash(self._canonical(self.str))
+
+    def __ne__(self, other):
+        """Test if the two case-insensitive strings are different.
+
+        `self` is this case-insensitive string.
+        `other` is the other case-insensitive string.
+
+        """
+        return not self == other
 
     def __repr__(self):
         """Return the official string of this case-insensitive string.
@@ -71,7 +97,7 @@ class ICaseString:
         `self` is this case-insensitive string.
 
         """
-        return get_obj_repr(self.__class__.__name__, [self._str])
+        return get_obj_repr(self.__class__.__name__, [self.str])
 
 
 def format_obj(cls_name, field_strings):
