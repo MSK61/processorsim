@@ -91,6 +91,14 @@ class ICaseString:
         """
         return not self == other
 
+    def __radd__(self, other):
+        """Return the reflected concatenation result.
+
+        `self` is this case-insensitive string.
+
+        """
+        return other + self.str
+
     def __repr__(self):
         """Return the official string of this case-insensitive string.
 

@@ -277,8 +277,8 @@ def _add_capability(unit, cap, cap_list, unit_cap_reg, global_cap_reg):
     old_cap = unit_cap_reg.get(cap)
 
     if old_cap is None:
-        _add_new_cap(
-            _CapabilityInfo(cap, unit), cap_list, unit_cap_reg, global_cap_reg)
+        _add_new_cap(_CapabilityInfo(str_utils.ICaseString(cap), unit),
+                     cap_list, unit_cap_reg, global_cap_reg)
     else:
         logging.warning(
             "Capability %s previously added as %s for unit %s, ignoring...",
@@ -344,13 +344,13 @@ def _add_new_cap(cap, cap_list, unit_cap_reg, global_cap_reg):
 
     if std_cap is None:
         std_cap = _add_to_set(global_cap_reg, cap)
-    elif std_cap.name != cap.name:
+    elif std_cap.name.str != cap.name.str:
         logging.warning("Capability %s in unit %s previously defined as %s in "
                         "unit %s, using original definition...", cap.name,
                         cap.unit, std_cap.name, std_cap.unit)
 
-    cap_list.append(std_cap.name)
-    unit_cap_reg.add(cap.name)
+    cap_list.append(std_cap.name.str)
+    unit_cap_reg.add(cap.name.str)
 
 
 def _add_port_link(graph, old_port, new_port, link):
@@ -714,7 +714,7 @@ def _create_graph(hw_units, links):
     unit_registry = ICaseStrSet()
     edge_registry = IndexedSet(
         lambda edge: tuple(_get_edge_units(edge, unit_registry)))
-    cap_registry = IndexedSet(lambda cap: cap.name.lower())
+    cap_registry = IndexedSet(lambda cap: cap.name)
 
     for cur_unit in hw_units:
         _add_unit(flow_graph, cur_unit, unit_registry, cap_registry)
