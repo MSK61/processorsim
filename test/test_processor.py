@@ -207,6 +207,8 @@ class TestCaps:
                 [], [], [UnitModel("core 1", 1, ["ALU"]),
                          UnitModel("core 2", 1, ["ALU"])], [])
         _chk_warn(["ALU", "core 1", "alu", "core 2"], warn_mock.call_args)
+        assert str_utils.ICaseString.__name__ not in warn_mock.call_args[0][
+            0] % warn_mock.call_args[0][1:]
 
     @mark.parametrize("in_file, capabilities", [
         ("twoCapabilitiesWithSameNameAndCaseInOneUnit.yaml", ["ALU"]),

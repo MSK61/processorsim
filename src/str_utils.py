@@ -107,6 +107,14 @@ class ICaseString:
         """
         return get_obj_repr(self.__class__.__name__, [self.str])
 
+    def __str__(self):
+        """Return the printable string of this case-insensitive string.
+
+        `self` is this case-insensitive string.
+
+        """
+        return self.str
+
 
 def format_obj(cls_name, field_strings):
     """Construct a string representation for the given object.
