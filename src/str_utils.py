@@ -38,7 +38,8 @@
 #
 ############################################################
 
-import itertools
+from itertools import imap
+import operator
 
 
 class ICaseString:
@@ -72,7 +73,7 @@ class ICaseString:
         `other` is the other case-insensitive string.
 
         """
-        return self._canonical(self.str) == self._canonical(other.str)
+        return operator.eq(*(imap(self._canonical, [self.str, other.str])))
 
     def __hash__(self):
         """Get the has value of this case-insensitive string.
@@ -134,4 +135,4 @@ def get_obj_repr(cls_name, fields):
     `fields` are the object fields.
 
     """
-    return format_obj(cls_name, itertools.imap(repr, fields))
+    return format_obj(cls_name, imap(repr, fields))
