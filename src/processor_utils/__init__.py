@@ -61,6 +61,7 @@ from operator import itemgetter
 import os
 from sets import ICaseStrSet, IndexedSet
 import str_utils
+from str_utils import ICaseString
 import sys
 import units
 from units import sorted_models
@@ -277,8 +278,8 @@ def _add_capability(unit, cap, cap_list, unit_cap_reg, global_cap_reg):
     old_cap = unit_cap_reg.get(cap)
 
     if old_cap is None:
-        _add_new_cap(_CapabilityInfo(str_utils.ICaseString(cap), unit),
-                     cap_list, unit_cap_reg, global_cap_reg)
+        _add_new_cap(_CapabilityInfo(ICaseString(cap), unit), cap_list,
+                     unit_cap_reg, global_cap_reg)
     else:
         logging.warning(
             "Capability %s previously added as %s for unit %s, ignoring...",
@@ -326,7 +327,7 @@ def _add_instr(instr, cap, instr_registry, cap_registry):
     """
     _chk_instr(instr, instr_registry)
     instr_registry.add(instr)
-    return instr.upper(), _get_cap_name(cap, cap_registry)
+    return instr.upper(), _get_cap_name(ICaseString(cap), cap_registry)
 
 
 def _add_new_cap(cap, cap_list, unit_cap_reg, global_cap_reg):
@@ -349,7 +350,7 @@ def _add_new_cap(cap, cap_list, unit_cap_reg, global_cap_reg):
                         "unit %s, using original definition...", cap.name,
                         cap.unit, std_cap.name, std_cap.unit)
 
-    cap_list.append(std_cap.name.str)
+    cap_list.append(std_cap.name)
     unit_cap_reg.add(cap.name.str)
 
 
@@ -907,7 +908,7 @@ def _init_cap_reg(capabilities):
     unique capabilities.
 
     """
-    cap_registry = ICaseStrSet()
+    cap_registry = IndexedSet(lambda cap: cap)
 
     for cap in capabilities:
         cap_registry.add(cap)

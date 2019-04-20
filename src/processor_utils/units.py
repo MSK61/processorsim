@@ -44,6 +44,7 @@
 
 from itertools import imap
 import operator
+import str_utils
 from str_utils import get_obj_repr
 __all__ = ["FuncUnit", "UnitModel"]
 
@@ -118,6 +119,8 @@ class UnitModel(object):
                        this unit model.
 
         """
+        assert all(imap(
+            lambda cap: cap.__class__ == str_utils.ICaseString, capabilities))
         self.name = name
         self.width = width
         self._capabilities = tuple(sorted(capabilities))

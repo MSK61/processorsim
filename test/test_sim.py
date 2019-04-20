@@ -59,6 +59,7 @@ import processor_utils
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, UnitModel
 from program_defs import HwInstruction
+from str_utils import ICaseString
 from test_utils import read_proc_file
 import unittest
 
@@ -88,13 +89,13 @@ class TestBasic:
 
     """Test case for basic simulation scenarios"""
 
-    @mark.parametrize(
-        "prog, cpu, util_tbl",
-        [([HwInstruction("alu", ["R11", "R15"], "R14")], read_proc_file(
-            "processors", "singleALUProcessor.yaml"), [{"fullSys": [InstrState(
-                0)]}]), ([HwInstruction("MEM", [], "R12"), HwInstruction(
-                    "ALU", ["R11", "R15"], "R14")], read_proc_file(
-                    "processors", "multiplexedInputSplitOutputProcessor.yaml"),
+    @mark.parametrize("prog, cpu, util_tbl", [([HwInstruction(
+        ICaseString("alu"), ["R11", "R15"], "R14")],
+        read_proc_file("processors", "singleALUProcessor.yaml"),
+        [{"fullSys": [InstrState(0)]}]),
+        ([HwInstruction(ICaseString("MEM"), [], "R12"), HwInstruction(
+            ICaseString("ALU"), ["R11", "R15"], "R14")], read_proc_file(
+            "processors", "multiplexedInputSplitOutputProcessor.yaml"),
             [{"input": [InstrState(1), InstrState(0)]}, {"ALU output": [
                 InstrState(1)], "MEM output": [InstrState(0)]}])])
     def test_sim(self, prog, cpu, util_tbl):
@@ -119,25 +120,26 @@ class TestPipeline:
         `self` is this test case.
 
         """
-        big_input = UnitModel("big input", 4, ["ALU"])
-        small_input1 = UnitModel("small input 1", 1, ["ALU"])
-        mid1 = UnitModel("middle 1", 1, ["ALU"])
-        small_input2 = UnitModel("small input 2", 1, ["ALU"])
-        mid2 = UnitModel("middle 2", 2, ["ALU"])
-        out_unit = UnitModel("output", 2, ["ALU"])
+        big_input = UnitModel("big input", 4, [ICaseString("ALU")])
+        small_input1 = UnitModel("small input 1", 1, [ICaseString("ALU")])
+        mid1 = UnitModel("middle 1", 1, [ICaseString("ALU")])
+        small_input2 = UnitModel("small input 2", 1, [ICaseString("ALU")])
+        mid2 = UnitModel("middle 2", 2, [ICaseString("ALU")])
+        out_unit = UnitModel("output", 2, [ICaseString("ALU")])
         assert simulate(
-            [HwInstruction("ALU", [], "R1"), HwInstruction("ALU", [], "R2"),
-             HwInstruction("ALU", [], "R3"), HwInstruction("ALU", [], "R4"),
-             HwInstruction("ALU", [], "R5"), HwInstruction("ALU", [], "R6")],
-            ProcessorDesc(
+            [HwInstruction(ICaseString("ALU"), [], "R1"),
+             HwInstruction(ICaseString("ALU"), [], "R2"),
+             HwInstruction(ICaseString("ALU"), [], "R3"),
+             HwInstruction(ICaseString("ALU"), [], "R4"),
+             HwInstruction(ICaseString("ALU"), [], "R5"),
+             HwInstruction(ICaseString("ALU"), [], "R6")], ProcessorDesc(
                 [big_input, small_input1, small_input2],
                 [FuncUnit(out_unit, [big_input, mid2])], [],
                 [FuncUnit(mid2, [mid1, small_input2]),
                  FuncUnit(mid1, [small_input1])])) == [
-            BagValDict({
-                "big input": [InstrState(0), InstrState(1), InstrState(2),
-                              InstrState(3)], "small input 1": [InstrState(4)],
-                "small input 2": [InstrState(5)]}), BagValDict(
+            BagValDict({"big input": [InstrState(0), InstrState(1), InstrState(
+                2), InstrState(3)], "small input 1": [InstrState(4)],
+                        "small input 2": [InstrState(5)]}), BagValDict(
                 {"big input": [InstrState(2, True), InstrState(3, True)],
                  "output": [InstrState(0), InstrState(1)],
                  "middle 1": [InstrState(4)], "middle 2": [InstrState(5)]}),
@@ -156,12 +158,13 @@ class TestSim:
         `self` is this test case.
 
         """
-        inputs = [UnitModel("ALU input", 1, ["ALU"]),
-                  UnitModel("MEM input", 1, ["MEM"])]
-        output = FuncUnit(UnitModel("output", 1, ["ALU", "MEM"]), inputs)
+        inputs = [UnitModel("ALU input", 1, [ICaseString("ALU")]),
+                  UnitModel("MEM input", 1, [ICaseString("MEM")])]
+        output = FuncUnit(UnitModel(
+            "output", 1, [ICaseString("ALU"), ICaseString("MEM")]), inputs)
         TestBasic().test_sim(
-            [HwInstruction("MEM", [], "R12"),
-             HwInstruction("ALU", ["R11", "R15"], "R14")],
+            [HwInstruction(ICaseString("MEM"), [], "R12"),
+             HwInstruction(ICaseString("ALU"), ["R11", "R15"], "R14")],
             ProcessorDesc(inputs, [output], [], []),
             [{"MEM input": [InstrState(0)], "ALU input": [InstrState(1)]}, {
                 "output": [InstrState(0)], "ALU input": [InstrState(1, True)]},
@@ -203,8 +206,8 @@ class TestSim:
             test_utils.compile_prog(prog_file, test_utils.read_isa_file(
                 "singleInstructionISA.yaml", capabilities)), cpu, util_info)
 
-    @mark.parametrize(
-        "valid_prog", [[], [HwInstruction("ALU", ["R11", "R15"], "R14")]])
+    @mark.parametrize("valid_prog", [
+        [], [HwInstruction(ICaseString("ALU"), ["R11", "R15"], "R14")]])
     def test_unsupported_instruction_stalls_pipeline(self, valid_prog):
         """Test executing an invalid instruction after a valid program.
 
@@ -213,7 +216,7 @@ class TestSim:
 
         """
         ex_chk = pytest.raises(processor.StallError, simulate, valid_prog + [
-            HwInstruction("MEM", [], "R14")], read_proc_file(
+            HwInstruction(ICaseString("MEM"), [], "R14")], read_proc_file(
             "processors", "singleALUProcessor.yaml"))
         test_utils.chk_error([test_utils.ValInStrCheck(
             ex_chk.value.processor_state, len(valid_prog))], ex_chk.value)
@@ -229,16 +232,18 @@ class TestStall:
         `self` is this test case.
 
         """
-        in_unit = UnitModel("input", 2, ["ALU"])
-        mid = UnitModel("middle", 2, ["ALU"])
-        out_unit = UnitModel("output", 1, ["ALU"])
-        assert simulate([HwInstruction("ALU", [], "R1"), HwInstruction(
-            "ALU", [], "R2")], ProcessorDesc([in_unit], [FuncUnit(out_unit, [
-                mid])], [], [FuncUnit(mid, [in_unit])])) == [BagValDict({
-                    "input": [InstrState(0), InstrState(1)]}), BagValDict({
-                        "middle": [InstrState(0), InstrState(1)]}), BagValDict(
-                    {"middle": [InstrState(1, True)], "output": [InstrState(
-                        0)]}), BagValDict({"output": [InstrState(1)]})]
+        in_unit = UnitModel("input", 2, [ICaseString("ALU")])
+        mid = UnitModel("middle", 2, [ICaseString("ALU")])
+        out_unit = UnitModel("output", 1, [ICaseString("ALU")])
+        assert simulate(
+            [HwInstruction(ICaseString("ALU"), [], "R1"),
+             HwInstruction(ICaseString("ALU"), [], "R2")],
+            ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [], [
+                FuncUnit(mid, [in_unit])])) == [
+            BagValDict({"input": [InstrState(0), InstrState(1)]}),
+            BagValDict({"middle": [InstrState(0), InstrState(1)]}),
+            BagValDict({"middle": [InstrState(1, True)], "output": [
+                InstrState(0)]}), BagValDict({"output": [InstrState(1)]})]
 
 
 def main():

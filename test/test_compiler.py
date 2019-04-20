@@ -40,6 +40,8 @@
 #               Ubuntu 17.04
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Fedora release 26 (Twenty Six)
+#               Komodo IDE, version 11.1.1 build 91089, python 2.7.15,
+#               Fedora release 29 (Twenty Nine)
 #
 # notes:        This is a private program.
 #
@@ -54,6 +56,7 @@ import errors
 from program_defs import HwInstruction, Instruction, ProgInstruction
 import program_utils
 from program_utils import CodeError
+from str_utils import ICaseString
 from test_utils import read_prog_file
 import unittest
 
@@ -68,7 +71,8 @@ class CoverageTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        assert HwInstruction("ALU", [], "R1") != HwInstruction("ALU", [], "R2")
+        assert HwInstruction(ICaseString("ALU"), [], "R1") != HwInstruction(
+            ICaseString("ALU"), [], "R2")
 
     def test_HwInstruction_repr(self):
         """Test HwInstruction representation.
@@ -76,7 +80,7 @@ class CoverageTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        repr(HwInstruction("ALU", [], "R1"))
+        repr(HwInstruction(ICaseString("ALU"), [], "R1"))
 
     def test_Instruction_ne_operator(self):
         """Test Instruction != operator.
@@ -119,8 +123,8 @@ class TestProgLoad:
         `inputs` are the instruction inputs.
 
         """
-        assert test_utils.compile_prog(prog_file, {"ADD": "ALU"}) == [
-            HwInstruction("ALU", inputs, "R14")]
+        assert test_utils.compile_prog(prog_file, {"ADD": ICaseString(
+            "ALU")}) == [HwInstruction(ICaseString("ALU"), inputs, "R14")]
 
     @mark.parametrize(
         "prog_file, instr, line_num",
@@ -138,7 +142,7 @@ class TestProgLoad:
 
         """
         ex_chk = raises(errors.UndefElemError, program_utils.compile_program,
-                        read_prog_file(prog_file), {"ADD": "ALU"})
+                        read_prog_file(prog_file), {"ADD": ICaseString("ALU")})
         assert ex_chk.value.element == instr
         assert container_utils.contains(
             str(ex_chk.value), [instr, str(line_num)])

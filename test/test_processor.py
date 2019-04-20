@@ -42,6 +42,8 @@
 #               Fedora release 26 (Twenty Six)
 #               Komodo IDE, version 11.1.0 build 91033, python 2.7.15,
 #               Fedora release 29 (Twenty Nine)
+#               Komodo IDE, version 11.1.1 build 91089, python 2.7.15,
+#               Fedora release 29 (Twenty Nine)
 #
 # notes:        This is a private program.
 #
@@ -79,9 +81,10 @@ class CleanTest(TestCase):
         with patch("logging.warning") as warn_mock:
             proc_desc = read_proc_file(
                 "optimization", "pathThatGetsCutOffItsOutput.yaml")
-        assert proc_desc == ProcessorDesc([UnitModel("input", 1, ["ALU"])], [
-            FuncUnit(UnitModel("output 1", 1, ["ALU"]), proc_desc.in_ports)],
-            [], [])
+        alu_cap = ICaseString("ALU")
+        assert proc_desc == ProcessorDesc(
+            [UnitModel("input", 1, [alu_cap])], [FuncUnit(UnitModel(
+                "output 1", 1, [alu_cap]), proc_desc.in_ports)], [], [])
         _chk_warn(["middle"], warn_mock.call_args)
 
     def test_incompatible_edge_is_removed(self):
@@ -95,10 +98,13 @@ class CleanTest(TestCase):
                 "optimization", "incompatibleEdgeProcessor.yaml")
         name_input_map = dict(
             imap(lambda in_port: (in_port.name, in_port), proc_desc.in_ports))
-        assert proc_desc == ProcessorDesc([UnitModel("input 1", 1, ["ALU"]),
-                                           UnitModel("input 2", 1, ["MEM"])], [
-            FuncUnit(UnitModel("output 1", 1, ["ALU"]), [name_input_map[
-                "input 1"]]), FuncUnit(UnitModel("output 2", 1, ["MEM"]),
+        alu_cap = ICaseString("ALU")
+        mem_cap = ICaseString("MEM")
+        assert proc_desc == ProcessorDesc(
+            [UnitModel("input 1", 1, [alu_cap]),
+             UnitModel("input 2", 1, [mem_cap])],
+            [FuncUnit(UnitModel("output 1", 1, [alu_cap]), [name_input_map[
+                "input 1"]]), FuncUnit(UnitModel("output 2", 1, [mem_cap]),
                                        [name_input_map["input 2"]])], [], [])
         _chk_warn(["input 2", "output 1"], warn_mock.call_args)
 
@@ -110,9 +116,10 @@ class CleanTest(TestCase):
         """
         in_file = "oneCapabilityInputAndTwoCapabilitiesOutput.yaml"
         proc_desc = read_proc_file("optimization", in_file)
+        alu_cap = ICaseString("ALU")
         assert proc_desc == ProcessorDesc(
-            [UnitModel("input", 1, ["ALU"])], [FuncUnit(
-                UnitModel("output", 1, ["ALU"]), proc_desc.in_ports)], [], [])
+            [UnitModel("input", 1, [alu_cap])], [FuncUnit(UnitModel(
+                "output", 1, [alu_cap]), proc_desc.in_ports)], [], [])
 
     def test_unit_with_empty_capabilities_is_removed(self):
         """Test loading a unit with no capabilities.
@@ -124,7 +131,7 @@ class CleanTest(TestCase):
             assert read_proc_file(
                 "optimization",
                 "unitWithNoCapabilities.yaml") == ProcessorDesc(
-                [], [], [UnitModel("core 1", 1, ["ALU"])], [])
+                [], [], [UnitModel("core 1", 1, [ICaseString("ALU")])], [])
         _chk_warn(["core 2"], warn_mock.call_args)
 
 
@@ -138,8 +145,8 @@ class CoverageTest(TestCase):
         `self` is this test case.
 
         """
-        assert FuncUnit(UnitModel("", 1, [""]), []) != FuncUnit(
-            UnitModel("input", 1, [""]), [])
+        assert FuncUnit(UnitModel("", 1, [ICaseString("")]), []) != FuncUnit(
+            UnitModel("input", 1, [ICaseString("")]), [])
 
     def test_UnitModel_ne_operator(self):
         """Test UnitModel != operator.
@@ -147,7 +154,8 @@ class CoverageTest(TestCase):
         `self` is this test case.
 
         """
-        assert UnitModel("", 1, [""]) != UnitModel("input", 1, [""])
+        assert UnitModel("", 1, [ICaseString("")]) != UnitModel(
+            "input", 1, [ICaseString("")])
 
 
 class TestBlocking:
@@ -204,8 +212,8 @@ class TestCaps:
         in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits.yaml"
         with patch("logging.warning") as warn_mock:
             assert read_proc_file("capabilities", in_file) == ProcessorDesc(
-                [], [], [UnitModel("core 1", 1, ["ALU"]),
-                         UnitModel("core 2", 1, ["ALU"])], [])
+                [], [], [UnitModel("core 1", 1, [ICaseString("ALU")]),
+                         UnitModel("core 2", 1, [ICaseString("ALU")])], [])
         _chk_warn(["ALU", "core 1", "alu", "core 2"], warn_mock.call_args)
         assert ICaseString.__name__ not in warn_mock.call_args[0][
             0] % warn_mock.call_args[0][1:]
@@ -354,14 +362,15 @@ class TestProcessors:
         proc_desc = read_proc_file(
             "processors", "4ConnectedUnitsProcessor.yaml")
         assert not proc_desc.in_out_ports
+        alu_cap = ICaseString("ALU")
         out_ports = FuncUnit(
-            UnitModel("output 1", 1, ["ALU"]), proc_desc.in_ports), FuncUnit(
-            UnitModel("output 2", 1, ["ALU"]),
+            UnitModel("output 1", 1, [alu_cap]), proc_desc.in_ports), FuncUnit(
+            UnitModel("output 2", 1, [alu_cap]),
             [proc_desc.internal_units[0].model])
-        internal_unit = UnitModel("middle", 1, ["ALU"])
+        internal_unit = UnitModel("middle", 1, [alu_cap])
         assert (proc_desc.in_ports, proc_desc.out_ports,
                 proc_desc.internal_units) == (
-            (UnitModel("input", 1, ["ALU"]),), out_ports,
+            (UnitModel("input", 1, [alu_cap]),), out_ports,
             [FuncUnit(internal_unit, proc_desc.in_ports)])
 
     @mark.parametrize(
@@ -407,13 +416,14 @@ class TestUnits:
         `self` is this test case.
 
         """
-        in_unit = UnitModel("input", 1, ["ALU"])
+        in_unit = UnitModel("input", 1, [ICaseString("ALU")])
         in_units = [in_unit]
-        mid1 = UnitModel("middle 1", 1, ["ALU"])
+        mid1 = UnitModel("middle 1", 1, [ICaseString("ALU")])
         mid1_unit = FuncUnit(mid1, [in_unit])
-        mid2 = UnitModel("middle 2", 1, ["ALU"])
+        mid2 = UnitModel("middle 2", 1, [ICaseString("ALU")])
         mid2_unit = FuncUnit(mid2, [mid1])
-        out_units = [FuncUnit(UnitModel("output", 1, ["ALU"]), [mid2])]
+        out_units = [
+            FuncUnit(UnitModel("output", 1, [ICaseString("ALU")]), [mid2])]
         assert ProcessorDesc(
             in_units, out_units, [], [mid2_unit, mid1_unit]) != ProcessorDesc(
             in_units, out_units, [], [mid1_unit, mid2_unit])
@@ -467,7 +477,7 @@ def _chk_one_unit(proc_dir, proc_file):
 
     """
     assert read_proc_file(proc_dir, proc_file) == ProcessorDesc(
-        [], [], [UnitModel("fullSys", 1, ["ALU"])], [])
+        [], [], [UnitModel("fullSys", 1, [ICaseString("ALU")])], [])
 
 
 def _chk_two_units(proc_dir, proc_file):
@@ -480,8 +490,10 @@ def _chk_two_units(proc_dir, proc_file):
 
     """
     proc_desc = read_proc_file(proc_dir, proc_file)
-    assert proc_desc == ProcessorDesc([UnitModel("input", 1, ["ALU"])], [
-        FuncUnit(UnitModel("output", 1, ["ALU"]), proc_desc.in_ports)], [], [])
+    alu_cap = ICaseString("ALU")
+    assert proc_desc == ProcessorDesc(
+        [UnitModel("input", 1, [alu_cap])], [FuncUnit(
+            UnitModel("output", 1, [alu_cap]), proc_desc.in_ports)], [], [])
 
 
 def _chk_warn(tokens, warn_call):

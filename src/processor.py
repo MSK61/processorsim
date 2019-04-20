@@ -281,12 +281,12 @@ def simulate(program, processor):
     return util_tbl
 
 
-def _accept_instr(instr, instr_index, cap_unit_map, util_info):
+def _accept_instr(instr, inputs, util_info):
     """Try to accept the given instruction to the unit.
 
-    `instr` is the lower-case instruction to issue.
-    `instr_index` is the index of the instruction to try to accept.
-    `cap_unit_map` is the mapping between capabilities and units.
+    `instr` is the index of the instruction to try to accept.
+    `inputs` are the input processing units to select from for issuing
+             the instruction.
     `util_info` is the unit utilization information.
     The function tries to find an appropriate unit to issue the
     instruction to. It then updates the utilization information. It
@@ -294,8 +294,13 @@ def _accept_instr(instr, instr_index, cap_unit_map, util_info):
     returns False.
 
     """
-    _chk_instr_cap(instr)
-    return _issue_instr(instr_index, cap_unit_map.get(instr, []), util_info)
+    try:
+        acceptor = next(
+            ifilter(lambda unit: _space_avail(unit, util_info), inputs))
+    except StopIteration:  # No unit accepted the instruction.
+        return False
+    util_info.add(acceptor.name, InstrState(instr))
+    return True
 
 
 def _build_cap_map(inputs):
@@ -308,18 +313,9 @@ def _build_cap_map(inputs):
 
     for unit in inputs:
         for cap in unit.capabilities:
-            cap_map.setdefault(cap.lower(), []).append(unit)
+            cap_map.setdefault(cap, []).append(unit)
 
     return cap_map
-
-
-def _chk_instr_cap(cap):
-    """Check the given instruction capability.
-
-    `cap` is the instruction capability to check.
-
-    """
-    assert cap == cap.lower()
 
 
 def _chk_stall(old_util, new_util, consumed):
@@ -399,8 +395,8 @@ def _fill_inputs(cap_unit_map, program, util_info, issue_rec):
     prog_len = len(program)
 
     while issue_rec.entered < prog_len and _accept_instr(
-        program[issue_rec.entered].categ.lower(), issue_rec.entered,
-            cap_unit_map, util_info):
+            issue_rec.entered,
+            cap_unit_map.get(program[issue_rec.entered].categ, []), util_info):
         issue_rec.bump_input()
 
 
@@ -442,8 +438,8 @@ def _get_accepted(instructions, program, capabilities):
     index and the instruction itself.
 
     """
-    return ifilter(lambda instr: _instr_in_caps(program[
-        instr[1].instr].categ.lower(), capabilities), enumerate(instructions))
+    return ifilter(lambda instr: program[instr[1].instr].categ in capabilities,
+                   enumerate(instructions))
 
 
 def _get_candidates(unit, program, util_info):
@@ -474,40 +470,6 @@ def _get_unit_util(unit, util_info):
 
     """
     return len(util_info[unit])
-
-
-def _instr_in_caps(instr, capabilities):
-    """Determine if the instruction belongs to the given capabilities.
-
-    `instr` is the lower-case instruction to test.
-    `capabilities` are the capabilities to match the instruction
-                   against.
-
-    """
-    _chk_instr_cap(instr)
-    return instr in imap(str.lower, capabilities)
-
-
-def _issue_instr(instr, inputs, util_info):
-    """Issue an instruction to an appropriate input unit.
-
-    `instr` is the index of the instruction to try to accept.
-    `inputs` are the input processing units to select from for issuing
-             the instruction.
-    `util_info` is the unit utilization information.
-    The function tries to find an appropriate unit to issue the
-    instruction to. It then updates the utilization information. It
-    returns True if the instruction is issued to a unit, otherwise
-    returns False.
-
-    """
-    try:
-        acceptor = next(
-            ifilter(lambda unit: _space_avail(unit, util_info), inputs))
-    except StopIteration:  # No unit accepted the instruction.
-        return False
-    util_info.add(acceptor.name, InstrState(instr))
-    return True
 
 
 def _mov_candidate(candidate, unit, util_info):

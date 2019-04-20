@@ -42,6 +42,7 @@
 #
 ############################################################
 
+import str_utils
 from str_utils import get_obj_repr
 
 
@@ -102,6 +103,7 @@ class HwInstruction(Instruction):
         `dst` is the register written by the instruction.
 
         """
+        assert categ.__class__ == str_utils.ICaseString
         Instruction.__init__(self, frozenset(sources), dst)
         self.categ = categ
 

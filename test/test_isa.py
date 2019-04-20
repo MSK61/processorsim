@@ -36,16 +36,20 @@
 #               Fedora release 25 (Twenty Five)
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Ubuntu 17.04
+#               Komodo IDE, version 11.1.1 build 91089, python 2.7.15,
+#               Fedora release 29 (Twenty Nine)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import itertools
 import pytest
 from pytest import raises
 from test_utils import chk_error, read_isa_file, ValInStrCheck
 import errors
 import processor_utils.exception
+from str_utils import ICaseString
 
 
 class TestIsa:
@@ -59,14 +63,16 @@ class TestIsa:
 
         """
         ex_chk = raises(errors.UndefElemError, read_isa_file,
-                        "singleInstructionISA.yaml", ["MEM"])
-        chk_error([ValInStrCheck(ex_chk.value.element, "ALU")], ex_chk.value)
+                        "singleInstructionISA.yaml", [ICaseString("MEM")])
+        chk_error([ValInStrCheck(ex_chk.value.element, ICaseString("ALU"))],
+                  ex_chk.value)
 
-    @pytest.mark.parametrize(
-        "in_file, supported_caps, exp_isa", [("emptyISA.yaml", ["ALU"], {}), (
-            "singleInstructionISA.yaml", ["ALU"], {"ADD": "ALU"}),
-            ("singleInstructionISA.yaml", ["alu"], {"ADD": "alu"}), (
-            "dualInstructionISA.yaml", ["ALU"], {"ADD": "ALU", "SUB": "ALU"})])
+    @pytest.mark.parametrize("in_file, supported_caps, exp_isa", [
+        ("emptyISA.yaml", ["ALU"], {}),
+        ("singleInstructionISA.yaml", ["ALU"], {"ADD": ICaseString("ALU")}),
+        ("singleInstructionISA.yaml", ["alu"], {"ADD": ICaseString("alu")}),
+        ("dualInstructionISA.yaml", ["ALU"],
+         {"ADD": ICaseString("ALU"), "SUB": ICaseString("ALU")})])
     def test_load_isa(self, in_file, supported_caps, exp_isa):
         """Test loading an instruction set.
 
@@ -76,7 +82,8 @@ class TestIsa:
         `exp_isa` is the expected instruction set.
 
         """
-        assert read_isa_file(in_file, supported_caps) == exp_isa
+        assert read_isa_file(
+            in_file, itertools.imap(ICaseString, supported_caps)) == exp_isa
 
     def test_two_instructions_with_same_name_raise_DupElemError(self):
         """Test loading two instructions with the same name.
@@ -84,8 +91,9 @@ class TestIsa:
         `self` is this test case.
 
         """
-        ex_chk = raises(processor_utils.exception.DupElemError, read_isa_file,
-                        "twoInstructionsWithSameNameAndCase.yaml", ["ALU"])
+        ex_chk = raises(
+            processor_utils.exception.DupElemError, read_isa_file,
+            "twoInstructionsWithSameNameAndCase.yaml", [ICaseString("ALU")])
         chk_error(
             [ValInStrCheck(ex_chk.value.new_element, "add"),
              ValInStrCheck(ex_chk.value.old_element, "ADD")], ex_chk.value)

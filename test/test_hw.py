@@ -52,6 +52,7 @@ from processor import HwDesc
 from processor_utils import ProcessorDesc
 import processor_utils.units
 from processor_utils.units import UnitModel
+from str_utils import ICaseString
 import unittest
 
 
@@ -65,8 +66,9 @@ class CoverageTest(unittest.TestCase):
         `self` is this test case.
 
         """
+        empty_cap = ICaseString("")
         assert HwDesc(ProcessorDesc([], [], [], []), {}) != HwDesc(
-            ProcessorDesc([UnitModel("", 1, [""])], [], [], []), {})
+            ProcessorDesc([UnitModel("", 1, [empty_cap])], [], [], []), {})
 
     def test_HwDesc_repr(self):
         """Test HwDesc representation.
@@ -74,9 +76,9 @@ class CoverageTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        in_port = UnitModel("", 1, [""])
-        out_port = processor_utils.units.FuncUnit(UnitModel("output", 1, [""]),
-                                                  [in_port])
+        in_port = UnitModel("", 1, [ICaseString("")])
+        out_port = processor_utils.units.FuncUnit(
+            UnitModel("output", 1, [ICaseString("")]), [in_port])
         repr(HwDesc(ProcessorDesc([in_port], [out_port], [], []), {}))
 
 
@@ -115,24 +117,25 @@ class TestHwDescLoad:
         processor and ISA descriptions.
 
         """
-        isa_dict = {instr: capability}
+        icase_cap = ICaseString(capability)
         with open(os.path.join(test_utils.TEST_DATA_DIR, "fullHwDesc",
                                hw_file)) as hw_file, patch(
                 "processor_utils.load_proc_desc",
                 return_value=ProcessorDesc([], [], [UnitModel(
-                    "fullSys", 1, [capability])], [])) as proc_mock, patch(
+                    "fullSys", 1, [icase_cap])], [])) as proc_mock, patch(
             "processor_utils.get_abilities",
-            return_value=frozenset([capability])) as ability_mock, patch(
-                "processor_utils.load_isa", return_value=isa_dict) as isa_mock:
+            return_value=frozenset([icase_cap])) as ability_mock, patch(
+            "processor_utils.load_isa",
+                return_value={instr: icase_cap}) as isa_mock:
             assert processor.read_processor(hw_file) == HwDesc(
                 proc_mock.return_value, isa_mock.return_value)
 
-        for mock_chk in [
-            _MockCheck(proc_mock, [{u"units": [
-                {u"name": u"fullSys", u"width": u'1',
-                 u"capabilities": [capability]}], u"dataPath": []}]),
-            _MockCheck(ability_mock, [proc_mock.return_value]),
-                _MockCheck(isa_mock, [isa_dict, ability_mock.return_value])]:
+        for mock_chk in [_MockCheck(
+            proc_mock, [{u"units": [{u"name": u"fullSys", u"width": u'1',
+                                     u"capabilities": [unicode(capability)]}],
+                         u"dataPath": []}]), _MockCheck(ability_mock, [
+                proc_mock.return_value]), _MockCheck(isa_mock, [{unicode(
+                instr): unicode(capability)}, ability_mock.return_value])]:
             mock_chk.mock.assert_called_with(*(mock_chk.params))
 
 

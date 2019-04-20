@@ -38,14 +38,18 @@
 #               Ubuntu 17.04
 #               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Fedora release 26 (Twenty Six)
+#               Komodo IDE, version 11.1.1 build 91089, python 2.7.15,
+#               Fedora release 29 (Twenty Nine)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import itertools
 import pytest
 import test_utils
 import processor_utils
+import str_utils
 
 
 class TestAbilities:
@@ -64,8 +68,9 @@ class TestAbilities:
         `capabilities` are the processor capabilities.
 
         """
-        assert processor_utils.get_abilities(test_utils.read_proc_file(
-            "processors", in_file)) == frozenset(capabilities)
+        assert processor_utils.get_abilities(
+            test_utils.read_proc_file("processors", in_file)) == frozenset(
+            itertools.imap(str_utils.ICaseString, capabilities))
 
 
 def main():
