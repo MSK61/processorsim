@@ -33,6 +33,8 @@
 #
 # environment:  Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
 #               Fedora release 25 (Twenty Five)
+#               Komodo IDE, version 11.1.1 build 91089, python 2.7.15,
+#               Fedora release 29 (Twenty Nine)
 #
 # notes:        This is a private program.
 #
@@ -87,14 +89,14 @@ class IndexedSet:
         self._std_form_map[self._index_func(elem)] = elem
 
 
-class ICaseStrSet(IndexedSet):
+class SelfIndexSet(IndexedSet):
 
-    """Case-insensitive string set"""
+    """Self-indexed string set"""
 
     def __init__(self):
-        """Create a set with a case-insensitive conversion function.
+        """Create a set with an identity conversion function.
 
         `self` is this set.
 
         """
-        IndexedSet.__init__(self, str_utils.ICaseString)
+        IndexedSet.__init__(self, lambda elem: elem)

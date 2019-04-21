@@ -89,15 +89,16 @@ class TestBasic:
 
     """Test case for basic simulation scenarios"""
 
-    @mark.parametrize("prog, cpu, util_tbl", [([HwInstruction(
-        ICaseString("alu"), ["R11", "R15"], "R14")],
-        read_proc_file("processors", "singleALUProcessor.yaml"),
-        [{"fullSys": [InstrState(0)]}]),
+    @mark.parametrize("prog, cpu, util_tbl", [
+        ([HwInstruction(ICaseString("alu"), ["R11", "R15"], "R14")],
+            read_proc_file("processors", "singleALUProcessor.yaml"),
+            [{ICaseString("fullSys"): [InstrState(0)]}]),
         ([HwInstruction(ICaseString("MEM"), [], "R12"), HwInstruction(
             ICaseString("ALU"), ["R11", "R15"], "R14")], read_proc_file(
             "processors", "multiplexedInputSplitOutputProcessor.yaml"),
-            [{"input": [InstrState(1), InstrState(0)]}, {"ALU output": [
-                InstrState(1)], "MEM output": [InstrState(0)]}])])
+            [{ICaseString("input"): [InstrState(1), InstrState(0)]},
+                {ICaseString("ALU output"): [InstrState(1)],
+                 ICaseString("MEM output"): [InstrState(0)]}])])
     def test_sim(self, prog, cpu, util_tbl):
         """Test executing a program.
 
@@ -120,12 +121,15 @@ class TestPipeline:
         `self` is this test case.
 
         """
-        big_input = UnitModel("big input", 4, [ICaseString("ALU")])
-        small_input1 = UnitModel("small input 1", 1, [ICaseString("ALU")])
-        mid1 = UnitModel("middle 1", 1, [ICaseString("ALU")])
-        small_input2 = UnitModel("small input 2", 1, [ICaseString("ALU")])
-        mid2 = UnitModel("middle 2", 2, [ICaseString("ALU")])
-        out_unit = UnitModel("output", 2, [ICaseString("ALU")])
+        big_input = UnitModel(
+            ICaseString("big input"), 4, [ICaseString("ALU")])
+        small_input1 = UnitModel(
+            ICaseString("small input 1"), 1, [ICaseString("ALU")])
+        mid1 = UnitModel(ICaseString("middle 1"), 1, [ICaseString("ALU")])
+        small_input2 = UnitModel(
+            ICaseString("small input 2"), 1, [ICaseString("ALU")])
+        mid2 = UnitModel(ICaseString("middle 2"), 2, [ICaseString("ALU")])
+        out_unit = UnitModel(ICaseString("output"), 2, [ICaseString("ALU")])
         assert simulate(
             [HwInstruction(ICaseString("ALU"), [], "R1"),
              HwInstruction(ICaseString("ALU"), [], "R2"),
@@ -137,15 +141,19 @@ class TestPipeline:
                 [FuncUnit(out_unit, [big_input, mid2])], [],
                 [FuncUnit(mid2, [mid1, small_input2]),
                  FuncUnit(mid1, [small_input1])])) == [
-            BagValDict({"big input": [InstrState(0), InstrState(1), InstrState(
-                2), InstrState(3)], "small input 1": [InstrState(4)],
-                        "small input 2": [InstrState(5)]}), BagValDict(
-                {"big input": [InstrState(2, True), InstrState(3, True)],
-                 "output": [InstrState(0), InstrState(1)],
-                 "middle 1": [InstrState(4)], "middle 2": [InstrState(5)]}),
-            BagValDict({"output": [InstrState(2), InstrState(3)],
-                        "middle 2": [InstrState(5, True), InstrState(4)]}),
-            BagValDict({"output": [InstrState(4), InstrState(5)]})]
+            BagValDict({ICaseString("big input"): [
+                InstrState(0), InstrState(1), InstrState(2), InstrState(3)],
+                        ICaseString("small input 1"): [InstrState(4)],
+                        ICaseString("small input 2"): [InstrState(5)]}),
+            BagValDict(
+                {ICaseString("big input"): [InstrState(2, True), InstrState(
+                    3, True)], ICaseString("output"):
+                 [InstrState(0), InstrState(1)], ICaseString("middle 1"): [
+                    InstrState(4)], ICaseString("middle 2"): [InstrState(5)]}),
+            BagValDict({ICaseString("output"): [InstrState(2), InstrState(3)],
+                        ICaseString("middle 2"):
+                        [InstrState(5, True), InstrState(4)]}), BagValDict(
+                {ICaseString("output"): [InstrState(4), InstrState(5)]})]
 
 
 class TestSim:
@@ -158,39 +166,45 @@ class TestSim:
         `self` is this test case.
 
         """
-        inputs = [UnitModel("ALU input", 1, [ICaseString("ALU")]),
-                  UnitModel("MEM input", 1, [ICaseString("MEM")])]
-        output = FuncUnit(UnitModel(
-            "output", 1, [ICaseString("ALU"), ICaseString("MEM")]), inputs)
+        inputs = [UnitModel(ICaseString("ALU input"), 1, [ICaseString("ALU")]),
+                  UnitModel(ICaseString("MEM input"), 1, [ICaseString("MEM")])]
+        output = FuncUnit(UnitModel(ICaseString("output"), 1, [
+            ICaseString("ALU"), ICaseString("MEM")]), inputs)
         TestBasic().test_sim(
-            [HwInstruction(ICaseString("MEM"), [], "R12"),
-             HwInstruction(ICaseString("ALU"), ["R11", "R15"], "R14")],
+            [HwInstruction(ICaseString("MEM"), [], "R12"), HwInstruction(
+                ICaseString("ALU"), ["R11", "R15"], "R14")],
             ProcessorDesc(inputs, [output], [], []),
-            [{"MEM input": [InstrState(0)], "ALU input": [InstrState(1)]}, {
-                "output": [InstrState(0)], "ALU input": [InstrState(1, True)]},
-                {"output": [InstrState(1)]}])
+            [{ICaseString("MEM input"): [InstrState(0)], ICaseString(
+                "ALU input"): [InstrState(1)]}, {ICaseString("output"): [
+                    InstrState(0)], ICaseString("ALU input"): [InstrState(
+                        1, True)]}, {ICaseString("output"): [InstrState(1)]}])
 
     @mark.parametrize("prog_file, proc_file, util_info", [
         ("empty.asm", "singleALUProcessor.yaml", []),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         "singleALUProcessor.yaml", [{"fullSys": [InstrState(0)]}]),
+         "singleALUProcessor.yaml",
+         [{ICaseString("fullSys"): [InstrState(0)]}]),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         "dualCoreALUProcessor.yaml", [{"core 1": [InstrState(0)]}]),
+         "dualCoreALUProcessor.yaml",
+         [{ICaseString("core 1"): [InstrState(0)]}]),
         ("3InstructionProgram.asm", "dualCoreALUProcessor.yaml",
-         [{"core 1": [InstrState(0)], "core 2": [InstrState(1)]},
-          {"core 1": [InstrState(2)]}]),
+         [{ICaseString("core 1"): [InstrState(0)], ICaseString("core 2"):
+           [InstrState(1)]}, {ICaseString("core 1"): [InstrState(2)]}]),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         "dualCoreMemALUProcessor.yaml", [{"core 2": [InstrState(0)]}]),
+         "dualCoreMemALUProcessor.yaml",
+         [{ICaseString("core 2"): [InstrState(0)]}]),
         ("2InstructionProgram.asm", "2WideALUProcessor.yaml",
-         [{"fullSys": [InstrState(0), InstrState(1)]}]),
-        ("3InstructionProgram.asm", "2WideALUProcessor.yaml", [{"fullSys": [
-            InstrState(0), InstrState(1)]}, {"fullSys": [InstrState(2)]}]),
+         [{ICaseString("fullSys"): [InstrState(0), InstrState(1)]}]),
+        ("3InstructionProgram.asm", "2WideALUProcessor.yaml",
+         [{ICaseString("fullSys"): [InstrState(0), InstrState(1)]},
+          {ICaseString("fullSys"): [InstrState(2)]}]),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         "twoConnectedUnitsProcessor.yaml",
-         [{"input": [InstrState(0)]}, {"output": [InstrState(0)]}]),
+         "twoConnectedUnitsProcessor.yaml", [{ICaseString("input"): [
+            InstrState(0)]}, {ICaseString("output"): [InstrState(0)]}]),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         "3StageProcessor.yaml", [{"input": [InstrState(0)]}, {
-            "middle": [InstrState(0)]}, {"output": [InstrState(0)]}])])
+         "3StageProcessor.yaml",
+         [{ICaseString("input"): [InstrState(0)]}, {ICaseString("middle"): [
+            InstrState(0)]}, {ICaseString("output"): [InstrState(0)]}])])
     def test_processor(self, prog_file, proc_file, util_info):
         """Test simulating a program on the given processor.
 
@@ -232,18 +246,20 @@ class TestStall:
         `self` is this test case.
 
         """
-        in_unit = UnitModel("input", 2, [ICaseString("ALU")])
-        mid = UnitModel("middle", 2, [ICaseString("ALU")])
-        out_unit = UnitModel("output", 1, [ICaseString("ALU")])
+        in_unit = UnitModel(ICaseString("input"), 2, [ICaseString("ALU")])
+        mid = UnitModel(ICaseString("middle"), 2, [ICaseString("ALU")])
+        out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")])
         assert simulate(
             [HwInstruction(ICaseString("ALU"), [], "R1"),
              HwInstruction(ICaseString("ALU"), [], "R2")],
-            ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [], [
-                FuncUnit(mid, [in_unit])])) == [
-            BagValDict({"input": [InstrState(0), InstrState(1)]}),
-            BagValDict({"middle": [InstrState(0), InstrState(1)]}),
-            BagValDict({"middle": [InstrState(1, True)], "output": [
-                InstrState(0)]}), BagValDict({"output": [InstrState(1)]})]
+            ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
+                          [FuncUnit(mid, [in_unit])])) == [
+            BagValDict({ICaseString("input"): [InstrState(0), InstrState(1)]}),
+            BagValDict(
+                {ICaseString("middle"): [InstrState(0), InstrState(1)]}),
+            BagValDict({ICaseString("middle"): [InstrState(1, True)],
+                        ICaseString("output"): [InstrState(0)]}),
+            BagValDict({ICaseString("output"): [InstrState(1)]})]
 
 
 def main():

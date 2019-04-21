@@ -66,9 +66,10 @@ class CoverageTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        empty_cap = ICaseString("")
+        empty_str = ICaseString("")
         assert HwDesc(ProcessorDesc([], [], [], []), {}) != HwDesc(
-            ProcessorDesc([UnitModel("", 1, [empty_cap])], [], [], []), {})
+            ProcessorDesc([UnitModel(empty_str, 1, [empty_str])], [], [], []),
+            {})
 
     def test_HwDesc_repr(self):
         """Test HwDesc representation.
@@ -76,9 +77,9 @@ class CoverageTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        in_port = UnitModel("", 1, [ICaseString("")])
+        in_port = UnitModel(ICaseString(""), 1, [ICaseString("")])
         out_port = processor_utils.units.FuncUnit(
-            UnitModel("output", 1, [ICaseString("")]), [in_port])
+            UnitModel(ICaseString("output"), 1, [ICaseString("")]), [in_port])
         repr(HwDesc(ProcessorDesc([in_port], [out_port], [], []), {}))
 
 
@@ -117,12 +118,13 @@ class TestHwDescLoad:
         processor and ISA descriptions.
 
         """
+        full_sys_unit = ICaseString("fullSys")
         icase_cap = ICaseString(capability)
         with open(os.path.join(test_utils.TEST_DATA_DIR, "fullHwDesc",
                                hw_file)) as hw_file, patch(
                 "processor_utils.load_proc_desc",
                 return_value=ProcessorDesc([], [], [UnitModel(
-                    "fullSys", 1, [icase_cap])], [])) as proc_mock, patch(
+                    full_sys_unit, 1, [icase_cap])], [])) as proc_mock, patch(
             "processor_utils.get_abilities",
             return_value=frozenset([icase_cap])) as ability_mock, patch(
             "processor_utils.load_isa",

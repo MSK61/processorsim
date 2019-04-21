@@ -94,9 +94,9 @@ class TestIsa:
         ex_chk = raises(
             processor_utils.exception.DupElemError, read_isa_file,
             "twoInstructionsWithSameNameAndCase.yaml", [ICaseString("ALU")])
-        chk_error(
-            [ValInStrCheck(ex_chk.value.new_element, "add"),
-             ValInStrCheck(ex_chk.value.old_element, "ADD")], ex_chk.value)
+        chk_error([ValInStrCheck(ex_chk.value.new_element, ICaseString("add")),
+                   ValInStrCheck(ex_chk.value.old_element,
+                                 ICaseString("ADD"))], ex_chk.value)
 
 
 def main():

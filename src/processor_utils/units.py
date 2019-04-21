@@ -42,6 +42,7 @@
 #
 ############################################################
 
+import itertools
 from itertools import imap
 import operator
 import str_utils
@@ -119,8 +120,8 @@ class UnitModel(object):
                        this unit model.
 
         """
-        assert all(imap(
-            lambda cap: cap.__class__ == str_utils.ICaseString, capabilities))
+        assert all(imap(lambda cap: cap.__class__ == str_utils.ICaseString,
+                        itertools.chain([name], capabilities)))
         self.name = name
         self.width = width
         self._capabilities = tuple(sorted(capabilities))

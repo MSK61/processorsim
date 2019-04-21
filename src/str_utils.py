@@ -57,6 +57,15 @@ class ICaseString:
         """
         self.str = initial_str
 
+    def __cmp__(self, other):
+        """Compare the two case-insensitive strings.
+
+        `self` is this case-insensitive string.
+        `other` is the other case-insensitive string.
+
+        """
+        return cmp(*(self._get_canonical([self.str, other.str])))
+
     def __contains__(self, item):
         """Check if the item is a substring.
 
@@ -73,7 +82,7 @@ class ICaseString:
         `other` is the other case-insensitive string.
 
         """
-        return operator.eq(*(imap(self._canonical, [self.str, other.str])))
+        return operator.eq(*(self._get_canonical([self.str, other.str])))
 
     def __hash__(self):
         """Get the has value of this case-insensitive string.
@@ -115,6 +124,10 @@ class ICaseString:
 
         """
         return self.str
+
+    @classmethod
+    def _get_canonical(cls, str_params):
+        return imap(cls._canonical, str_params)
 
 
 def format_obj(cls_name, field_strings):
