@@ -58,6 +58,7 @@ from pytest import mark, raises
 from test_utils import chk_error, read_proc_file, ValInStrCheck
 import container_utils
 import errors
+import processor_utils
 from processor_utils import exception, ProcessorDesc
 from processor_utils.units import FuncUnit, UnitModel
 from str_utils import ICaseString
@@ -154,6 +155,14 @@ class CoverageTest(TestCase):
         assert FuncUnit(
             UnitModel(ICaseString(""), 1, [ICaseString("")]), []) != FuncUnit(
             UnitModel(ICaseString("input"), 1, [ICaseString("")]), [])
+
+    def test_IndexedSet_repr(self):
+        """Test IndexedSet representation.
+
+        `self` is this test case.
+
+        """
+        repr(processor_utils.sets.IndexedSet(lambda elem: elem))
 
     def test_UnitModel_ne_operator(self):
         """Test UnitModel != operator.

@@ -40,7 +40,7 @@
 ############################################################
 
 import test_env
-import str_utils
+from str_utils import ICaseString
 import unittest
 
 
@@ -48,13 +48,21 @@ class CoverageTest(unittest.TestCase):
 
     """Test case for fulfilling complete code coverage"""
 
+    def test_ICaseString_ne_operator(self):
+        """Test ICaseString != operator.
+
+        `self` is this test case.
+
+        """
+        assert ICaseString("") != ICaseString('a')
+
     def test_ICaseString_repr(self):
         """Test ICaseString representation.
 
         `self` is this test case.
 
         """
-        repr(str_utils.ICaseString(test_env.TEST_DIR))
+        repr(ICaseString(test_env.TEST_DIR))
 
 
 def main():
