@@ -63,6 +63,7 @@ class FuncUnit(object):
                 of this unit.
 
         """
+        assert model.__class__ == UnitModel
         self.model = model
         self._preds = sorted_models(preds)
 
