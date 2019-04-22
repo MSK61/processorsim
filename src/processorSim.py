@@ -92,7 +92,7 @@ class _InstrPosition:
 
         `self` is this instruction position.
         `unit` is the unit hosting the instruction.
-        `unit` is the instruction stall status.
+        `stalled` is the instruction stall status.
 
         """
         self.unit = unit
