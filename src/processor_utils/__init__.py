@@ -314,13 +314,13 @@ def _add_edge(processor, edge, unit_registry, edge_registry):
             "Edge %s previously added as %s, ignoring...", edge, old_edge)
 
 
-def _add_instr(instr, cap, instr_registry, cap_registry):
+def _add_instr(instr_registry, cap_registry, instr, cap):
     """Add an instruction to the instruction set.
 
-    `instr` is the instruction to add.
-    `cap` is the instruction capability.
     `instr_registry` is the store of previously added instructions.
     `cap_registry` is the store of supported capabilities.
+    `instr` is the instruction to add.
+    `cap` is the instruction capability.
     The function returns a tuple of the upper-case instruction and its
     capability.
 
@@ -393,11 +393,12 @@ def _add_unit(processor, unit, unit_registry, cap_registry):
     `cap_registry` is the store of previously added capabilities.
 
     """
-    unit_name = _make_icase_str(unit[_UNIT_NAME_KEY])
+    unit_name = ICaseString(unit[_UNIT_NAME_KEY])
     _chk_unit_name(unit_name, unit_registry)
     _chk_unit_width(unit)
-    processor.add_node(unit_name, **{_UNIT_WIDTH_KEY: int(unit[
-        _UNIT_WIDTH_KEY]), _UNIT_CAPS_KEY: _load_caps(unit, cap_registry)})
+    processor.add_node(
+        unit_name, **{_UNIT_WIDTH_KEY: unit[_UNIT_WIDTH_KEY],
+                      _UNIT_CAPS_KEY: _load_caps(unit, cap_registry)})
     unit_registry.add(unit_name)
 
 
@@ -734,11 +735,10 @@ def _create_isa(isa_dict, cap_registry):
 
     """
     instr_registry = SelfIndexSet()
-    isa_spec = imap(lambda isa_entry: map(_make_icase_str, isa_entry),
-                    isa_dict.iteritems())
-    return dict(imap(
-        lambda isa_entry: _add_instr(isa_entry[0], isa_entry[1],
-                                     instr_registry, cap_registry), isa_spec))
+    isa_spec = imap(
+        lambda isa_entry: imap(ICaseString, isa_entry), isa_dict.iteritems())
+    return dict(imap(lambda isa_entry: _add_instr(
+        instr_registry, cap_registry, *isa_entry), isa_spec))
 
 
 def _dist_edge_caps(graph):
@@ -811,7 +811,7 @@ def _get_edge_units(edge, unit_registry):
     `unit_registry` is the store of units.
 
     """
-    return imap(lambda unit: unit_registry.get(_make_icase_str(unit)), edge)
+    return imap(lambda unit: unit_registry.get(ICaseString(unit)), edge)
 
 
 def _get_in_ports(processor):
@@ -865,8 +865,8 @@ def _get_std_edge(edge, unit_registry):
     encountered.
 
     """
-    return imap(lambda unit:
-                _get_unit_name(_make_icase_str(unit), unit_registry), edge)
+    return imap(
+        lambda unit: _get_unit_name(ICaseString(unit), unit_registry), edge)
 
 
 def _get_unit_entry(name, attrs):
@@ -937,8 +937,8 @@ def _load_caps(unit, cap_registry):
     unit_cap_reg = SelfIndexSet()
 
     for cur_cap in unit[_UNIT_CAPS_KEY]:
-        _add_capability(unit[_UNIT_NAME_KEY], _make_icase_str(cur_cap),
-                        cap_list, unit_cap_reg, cap_registry)
+        _add_capability(unit[_UNIT_NAME_KEY], ICaseString(cur_cap), cap_list,
+                        unit_cap_reg, cap_registry)
 
     return cap_list
 
@@ -959,15 +959,6 @@ def _make_cap_graph(processor, capability):
                 processor.edges))
     cap_graph.add_nodes_from(processor.nodes(True))  # for in-out ports
     return cap_graph
-
-
-def _make_icase_str(obj):
-    """Create a case-insensitive string from the given object.
-
-    `obj` is the object to convert to a case-insensitive string.
-
-    """
-    return ICaseString(str(obj))
 
 
 def _make_processor(proc_graph, post_ord):

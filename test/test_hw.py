@@ -132,12 +132,12 @@ class TestHwDescLoad:
             assert processor.read_processor(hw_file) == HwDesc(
                 proc_mock.return_value, isa_mock.return_value)
 
-        for mock_chk in [_MockCheck(
-            proc_mock, [{u"units": [{u"name": u"fullSys", u"width": u'1',
-                                     u"capabilities": [unicode(capability)]}],
-                         u"dataPath": []}]), _MockCheck(ability_mock, [
-                proc_mock.return_value]), _MockCheck(isa_mock, [{unicode(
-                instr): unicode(capability)}, ability_mock.return_value])]:
+        for mock_chk in [
+            _MockCheck(proc_mock, [
+                {"units": [{"name": "fullSys", "width": 1,
+                            "capabilities": [capability]}], "dataPath": []}]),
+            _MockCheck(ability_mock, [proc_mock.return_value]), _MockCheck(
+                isa_mock, [{instr: capability}, ability_mock.return_value])]:
             mock_chk.mock.assert_called_with(*(mock_chk.params))
 
 
