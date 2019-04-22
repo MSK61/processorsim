@@ -121,7 +121,7 @@ class UnitModel(object):
                        this unit model.
 
         """
-        assert all(imap(lambda cap: cap.__class__ == str_utils.ICaseString,
+        assert all(imap(lambda attr: attr.__class__ == str_utils.ICaseString,
                         itertools.chain([name], capabilities)))
         self.name = name
         self.width = width
