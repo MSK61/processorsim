@@ -130,9 +130,9 @@ class TestHwDescLoad:
         icase_cap = ICaseString(capability)
         with open(os.path.join(test_utils.TEST_DATA_DIR, "fullHwDesc",
                                hw_file)) as hw_file, patch(
-                "processor_utils.load_proc_desc",
-                return_value=ProcessorDesc([], [], [UnitModel(
-                    full_sys_unit, 1, [icase_cap])], [])) as proc_mock, patch(
+            "processor_utils.load_proc_desc",
+            return_value=ProcessorDesc([], [], [UnitModel(
+                full_sys_unit, 1, [icase_cap])], [])) as proc_mock, patch(
             "processor_utils.get_abilities",
             return_value=frozenset([icase_cap])) as ability_mock, patch(
             "processor_utils.load_isa",
