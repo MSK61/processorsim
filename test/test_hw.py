@@ -95,8 +95,16 @@ class _MockCheck:
         `params` are the call parameters.
 
         """
-        self.mock = mock_obj
-        self.params = params
+        self._mock = mock_obj
+        self._params = params
+
+    def assert_call(self):
+        """Verify the mock call parameters.
+
+        `self` is this mock check.
+
+        """
+        self._mock.assert_called_with(*(self._params))
 
 
 class TestHwDescLoad:
@@ -138,7 +146,7 @@ class TestHwDescLoad:
                             "capabilities": [capability]}], "dataPath": []}]),
             _MockCheck(ability_mock, [proc_mock.return_value]), _MockCheck(
                 isa_mock, [{instr: capability}, ability_mock.return_value])]:
-            mock_chk.mock.assert_called_with(*(mock_chk.params))
+            mock_chk.assert_call()
 
 
 def main():
