@@ -70,6 +70,9 @@ _OLD_NODE_KEY = "old_node"
 # unit attributes
 _UNIT_CAPS_KEY = "capabilities"
 _UNIT_NAME_KEY = "name"
+# unit lock attributes
+_UNIT_RLOCK_KEY = "readLock"
+_UNIT_WLOCK_KEY = "writeLock"
 _UNIT_WIDTH_KEY = "width"
 
 
@@ -396,9 +399,11 @@ def _add_unit(processor, unit, unit_registry, cap_registry):
     unit_name = ICaseString(unit[_UNIT_NAME_KEY])
     _chk_unit_name(unit_name, unit_registry)
     _chk_unit_width(unit)
-    processor.add_node(
-        unit_name, **{_UNIT_WIDTH_KEY: unit[_UNIT_WIDTH_KEY],
-                      _UNIT_CAPS_KEY: _load_caps(unit, cap_registry)})
+    unit_locks = imap(lambda attr: (attr, unit.get(attr, False)),
+                      [_UNIT_RLOCK_KEY, _UNIT_WLOCK_KEY])
+    processor.add_node(unit_name, **dict(
+        {_UNIT_WIDTH_KEY: unit[_UNIT_WIDTH_KEY],
+         _UNIT_CAPS_KEY: _load_caps(unit, cap_registry)}, **dict(unit_locks)))
     unit_registry.add(unit_name)
 
 
@@ -877,8 +882,11 @@ def _get_unit_entry(name, attrs):
     The function returns a tuple of the unit name and model.
 
     """
+    lock_info = units.LockInfo(
+        *itemgetter(_UNIT_RLOCK_KEY, _UNIT_WLOCK_KEY)(attrs))
     return name, units.UnitModel(
-        name, *(itemgetter(_UNIT_WIDTH_KEY, _UNIT_CAPS_KEY)(attrs)))
+        name,
+        *(itemgetter(_UNIT_WIDTH_KEY, _UNIT_CAPS_KEY)(attrs) + (lock_info,)))
 
 
 def _get_unit_name(unit, unit_registry):

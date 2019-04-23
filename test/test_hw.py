@@ -51,7 +51,7 @@ import processor
 from processor import HwDesc
 from processor_utils import ProcessorDesc
 import processor_utils.units
-from processor_utils.units import UnitModel
+from processor_utils.units import LockInfo, UnitModel
 from str_utils import ICaseString
 import unittest
 
@@ -67,9 +67,10 @@ class CoverageTest(unittest.TestCase):
 
         """
         empty_str = ICaseString("")
+        lock_info = LockInfo(False, False)
         assert HwDesc(ProcessorDesc([], [], [], []), {}) != HwDesc(
-            ProcessorDesc([UnitModel(empty_str, 1, [empty_str])], [], [], []),
-            {})
+            ProcessorDesc([UnitModel(empty_str, 1, [empty_str], lock_info)],
+                          [], [], []), {})
 
     def test_HwDesc_repr(self):
         """Test HwDesc representation.
@@ -77,9 +78,11 @@ class CoverageTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        in_port = UnitModel(ICaseString(""), 1, [ICaseString("")])
+        in_port = UnitModel(
+            ICaseString(""), 1, [ICaseString("")], LockInfo(False, False))
         out_port = processor_utils.units.FuncUnit(
-            UnitModel(ICaseString("output"), 1, [ICaseString("")]), [in_port])
+            UnitModel(ICaseString("output"), 1, [ICaseString("")],
+                      LockInfo(False, False)), [in_port])
         repr(HwDesc(ProcessorDesc([in_port], [out_port], [], []), {}))
 
 
@@ -128,11 +131,12 @@ class TestHwDescLoad:
         """
         full_sys_unit = ICaseString("fullSys")
         icase_cap = ICaseString(capability)
+        lock_info = LockInfo(False, False)
         with open(os.path.join(test_utils.TEST_DATA_DIR, "fullHwDesc",
                                hw_file)) as hw_file, patch(
             "processor_utils.load_proc_desc",
-            return_value=ProcessorDesc([], [], [UnitModel(
-                full_sys_unit, 1, [icase_cap])], [])) as proc_mock, patch(
+            return_value=ProcessorDesc([], [], [UnitModel(full_sys_unit, 1, [
+                icase_cap], lock_info)], [])) as proc_mock, patch(
             "processor_utils.get_abilities",
             return_value=frozenset([icase_cap])) as ability_mock, patch(
             "processor_utils.load_isa",

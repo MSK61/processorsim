@@ -47,7 +47,50 @@ from itertools import imap
 import operator
 import str_utils
 from str_utils import get_obj_repr
-__all__ = ["FuncUnit", "UnitModel"]
+__all__ = ["LockInfo", "FuncUnit", "UnitModel"]
+
+
+class LockInfo:
+
+    """Parameter locking information in units"""
+
+    def __init__(self, rd_lock, wr_lock):
+        """Set parameter locking information.
+
+        `self` is this locking information.
+        `rd_lock` is the read lock status.
+        `wr_lock` is the write lock status.
+
+        """
+        self.rd_lock = rd_lock
+        self.wr_lock = wr_lock
+
+    def __eq__(self, other):
+        """Test if the two locking information settings are identical.
+
+        `self` is this locking information.
+        `other` is the other locking information.
+
+        """
+        return (self.rd_lock, self.wr_lock) == (other.rd_lock, other.wr_lock)
+
+    def __ne__(self, other):
+        """Test if the two locking information settings are different.
+
+        `self` is this locking information.
+        `other` is the other locking information.
+
+        """
+        return not self == other
+
+    def __repr__(self):
+        """Return the official string of this locking information.
+
+        `self` is this locking information.
+
+        """
+        return get_obj_repr(
+            self.__class__.__name__, [self.rd_lock, self.wr_lock])
 
 
 class FuncUnit(object):
@@ -111,7 +154,7 @@ class UnitModel(object):
 
     """Functional unit model"""
 
-    def __init__(self, name, width, capabilities):
+    def __init__(self, name, width, capabilities, lock_info):
         """Create a functional unit model.
 
         `self` is this functional unit model.
@@ -119,6 +162,7 @@ class UnitModel(object):
         `width` is the unit model capacity.
         `capabilities` are the capabilities of instructions supported by
                        this unit model.
+        `lock_info` is the parameter locking information.
 
         """
         assert all(imap(lambda attr: attr.__class__ == str_utils.ICaseString,
@@ -126,6 +170,7 @@ class UnitModel(object):
         self.name = name
         self.width = width
         self._capabilities = tuple(sorted(capabilities))
+        self.lock_info = lock_info
 
     def __eq__(self, other):
         """Test if the two functional unit models are identical.
@@ -134,8 +179,8 @@ class UnitModel(object):
         `other` is the other functional unit model.
 
         """
-        return (self.name, self.width, self._capabilities) == (
-            other.name, other.width, other.capabilities)
+        return (self.name, self.width, self._capabilities, self.lock_info) == (
+            other.name, other.width, other.capabilities, other.lock_info)
 
     def __ne__(self, other):
         """Test if the two functional unit models are different.
@@ -153,7 +198,8 @@ class UnitModel(object):
 
         """
         return get_obj_repr(
-            type(self).__name__, [self.name, self.width, self._capabilities])
+            type(self).__name__,
+            [self.name, self.width, self._capabilities, self.lock_info])
 
     @property
     def capabilities(self):

@@ -57,7 +57,7 @@ import processor
 from processor import InstrState, simulate
 import processor_utils
 from processor_utils import ProcessorDesc
-from processor_utils.units import FuncUnit, UnitModel
+from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from program_defs import HwInstruction
 from str_utils import ICaseString
 from test_utils import read_proc_file
@@ -121,15 +121,18 @@ class TestPipeline:
         `self` is this test case.
 
         """
-        big_input = UnitModel(
-            ICaseString("big input"), 4, [ICaseString("ALU")])
-        small_input1 = UnitModel(
-            ICaseString("small input 1"), 1, [ICaseString("ALU")])
-        mid1 = UnitModel(ICaseString("middle 1"), 1, [ICaseString("ALU")])
-        small_input2 = UnitModel(
-            ICaseString("small input 2"), 1, [ICaseString("ALU")])
-        mid2 = UnitModel(ICaseString("middle 2"), 2, [ICaseString("ALU")])
-        out_unit = UnitModel(ICaseString("output"), 2, [ICaseString("ALU")])
+        big_input = UnitModel(ICaseString("big input"), 4,
+                              [ICaseString("ALU")], LockInfo(False, False))
+        small_input1 = UnitModel(ICaseString("small input 1"), 1,
+                                 [ICaseString("ALU")], LockInfo(False, False))
+        mid1 = UnitModel(ICaseString("middle 1"), 1, [ICaseString("ALU")],
+                         LockInfo(False, False))
+        small_input2 = UnitModel(ICaseString("small input 2"), 1,
+                                 [ICaseString("ALU")], LockInfo(False, False))
+        mid2 = UnitModel(ICaseString("middle 2"), 2, [ICaseString("ALU")],
+                         LockInfo(False, False))
+        out_unit = UnitModel(ICaseString("output"), 2, [ICaseString("ALU")],
+                             LockInfo(False, False))
         assert simulate(
             [HwInstruction(ICaseString("ALU"), [], "R1"),
              HwInstruction(ICaseString("ALU"), [], "R2"),
@@ -166,10 +169,13 @@ class TestSim:
         `self` is this test case.
 
         """
-        inputs = [UnitModel(ICaseString("ALU input"), 1, [ICaseString("ALU")]),
-                  UnitModel(ICaseString("MEM input"), 1, [ICaseString("MEM")])]
-        output = FuncUnit(UnitModel(ICaseString("output"), 1, [
-            ICaseString("ALU"), ICaseString("MEM")]), inputs)
+        inputs = [
+            UnitModel(
+                ICaseString("ALU input"), 1, [ICaseString("ALU")], LockInfo(
+                    False, False)), UnitModel(ICaseString("MEM input"), 1, [
+                        ICaseString("MEM")], LockInfo(False, False))]
+        output = FuncUnit(UnitModel(ICaseString("output"), 1, [ICaseString(
+            "ALU"), ICaseString("MEM")], LockInfo(False, False)), inputs)
         TestBasic().test_sim(
             [HwInstruction(ICaseString("MEM"), [], "R12"), HwInstruction(
                 ICaseString("ALU"), ["R11", "R15"], "R14")],
@@ -246,9 +252,12 @@ class TestStall:
         `self` is this test case.
 
         """
-        in_unit = UnitModel(ICaseString("input"), 2, [ICaseString("ALU")])
-        mid = UnitModel(ICaseString("middle"), 2, [ICaseString("ALU")])
-        out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")])
+        in_unit = UnitModel(ICaseString("input"), 2, [ICaseString("ALU")],
+                            LockInfo(False, False))
+        mid = UnitModel(ICaseString("middle"), 2, [ICaseString("ALU")],
+                        LockInfo(False, False))
+        out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")],
+                             LockInfo(False, False))
         assert simulate(
             [HwInstruction(ICaseString("ALU"), [], "R1"),
              HwInstruction(ICaseString("ALU"), [], "R2")],
