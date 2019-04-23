@@ -107,7 +107,7 @@ class _MockCheck:
         `self` is this mock check.
 
         """
-        self._mock.assert_called_with(*(self._params))
+        self._mock.assert_called_with(*self._params)
 
 
 class TestHwDescLoad:

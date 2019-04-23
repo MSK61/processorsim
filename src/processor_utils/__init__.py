@@ -307,7 +307,7 @@ def _add_edge(processor, edge, unit_registry, edge_registry):
         raise exception.BadEdgeError(
             "Edge {} doesn't connect exactly 2 functional units.", edge)
 
-    processor.add_edge(*(_get_std_edge(edge, unit_registry)))
+    processor.add_edge(*_get_std_edge(edge, unit_registry))
     old_edge = edge_registry.get(edge)
 
     if old_edge is None:
@@ -652,7 +652,7 @@ def _chk_unit_width(unit):
         raise BadWidthError(
             "Functional unit {{{}}} has a bad width {{{}}}.".format(
                 BadWidthError.UNIT_IDX, BadWidthError.WIDTH_IDX),
-            *(itemgetter(_UNIT_NAME_KEY, _UNIT_WIDTH_KEY)(unit)))
+            *itemgetter(_UNIT_NAME_KEY, _UNIT_WIDTH_KEY)(unit))
 
 
 def _clean_struct(processor):
