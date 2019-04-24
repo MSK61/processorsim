@@ -187,6 +187,16 @@ class BagValDict:
         return sep.join(item_strings)
 
 
+def concat_dicts(dict1, dict2):
+    """Concatenate two dictionaries into a new one.
+
+    `dict1` is the first dictionary.
+    `dict2` is the second dictionary.
+
+    """
+    return dict(dict1, **dict2)
+
+
 def contains(container, elems):
     """Test the membership of all elements within a container.
 

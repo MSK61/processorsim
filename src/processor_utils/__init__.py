@@ -48,6 +48,7 @@
 #
 ############################################################
 
+from container_utils import concat_dicts
 from errors import UndefElemError
 import exception
 from exception import BadWidthError, BlockedCapError, ComponentInfo, \
@@ -401,9 +402,9 @@ def _add_unit(processor, unit, unit_registry, cap_registry):
     _chk_unit_width(unit)
     unit_locks = imap(lambda attr: (attr, unit.get(attr, False)),
                       [_UNIT_RLOCK_KEY, _UNIT_WLOCK_KEY])
-    processor.add_node(unit_name, **dict(
+    processor.add_node(unit_name, **concat_dicts(
         {_UNIT_WIDTH_KEY: unit[_UNIT_WIDTH_KEY],
-         _UNIT_CAPS_KEY: _load_caps(unit, cap_registry)}, **dict(unit_locks)))
+         _UNIT_CAPS_KEY: _load_caps(unit, cap_registry)}, dict(unit_locks)))
     unit_registry.add(unit_name)
 
 
@@ -1194,7 +1195,7 @@ def _update_graph(idx, unit, processor, width_graph, unit_idx_map):
 
     """
     width_graph.add_node(
-        idx, **dict(processor.node[unit], **{_OLD_NODE_KEY: unit}))
+        idx, **concat_dicts(processor.node[unit], {_OLD_NODE_KEY: unit}))
     unit_idx_map[unit] = idx
 
 _add_src_path()
