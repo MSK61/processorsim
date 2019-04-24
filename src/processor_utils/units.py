@@ -107,7 +107,7 @@ class FuncUnit(object):
 
         """
         assert model.__class__ == UnitModel
-        self.model = model
+        self._model = model
         self._preds = sorted_models(preds)
 
     def __eq__(self, other):
@@ -119,7 +119,7 @@ class FuncUnit(object):
         """
         criteria = imap(
             lambda attrs: (attrs[0], len(attrs[1])),
-            [(self.model, self._preds), (other.model, other.predecessors)])
+            [(self._model, self._preds), (other.model, other.predecessors)])
         return operator.eq(*criteria) and all(
             imap(operator.is_, self._preds, other.predecessors))
 
@@ -138,7 +138,16 @@ class FuncUnit(object):
         `self` is this functional unit.
 
         """
-        return get_obj_repr(type(self).__name__, [self.model, self._preds])
+        return get_obj_repr(type(self).__name__, [self._model, self._preds])
+
+    @property
+    def model(self):
+        """Functional unit model
+
+        `self` is this functional unit.
+
+        """
+        return self._model
 
     @property
     def predecessors(self):
@@ -167,7 +176,7 @@ class UnitModel(object):
         """
         assert all(imap(lambda attr: attr.__class__ == str_utils.ICaseString,
                         itertools.chain([name], capabilities)))
-        self.name = name
+        self._name = name
         self.width = width
         self._capabilities = tuple(sorted(capabilities))
         self.lock_info = lock_info
@@ -179,7 +188,8 @@ class UnitModel(object):
         `other` is the other functional unit model.
 
         """
-        return (self.name, self.width, self._capabilities, self.lock_info) == (
+        return (
+            self._name, self.width, self._capabilities, self.lock_info) == (
             other.name, other.width, other.capabilities, other.lock_info)
 
     def __ne__(self, other):
@@ -199,7 +209,7 @@ class UnitModel(object):
         """
         return get_obj_repr(
             type(self).__name__,
-            [self.name, self.width, self._capabilities, self.lock_info])
+            [self._name, self.width, self._capabilities, self.lock_info])
 
     @property
     def capabilities(self):
@@ -209,6 +219,15 @@ class UnitModel(object):
 
         """
         return self._capabilities
+
+    @property
+    def name(self):
+        """Unit model name
+
+        `self` is this functional unit model.
+
+        """
+        return self._name
 
 
 def sorted_models(models):

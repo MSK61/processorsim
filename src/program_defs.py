@@ -105,7 +105,7 @@ class HwInstruction(Instruction):
         """
         assert categ.__class__ == str_utils.ICaseString
         Instruction.__init__(self, frozenset(sources), dst)
-        self.categ = categ
+        self._categ = categ
 
     def __eq__(self, other):
         """Test if the two hardware instructions are identical.
@@ -114,7 +114,7 @@ class HwInstruction(Instruction):
         `other` is the other hardware instruction.
 
         """
-        return Instruction.__eq__(self, other) and self.categ == other.categ
+        return Instruction.__eq__(self, other) and self._categ == other.categ
 
     def __ne__(self, other):
         """Test if the two hardware instructions are different.
@@ -132,7 +132,16 @@ class HwInstruction(Instruction):
 
         """
         return get_obj_repr(
-            type(self).__name__, [self.categ, self.sources, self.destination])
+            type(self).__name__, [self._categ, self.sources, self.destination])
+
+    @property
+    def categ(self):
+        """Hardware instruction category
+
+        `self` is this hardware instruction.
+
+        """
+        return self._categ
 
 
 class ProgInstruction(Instruction):
