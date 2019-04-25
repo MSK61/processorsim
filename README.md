@@ -8,7 +8,7 @@ Requirements
 ------------
 
 ### Development/Run-time Requirements
-Please refer to requirements.txt for the list of dependency packages.
+Please refer to [requirements.txt](requirements.txt) for the list of dependency packages.
 
 ### Testing Requirements
 
