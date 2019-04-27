@@ -105,6 +105,7 @@ class ICaseString:
         """Return the reflected concatenation result.
 
         `self` is this case-insensitive string.
+        `other` is the other string.
 
         """
         return other + self.str
@@ -126,6 +127,12 @@ class ICaseString:
         return self.str
 
     def _get_canonical(self, other):
+        """Return the canonical forms of this and the other strings.
+
+        `self` is this case-insensitive string.
+        `other` is the other string.
+
+        """
         return imap(self._canonical, [self.str, other])
 
 
