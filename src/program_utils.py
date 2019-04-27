@@ -124,8 +124,8 @@ def compile_program(prog, isa):
     UndefElemError if an unsupported instruction is encountered.
 
     """
-    return map(lambda progInstr: program_defs.HwInstruction(_get_cap(
-        isa, progInstr), progInstr.sources, progInstr.destination), prog)
+    return map(lambda prog_instr: program_defs.HwInstruction(_get_cap(
+        isa, prog_instr), prog_instr.sources, prog_instr.destination), prog)
 
 
 def read_program(prog_file):
