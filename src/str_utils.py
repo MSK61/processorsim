@@ -64,7 +64,7 @@ class ICaseString:
         `other` is the other case-insensitive string.
 
         """
-        return cmp(*self._get_canonical([self.str, other.str]))
+        return cmp(*self._get_canonical(other.str))
 
     def __contains__(self, item):
         """Check if the item is a substring.
@@ -82,7 +82,7 @@ class ICaseString:
         `other` is the other case-insensitive string.
 
         """
-        return operator.eq(*self._get_canonical([self.str, other.str]))
+        return operator.eq(*self._get_canonical(other.str))
 
     def __hash__(self):
         """Get the has value of this case-insensitive string.
@@ -125,9 +125,8 @@ class ICaseString:
         """
         return self.str
 
-    @classmethod
-    def _get_canonical(cls, str_params):
-        return imap(cls._canonical, str_params)
+    def _get_canonical(self, other):
+        return imap(self._canonical, [self.str, other])
 
 
 def format_obj(cls_name, field_strings):
