@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 """
@@ -51,7 +51,7 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 ############################################################
 
-from itertools import chain, imap
+from itertools import chain
 import logging
 import operator
 import processor
@@ -141,11 +141,11 @@ def process_command_line(argv):
 
     # define options here:
     parser.add_argument(      # processor architecture file
-        '--processor', dest=_PROC_OPT_VAR, type=file, required=True,
+        '--processor', dest=_PROC_OPT_VAR, type=open, required=True,
         metavar="PROCESSORFILE",
         help='Read the processor architecture from this file.')
     parser.add_argument(      # program
-        _PROG_OPT_VAR, type=file, metavar="PROGRAMFILE",
+        _PROG_OPT_VAR, type=open, metavar="PROGRAMFILE",
         help='Simulate this program file.')
     parser.add_argument(      # customized description; put --help last
         '-h', '--help', action='help',
@@ -183,11 +183,11 @@ def _create_flight(instr_util):
     `instr_util` is the instruction utilization information.
 
     """
-    start_time = min(instr_util.iterkeys())
+    start_time = min(instr_util.keys())
     time_span = len(instr_util)
     return _InstrFlight(
         start_time,
-        imap(instr_util.get, xrange(start_time, start_time + time_span)))
+        map(instr_util.get, range(start_time, start_time + time_span)))
 
 
 def _cui_to_flights(cxuxi, instructions):
@@ -207,7 +207,7 @@ def _cui_to_icu(cxuxi, instructions):
     `instructions` is the total number of instructions.
 
     """
-    ixcxu = map(lambda instr: {}, xrange(instructions))
+    ixcxu = [{} for instr in range(instructions)]
 
     for cur_cp, uxi_util in cxuxi:
         _fill_cp_util(cur_cp, uxi_util, ixcxu)
@@ -235,9 +235,8 @@ def _get_flight_row(flight):
 
     """
     stall_label = 'S'
-    return [""] * flight.start_time + map(
-        lambda path_stop: stall_label if path_stop.stalled else (
-            "U:" + path_stop.unit), flight.stops)
+    return [""] * flight.start_time + [stall_label if path_stop.stalled else (
+            "U:" + path_stop.unit) for path_stop in flight.stops]
 
 
 def _get_last_tick(sim_res):
@@ -246,7 +245,7 @@ def _get_last_tick(sim_res):
     `sim_res` is the simulation result.
 
     """
-    return max(chain([0], imap(len, sim_res)))
+    return max(chain([0], map(len, sim_res)))
 
 
 def _get_sim_rows(sim_res, instructions):
@@ -256,7 +255,7 @@ def _get_sim_rows(sim_res, instructions):
     `instructions` is the total number of instructions.
 
     """
-    return map(_get_flight_row, _cui_to_flights(sim_res, instructions))
+    return list(map(_get_flight_row, _cui_to_flights(sim_res, instructions)))
 
 
 def _get_ticks(sim_res):
@@ -267,7 +266,7 @@ def _get_ticks(sim_res):
     simulation and returns an iterator over them.
 
     """
-    return imap(str, xrange(1, _get_last_tick(sim_res) + 1))
+    return map(str, range(1, _get_last_tick(sim_res) + 1))
 
 
 def _icu_to_flights(ixcxu):
@@ -276,7 +275,7 @@ def _icu_to_flights(ixcxu):
     `ixcxu` is the InstructionxClockxUnit utilization map to convert.
 
     """
-    return imap(_create_flight, ixcxu)
+    return map(_create_flight, ixcxu)
 
 
 def _print_res_row(row_index, res_row):
@@ -286,7 +285,7 @@ def _print_res_row(row_index, res_row):
     `res_row` is the simulation row.
 
     """
-    print _COL_SEP.join(chain(['I' + str(row_index + 1)], res_row))
+    print(_COL_SEP.join(chain(['I' + str(row_index + 1)], res_row)))
 
 
 def _print_sim_res(sim_res):
@@ -315,7 +314,7 @@ def _print_tbl_hdr(sim_res):
     `sim_res` is the simulation result.
 
     """
-    print _COL_SEP.join(chain([""], _get_ticks(sim_res)))
+    print(_COL_SEP.join(chain([""], _get_ticks(sim_res))))
 
 
 if __name__ == '__main__':

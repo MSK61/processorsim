@@ -43,7 +43,7 @@
 ############################################################
 
 import itertools
-from itertools import imap
+
 import operator
 import str_utils
 from str_utils import get_obj_repr
@@ -117,11 +117,11 @@ class FuncUnit(object):
         `other` is the other functional unit.
 
         """
-        criteria = imap(
+        criteria = map(
             lambda attrs: (attrs[0], len(attrs[1])),
             [(self._model, self._preds), (other.model, other.predecessors)])
         return operator.eq(*criteria) and all(
-            imap(operator.is_, self._preds, other.predecessors))
+            map(operator.is_, self._preds, other.predecessors))
 
     def __ne__(self, other):
         """Test if the two functional units are different.
@@ -174,8 +174,8 @@ class UnitModel(object):
         `lock_info` is the parameter locking information.
 
         """
-        assert all(imap(lambda attr: attr.__class__ == str_utils.ICaseString,
-                        itertools.chain([name], capabilities)))
+        assert all(map(lambda attr: attr.__class__ == str_utils.ICaseString,
+                       itertools.chain([name], capabilities)))
         self._name = name
         self.width = width
         self._capabilities = tuple(sorted(capabilities))

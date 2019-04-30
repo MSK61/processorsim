@@ -6,7 +6,7 @@
   <string relative="path" id="pythonExtraPaths">src</string>
 <preference-set id="unittest-configs">
 <preference-set id="{c237a957-ea0f-4e72-be84-cadb572bf12c}">
-  <string id="command">python -m pytest --tb short --color no -vr a</string>
+  <string id="command">python3 -m pytest --tb short --color no -vr a</string>
   <string id="handler">pytest</string>
   <string id="name">processorSim</string>
   <string id="parser">pytest</string>

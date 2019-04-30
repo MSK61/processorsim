@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 """tests processor abilities service"""
@@ -45,7 +45,6 @@
 #
 ############################################################
 
-import itertools
 import pytest
 import test_utils
 import processor_utils
@@ -70,7 +69,7 @@ class TestAbilities:
         """
         assert processor_utils.get_abilities(
             test_utils.read_proc_file("processors", in_file)) == frozenset(
-            itertools.imap(str_utils.ICaseString, capabilities))
+            map(str_utils.ICaseString, capabilities))
 
 
 def main():

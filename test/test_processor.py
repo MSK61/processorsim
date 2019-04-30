@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 """tests processor loading service"""
@@ -49,8 +49,6 @@
 #
 ############################################################
 
-import itertools
-from itertools import imap
 from mock import patch
 import networkx
 import pytest
@@ -101,7 +99,7 @@ class CleanTest(TestCase):
             proc_desc = read_proc_file(
                 "optimization", "incompatibleEdgeProcessor.yaml")
         name_input_map = dict(
-            imap(lambda in_port: (in_port.name, in_port), proc_desc.in_ports))
+            map(lambda in_port: (in_port.name, in_port), proc_desc.in_ports))
         alu_cap = ICaseString("ALU")
         lock_info = LockInfo(False, False)
         mem_cap = ICaseString("MEM")
@@ -328,7 +326,7 @@ class TestEdges:
                 "edges",
                 "3EdgesWithSameUnitNamesAndLowerThenUpperThenMixedCase.yaml")
         assert len(warn_mock.call_args_list) == 2
-        chk_entries = itertools.izip(warn_mock.call_args_list, [
+        chk_entries = zip(warn_mock.call_args_list, [
             [["input", "output"], ["INPUT", "OUTPUT"]],
             [["input", "output"], ["Input", "Output"]]])
 
@@ -364,7 +362,7 @@ class TestEdges:
         warning message.
 
         """
-        _chk_warn(imap(str, edges), warn_call)
+        _chk_warn(map(str, edges), warn_call)
 
 
 class TestLoop:

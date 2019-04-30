@@ -38,10 +38,11 @@
 #
 ############################################################
 
-from itertools import imap
+import functools
 import operator
 
 
+@functools.total_ordering
 class ICaseString:
 
     """Case-insensitive string"""
@@ -56,15 +57,6 @@ class ICaseString:
 
         """
         self.str = initial_str
-
-    def __cmp__(self, other):
-        """Compare the two case-insensitive strings.
-
-        `self` is this case-insensitive string.
-        `other` is the other case-insensitive string.
-
-        """
-        return cmp(*self._get_canonical(other.str))
 
     def __contains__(self, item):
         """Check if the item is a substring.
@@ -92,14 +84,14 @@ class ICaseString:
         """
         return hash(self._canonical(self.str))
 
-    def __ne__(self, other):
-        """Test if the two case-insensitive strings are different.
+    def __lt__(self, other):
+        """Test if this case-insensitive string is less than the other.
 
         `self` is this case-insensitive string.
         `other` is the other case-insensitive string.
 
         """
-        return not self == other
+        return operator.lt(*self._get_canonical(other.str))
 
     def __radd__(self, other):
         """Return the reflected concatenation result.
@@ -133,7 +125,7 @@ class ICaseString:
         `other` is the other string.
 
         """
-        return imap(self._canonical, [self.str, other])
+        return map(self._canonical, [self.str, other])
 
 
 def format_obj(cls_name, field_strings):
@@ -154,4 +146,4 @@ def get_obj_repr(cls_name, fields):
     `fields` are the object fields.
 
     """
-    return format_obj(cls_name, imap(repr, fields))
+    return format_obj(cls_name, map(repr, fields))

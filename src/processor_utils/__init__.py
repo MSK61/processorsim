@@ -50,22 +50,23 @@
 
 from container_utils import concat_dicts
 from errors import UndefElemError
-import exception
-from exception import BadWidthError, BlockedCapError, ComponentInfo, \
+from . import exception
+from .exception import BadWidthError, BlockedCapError, ComponentInfo, \
     DupElemError
 import itertools
-from itertools import ifilter, imap
+from functools import reduce
+
 import logging
 import networkx
 from networkx import DiGraph
 from operator import itemgetter
 import os
-from sets import IndexedSet, SelfIndexSet
+from .sets import IndexedSet, SelfIndexSet
 import str_utils
 from str_utils import ICaseString
 import sys
-import units
-from units import sorted_models
+from . import units
+from .units import sorted_models
 __all__ = ["exception", "load_proc_desc", "ProcessorDesc", "units"]
 _OLD_NODE_KEY = "old_node"
 # unit attributes
@@ -96,7 +97,7 @@ class ProcessorDesc(object):
                          unit to the consuming one).
 
         """
-        self._in_ports, self._in_out_ports = imap(
+        self._in_ports, self._in_out_ports = map(
             sorted_models, [in_ports, in_out_ports])
         self._out_ports = self._sorted_units(out_ports)
         self.internal_units = internal_units
@@ -400,8 +401,8 @@ def _add_unit(processor, unit, unit_registry, cap_registry):
     unit_name = ICaseString(unit[_UNIT_NAME_KEY])
     _chk_unit_name(unit_name, unit_registry)
     _chk_unit_width(unit)
-    unit_locks = imap(lambda attr: (attr, unit.get(attr, False)),
-                      [_UNIT_RLOCK_KEY, _UNIT_WLOCK_KEY])
+    unit_locks = map(lambda attr: (attr, unit.get(attr, False)),
+                     [_UNIT_RLOCK_KEY, _UNIT_WLOCK_KEY])
     processor.add_node(unit_name, **concat_dicts(
         {_UNIT_WIDTH_KEY: unit[_UNIT_WIDTH_KEY],
          _UNIT_CAPS_KEY: _load_caps(unit, cap_registry)}, dict(unit_locks)))
@@ -445,7 +446,7 @@ def _cap_in_edge(processor, capability, edge):
     `edge` is the edge to check.
 
     """
-    return all(imap(
+    return all(map(
         lambda unit: capability in processor.node[unit][_UNIT_CAPS_KEY], edge))
 
 
@@ -556,7 +557,7 @@ def _chk_non_empty(processor, in_ports):
 
     """
     try:
-        ifilter(lambda port: port in processor, in_ports).next()
+        next(filter(lambda port: port in processor, in_ports))
     except StopIteration:  # No ports exist.
         raise exception.EmptyProcError("No input ports found")
 
@@ -576,9 +577,10 @@ def _chk_ports_flow(
 
     """
     unit_anal_map = dict(
-        imap(lambda anal_entry: (anal_entry[1][_OLD_NODE_KEY], anal_entry[0]),
-             anal_graph.nodes(True)))
-    unified_out = _aug_out_ports(anal_graph, map(unit_anal_map.get, out_ports))
+        map(lambda anal_entry: (anal_entry[1][_OLD_NODE_KEY], anal_entry[0]),
+            anal_graph.nodes(True)))
+    unified_out = _aug_out_ports(
+        anal_graph, [unit_anal_map.get(port) for port in out_ports])
     unified_out = _split_nodes(anal_graph)[unified_out]
     _dist_edge_caps(anal_graph)
 
@@ -598,8 +600,8 @@ def _chk_terminals(processor, orig_port_info):
     after trimming actions during optimization.
 
     """
-    new_out_ports = filter(lambda port: port not in orig_port_info.out_ports,
-                           _get_out_ports(processor))
+    new_out_ports = [port for port in _get_out_ports(
+        processor) if port not in orig_port_info.out_ports]
 
     for out_port in new_out_ports:
         _rm_dead_end(processor, out_port, orig_port_info.in_ports)
@@ -685,8 +687,8 @@ def _clean_unit(processor, unit):
     """
     processor.node[unit][_UNIT_CAPS_KEY] = frozenset(
         processor.node[unit][_UNIT_CAPS_KEY])
-    pred_caps = imap(
-        lambda edge: _chk_edge(processor, edge), processor.in_edges(unit))
+    pred_caps = map(lambda edge: _chk_edge(processor, edge),
+                    list(processor.in_edges(unit)))
     processor.node[unit][_UNIT_CAPS_KEY] = frozenset().union(*pred_caps)
 
 
@@ -700,10 +702,10 @@ def _coll_cap_edges(graph):
 
     """
     out_degrees = graph.out_degree()
-    cap_edges = imap(lambda in_deg: iter((graph.in_edges if in_deg[1] == 1 else
-                                          graph.out_edges)(in_deg[0])).next(),
-                     ifilter(lambda in_deg: in_deg[1] == 1 or
-                             out_degrees[in_deg[0]] == 1, graph.in_degree()))
+    cap_edges = map(lambda in_deg: _get_cap_edge(
+        graph.in_edges(in_deg[0]), graph.out_edges(in_deg[0])),
+                    filter(lambda in_deg: in_deg[1] == 1 or
+                           out_degrees[in_deg[0]] == 1, graph.in_degree()))
     return frozenset(cap_edges)
 
 
@@ -741,9 +743,9 @@ def _create_isa(isa_dict, cap_registry):
 
     """
     instr_registry = SelfIndexSet()
-    isa_spec = imap(
-        lambda isa_entry: imap(ICaseString, isa_entry), isa_dict.iteritems())
-    return dict(imap(lambda isa_entry: _add_instr(
+    isa_spec = map(
+        lambda isa_entry: map(ICaseString, isa_entry), iter(isa_dict.items()))
+    return dict(map(lambda isa_entry: _add_instr(
         instr_registry, cap_registry, *isa_entry), isa_spec))
 
 
@@ -771,8 +773,21 @@ def _get_anal_graph(processor):
         _update_graph(idx, unit, processor, width_graph, new_nodes)
 
     width_graph.add_edges_from(
-        imap(lambda edge: itemgetter(*edge)(new_nodes), processor.edges))
+        map(lambda edge: itemgetter(*edge)(new_nodes), processor.edges))
     return width_graph
+
+
+def _get_cap_edge(in_edges, out_edges):
+    """Select the capping edge.
+
+    `in_edges` is an iterator over input edges.
+    `out_edges` is an iterator over output edges.
+    A capping edge is the sole edge on either side of a node that
+    determines the maximum flow through the node. Either the input edges
+    or the output edges must contain exactly one edge.
+
+    """
+    return _single_edge(iter(in_edges)) or next(iter(out_edges))
 
 
 def _get_cap_name(capability, cap_registry):
@@ -807,7 +822,7 @@ def _get_cap_units(processor):
         for cur_cap in processor.node[cur_port][_UNIT_CAPS_KEY]:
             cap_unit_map.setdefault(cur_cap, []).append(cur_port)
 
-    return cap_unit_map.iteritems()
+    return iter(cap_unit_map.items())
 
 
 def _get_edge_units(edge, unit_registry):
@@ -817,7 +832,7 @@ def _get_edge_units(edge, unit_registry):
     `unit_registry` is the store of units.
 
     """
-    return imap(lambda unit: unit_registry.get(ICaseString(unit)), edge)
+    return map(lambda unit: unit_registry.get(ICaseString(unit)), edge)
 
 
 def _get_in_ports(processor):
@@ -847,7 +862,7 @@ def _get_ports(degrees):
     A port is a unit with zero degree.
 
     """
-    return imap(itemgetter(0), itertools.ifilterfalse(itemgetter(1), degrees))
+    return map(itemgetter(0), itertools.filterfalse(itemgetter(1), degrees))
 
 
 def _get_preds(processor, unit, unit_map):
@@ -859,7 +874,7 @@ def _get_preds(processor, unit, unit_map):
     The function returns an iterable of predecessor units.
 
     """
-    return imap(unit_map.get, processor.predecessors(unit))
+    return map(unit_map.get, processor.predecessors(unit))
 
 
 def _get_std_edge(edge, unit_registry):
@@ -871,7 +886,7 @@ def _get_std_edge(edge, unit_registry):
     encountered.
 
     """
-    return imap(
+    return map(
         lambda unit: _get_unit_name(ICaseString(unit), unit_registry), edge)
 
 
@@ -964,8 +979,8 @@ def _make_cap_graph(processor, capability):
 
     """
     cap_graph = DiGraph(
-        ifilter(lambda edge: _cap_in_edge(processor, capability, edge),
-                processor.edges))
+        filter(lambda edge: _cap_in_edge(processor, capability, edge),
+               processor.edges))
     cap_graph.add_nodes_from(processor.nodes(True))  # for in-out ports
     return cap_graph
 
@@ -1029,9 +1044,9 @@ def _post_order(graph):
     post-order.
 
     """
-    unit_map = dict(imap(lambda unit: _get_unit_entry(unit, graph.node[unit]),
-                         graph))
-    return imap(lambda name: units.FuncUnit(unit_map[name], _get_preds(
+    unit_map = dict(
+        map(lambda unit: _get_unit_entry(unit, graph.node[unit]), graph))
+    return map(lambda name: units.FuncUnit(unit_map[name], _get_preds(
         graph, name, unit_map)), networkx.dfs_postorder_nodes(graph))
 
 
@@ -1105,7 +1120,7 @@ def _rm_empty_units(processor):
     The function removes units with no capabilities from the processor.
 
     """
-    unit_entries = processor.nodes(True)
+    unit_entries = list(processor.nodes(True))
 
     for unit, attrs in unit_entries:
         if not attrs[_UNIT_CAPS_KEY]:
@@ -1121,7 +1136,25 @@ def _set_capacities(graph, cap_edges):
     """
     for cur_edge in cap_edges:
         graph[cur_edge[0]][cur_edge[1]]["capacity"] = min(
-            imap(lambda unit: graph.node[unit][_UNIT_WIDTH_KEY], cur_edge))
+            map(lambda unit: graph.node[unit][_UNIT_WIDTH_KEY], cur_edge))
+
+
+def _single_edge(edges):
+    """Select the one and only edge.
+
+    `edges` are an iterator over edges. Must contain a single edge.
+    The function returns the only edge in the given edges, or None if
+    the edges don't contain exactly a single edge.
+
+    """
+    try:
+        only_edge = next(edges)
+        try:
+            next(edges)
+        except StopIteration:  # only one edge
+            return only_edge
+    except StopIteration:  # Input edges are empty.
+        pass
 
 
 def _split_node(graph, old_node, new_node):
@@ -1135,7 +1168,7 @@ def _split_node(graph, old_node, new_node):
     """
     graph.add_node(
         new_node, **{_UNIT_WIDTH_KEY: graph.node[old_node][_UNIT_WIDTH_KEY]})
-    _mov_out_links(graph, graph.out_edges(old_node), new_node)
+    _mov_out_links(graph, list(graph.out_edges(old_node)), new_node)
     graph.add_edge(old_node, new_node)
     return new_node
 
@@ -1152,7 +1185,7 @@ def _split_nodes(graph):
 
     """
     out_degrees = graph.out_degree()
-    out_twins = imap(
+    out_twins = map(
         lambda in_deg_item:
         (in_deg_item[0],
          _split_node(graph, in_deg_item[0], len(out_degrees) + in_deg_item[

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 """tests program simulation"""
@@ -68,14 +68,6 @@ class CoverageTest(unittest.TestCase):
 
     """Test case for fulfilling complete code coverage"""
 
-    def test_InstrState_ne_operator(self):
-        """Test InstrState != operator.
-
-        `self` is this test case.
-
-        """
-        assert InstrState(0) != InstrState(1)
-
     def test_InstrState_repr(self):
         """Test InstrState representation.
 
@@ -108,7 +100,7 @@ class TestBasic:
         `util_tbl` is the expected utilization table.
 
         """
-        assert simulate(prog, cpu) == map(BagValDict, util_tbl)
+        assert simulate(prog, cpu) == list(map(BagValDict, util_tbl))
 
 
 class TestPipeline:

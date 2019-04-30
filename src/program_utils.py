@@ -124,8 +124,9 @@ def compile_program(prog, isa):
     UndefElemError if an unsupported instruction is encountered.
 
     """
-    return map(lambda prog_instr: program_defs.HwInstruction(_get_cap(
-        isa, prog_instr), prog_instr.sources, prog_instr.destination), prog)
+    return [program_defs.HwInstruction(
+        _get_cap(isa, prog_instr), prog_instr.sources,
+        prog_instr.destination) for prog_instr in prog]
 
 
 def read_program(prog_file):
@@ -135,9 +136,9 @@ def read_program(prog_file):
     The function returns the program instructions.
 
     """
-    program = itertools.imap(str.strip, prog_file)
-    return map(_create_instr,
-               itertools.ifilter(operator.itemgetter(1), enumerate(program)))
+    program = filter(
+        operator.itemgetter(1), enumerate(map(str.strip, prog_file)))
+    return [_create_instr(instr) for instr in program]
 
 
 def _create_instr(src_line_info):
@@ -207,11 +208,11 @@ def _get_operands(src_line_info, line_num):
     operands = split(sep_pat, src_line_info.operands)
     operand_entries = enumerate(operands)
     try:
-        raise CodeError(
-            "Operand {} empty for instruction {{{}}} at line {{{}}}".format(
-                itertools.ifilterfalse(
-                    lambda op_entry: op_entry[1], operand_entries).next()[0] +
-                1, CodeError.INSTR_IDX, CodeError.LINE_NUM_IDX), line_num,
-            src_line_info.instruction)
+        first_missing = next(itertools.filterfalse(
+            lambda op_entry: op_entry[1], operand_entries))
     except StopIteration:  # all operands present
         return operands
+    raise CodeError(
+        "Operand {} empty for instruction {{{}}} at line {{{}}}".format(
+            first_missing[0] + 1, CodeError.INSTR_IDX, CodeError.LINE_NUM_IDX),
+        line_num, src_line_info.instruction)

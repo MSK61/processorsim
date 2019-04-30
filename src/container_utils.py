@@ -40,7 +40,7 @@
 #
 ############################################################
 
-from itertools import imap
+
 import operator
 from operator import eq
 import str_utils
@@ -61,7 +61,7 @@ class BagValDict:
         self._dict = {}
 
         if initial_dict:
-            self._add_items(initial_dict.iteritems())
+            self._add_items(iter(initial_dict.items()))
 
     def __getitem__(self, key):
         """Retrieve the list of the given key.
@@ -92,10 +92,10 @@ class BagValDict:
 
         """
         assert other.__class__.__name__ == self.__class__.__name__
-        lst_pairs = imap(lambda pair: imap(sorted, [pair[1], other[pair[0]]]),
-                         self._dict.iteritems())
-        return eq(*imap(len, [self, other])) and all(
-            imap(lambda elem_lists: eq(*elem_lists), lst_pairs))
+        lst_pairs = map(lambda pair: map(sorted, [pair[1], other[pair[0]]]),
+                        iter(self._dict.items()))
+        return eq(*map(len, [self, other])) and all(
+            map(lambda elem_lists: eq(*elem_lists), lst_pairs))
 
     def __iter__(self):
         """Retrieve an iterator over this dictionary.
@@ -179,9 +179,9 @@ class BagValDict:
         `self` is this dictionary.
 
         """
-        items = imap(
-            lambda item: (item[0], sorted(item[1])), self._dict.iteritems())
-        item_strings = imap(lambda item: "{}: {}".format(
+        items = map(
+            lambda item: (item[0], sorted(item[1])), iter(self._dict.items()))
+        item_strings = map(lambda item: "{}: {}".format(
             repr(item[0]), item[1]), sorted(items, key=operator.itemgetter(0)))
         sep = ", "
         return sep.join(item_strings)
@@ -204,4 +204,4 @@ def contains(container, elems):
     `elems` are the elements to check.
 
     """
-    return all(imap(lambda cur_elem: cur_elem in container, elems))
+    return all(map(lambda cur_elem: cur_elem in container, elems))

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 """tests ISA loading service"""
@@ -43,7 +43,6 @@
 #
 ############################################################
 
-import itertools
 import pytest
 from pytest import raises
 from test_utils import chk_error, read_isa_file, ValInStrCheck
@@ -83,7 +82,7 @@ class TestIsa:
 
         """
         assert read_isa_file(
-            in_file, itertools.imap(ICaseString, supported_caps)) == exp_isa
+            in_file, map(ICaseString, supported_caps)) == exp_isa
 
     def test_two_instructions_with_same_name_raise_DupElemError(self):
         """Test loading two instructions with the same name.

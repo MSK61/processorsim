@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 """string utilities tests"""
@@ -40,7 +40,7 @@
 ############################################################
 
 import test_env
-from str_utils import ICaseString
+import str_utils
 import unittest
 
 
@@ -48,21 +48,13 @@ class CoverageTest(unittest.TestCase):
 
     """Test case for fulfilling complete code coverage"""
 
-    def test_ICaseString_ne_operator(self):
-        """Test ICaseString != operator.
-
-        `self` is this test case.
-
-        """
-        assert ICaseString("") != ICaseString('a')
-
     def test_ICaseString_repr(self):
         """Test ICaseString representation.
 
         `self` is this test case.
 
         """
-        repr(ICaseString(test_env.TEST_DIR))
+        repr(str_utils.ICaseString(test_env.TEST_DIR))
 
 
 def main():

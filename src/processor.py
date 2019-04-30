@@ -51,9 +51,10 @@
 
 import container_utils
 import copy
+import functools
 import heapq
 import itertools
-from itertools import ifilter, imap
+import operator
 import processor_utils
 from str_utils import get_obj_repr
 import yaml
@@ -102,6 +103,7 @@ class HwDesc:
             self.__class__.__name__, [self.processor, self.isa])
 
 
+@functools.total_ordering
 class InstrState:
 
     """Instruction state"""
@@ -117,15 +119,6 @@ class InstrState:
         self.instr = instr
         self.stalled = stalled
 
-    def __cmp__(self, other):
-        """Compare the two instruction states.
-
-        `self` is this instruction state.
-        `other` is the other instruction state.
-
-        """
-        return cmp(self.instr, other.instr)
-
     def __eq__(self, other):
         """Test if the two instruction states are identical.
 
@@ -133,16 +126,16 @@ class InstrState:
         `other` is the other instruction state.
 
         """
-        return (self.instr, self.stalled) == (other.instr, other.stalled)
+        return operator.eq(*self._get_comp_objs(other))
 
-    def __ne__(self, other):
-        """Test if the two instruction states are different.
+    def __lt__(self, other):
+        """Test if this instruction state is less than the other.
 
         `self` is this instruction state.
         `other` is the other instruction state.
 
         """
-        return not self == other
+        return operator.lt(*self._get_comp_objs(other))
 
     def __repr__(self):
         """Return the official string of this instruction state.
@@ -152,6 +145,15 @@ class InstrState:
         """
         return get_obj_repr(
             self.__class__.__name__, [self.instr, self.stalled])
+
+    def _get_comp_objs(self, other):
+        """Return the two state contents for comparison.
+
+        `self` is this instruction state.
+        `other` is the other instruction state.
+
+        """
+        return map(lambda state: (state.instr, state.stalled), [self, other])
 
 
 class StallError(RuntimeError):
@@ -296,7 +298,7 @@ def _accept_instr(instr, inputs, util_info):
     """
     try:
         acceptor = next(
-            ifilter(lambda unit: _space_avail(unit, util_info), inputs))
+            filter(lambda unit: _space_avail(unit, util_info), inputs))
     except StopIteration:  # No unit accepted the instruction.
         return False
     util_info.add(acceptor.name, InstrState(instr))
@@ -357,7 +359,7 @@ def _count_outputs(outputs, util_info):
     `util_info` is the unit utilization information.
 
     """
-    return sum(imap(
+    return sum(map(
         lambda out_port: _get_unit_util(out_port.name, util_info), outputs))
 
 
@@ -372,7 +374,7 @@ def _fill_cp_util(processor, program, util_info, issue_rec):
 
     """
     out_ports = processor.in_out_ports + tuple(
-        imap(lambda port: port.model, processor.out_ports))
+        map(lambda port: port.model, processor.out_ports))
     _flush_outputs(out_ports, util_info)
     _mov_flights(list(processor.out_ports) + processor.internal_units, program,
                  util_info)
@@ -438,8 +440,8 @@ def _get_accepted(instructions, program, capabilities):
     index and the instruction itself.
 
     """
-    return ifilter(lambda instr: program[instr[1].instr].categ in capabilities,
-                   enumerate(instructions))
+    return filter(lambda instr: program[instr[1].instr].categ in capabilities,
+                  enumerate(instructions))
 
 
 def _get_candidates(unit, program, util_info):
@@ -450,12 +452,12 @@ def _get_candidates(unit, program, util_info):
     `util_info` is the unit utilization information.
 
     """
-    candidates = imap(
+    candidates = map(
         lambda src_unit:
-            imap(lambda instr_info: _HostedInstr(src_unit.name, instr_info[0]),
-                 _get_accepted(util_info[src_unit.name], program,
-                               unit.model.capabilities)),
-            ifilter(lambda pred: pred.name in util_info, unit.predecessors))
+            map(lambda instr_info: _HostedInstr(src_unit.name, instr_info[0]),
+                _get_accepted(util_info[src_unit.name], program,
+                              unit.model.capabilities)),
+            filter(lambda pred: pred.name in util_info, unit.predecessors))
     return heapq.nsmallest(
         _space_avail(unit.model, util_info), itertools.chain(*candidates),
         key=lambda instr_info:

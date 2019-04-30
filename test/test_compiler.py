@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 """tests compiler services"""
@@ -47,7 +47,6 @@
 #
 ############################################################
 
-import itertools
 import pytest
 from pytest import mark, raises
 import test_utils
@@ -229,7 +228,7 @@ class TestSyntax:
 
         """
         test_utils.chk_error(
-            itertools.imap(
+            map(
                 lambda err_params: test_utils.ValInStrCheck(*err_params),
                 [[syn_err.instruction, instr], [syn_err.line, line_num]]),
             syn_err)
