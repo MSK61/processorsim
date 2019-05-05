@@ -6,11 +6,4 @@ simulator for program execution on pipelined processors
 
 Requirements
 ------------
-
-### Development/Run-time Requirements
 Please refer to [requirements.txt](requirements.txt) for the list of dependency packages.
-
-### Testing Requirements
-
-- pytest
-- mock
