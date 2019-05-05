@@ -7,3 +7,8 @@ simulator for program execution on pipelined processors
 Requirements
 ------------
 Please refer to [requirements.txt](requirements.txt) for the list of dependency packages.
+
+Running tests
+-------------
+To run the test suite, execute test.sh script:
+    ./test.sh
