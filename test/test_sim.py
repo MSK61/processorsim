@@ -100,7 +100,8 @@ class TestBasic:
         `util_tbl` is the expected utilization table.
 
         """
-        assert simulate(prog, cpu) == list(map(BagValDict, util_tbl))
+        assert simulate(prog, cpu) == [
+            BagValDict(inst_util) for inst_util in util_tbl]
 
 
 class TestPipeline:

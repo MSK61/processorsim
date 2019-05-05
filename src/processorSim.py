@@ -255,7 +255,8 @@ def _get_sim_rows(sim_res, instructions):
     `instructions` is the total number of instructions.
 
     """
-    return list(map(_get_flight_row, _cui_to_flights(sim_res, instructions)))
+    flights = _cui_to_flights(sim_res, instructions)
+    return [_get_flight_row(flight) for flight in flights]
 
 
 def _get_ticks(sim_res):
