@@ -744,7 +744,7 @@ def _create_isa(isa_dict, cap_registry):
     """
     instr_registry = SelfIndexSet()
     isa_spec = map(
-        lambda isa_entry: map(ICaseString, isa_entry), iter(isa_dict.items()))
+        lambda isa_entry: map(ICaseString, isa_entry), isa_dict.items())
     return dict(map(lambda isa_entry: _add_instr(
         instr_registry, cap_registry, *isa_entry), isa_spec))
 
@@ -822,7 +822,7 @@ def _get_cap_units(processor):
         for cur_cap in processor.node[cur_port][_UNIT_CAPS_KEY]:
             cap_unit_map.setdefault(cur_cap, []).append(cur_port)
 
-    return iter(cap_unit_map.items())
+    return cap_unit_map.items()
 
 
 def _get_edge_units(edge, unit_registry):

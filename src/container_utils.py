@@ -61,7 +61,7 @@ class BagValDict:
         self._dict = {}
 
         if initial_dict:
-            self._add_items(iter(initial_dict.items()))
+            self._add_items(initial_dict.items())
 
     def __getitem__(self, key):
         """Retrieve the list of the given key.
@@ -93,7 +93,7 @@ class BagValDict:
         """
         assert other.__class__.__name__ == self.__class__.__name__
         lst_pairs = map(lambda pair: map(sorted, [pair[1], other[pair[0]]]),
-                        iter(self._dict.items()))
+                        self._dict.items())
         return eq(*map(len, [self, other])) and all(
             map(lambda elem_lists: eq(*elem_lists), lst_pairs))
 
@@ -180,7 +180,7 @@ class BagValDict:
 
         """
         items = map(
-            lambda item: (item[0], sorted(item[1])), iter(self._dict.items()))
+            lambda item: (item[0], sorted(item[1])), self._dict.items())
         item_strings = map(lambda item: "{}: {}".format(
             repr(item[0]), item[1]), sorted(items, key=operator.itemgetter(0)))
         sep = ", "
