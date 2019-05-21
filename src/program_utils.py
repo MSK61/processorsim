@@ -181,7 +181,7 @@ def _get_line_parts(src_line_info):
     CodeError if there's a problem extracting components from the line.
 
     """
-    sep_pat = "\s+"
+    sep_pat = "\\s+"
     line_parts = split(sep_pat, src_line_info[1], 1)
     assert line_parts
 
@@ -204,7 +204,7 @@ def _get_operands(src_line_info, line_num):
     invalid.
 
     """
-    sep_pat = "\s*,\s*"
+    sep_pat = r"\s*,\s*"
     operands = split(sep_pat, src_line_info.operands)
     operand_entries = enumerate(operands)
     try:
