@@ -108,7 +108,7 @@ class ICaseString:
         `self` is this case-insensitive string.
 
         """
-        return get_obj_repr(self.__class__.__name__, [self.str])
+        return get_obj_repr(type(self).__name__, [self.str])
 
     def __str__(self):
         """Return the printable string of this case-insensitive string.

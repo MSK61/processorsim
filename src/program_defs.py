@@ -103,7 +103,7 @@ class HwInstruction(Instruction):
         `dst` is the register written by the instruction.
 
         """
-        assert categ.__class__ == str_utils.ICaseString
+        assert type(categ) == str_utils.ICaseString
         Instruction.__init__(self, frozenset(sources), dst)
         self._categ = categ
 

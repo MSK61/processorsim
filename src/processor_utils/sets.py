@@ -65,7 +65,7 @@ class IndexedSet:
 
         """
         return str_utils.get_obj_repr(
-            self.__class__.__name__, [self._std_form_map])
+            type(self).__name__, [self._std_form_map])
 
     def get(self, elem):
         """Retrieve the elem in this set matching the given one.

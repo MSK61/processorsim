@@ -90,7 +90,7 @@ class BagValDict:
         `other` is the other dictionary.
 
         """
-        assert other.__class__.__name__ == self.__class__.__name__
+        assert type(other) is type(self)
         lst_pairs = map(lambda pair: map(sorted, [pair[1], other[pair[0]]]),
                         self._dict.items())
         return eq(*map(len, [self, other])) and all(
@@ -127,8 +127,7 @@ class BagValDict:
         `self` is this dictionary.
 
         """
-        return str_utils.format_obj(
-            self.__class__.__name__, [self._format_dict()])
+        return str_utils.format_obj(type(self).__name__, [self._format_dict()])
 
     def add(self, key, elem):
         """Append the element to the key list.

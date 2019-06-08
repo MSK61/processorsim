@@ -88,8 +88,7 @@ class LockInfo:
         `self` is this locking information.
 
         """
-        return get_obj_repr(
-            self.__class__.__name__, [self.rd_lock, self.wr_lock])
+        return get_obj_repr(type(self).__name__, [self.rd_lock, self.wr_lock])
 
 
 class FuncUnit(object):
@@ -173,7 +172,7 @@ class UnitModel(object):
         `lock_info` is the parameter locking information.
 
         """
-        assert all(map(lambda attr: attr.__class__ == str_utils.ICaseString,
+        assert all(map(lambda attr: type(attr) == str_utils.ICaseString,
                        itertools.chain([name], capabilities)))
         self._name = name
         self.width = width

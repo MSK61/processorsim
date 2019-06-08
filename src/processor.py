@@ -99,8 +99,7 @@ class HwDesc:
         `self` is this hardware description.
 
         """
-        return get_obj_repr(
-            self.__class__.__name__, [self.processor, self.isa])
+        return get_obj_repr(type(self).__name__, [self.processor, self.isa])
 
 
 @functools.total_ordering
@@ -143,8 +142,7 @@ class InstrState:
         `self` is this instruction state.
 
         """
-        return get_obj_repr(
-            self.__class__.__name__, [self.instr, self.stalled])
+        return get_obj_repr(type(self).__name__, [self.instr, self.stalled])
 
     def _get_comp_objs(self, other):
         """Return the two state contents for comparison.
