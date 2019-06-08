@@ -36,4 +36,4 @@
 # notes:        This is a private program.
 #
 ############################################################
-py.test-3 --cov src --flakes --pep8 $*
+pytest-3 --cov src --flakes --pep8 $*
