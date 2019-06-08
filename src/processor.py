@@ -299,7 +299,7 @@ def _accept_instr(instr, inputs, util_info):
             filter(lambda unit: _space_avail(unit, util_info), inputs))
     except StopIteration:  # No unit accepted the instruction.
         return False
-    util_info.add(acceptor.name, InstrState(instr))
+    util_info[acceptor.name].append(InstrState(instr))
     return True
 
 
@@ -347,7 +347,7 @@ def _clr_src_units(instructions, util_info):
 
     """
     for cur_instr in instructions:
-        util_info.remove(cur_instr.host, cur_instr.index_in_host)
+        util_info[cur_instr.host].pop(cur_instr.index_in_host)
 
 
 def _count_outputs(outputs, util_info):
@@ -481,7 +481,7 @@ def _mov_candidate(candidate, unit, util_info):
 
     """
     candidate.stalled = False
-    util_info.add(unit, candidate)
+    util_info[unit].append(candidate)
 
 
 def _mov_candidates(candidates, unit, util_info):

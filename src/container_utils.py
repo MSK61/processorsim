@@ -40,8 +40,8 @@
 #
 ############################################################
 
-import operator
-from operator import eq
+import collections
+from operator import eq, itemgetter
 import str_utils
 
 
@@ -57,21 +57,10 @@ class BagValDict:
                        an empty dictionary.
 
         """
-        self._dict = {}
+        self._dict = collections.defaultdict(list)
 
         if initial_dict:
             self._add_items(initial_dict.items())
-
-    def __getitem__(self, key):
-        """Retrieve the list of the given key.
-
-        `self` is this dictionary.
-        `key` is the key to retrieve whose list.
-
-        """
-        # We deliberately don't throw exceptions here since a
-        # non-existing key is considered to have an empty list.
-        return tuple(self._dict.get(key, []))
 
     def __delitem__(self, key):
         """Delete the list of the given key.
@@ -91,26 +80,37 @@ class BagValDict:
 
         """
         assert type(other) is type(self)
-        lst_pairs = map(lambda pair: map(sorted, [pair[1], other[pair[0]]]),
-                        self._dict.items())
-        return eq(*map(len, [self, other])) and all(
+        other_items = list(other.iteritems())
+        lst_pairs = map(
+            lambda pair: map(sorted, [pair[1], self[pair[0]]]), other_items)
+        return eq(*map(len, [self, other_items])) and all(
             map(lambda elem_lists: eq(*elem_lists), lst_pairs))
+
+    def __getitem__(self, key):
+        """Retrieve the list of the given key.
+
+        `self` is this dictionary.
+        `key` is the key to retrieve whose list.
+
+        """
+        return self._dict[key]
 
     def __iter__(self):
         """Retrieve an iterator over this dictionary.
 
-        `self` is this dictionary.
+         `self` is this dictionary.
 
-        """
+         """
         return iter(self._dict)
 
     def __len__(self):
         """Retrieve the number of keys in this dictionary.
 
         `self` is this dictionary.
+        The function only considers keys with non-empty lists.
 
         """
-        return len(self._dict)
+        return sum(map(lambda item: 1, self.iteritems()))
 
     def __ne__(self, other):
         """Test if the two dictionaries are different.
@@ -129,28 +129,15 @@ class BagValDict:
         """
         return str_utils.format_obj(type(self).__name__, [self._format_dict()])
 
-    def add(self, key, elem):
-        """Append the element to the key list.
+    def iteritems(self):
+        """Return the items of this dictionary.
 
         `self` is this dictionary.
-        `key` is the key to append the element to whose list.
-        `elem` is the element to append.
+        The function returns an iterator over dictionary items with
+        non-empty lists.
 
         """
-        self._dict.setdefault(key, []).append(elem)
-
-    def remove(self, key, elem_index):
-        """Remove the element from the key list.
-
-        `self` is this dictionary.
-        `key` is the key to remove the element from whose list.
-        `elem_index` is the element index in the key list.
-
-        """
-        self._dict[key].pop(elem_index)
-
-        if not self._dict[key]:
-            del self._dict[key]
+        return filter(itemgetter(1), self._dict.items())
 
     def _add_items(self, items):
         """Add items to this dictionary.
@@ -161,7 +148,7 @@ class BagValDict:
         """
         for key, elem_lst in items:
             for elem in elem_lst:
-                self.add(key, elem)
+                self[key].append(elem)
 
     def _format_dict(self):
         """Format this dictionary.
@@ -177,10 +164,9 @@ class BagValDict:
         `self` is this dictionary.
 
         """
-        items = map(
-            lambda item: (item[0], sorted(item[1])), self._dict.items())
+        items = map(lambda item: (item[0], sorted(item[1])), self.iteritems())
         item_strings = map(lambda item: "{}: {}".format(
-            repr(item[0]), item[1]), sorted(items, key=operator.itemgetter(0)))
+            repr(item[0]), item[1]), sorted(items, key=itemgetter(0)))
         sep = ", "
         return sep.join(item_strings)
 
