@@ -40,7 +40,6 @@
 #
 ############################################################
 
-
 import operator
 from operator import eq
 import str_utils

@@ -55,7 +55,6 @@ from .exception import BadWidthError, BlockedCapError, ComponentInfo, \
     DupElemError
 import itertools
 from functools import reduce
-
 import logging
 import networkx
 from networkx import DiGraph

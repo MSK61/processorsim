@@ -43,7 +43,6 @@
 ############################################################
 
 import itertools
-
 import operator
 import str_utils
 from str_utils import get_obj_repr
