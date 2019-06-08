@@ -95,7 +95,7 @@ class UnitModel:
     """Functional unit model"""
 
     def __init__(self, name: ICaseString, width,
-                 capabilities: typing.Sequence[ICaseString], lock_info):
+                 capabilities: typing.Iterable[ICaseString], lock_info):
         """Create a functional unit model.
 
         `self` is this functional unit model.
