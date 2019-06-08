@@ -42,9 +42,10 @@
 #
 ############################################################
 
+import itertools
 import operator
-from str_utils import get_obj_repr, ICaseString
-import typing
+import str_utils
+from str_utils import get_obj_repr
 __all__ = ["LockInfo", "FuncUnit", "UnitModel"]
 
 
@@ -90,12 +91,77 @@ class LockInfo:
         return get_obj_repr(type(self).__name__, [self.rd_lock, self.wr_lock])
 
 
+class FuncUnit:
+
+    """Processing functional unit"""
+
+    def __init__(self, model, preds):
+        """Create a functional unit.
+
+        `self` is this functional unit.
+        `model` is the unit model.
+        `preds` are the units whose outputs are connected to the input
+                of this unit.
+
+        """
+        assert type(model) == UnitModel
+        self._model = model
+        self._preds = sorted_models(preds)
+
+    def __eq__(self, other):
+        """Test if the two functional units are identical.
+
+        `self` is this functional unit.
+        `other` is the other functional unit.
+
+        """
+        criteria = map(
+            lambda attrs: (attrs[0], len(attrs[1])),
+            [(self._model, self._preds), (other.model, other.predecessors)])
+        return operator.eq(*criteria) and all(
+            map(operator.is_, self._preds, other.predecessors))
+
+    def __ne__(self, other):
+        """Test if the two functional units are different.
+
+        `self` is this functional unit.
+        `other` is the other functional unit.
+
+        """
+        return not self == other
+
+    def __repr__(self):
+        """Return the official string of this functional unit.
+
+        `self` is this functional unit.
+
+        """
+        return get_obj_repr(type(self).__name__, [self._model, self._preds])
+
+    @property
+    def model(self):
+        """Functional unit model
+
+        `self` is this functional unit.
+
+        """
+        return self._model
+
+    @property
+    def predecessors(self):
+        """Predecessor units of this functional unit
+
+        `self` is this functional unit.
+
+        """
+        return self._preds
+
+
 class UnitModel:
 
     """Functional unit model"""
 
-    def __init__(self, name: ICaseString, width,
-                 capabilities: typing.Sequence[ICaseString], lock_info):
+    def __init__(self, name, width, capabilities, lock_info):
         """Create a functional unit model.
 
         `self` is this functional unit model.
@@ -106,6 +172,8 @@ class UnitModel:
         `lock_info` is the parameter locking information.
 
         """
+        assert all(map(lambda attr: type(attr) == str_utils.ICaseString,
+                       itertools.chain([name], capabilities)))
         self._name = name
         self.width = width
         self._capabilities = tuple(sorted(capabilities))
@@ -158,71 +226,6 @@ class UnitModel:
 
         """
         return self._name
-
-
-class FuncUnit:
-
-    """Processing functional unit"""
-
-    def __init__(self, model: UnitModel, preds):
-        """Create a functional unit.
-
-        `self` is this functional unit.
-        `model` is the unit model.
-        `preds` are the units whose outputs are connected to the input
-                of this unit.
-
-        """
-        self._model = model
-        self._preds = sorted_models(preds)
-
-    def __eq__(self, other):
-        """Test if the two functional units are identical.
-
-        `self` is this functional unit.
-        `other` is the other functional unit.
-
-        """
-        criteria = map(
-            lambda attrs: (attrs[0], len(attrs[1])),
-            [(self._model, self._preds), (other.model, other.predecessors)])
-        return operator.eq(*criteria) and all(
-            map(operator.is_, self._preds, other.predecessors))
-
-    def __ne__(self, other):
-        """Test if the two functional units are different.
-
-        `self` is this functional unit.
-        `other` is the other functional unit.
-
-        """
-        return not self == other
-
-    def __repr__(self):
-        """Return the official string of this functional unit.
-
-        `self` is this functional unit.
-
-        """
-        return get_obj_repr(type(self).__name__, [self._model, self._preds])
-
-    @property
-    def model(self):
-        """Functional unit model
-
-        `self` is this functional unit.
-
-        """
-        return self._model
-
-    @property
-    def predecessors(self):
-        """Predecessor units of this functional unit
-
-        `self` is this functional unit.
-
-        """
-        return self._preds
 
 
 def sorted_models(models):
