@@ -600,8 +600,9 @@ def _chk_terminals(processor, orig_port_info):
     after trimming actions during optimization.
 
     """
-    new_out_ports = [port for port in _get_out_ports(
-        processor) if port not in orig_port_info.out_ports]
+    all_out_ports = _get_out_ports(processor)
+    new_out_ports = [
+        port for port in all_out_ports if port not in orig_port_info.out_ports]
 
     for out_port in new_out_ports:
         _rm_dead_end(processor, out_port, orig_port_info.in_ports)

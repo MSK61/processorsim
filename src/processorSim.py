@@ -207,7 +207,7 @@ def _cui_to_icu(cxuxi, instructions):
     `instructions` is the total number of instructions.
 
     """
-    ixcxu = [{} for instr in range(instructions)]
+    ixcxu = list(map(lambda instr: {}, range(instructions)))
 
     for cur_cp, uxi_util in cxuxi:
         _fill_cp_util(cur_cp, uxi_util, ixcxu)
@@ -286,7 +286,8 @@ def _print_res_row(row_index, res_row):
     `res_row` is the simulation row.
 
     """
-    print(_COL_SEP.join(chain(['I' + str(row_index + 1)], res_row)))
+    row_index = str(row_index + 1)
+    print(_COL_SEP.join(chain(['I' + row_index], res_row)))
 
 
 def _print_sim_res(sim_res):
@@ -315,7 +316,8 @@ def _print_tbl_hdr(sim_res):
     `sim_res` is the simulation result.
 
     """
-    print(_COL_SEP.join(chain([""], _get_ticks(sim_res))))
+    ticks = _get_ticks(sim_res)
+    print(_COL_SEP.join(chain([""], ticks)))
 
 
 if __name__ == '__main__':
