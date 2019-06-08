@@ -94,7 +94,7 @@ class HwInstruction(Instruction):
 
     """Hardware instruction"""
 
-    def __init__(self, categ, sources, dst):
+    def __init__(self, categ: str_utils.ICaseString, sources, dst):
         """Create a hardware instruction.
 
         `self` is this hardware instruction.
@@ -103,7 +103,6 @@ class HwInstruction(Instruction):
         `dst` is the register written by the instruction.
 
         """
-        assert type(categ) == str_utils.ICaseString
         Instruction.__init__(self, frozenset(sources), dst)
         self._categ = categ
 
