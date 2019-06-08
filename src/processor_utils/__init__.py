@@ -77,7 +77,7 @@ _UNIT_WLOCK_KEY = "writeLock"
 _UNIT_WIDTH_KEY = "width"
 
 
-class ProcessorDesc(object):
+class ProcessorDesc:
 
     """Processor description"""
 
@@ -185,7 +185,7 @@ class _CapabilityInfo:
         self.unit = unit
 
 
-class _PortGroup(object):
+class _PortGroup:
 
     """Port group information"""
 

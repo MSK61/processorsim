@@ -197,7 +197,7 @@ class _HostedInstr:
         self.index_in_host = local_index
 
 
-class _IssueInfo(object):
+class _IssueInfo:
 
     """Instruction issue information record"""
 

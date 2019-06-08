@@ -91,7 +91,7 @@ class LockInfo:
         return get_obj_repr(type(self).__name__, [self.rd_lock, self.wr_lock])
 
 
-class FuncUnit(object):
+class FuncUnit:
 
     """Processing functional unit"""
 
@@ -157,7 +157,7 @@ class FuncUnit(object):
         return self._preds
 
 
-class UnitModel(object):
+class UnitModel:
 
     """Functional unit model"""
 
