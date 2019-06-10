@@ -555,6 +555,5 @@ def _chk_warn(tokens, warn_call):
     assert warn_call
     assert container_utils.contains(warn_call[0][0] % warn_call[0][1:], tokens)
 
-
 if __name__ == '__main__':
     main()
