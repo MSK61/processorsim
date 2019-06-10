@@ -40,7 +40,7 @@
 ############################################################
 
 import test_env
-from reg_access import ReadAccess, RegAccessQueue
+from reg_access import RegAccessQueue
 import unittest
 from unittest import TestCase
 
@@ -57,20 +57,12 @@ class AccessPlanTest(TestCase):
         """
         plan = RegAccessQueue()
         plan.add_read(0)
-        assert plan == RegAccessQueue([ReadAccess([0])])
+        assert plan == RegAccessQueue([0])
 
 
 class CoverageTest(TestCase):
 
     """Test case for fulfilling complete code coverage"""
-
-    def test_ReadAccess_ne_operator(self):
-        """Test ReadAccess != operator.
-
-        `self` is this test case.
-
-        """
-        assert ReadAccess([0]) != ReadAccess([1])
 
     def test_RegAccessQueue_ne_operator(self):
         """Test RegAccessQueue != operator.
@@ -78,7 +70,7 @@ class CoverageTest(TestCase):
         `self` is this test case.
 
         """
-        assert RegAccessQueue() != RegAccessQueue([ReadAccess([0])])
+        assert RegAccessQueue() != RegAccessQueue([0])
 
     def test_RegAccessQueue_repr(self):
         """Test RegAccessQueue representation.
@@ -86,7 +78,7 @@ class CoverageTest(TestCase):
         `self` is this test case.
 
         """
-        repr(RegAccessQueue([ReadAccess([0])]))
+        repr(RegAccessQueue([0]))
 
 
 def main():

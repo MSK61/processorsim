@@ -38,68 +38,8 @@
 #
 ############################################################
 
-import collections
 from operator import eq
 import str_utils
-
-
-class ReadAccess:
-
-    """Read access record"""
-
-    def __init__(self, initial_reqs):
-        """Create a read access record.
-
-        `self` is this read access record.
-        `initial_reqs` is the non-empty initial request list.
-
-        """
-        assert initial_reqs
-        self._reqs = initial_reqs
-
-    def __eq__(self, other):
-        """Test if the two read access records are identical.
-
-        `self` is this read access record.
-        `other` is the other read access record.
-
-        """
-        other_items = iter(other)
-        return eq(*map(len, [self, other])) and all(
-            map(lambda req_pair: eq(*req_pair), zip(self._reqs, other_items)))
-
-    def __iter__(self):
-        """Retrieve an iterator over this record.
-
-        `self` is this read access record.
-
-        """
-        return iter(self._reqs)
-
-    def __len__(self):
-        """Retrieve the number of requests in this record.
-
-        `self` is this read access record.
-
-        """
-        return len(self._reqs)
-
-    def __ne__(self, other):
-        """Test if the two read access records are different.
-
-        `self` is this read access record.
-        `other` is the other read access record.
-
-        """
-        return not self == other
-
-    def __repr__(self):
-        """Return the official string of this record.
-
-        `self` is this read access record.
-
-        """
-        return str_utils.get_obj_repr(type(self).__name__, [self._reqs])
 
 
 class RegAccessQueue:
@@ -114,7 +54,7 @@ class RegAccessQueue:
                        empty list.
 
         """
-        self._queue = collections.deque()
+        self._queue = []
 
         if initial_reqs:
             self._queue.extend(initial_reqs)
@@ -161,8 +101,7 @@ class RegAccessQueue:
         `self` is this access request queue.
 
         """
-        return str_utils.format_obj(
-            type(self).__name__, [self._format_queue()])
+        return str_utils.get_obj_repr(type(self).__name__, [self._queue])
 
     def add_read(self, req_owner):
         """Add a new read request to this queue.
@@ -171,21 +110,4 @@ class RegAccessQueue:
         `req_owner` is the request owner.
 
         """
-        self._queue.append(ReadAccess([req_owner]))
-
-    def _format_queue(self):
-        """Format this queue.
-
-        `self` is this access request queue.
-
-        """
-        return "[{}]".format(self._format_reqs())
-
-    def _format_reqs(self):
-        """Format the requests of this queue.
-
-        `self` is this access request queue.
-
-        """
-        sep = ", "
-        return sep.join(map(repr, self._queue))
+        self._queue.append(req_owner)
