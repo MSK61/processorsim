@@ -28,10 +28,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Komodo IDE, version 11.1.0 build 91033, python 2.7.15,
-#               Fedora release 29 (Twenty Nine)
-#               Komodo IDE, version 11.1.1 build 91089, python 2.7.15,
-#               Fedora release 29 (Twenty Nine)
+# environment:  Komodo IDE, version 11.1.1 build 91089, python 3.7.3,
+#               Fedora release 30 (Thirty)
 #
 # notes:        This is a private program.
 #
