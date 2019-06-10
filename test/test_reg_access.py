@@ -39,30 +39,40 @@
 #
 ############################################################
 
+import pytest
 from test_env import TEST_DIR
-from reg_access import RegAccessQueue
+from reg_access import Access, AccessType, RegAccessQueue
 import unittest
-from unittest import TestCase
 
 
-class AccessPlanTest(TestCase):
+class TestAccessPlan:
 
     """Test case for creating registry access plans"""
 
-    def test_adding_read_to_empty_queue_creates_new_read(self):
-        """Test adding a read request to an empty queue.
+    @pytest.mark.parametrize("req_type", [AccessType.READ, AccessType.WRITE])
+    def test_adding_request_to_empty_queue_creates_new_request(self, req_type):
+        """Test adding a request to an empty queue.
+
+        `self` is this test case.
+        `req_type` is the type of the request to add.
+
+        """
+        plan = RegAccessQueue()
+        plan.add(req_type, TEST_DIR)
+        assert plan == RegAccessQueue([Access(req_type, TEST_DIR)])
+
+
+class CoverageTest(unittest.TestCase):
+
+    """Test case for fulfilling complete code coverage"""
+
+    def test_Access_ne_operator(self):
+        """Test Access != operator.
 
         `self` is this test case.
 
         """
-        plan = RegAccessQueue()
-        plan.add_read(TEST_DIR)
-        assert plan == RegAccessQueue([TEST_DIR])
-
-
-class CoverageTest(TestCase):
-
-    """Test case for fulfilling complete code coverage"""
+        assert Access(AccessType.READ, 0) != Access(AccessType.READ, 1)
 
     def test_RegAccessQueue_ne_operator(self):
         """Test RegAccessQueue != operator.
@@ -70,7 +80,7 @@ class CoverageTest(TestCase):
         `self` is this test case.
 
         """
-        assert RegAccessQueue() != RegAccessQueue([0])
+        assert RegAccessQueue() != RegAccessQueue([Access(AccessType.READ, 0)])
 
     def test_RegAccessQueue_repr(self):
         """Test RegAccessQueue representation.
@@ -78,12 +88,14 @@ class CoverageTest(TestCase):
         `self` is this test case.
 
         """
-        assert repr(RegAccessQueue()) == "RegAccessQueue([])"
+        assert repr(RegAccessQueue([Access(
+            AccessType.READ,
+            0)])) == "RegAccessQueue([Access(AccessType.READ, 0)])"
 
 
 def main():
     """entry point for running test in this module"""
-    unittest.main()
+    pytest.main([__file__])
 
 if __name__ == '__main__':
     main()

@@ -38,8 +38,63 @@
 #
 ############################################################
 
+import enum
+from enum import auto
 from operator import eq
 import str_utils
+
+
+class Access:
+
+    """Access record"""
+
+    def __init__(self, req_type, req_owner):
+        """Create a access record.
+
+        `self` is this access record.
+        `req_type` is the request type.
+        `req_owner` is the request owner.
+
+        """
+        self.access_type = req_type
+        self.owner = req_owner
+
+    def __eq__(self, other):
+        """Test if the two access records are identical.
+
+        `self` is this access record.
+        `other` is the other access record.
+
+        """
+        return (self.access_type, self.owner) == (
+            other.access_type, other.owner)
+
+    def __ne__(self, other):
+        """Test if the two access records are different.
+
+        `self` is this access record.
+        `other` is the other access record.
+
+        """
+        return not self == other
+
+    def __repr__(self):
+        """Return the official string of this record.
+
+        `self` is this access record.
+
+        """
+        return str_utils.format_obj(
+            type(self).__name__, map(str, [self.access_type, self.owner]))
+
+
+class AccessType(enum.Enum):
+
+    """Access type"""
+
+    READ = auto()
+
+    WRITE = auto()
 
 
 class RegAccessQueue:
@@ -103,11 +158,12 @@ class RegAccessQueue:
         """
         return str_utils.get_obj_repr(type(self).__name__, [self._queue])
 
-    def add_read(self, req_owner):
+    def add(self, req_type, req_owner):
         """Add a new read request to this queue.
 
         `self` is this access request queue.
+        `req_type` is the request type.
         `req_owner` is the request owner.
 
         """
-        self._queue.append(req_owner)
+        self._queue.append(Access(req_type, req_owner))
