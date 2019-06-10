@@ -187,19 +187,8 @@ class _PortGroup:
                     from.
 
         """
-        self._in_ports = _in_port_list(processor)
-        self._out_ports = self._out_port_list(processor)
-
-    @staticmethod
-    def _out_port_list(processor):
-        """Find the output ports.
-
-        `processor` is the processor to find whose output ports.
-        The method returns a read-only list of the processor output
-        ports.
-
-        """
-        return tuple(_get_out_ports(processor))
+        self._in_ports, self._out_ports = map(lambda port_getter: tuple(
+            port_getter(processor)), [_get_in_ports, _get_out_ports])
 
     @property
     def in_ports(self):
@@ -927,16 +916,6 @@ def _init_cap_reg(capabilities):
         cap_registry.add(cap)
 
     return cap_registry
-
-
-def _in_port_list(processor):
-    """Find the input ports.
-
-    `processor` is the processor to find whose input ports.
-    The function returns a read-only list of the processor input ports.
-
-    """
-    return tuple(_get_in_ports(processor))
 
 
 def _load_caps(unit, cap_registry):
