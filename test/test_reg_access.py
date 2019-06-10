@@ -39,7 +39,7 @@
 #
 ############################################################
 
-import test_env
+from test_env import TEST_DIR
 from reg_access import RegAccessQueue
 import unittest
 from unittest import TestCase
@@ -56,8 +56,8 @@ class AccessPlanTest(TestCase):
 
         """
         plan = RegAccessQueue()
-        plan.add_read(0)
-        assert plan == RegAccessQueue([0])
+        plan.add_read(TEST_DIR)
+        assert plan == RegAccessQueue([TEST_DIR])
 
 
 class CoverageTest(TestCase):
@@ -87,5 +87,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-test_env.TEST_DIR  # Suppress unused test_env import.
