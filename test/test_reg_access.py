@@ -78,7 +78,7 @@ class CoverageTest(TestCase):
         `self` is this test case.
 
         """
-        repr(RegAccessQueue())
+        assert repr(RegAccessQueue()) == "RegAccessQueue([])"
 
 
 def main():
