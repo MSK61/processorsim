@@ -49,7 +49,7 @@ class AccessPlanTest(TestCase):
 
     """Test case for creating registry access plans"""
 
-    def test_adding_read_to_empty_queue_creates_a_new_read(self):
+    def test_adding_read_to_empty_queue_creates_new_read(self):
         """Test adding a read request to an empty queue.
 
         `self` is this test case.
