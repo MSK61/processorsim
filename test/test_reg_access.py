@@ -40,6 +40,7 @@
 ############################################################
 
 import pytest
+from pytest import mark
 from test_env import TEST_DIR
 from reg_access import Access, AccessType, RegAccessQueue, RegAccQBuilder
 import unittest
@@ -49,7 +50,7 @@ class TestAccessPlan:
 
     """Test case for creating register access plans"""
 
-    @pytest.mark.parametrize("req_type", [AccessType.READ, AccessType.WRITE])
+    @mark.parametrize("req_type", [AccessType.READ, AccessType.WRITE])
     def test_adding_request_to_empty_queue_creates_new_request(self, req_type):
         """Test adding a request to an empty queue.
 
@@ -62,17 +63,19 @@ class TestAccessPlan:
         assert builder.create() == RegAccessQueue(
             [Access(req_type, len(TEST_DIR))])
 
-    def test_adding_write_after_read_creates_new_write(self):
-        """Test adding a write request after a read one.
+    @mark.parametrize("prev_req", [AccessType.READ, AccessType.WRITE])
+    def test_adding_write_after_any_request_creates_new_write(self, prev_req):
+        """Test adding a write request after any request.
 
         `self` is this test case.
+        `prev_req` is the request preceding the write request.
 
         """
         builder = RegAccQBuilder()
-        builder.append(AccessType.READ, 0)
+        builder.append(prev_req, 0)
         builder.append(AccessType.WRITE, 1)
         assert builder.create() == RegAccessQueue(
-            [Access(AccessType.READ, 0), Access(AccessType.WRITE, 1)])
+            [Access(prev_req, 0), Access(AccessType.WRITE, 1)])
 
 
 class CoverageTest(unittest.TestCase):
