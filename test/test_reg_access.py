@@ -58,7 +58,7 @@ class TestAccessPlan:
 
         """
         plan = RegAccessQueue()
-        plan.add(req_type, TEST_DIR)
+        plan.append(req_type, TEST_DIR)
         assert plan == RegAccessQueue([Access(req_type, TEST_DIR)])
 
 

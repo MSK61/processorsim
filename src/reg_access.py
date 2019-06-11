@@ -158,8 +158,8 @@ class RegAccessQueue:
         """
         return str_utils.get_obj_repr(type(self).__name__, [self._queue])
 
-    def add(self, req_type, req_owner):
-        """Add a new read request to this queue.
+    def append(self, req_type, req_owner):
+        """Append a new read request to this queue.
 
         `self` is this access request queue.
         `req_type` is the request type.
