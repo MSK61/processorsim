@@ -41,8 +41,7 @@
 
 import pytest
 from test_env import TEST_DIR
-import reg_access
-from reg_access import Access, AccessType, RegAccessQueue
+from reg_access import Access, AccessType, RegAccessQueue, RegAccQBuilder
 import unittest
 
 
@@ -58,10 +57,22 @@ class TestAccessPlan:
         `req_type` is the type of the request to add.
 
         """
-        builder = reg_access.RegAccQBuilder()
+        builder = RegAccQBuilder()
         builder.append(req_type, len(TEST_DIR))
         assert builder.create() == RegAccessQueue(
             [Access(req_type, len(TEST_DIR))])
+
+    def test_adding_write_after_read_creates_new_write(self):
+        """Test adding a write request after a read one.
+
+        `self` is this test case.
+
+        """
+        builder = RegAccQBuilder()
+        builder.append(AccessType.READ, 0)
+        builder.append(AccessType.WRITE, 1)
+        assert builder.create() == RegAccessQueue(
+            [Access(AccessType.READ, 0), Access(AccessType.WRITE, 1)])
 
 
 class CoverageTest(unittest.TestCase):
