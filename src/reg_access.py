@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""registry access"""
+"""register access"""
 
 ############################################################
 #
@@ -25,9 +25,9 @@
 #
 # file:         reg_access.py
 #
-# function:     registry access forecast storage
+# function:     register access forecast storage
 #
-# description:  stores expected registry access requests
+# description:  stores expected register access requests
 #
 # author:       Mohammed El-Afifi (ME)
 #
@@ -99,7 +99,7 @@ class AccessType(enum.Enum):
 
 class RegAccessQueue:
 
-    """Access request queue for a single registry"""
+    """Access request queue for a single register"""
 
     def __init__(self, initial_reqs=None):
         """Create an access queue.

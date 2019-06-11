@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""tests registry access structures"""
+"""tests register access structures"""
 
 ############################################################
 #
@@ -26,9 +26,9 @@
 #
 # file:         test_reg_access.py
 #
-# function:     registry access plan tests
+# function:     register access plan tests
 #
-# description:  tests registry access plan creation
+# description:  tests register access plan creation
 #
 # author:       Mohammed El-Afifi (ME)
 #
@@ -47,7 +47,7 @@ import unittest
 
 class TestAccessPlan:
 
-    """Test case for creating registry access plans"""
+    """Test case for creating register access plans"""
 
     @pytest.mark.parametrize("req_type", [AccessType.READ, AccessType.WRITE])
     def test_adding_request_to_empty_queue_creates_new_request(self, req_type):
