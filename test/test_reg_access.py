@@ -58,8 +58,8 @@ class TestAccessPlan:
 
         """
         plan = RegAccessQueue()
-        plan.append(req_type, TEST_DIR)
-        assert plan == RegAccessQueue([Access(req_type, TEST_DIR)])
+        plan.append(req_type, len(TEST_DIR))
+        assert plan == RegAccessQueue([Access(req_type, len(TEST_DIR))])
 
 
 class CoverageTest(unittest.TestCase):
