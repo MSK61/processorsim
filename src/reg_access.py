@@ -104,7 +104,7 @@ class RegAccessQueue:
     def __init__(self, initial_reqs=None):
         """Create an access queue.
 
-        `self` is this hardware description.
+        `self` is this access request queue.
         `initial_reqs` is the initial request list, defaulting to an
                        empty list.
 
