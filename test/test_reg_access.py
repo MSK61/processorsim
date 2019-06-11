@@ -41,6 +41,7 @@
 
 import pytest
 from test_env import TEST_DIR
+import reg_access
 from reg_access import Access, AccessType, RegAccessQueue
 import unittest
 
@@ -57,9 +58,10 @@ class TestAccessPlan:
         `req_type` is the type of the request to add.
 
         """
-        plan = RegAccessQueue()
-        plan.append(req_type, len(TEST_DIR))
-        assert plan == RegAccessQueue([Access(req_type, len(TEST_DIR))])
+        builder = reg_access.RegAccQBuilder()
+        builder.append(req_type, len(TEST_DIR))
+        assert builder.create() == RegAccessQueue(
+            [Access(req_type, len(TEST_DIR))])
 
 
 class CoverageTest(unittest.TestCase):
@@ -80,7 +82,8 @@ class CoverageTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        assert RegAccessQueue() != RegAccessQueue([Access(AccessType.READ, 0)])
+        assert RegAccessQueue([]) != RegAccessQueue(
+            [Access(AccessType.READ, 0)])
 
     def test_RegAccessQueue_repr(self):
         """Test RegAccessQueue representation.

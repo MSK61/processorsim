@@ -101,18 +101,14 @@ class RegAccessQueue:
 
     """Access request queue for a single register"""
 
-    def __init__(self, initial_reqs=None):
+    def __init__(self, reqs):
         """Create an access queue.
 
         `self` is this access request queue.
-        `initial_reqs` is the initial request list, defaulting to an
-                       empty list.
+        `reqs` is the request list.
 
         """
-        self._queue = []
-
-        if initial_reqs:
-            self._queue.extend(initial_reqs)
+        self._queue = reqs
 
     def __eq__(self, other):
         """Test if the two access queues are identical.
@@ -158,12 +154,33 @@ class RegAccessQueue:
         """
         return str_utils.get_obj_repr(type(self).__name__, [self._queue])
 
-    def append(self, req_type, req_owner):
-        """Append a new read request to this queue.
 
-        `self` is this access request queue.
+class RegAccQBuilder:
+
+    """Access request queue builder"""
+
+    def __init__(self):
+        """Create an access queue builder.
+
+        `self` is this access queue builder.
+
+        """
+        self._queue = []
+
+    def append(self, req_type, req_owner):
+        """Append a new read request to the built queue.
+
+        `self` is this access queue builder.
         `req_type` is the request type.
         `req_owner` is the request owner.
 
         """
         self._queue.append(Access(req_type, req_owner))
+
+    def create(self):
+        """Create the request access queue.
+
+        `self` is this access queue builder.
+
+        """
+        return RegAccessQueue(self._queue)
