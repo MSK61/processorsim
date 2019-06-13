@@ -49,7 +49,7 @@ class Access:
     """Access record"""
 
     def __init__(self, req_type, req_owner):
-        """Create a access record.
+        """Create an access record.
 
         `self` is this access record.
         `req_type` is the request type.
