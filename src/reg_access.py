@@ -44,48 +44,51 @@ from operator import eq
 import str_utils
 
 
-class Access:
+class AccessGroup:
 
-    """Access record"""
+    """Access group"""
 
-    def __init__(self, req_type, req_owner):
-        """Create an access record.
+    def __init__(self, gr_type, initial_reqs=None):
+        """Create an access group.
 
-        `self` is this access record.
-        `req_type` is the request type.
-        `req_owner` is the request owner.
+        `self` is this access group.
+        `gr_type` is the request group type.
+        `initial_reqs` is the initial request list, defaulting to an
+                       empty list.
 
         """
-        self.access_type = req_type
-        self.owner = req_owner
+        self.access_type = gr_type
+        self.reqs = []
+
+        if initial_reqs:
+            self.reqs.extend(initial_reqs)
 
     def __eq__(self, other):
-        """Test if the two access records are identical.
+        """Test if the two access groups are identical.
 
-        `self` is this access record.
-        `other` is the other access record.
+        `self` is this access group.
+        `other` is the other access group.
 
         """
-        return (self.access_type, self.owner) == (
-            other.access_type, other.owner)
+        return (self.access_type, self.reqs) == (other.access_type, other.reqs)
 
     def __ne__(self, other):
-        """Test if the two access records are different.
+        """Test if the two access groups are different.
 
-        `self` is this access record.
-        `other` is the other access record.
+        `self` is this access group.
+        `other` is the other access group.
 
         """
         return not self == other
 
     def __repr__(self):
-        """Return the official string of this record.
+        """Return the official string of this group.
 
-        `self` is this access record.
+        `self` is this access group.
 
         """
         return str_utils.format_obj(
-            type(self).__name__, map(str, [self.access_type, self.owner]))
+            type(self).__name__, map(str, [self.access_type, self.reqs]))
 
 
 class AccessType(enum.Enum):
@@ -175,7 +178,10 @@ class RegAccQBuilder:
         `req_owner` is the request owner.
 
         """
-        self._queue.append(Access(req_type, req_owner))
+        if not self._can_merge(req_type):
+            self._queue.append(AccessGroup(req_type))
+
+        self._queue[-1].reqs.append(req_owner)
 
     def create(self):
         """Create the request access queue.
@@ -184,3 +190,13 @@ class RegAccQBuilder:
 
         """
         return RegAccessQueue(self._queue)
+
+    def _can_merge(self, req_type):
+        """Test if the given request can be merged with the last one.
+
+        `self` is this access queue builder.
+        `req_type` is the request type.
+
+        """
+        return req_type == AccessType.READ and self._queue and self._queue[
+            -1].access_type == AccessType.READ

@@ -42,13 +42,25 @@
 import pytest
 from pytest import mark
 from test_env import TEST_DIR
-from reg_access import Access, AccessType, RegAccessQueue, RegAccQBuilder
+from reg_access import AccessGroup, AccessType, RegAccessQueue, RegAccQBuilder
 import unittest
 
 
 class TestAccessPlan:
 
     """Test case for creating register access plans"""
+
+    def test_adding_read_after_read_adds_to_previous_read(self):
+        """Test adding one read request after another.
+
+        `self` is this test case.
+
+        """
+        builder = RegAccQBuilder()
+        builder.append(AccessType.READ, 0)
+        builder.append(AccessType.READ, 1)
+        assert builder.create() == RegAccessQueue(
+            [AccessGroup(AccessType.READ, [0, 1])])
 
     @mark.parametrize(
         "prev_req, new_req", [(AccessType.READ, AccessType.WRITE),
@@ -67,7 +79,7 @@ class TestAccessPlan:
         builder.append(prev_req, 0)
         builder.append(new_req, 1)
         assert builder.create() == RegAccessQueue(
-            [Access(prev_req, 0), Access(new_req, 1)])
+            [AccessGroup(prev_req, [0]), AccessGroup(new_req, [1])])
 
     @mark.parametrize("req_type", [AccessType.READ, AccessType.WRITE])
     def test_adding_request_to_empty_queue_creates_new_request(self, req_type):
@@ -80,20 +92,20 @@ class TestAccessPlan:
         builder = RegAccQBuilder()
         builder.append(req_type, len(TEST_DIR))
         assert builder.create() == RegAccessQueue(
-            [Access(req_type, len(TEST_DIR))])
+            [AccessGroup(req_type, [len(TEST_DIR)])])
 
 
 class CoverageTest(unittest.TestCase):
 
     """Test case for fulfilling complete code coverage"""
 
-    def test_Access_ne_operator(self):
-        """Test Access != operator.
+    def test_AccessGroup_ne_operator(self):
+        """Test AccessGroup != operator.
 
         `self` is this test case.
 
         """
-        assert Access(AccessType.READ, 0) != Access(AccessType.READ, 1)
+        assert AccessGroup(AccessType.READ) != AccessGroup(AccessType.WRITE)
 
     def test_RegAccessQueue_ne_operator(self):
         """Test RegAccessQueue != operator.
@@ -102,7 +114,7 @@ class CoverageTest(unittest.TestCase):
 
         """
         assert RegAccessQueue([]) != RegAccessQueue(
-            [Access(AccessType.READ, 0)])
+            [AccessGroup(AccessType.READ)])
 
     def test_RegAccessQueue_repr(self):
         """Test RegAccessQueue representation.
@@ -110,9 +122,9 @@ class CoverageTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        assert repr(RegAccessQueue([Access(
+        assert repr(RegAccessQueue([AccessGroup(
             AccessType.READ,
-            0)])) == "RegAccessQueue([Access(AccessType.READ, 0)])"
+            [0])])) == "RegAccessQueue([AccessGroup(AccessType.READ, [0])])"
 
 
 def main():
