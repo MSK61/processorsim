@@ -122,7 +122,7 @@ class RegAccessQueue:
         """
         other_items = iter(other)
         return eq(*map(len, [self, other])) and all(
-            map(lambda req_pair: eq(*req_pair), zip(self._queue, other_items)))
+            map(eq, self._queue, other_items))
 
     def __iter__(self):
         """Retrieve an iterator over this queue.
