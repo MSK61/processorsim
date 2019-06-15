@@ -80,11 +80,6 @@ class BadWidthError(RuntimeError):
 
     """
 
-    # parameter indices in format message
-    UNIT_IDX = 0
-
-    WIDTH_IDX = 1
-
     def __init__(self, msg_tmpl, unit, width):
         """Create a bad width error.
 
@@ -117,6 +112,11 @@ class BadWidthError(RuntimeError):
         """
         return self._width
 
+    # parameter indices in format message
+    UNIT_IDX = 0
+
+    WIDTH_IDX = 1
+
 
 class BlockedCapError(RuntimeError):
 
@@ -127,11 +127,6 @@ class BlockedCapError(RuntimeError):
     input it was fed to.
 
     """
-
-    # parameter indices in format message
-    CAPABILITY_IDX = 0
-
-    PORT_IDX = 1
 
     def __init__(self, msg_tmpl, blocking_info):
         """Create a blocked input capability error.
@@ -166,6 +161,11 @@ class BlockedCapError(RuntimeError):
 
         """
         return self._port
+
+    # parameter indices in format message
+    CAPABILITY_IDX = 0
+
+    PORT_IDX = 1
 
 
 class CapPortInfo:
@@ -235,11 +235,6 @@ class DupElemError(RuntimeError):
 
     """Duplicate set element error"""
 
-    # parameter indices in format message
-    OLD_ELEM_IDX = 0
-
-    NEW_ELEM_IDX = 1
-
     def __init__(self, msg_tmpl, old_elem, new_elem):
         """Create a duplicate element error.
 
@@ -271,6 +266,11 @@ class DupElemError(RuntimeError):
 
         """
         return self._old_elem
+
+    # parameter indices in format message
+    OLD_ELEM_IDX = 0
+
+    NEW_ELEM_IDX = 1
 
 
 class EmptyProcError(RuntimeError):

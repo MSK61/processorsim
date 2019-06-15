@@ -47,8 +47,6 @@ class ICaseString:
 
     """Case-insensitive string"""
 
-    _canonical = staticmethod(str.lower)
-
     def __init__(self, initial_str):
         """Create a case-insensitive string.
 
@@ -126,6 +124,8 @@ class ICaseString:
 
         """
         return map(self._canonical, [self.str, other])
+
+    _canonical = staticmethod(str.lower)
 
 
 def format_obj(cls_name, field_strings):

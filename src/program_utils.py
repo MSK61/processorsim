@@ -49,11 +49,6 @@ class CodeError(RuntimeError):
 
     """Syntax error"""
 
-    # parameter indices in format message
-    LINE_NUM_IDX = 0
-
-    INSTR_IDX = 1
-
     def __init__(self, msg_tmpl, line, instr):
         """Create a syntax error.
 
@@ -85,6 +80,11 @@ class CodeError(RuntimeError):
 
         """
         return self._line
+
+    # parameter indices in format message
+    LINE_NUM_IDX = 0
+
+    INSTR_IDX = 1
 
 
 class _LineInfo:
