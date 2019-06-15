@@ -545,7 +545,7 @@ def _stall_units(units, util_info):
 
     """
     for unit in units:
-            _stall_unit(unit.name, util_info)
+        _stall_unit(unit.name, util_info)
 
 
 def _update_flights(unit, program, util_info):

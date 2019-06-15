@@ -34,4 +34,4 @@
 # notes:        This is a private program.
 #
 ############################################################
-python3 -m pytest --cov src --flakes --pep8 $*
+python3 -m pytest --codestyle --cov src --flakes $*

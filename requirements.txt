@@ -1,7 +1,7 @@
 networkx
+pytest-codestyle
 pytest-cov
 pytest-flakes
-pytest-pep8
 pytest-travis-fold
 python-coveralls
 PyYAML

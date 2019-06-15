@@ -311,6 +311,7 @@ def _print_tbl_hdr(sim_res):
     ticks = _get_ticks(sim_res)
     print(_COL_SEP.join(chain([""], ticks)))
 
+
 if __name__ == '__main__':
     status = main()
     sys.exit(status)

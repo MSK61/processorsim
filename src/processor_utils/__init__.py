@@ -1200,4 +1200,5 @@ def _update_graph(idx, unit, processor, width_graph, unit_idx_map):
         idx, **concat_dicts(processor.node[unit], {_OLD_NODE_KEY: unit}))
     unit_idx_map[unit] = idx
 
+
 _add_src_path()
