@@ -51,20 +51,6 @@ from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from program_defs import HwInstruction
 from str_utils import ICaseString
 from test_utils import read_proc_file
-import unittest
-
-
-class CoverageTest(unittest.TestCase):
-
-    """Test case for fulfilling complete code coverage"""
-
-    def test_InstrState_repr(self):
-        """Test InstrState representation.
-
-        `self` is this test case.
-
-        """
-        repr(InstrState(0))
 
 
 class TestBasic:

@@ -45,6 +45,9 @@
 #
 ############################################################
 
+import str_utils
+from typing import NamedTuple
+
 
 class BadEdgeError(RuntimeError):
 
@@ -168,36 +171,22 @@ class BlockedCapError(RuntimeError):
     PORT_IDX = 1
 
 
-class CapPortInfo:
-
-    """Capability-port combination information"""
-
-    def __init__(self, capability_info, port_info):
-        """Set the capability-port combination information.
-
-        `self` is this capability-port combination information.
-        `capability_info` is the capability information.
-        `port_info` is the port information.
-
-        """
-        self.capability_info = capability_info
-        self.port_info = port_info
-
-
-class ComponentInfo:
+class ComponentInfo(NamedTuple):
 
     """Component information"""
 
-    def __init__(self, std_name, reporting_name):
-        """Set the component information.
+    std_name: str_utils.ICaseString
 
-        `self` is this component information.
-        `std_name` is the component standard name.
-        `reporting_name` is the component reporting name.
+    reporting_name: str
 
-        """
-        self.std_name = std_name
-        self.reporting_name = reporting_name
+
+class CapPortInfo(NamedTuple):
+
+    """Capability-port combination information"""
+
+    capability_info: ComponentInfo
+
+    port_info: ComponentInfo
 
 
 class DeadInputError(RuntimeError):

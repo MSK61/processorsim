@@ -39,6 +39,7 @@
 ############################################################
 
 from container_utils import concat_dicts
+import dataclasses
 from errors import UndefElemError
 from . import exception
 from .exception import BadWidthError, BlockedCapError, ComponentInfo, \
@@ -51,10 +52,12 @@ from networkx import DiGraph
 from operator import itemgetter
 import os
 from .sets import IndexedSet, SelfIndexSet
-import str_utils
 from str_utils import ICaseString
 import sys
+import typing
+from typing import Tuple
 from . import units
+from .units import FuncUnit, UnitModel
 __all__ = ["exception", "load_proc_desc", "ProcessorDesc", "units"]
 _OLD_NODE_KEY = "old_node"
 # unit attributes
@@ -66,6 +69,7 @@ _UNIT_WLOCK_KEY = "writeLock"
 _UNIT_WIDTH_KEY = "width"
 
 
+@dataclasses.dataclass
 class ProcessorDesc:
 
     """Processor description"""
@@ -85,41 +89,10 @@ class ProcessorDesc:
                          unit to the consuming one).
 
         """
-        self._in_ports, self._in_out_ports = map(
+        self.in_ports, self.in_out_ports = map(
             units.sorted_models, [in_ports, in_out_ports])
-        self._out_ports = self._sorted_units(out_ports)
+        self.out_ports = self._sorted_units(out_ports)
         self.internal_units = internal_units
-
-    def __eq__(self, other):
-        """Test if the two processors are identical.
-
-        `self` is this processor.
-        `other` is the other processor.
-
-        """
-        return (
-            self._in_ports, self._out_ports, self._in_out_ports,
-            self.internal_units) == (other.in_ports, other.out_ports,
-                                     other.in_out_ports, other.internal_units)
-
-    def __ne__(self, other):
-        """Test if the two processors are different.
-
-        `self` is this processor.
-        `other` is the other processor.
-
-        """
-        return not self == other
-
-    def __repr__(self):
-        """Return the official string of this processor.
-
-        `self` is this processor.
-
-        """
-        return str_utils.get_obj_repr(
-            type(self).__name__, [self._in_ports, self._out_ports,
-                                  self._in_out_ports, self.internal_units])
 
     @staticmethod
     def _sorted_units(hw_units):
@@ -130,48 +103,22 @@ class ProcessorDesc:
         """
         return tuple(sorted(hw_units, key=lambda unit: unit.model.name))
 
-    @property
-    def in_out_ports(self):
-        """Processor input-output ports
+    in_ports: Tuple[UnitModel]
 
-        `self` is this processor.
+    out_ports: Tuple[FuncUnit]
 
-        """
-        return self._in_out_ports
+    in_out_ports: Tuple[UnitModel]
 
-    @property
-    def in_ports(self):
-        """Processor input-only ports
-
-        `self` is this processor.
-
-        """
-        return self._in_ports
-
-    @property
-    def out_ports(self):
-        """Processor output-only ports
-
-        `self` is this processor.
-
-        """
-        return self._out_ports
+    internal_units: typing.List[FuncUnit]
 
 
-class _CapabilityInfo:
+class _CapabilityInfo(typing.NamedTuple):
 
     """Unit capability information"""
 
-    def __init__(self, name, unit):
-        """Set capability information.
+    name: ICaseString
 
-        `self` is this capability.
-        `name` is the capability name.
-        `unit` is the unit where the capability is defined.
-
-        """
-        self.name = name
-        self.unit = unit
+    unit: str
 
 
 class _PortGroup:
@@ -310,7 +257,7 @@ def _add_instr(instr_registry, cap_registry, instr, cap):
     """
     _chk_instr(instr, instr_registry)
     instr_registry.add(instr)
-    return instr.str.upper(), _get_cap_name(cap, cap_registry)
+    return instr.raw_str.upper(), _get_cap_name(cap, cap_registry)
 
 
 def _add_new_cap(cap, cap_list, unit_cap_reg, global_cap_reg):
@@ -328,7 +275,7 @@ def _add_new_cap(cap, cap_list, unit_cap_reg, global_cap_reg):
 
     if std_cap is None:
         std_cap = _add_to_set(global_cap_reg, cap)
-    elif std_cap.name.str != cap.name.str:
+    elif std_cap.name.raw_str != cap.name.raw_str:
         logging.warning("Capability %s in unit %s previously defined as %s in "
                         "unit %s, using original definition...", cap.name,
                         cap.unit, std_cap.name, std_cap.unit)
@@ -879,9 +826,8 @@ def _get_unit_entry(name, attrs):
     """
     lock_info = units.LockInfo(
         *itemgetter(_UNIT_RLOCK_KEY, _UNIT_WLOCK_KEY)(attrs))
-    return name, units.UnitModel(
-        name,
-        *itemgetter(_UNIT_WIDTH_KEY, _UNIT_CAPS_KEY)(attrs) + (lock_info,))
+    return name, UnitModel(name, *itemgetter(_UNIT_WIDTH_KEY, _UNIT_CAPS_KEY)(
+        attrs) + (lock_info,))
 
 
 def _get_unit_name(unit, unit_registry):
@@ -1015,7 +961,7 @@ def _post_order(graph):
     """
     unit_map = dict(
         map(lambda unit: _get_unit_entry(unit, graph.node[unit]), graph))
-    return map(lambda name: units.FuncUnit(unit_map[name], _get_preds(
+    return map(lambda name: FuncUnit(unit_map[name], _get_preds(
         graph, name, unit_map)), networkx.dfs_postorder_nodes(graph))
 
 

@@ -38,15 +38,30 @@
 #
 ############################################################
 
+import dataclasses
 import enum
 from enum import auto
-from operator import eq
-import str_utils
+import typing
+from typing import List
 
 
+class AccessType(enum.Enum):
+
+    """Access type"""
+
+    READ = auto()
+
+    WRITE = auto()
+
+
+@dataclasses.dataclass
 class AccessGroup:
 
     """Access group"""
+
+    access_type: AccessType
+
+    reqs: List[int]
 
     def __init__(self, gr_type, initial_reqs=None):
         """Create an access group.
@@ -63,99 +78,12 @@ class AccessGroup:
         if initial_reqs:
             self.reqs.extend(initial_reqs)
 
-    def __eq__(self, other):
-        """Test if the two access groups are identical.
 
-        `self` is this access group.
-        `other` is the other access group.
-
-        """
-        return (self.access_type, self.reqs) == (other.access_type, other.reqs)
-
-    def __ne__(self, other):
-        """Test if the two access groups are different.
-
-        `self` is this access group.
-        `other` is the other access group.
-
-        """
-        return not self == other
-
-    def __repr__(self):
-        """Return the official string of this group.
-
-        `self` is this access group.
-
-        """
-        return str_utils.format_obj(
-            type(self).__name__, map(str, [self.access_type, self.reqs]))
-
-
-class AccessType(enum.Enum):
-
-    """Access type"""
-
-    READ = auto()
-
-    WRITE = auto()
-
-
-class RegAccessQueue:
+class RegAccessQueue(typing.NamedTuple):
 
     """Access request queue for a single register"""
 
-    def __init__(self, reqs):
-        """Create an access queue.
-
-        `self` is this access request queue.
-        `reqs` is the request list.
-
-        """
-        self._queue = reqs
-
-    def __eq__(self, other):
-        """Test if the two access queues are identical.
-
-        `self` is this access request queue.
-        `other` is the other access request queue.
-
-        """
-        other_items = iter(other)
-        return eq(*map(len, [self, other])) and all(
-            map(eq, self._queue, other_items))
-
-    def __iter__(self):
-        """Retrieve an iterator over this queue.
-
-        `self` is this access request queue.
-
-        """
-        return iter(self._queue)
-
-    def __len__(self):
-        """Retrieve the number of requests in this queue.
-
-        `self` is this access request queue.
-
-        """
-        return len(self._queue)
-
-    def __ne__(self, other):
-        """Test if the two access queues are different.
-
-        `self` is this access request queue.
-        `other` is the other access request queue.
-
-        """
-        return not self == other
-
-    def __repr__(self):
-        """Return the official string of this queue.
-
-        `self` is this access request queue.
-
-        """
-        return str_utils.get_obj_repr(type(self).__name__, [self._queue])
+    queue: List[AccessGroup]
 
 
 class RegAccQBuilder:

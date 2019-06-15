@@ -44,59 +44,11 @@ from pytest import mark, raises
 import test_utils
 import container_utils
 import errors
-from program_defs import HwInstruction, Instruction, ProgInstruction
+import program_defs
 import program_utils
 from program_utils import CodeError
 from str_utils import ICaseString
 from test_utils import read_prog_file
-import unittest
-
-
-class CoverageTest(unittest.TestCase):
-
-    """Test case for fulfilling complete code coverage"""
-
-    def test_HwInstruction_ne_operator(self):
-        """Test HwInstruction != operator.
-
-        `self` is this test case.
-
-        """
-        assert HwInstruction(ICaseString("ALU"), [], "R1") != HwInstruction(
-            ICaseString("ALU"), [], "R2")
-
-    def test_HwInstruction_repr(self):
-        """Test HwInstruction representation.
-
-        `self` is this test case.
-
-        """
-        repr(HwInstruction(ICaseString("ALU"), [], "R1"))
-
-    def test_Instruction_ne_operator(self):
-        """Test Instruction != operator.
-
-        `self` is this test case.
-
-        """
-        assert Instruction([], "R1") != Instruction([], "R2")
-
-    def test_ProgInstruction_ne_operator(self):
-        """Test ProgInstruction != operator.
-
-        `self` is this test case.
-
-        """
-        assert ProgInstruction("ADD", 1, [], "R1") != ProgInstruction(
-            "ADD", 2, [], "R1")
-
-    def test_ProgInstruction_repr(self):
-        """Test ProgInstruction representation.
-
-        `self` is this test case.
-
-        """
-        repr(ProgInstruction("ADD", 1, ["R1"], "R1"))
 
 
 class TestProgLoad:
@@ -114,8 +66,9 @@ class TestProgLoad:
         `inputs` are the instruction inputs.
 
         """
-        assert test_utils.compile_prog(prog_file, {"ADD": ICaseString(
-            "ALU")}) == [HwInstruction(ICaseString("ALU"), inputs, "R14")]
+        assert test_utils.compile_prog(
+            prog_file, {"ADD": ICaseString("ALU")}) == [
+            program_defs.HwInstruction(ICaseString("ALU"), inputs, "R14")]
 
     @mark.parametrize(
         "prog_file, instr, line_num",
@@ -206,8 +159,8 @@ class TestSyntax:
         `prog_file` is the program file.
 
         """
-        self._test_program(
-            prog_file, [ProgInstruction("ADD", 1, ["R11", "R15"], "R14")])
+        self._test_program(prog_file, [
+            program_defs.ProgInstruction("ADD", 1, ["R11", "R15"], "R14")])
 
     @staticmethod
     def _chk_syn_err(syn_err, line_num, instr):

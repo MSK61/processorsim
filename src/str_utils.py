@@ -40,21 +40,13 @@
 
 import functools
 import operator
+import typing
 
 
 @functools.total_ordering
-class ICaseString:
+class ICaseString(typing.NamedTuple):
 
     """Case-insensitive string"""
-
-    def __init__(self, initial_str):
-        """Create a case-insensitive string.
-
-        `self` is this case-insensitive string.
-        `initial_str` is the initial string content.
-
-        """
-        self.str = initial_str
 
     def __contains__(self, item):
         """Check if the item is a substring.
@@ -63,7 +55,7 @@ class ICaseString:
         `item` is the substring to search for.
 
         """
-        return self._canonical(item) in self._canonical(self.str)
+        return self._canonical(item) in self._canonical(self.raw_str)
 
     def __eq__(self, other):
         """Test if the two case-insensitive strings are identical.
@@ -72,7 +64,7 @@ class ICaseString:
         `other` is the other case-insensitive string.
 
         """
-        return operator.eq(*self._get_canonical(other.str))
+        return operator.eq(*self._get_canonical(other.raw_str))
 
     def __hash__(self):
         """Get the has value of this case-insensitive string.
@@ -80,7 +72,7 @@ class ICaseString:
         `self` is this case-insensitive string.
 
         """
-        return hash(self._canonical(self.str))
+        return hash(self._canonical(self.raw_str))
 
     def __lt__(self, other):
         """Test if this case-insensitive string is less than the other.
@@ -89,7 +81,7 @@ class ICaseString:
         `other` is the other case-insensitive string.
 
         """
-        return operator.lt(*self._get_canonical(other.str))
+        return operator.lt(*self._get_canonical(other.raw_str))
 
     def __radd__(self, other):
         """Return the reflected concatenation result.
@@ -98,15 +90,7 @@ class ICaseString:
         `other` is the other string.
 
         """
-        return other + self.str
-
-    def __repr__(self):
-        """Return the official string of this case-insensitive string.
-
-        `self` is this case-insensitive string.
-
-        """
-        return get_obj_repr(type(self).__name__, [self.str])
+        return other + self.raw_str
 
     def __str__(self):
         """Return the printable string of this case-insensitive string.
@@ -114,7 +98,7 @@ class ICaseString:
         `self` is this case-insensitive string.
 
         """
-        return self.str
+        return self.raw_str
 
     def _get_canonical(self, other):
         """Return the canonical forms of this and the other strings.
@@ -123,7 +107,9 @@ class ICaseString:
         `other` is the other string.
 
         """
-        return map(self._canonical, [self.str, other])
+        return map(self._canonical, [self.raw_str, other])
+
+    raw_str: str
 
     _canonical = staticmethod(str.lower)
 

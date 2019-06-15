@@ -38,121 +38,24 @@
 #
 ############################################################
 
-import itertools
+from dataclasses import dataclass
 import operator
-import str_utils
-from str_utils import get_obj_repr
+from str_utils import ICaseString
+import typing
+from typing import Collection
 __all__ = ["LockInfo", "FuncUnit", "UnitModel"]
 
 
-class LockInfo:
+class LockInfo(typing.NamedTuple):
 
     """Parameter locking information in units"""
 
-    def __init__(self, rd_lock, wr_lock):
-        """Set parameter locking information.
+    rd_lock: bool
 
-        `self` is this locking information.
-        `rd_lock` is the read lock status.
-        `wr_lock` is the write lock status.
-
-        """
-        self.rd_lock = rd_lock
-        self.wr_lock = wr_lock
-
-    def __eq__(self, other):
-        """Test if the two locking information settings are identical.
-
-        `self` is this locking information.
-        `other` is the other locking information.
-
-        """
-        return (self.rd_lock, self.wr_lock) == (other.rd_lock, other.wr_lock)
-
-    def __ne__(self, other):
-        """Test if the two locking information settings are different.
-
-        `self` is this locking information.
-        `other` is the other locking information.
-
-        """
-        return not self == other
-
-    def __repr__(self):
-        """Return the official string of this locking information.
-
-        `self` is this locking information.
-
-        """
-        return get_obj_repr(type(self).__name__, [self.rd_lock, self.wr_lock])
+    wr_lock: bool
 
 
-class FuncUnit:
-
-    """Processing functional unit"""
-
-    def __init__(self, model, preds):
-        """Create a functional unit.
-
-        `self` is this functional unit.
-        `model` is the unit model.
-        `preds` are the units whose outputs are connected to the input
-                of this unit.
-
-        """
-        assert type(model) == UnitModel
-        self._model = model
-        self._preds = sorted_models(preds)
-
-    def __eq__(self, other):
-        """Test if the two functional units are identical.
-
-        `self` is this functional unit.
-        `other` is the other functional unit.
-
-        """
-        criteria = map(
-            lambda attrs: (attrs[0], len(attrs[1])),
-            [(self._model, self._preds), (other.model, other.predecessors)])
-        return operator.eq(*criteria) and all(
-            map(operator.is_, self._preds, other.predecessors))
-
-    def __ne__(self, other):
-        """Test if the two functional units are different.
-
-        `self` is this functional unit.
-        `other` is the other functional unit.
-
-        """
-        return not self == other
-
-    def __repr__(self):
-        """Return the official string of this functional unit.
-
-        `self` is this functional unit.
-
-        """
-        return get_obj_repr(type(self).__name__, [self._model, self._preds])
-
-    @property
-    def model(self):
-        """Functional unit model
-
-        `self` is this functional unit.
-
-        """
-        return self._model
-
-    @property
-    def predecessors(self):
-        """Predecessor units of this functional unit
-
-        `self` is this functional unit.
-
-        """
-        return self._preds
-
-
+@dataclass
 class UnitModel:
 
     """Functional unit model"""
@@ -168,60 +71,53 @@ class UnitModel:
         `lock_info` is the parameter locking information.
 
         """
-        assert all(map(lambda attr: type(attr) == str_utils.ICaseString,
-                       itertools.chain([name], capabilities)))
-        self._name = name
+        self.name = name
         self.width = width
-        self._capabilities = tuple(sorted(capabilities))
+        self.capabilities = tuple(sorted(capabilities))
         self.lock_info = lock_info
 
+    name: ICaseString
+
+    width: int
+
+    capabilities: Collection[ICaseString]
+
+    lock_info: LockInfo
+
+
+@dataclass
+class FuncUnit:
+
+    """Processing functional unit"""
+
+    def __init__(self, model, preds):
+        """Create a functional unit.
+
+        `self` is this functional unit.
+        `model` is the unit model.
+        `preds` are the units whose outputs are connected to the input
+                of this unit.
+
+        """
+        assert type(model) == UnitModel
+        self.model = model
+        self.predecessors = sorted_models(preds)
+
     def __eq__(self, other):
-        """Test if the two functional unit models are identical.
+        """Test if the two functional units are identical.
 
-        `self` is this functional unit model.
-        `other` is the other functional unit model.
-
-        """
-        return (
-            self._name, self.width, self._capabilities, self.lock_info) == (
-            other.name, other.width, other.capabilities, other.lock_info)
-
-    def __ne__(self, other):
-        """Test if the two functional unit models are different.
-
-        `self` is this functional unit model.
-        `other` is the other functional unit model.
+        `self` is this functional unit.
+        `other` is the other functional unit.
 
         """
-        return not self == other
+        criteria = map(lambda attrs: (attrs[0], len(attrs[1])), [(
+            self.model, self.predecessors), (other.model, other.predecessors)])
+        return operator.eq(*criteria) and all(
+            map(operator.is_, self.predecessors, other.predecessors))
 
-    def __repr__(self):
-        """Return the official string of this functional unit model.
+    model: UnitModel
 
-        `self` is this functional unit model.
-
-        """
-        return get_obj_repr(
-            type(self).__name__,
-            [self._name, self.width, self._capabilities, self.lock_info])
-
-    @property
-    def capabilities(self):
-        """Unit model capabilities
-
-        `self` is this functional unit model.
-
-        """
-        return self._capabilities
-
-    @property
-    def name(self):
-        """Unit model name
-
-        `self` is this functional unit model.
-
-        """
-        return self._name
+    predecessors: Collection[UnitModel]
 
 
 def sorted_models(models):

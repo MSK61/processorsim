@@ -41,107 +41,33 @@
 
 import container_utils
 import copy
-import functools
+import dataclasses
 import heapq
 import itertools
-import operator
 import processor_utils
-from str_utils import get_obj_repr
+from str_utils import ICaseString
+import typing
+from typing import NamedTuple
 import yaml
 
 
-class HwDesc:
+class HwDesc(NamedTuple):
 
     """Hardware description"""
 
-    def __init__(self, processor, isa):
-        """Create a hardware description.
+    processor: processor_utils.ProcessorDesc
 
-        `self` is this hardware description.
-        `processor` is the processor description.
-        `isa` is the instruction set architecture.
-
-        """
-        self.processor = processor
-        self.isa = isa
-
-    def __eq__(self, other):
-        """Test if the two hardware descriptions are identical.
-
-        `self` is this hardware description.
-        `other` is the other hardware description.
-
-        """
-        return (self.processor, self.isa) == (other.processor, other.isa)
-
-    def __ne__(self, other):
-        """Test if the two hardware descriptions are different.
-
-        `self` is this hardware description.
-        `other` is the other hardware description.
-
-        """
-        return not self == other
-
-    def __repr__(self):
-        """Return the official string of this hardware description.
-
-        `self` is this hardware description.
-
-        """
-        return get_obj_repr(type(self).__name__, [self.processor, self.isa])
+    isa: typing.Mapping[str, ICaseString]
 
 
-@functools.total_ordering
+@dataclasses.dataclass(order=True)
 class InstrState:
 
     """Instruction state"""
 
-    def __init__(self, instr, stalled=False):
-        """Initialize an instruction state.
+    instr: int
 
-        `self` is this instruction state.
-        `instr` is the index of the instruction in the program.
-        `stalled` is the instruction stall state.
-
-        """
-        self.instr = instr
-        self.stalled = stalled
-
-    def __eq__(self, other):
-        """Test if the two instruction states are identical.
-
-        `self` is this instruction state.
-        `other` is the other instruction state.
-
-        """
-        return operator.eq(*self._get_comp_objs(other))
-
-    def __lt__(self, other):
-        """Test if this instruction state is less than the other.
-
-        `self` is this instruction state.
-        `other` is the other instruction state.
-
-        """
-        return operator.lt(*self._get_comp_objs(other))
-
-    def __repr__(self):
-        """Return the official string of this instruction state.
-
-        `self` is this instruction state.
-
-        """
-        return get_obj_repr(type(self).__name__, [self.instr, self.stalled])
-
-    def _get_comp_objs(self, other):
-        """Return the two state contents for comparison.
-
-        `self` is this instruction state.
-        `other` is the other instruction state.
-
-        """
-        return map(lambda state: (state.instr, state.stalled), [self, other])
+    stalled: bool = False
 
 
 class StallError(RuntimeError):
@@ -170,21 +96,13 @@ class StallError(RuntimeError):
         return self._stalled_state
 
 
-class _HostedInstr:
+class _HostedInstr(NamedTuple):
 
     """Instruction hosted inside a functional unit"""
 
-    def __init__(self, unit, local_index):
-        """Set hosted instruction information.
+    host: ICaseString
 
-        `self` is this hosted instruction information.
-        `unit` is the hosting functional unit.
-        `local_index` is the instruction index in the host unit
-                      execution buffer.
-
-        """
-        self.host = unit
-        self.index_in_host = local_index
+    index_in_host: int
 
 
 class _IssueInfo:

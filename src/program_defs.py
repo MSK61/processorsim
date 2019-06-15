@@ -38,13 +38,19 @@
 #
 ############################################################
 
-import str_utils
-from str_utils import get_obj_repr
+from dataclasses import dataclass
+from str_utils import ICaseString
+import typing
 
 
+@dataclass(repr=False)
 class Instruction:
 
     """Instruction"""
+
+    sources: typing.Any
+
+    destination: str
 
     def __init__(self, sources, dst):
         """Create an instruction.
@@ -54,38 +60,11 @@ class Instruction:
         `dst` is the register written by the instruction.
 
         """
-        self._sources = tuple(sorted(sources))
+        self.sources = tuple(sorted(sources))
         self.destination = dst
 
-    def __eq__(self, other):
-        """Test if the two instructions are identical.
 
-        `self` is this instruction.
-        `other` is the other instruction.
-
-        """
-        return (self._sources, self.destination) == (
-            other.sources, other.destination)
-
-    def __ne__(self, other):
-        """Test if the two instructions are different.
-
-        `self` is this instruction.
-        `other` is the other instruction.
-
-        """
-        return not self == other
-
-    @property
-    def sources(self):
-        """Source operands
-
-        `self` is this instruction.
-
-        """
-        return self._sources
-
-
+@dataclass
 class HwInstruction(Instruction):
 
     """Hardware instruction"""
@@ -99,47 +78,14 @@ class HwInstruction(Instruction):
         `dst` is the register written by the instruction.
 
         """
-        assert type(categ) == str_utils.ICaseString
+        assert type(categ) == ICaseString
         Instruction.__init__(self, frozenset(sources), dst)
-        self._categ = categ
+        self.categ = categ
 
-    def __eq__(self, other):
-        """Test if the two hardware instructions are identical.
-
-        `self` is this hardware instruction.
-        `other` is the other hardware instruction.
-
-        """
-        return Instruction.__eq__(self, other) and self._categ == other.categ
-
-    def __ne__(self, other):
-        """Test if the two hardware instructions are different.
-
-        `self` is this hardware instruction.
-        `other` is the other hardware instruction.
-
-        """
-        return not self == other
-
-    def __repr__(self):
-        """Return the official string of this hardware instruction.
-
-        `self` is this hardware instruction.
-
-        """
-        return get_obj_repr(
-            type(self).__name__, [self._categ, self.sources, self.destination])
-
-    @property
-    def categ(self):
-        """Hardware instruction category
-
-        `self` is this hardware instruction.
-
-        """
-        return self._categ
+    categ: ICaseString
 
 
+@dataclass
 class ProgInstruction(Instruction):
 
     """Program instruction"""
@@ -155,33 +101,9 @@ class ProgInstruction(Instruction):
 
         """
         Instruction.__init__(self, sources, dst)
-        self.line = line
         self.name = name
+        self.line = line
 
-    def __eq__(self, other):
-        """Test if the two program instructions are identical.
+    name: str
 
-        `self` is this program instruction.
-        `other` is the other program instruction.
-
-        """
-        return Instruction.__eq__(self, other) and (
-            self.line, self.name) == (other.line, other.name)
-
-    def __ne__(self, other):
-        """Test if the two program instructions are different.
-
-        `self` is this program instruction.
-        `other` is the other program instruction.
-
-        """
-        return not self == other
-
-    def __repr__(self):
-        """Return the official string of this program instruction.
-
-        `self` is this program instruction.
-
-        """
-        return get_obj_repr(type(self).__name__, [
-            self.name, self.line, self.sources, self.destination])
+    line: int

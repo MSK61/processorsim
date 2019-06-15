@@ -48,8 +48,11 @@ import logging
 import operator
 import processor
 import program_utils
+import str_utils
 import sys
 import argparse
+import typing
+from typing import NamedTuple
 _COL_SEP = '\t'
 # command-line option variables
 # variable to receive the processor architecture file
@@ -57,38 +60,22 @@ _PROC_OPT_VAR = "processor_file"
 _PROG_OPT_VAR = "prog_file"  # variable to receive the program file
 
 
-class _InstrFlight:
-
-    """Instruction flight"""
-
-    def __init__(self, start_time, units):
-        """Create an instruction flight.
-
-        `self` is this instruction flight.
-        `start_time` is the time at which the instruction starts its
-                     flight.
-        `units` are the units the instruction will execute through, in
-                order.
-
-        """
-        self.start_time = start_time
-        self.stops = units
-
-
-class _InstrPosition:
+class _InstrPosition(NamedTuple):
 
     """Instruction position"""
 
-    def __init__(self, unit, stalled):
-        """Create an instruction position.
+    unit: str_utils.ICaseString
 
-        `self` is this instruction position.
-        `unit` is the unit hosting the instruction.
-        `stalled` is the instruction stall status.
+    stalled: bool
 
-        """
-        self.unit = unit
-        self.stalled = stalled
+
+class _InstrFlight(NamedTuple):
+
+    """Instruction flight"""
+
+    start_time: int
+
+    stops: typing.Iterable[_InstrPosition]
 
 
 def get_in_files(argv):

@@ -43,6 +43,7 @@ import itertools
 import operator
 import program_defs
 from re import split
+import typing
 
 
 class CodeError(RuntimeError):
@@ -87,20 +88,13 @@ class CodeError(RuntimeError):
     INSTR_IDX = 1
 
 
-class _LineInfo:
+class _LineInfo(typing.NamedTuple):
 
     """Source line information"""
 
-    def __init__(self, instr, operands):
-        """Set source line information.
+    instruction: str
 
-        `self` is this source line information.
-        `instr` is the instruction.
-        `operands` are the instruction operands.
-
-        """
-        self.instruction = instr
-        self.operands = operands
+    operands: str
 
 
 def compile_program(prog, isa):

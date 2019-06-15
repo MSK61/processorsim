@@ -39,63 +39,21 @@
 #
 ############################################################
 
+import mock
 from mock import patch
 import os.path
 import pytest
 import test_utils
 import processor
-from processor import HwDesc
-from processor_utils import ProcessorDesc
-import processor_utils.units
-from processor_utils.units import LockInfo, UnitModel
+import processor_utils
+from processor_utils import units
 from str_utils import ICaseString
-import unittest
+import typing
 
 
-class CoverageTest(unittest.TestCase):
-
-    """Test case for fulfilling complete code coverage"""
-
-    def test_HwDesc_ne_operator(self):
-        """Test HwDesc != operator.
-
-        `self` is this test case.
-
-        """
-        empty_str = ICaseString("")
-        lock_info = LockInfo(False, False)
-        assert HwDesc(ProcessorDesc([], [], [], []), {}) != HwDesc(
-            ProcessorDesc([UnitModel(empty_str, 1, [empty_str], lock_info)],
-                          [], [], []), {})
-
-    def test_HwDesc_repr(self):
-        """Test HwDesc representation.
-
-        `self` is this test case.
-
-        """
-        in_port = UnitModel(
-            ICaseString(""), 1, [ICaseString("")], LockInfo(False, False))
-        out_port = processor_utils.units.FuncUnit(
-            UnitModel(ICaseString("output"), 1, [ICaseString("")],
-                      LockInfo(False, False)), [in_port])
-        repr(HwDesc(ProcessorDesc([in_port], [out_port], [], []), {}))
-
-
-class _MockCheck:
+class _MockCheck(typing.NamedTuple):
 
     """Test case for checking mock calls"""
-
-    def __init__(self, mock_obj, params):
-        """Set the mock check information.
-
-        `self` is this mock check.
-        `mock_obj` is the mock object.
-        `params` are the call parameters.
-
-        """
-        self._mock = mock_obj
-        self._params = params
 
     def assert_call(self):
         """Verify the mock call parameters.
@@ -103,7 +61,11 @@ class _MockCheck:
         `self` is this mock check.
 
         """
-        self._mock.assert_called_with(*self._params)
+        self.mock_obj.assert_called_with(*self.params)
+
+    mock_obj: mock.MagicMock
+
+    params: typing.Iterable
 
 
 class TestHwDescLoad:
@@ -127,17 +89,18 @@ class TestHwDescLoad:
         """
         full_sys_unit = ICaseString("fullSys")
         icase_cap = ICaseString(capability)
-        lock_info = LockInfo(False, False)
+        lock_info = units.LockInfo(False, False)
         with open(os.path.join(test_utils.TEST_DATA_DIR, "fullHwDesc",
                                hw_file)) as hw_file, patch(
             "processor_utils.load_proc_desc",
-            return_value=ProcessorDesc([], [], [UnitModel(full_sys_unit, 1, [
-                icase_cap], lock_info)], [])) as proc_mock, patch(
+            return_value=processor_utils.ProcessorDesc(
+                [], [], [units.UnitModel(full_sys_unit, 1, [icase_cap],
+                                         lock_info)], [])) as proc_mock, patch(
             "processor_utils.get_abilities",
             return_value=frozenset([icase_cap])) as ability_mock, patch(
             "processor_utils.load_isa",
                 return_value={instr: icase_cap}) as isa_mock:
-            assert processor.read_processor(hw_file) == HwDesc(
+            assert processor.read_processor(hw_file) == processor.HwDesc(
                 proc_mock.return_value, isa_mock.return_value)
 
         for mock_chk in [

@@ -139,17 +139,6 @@ class CoverageTest(TestCase):
 
     """Test case for fulfilling complete code coverage"""
 
-    def test_FuncUnit_ne_operator(self):
-        """Test FuncUnit != operator.
-
-        `self` is this test case.
-
-        """
-        assert FuncUnit(UnitModel(
-            ICaseString(""), 1, [ICaseString("")], LockInfo(False, False)),
-                        []) != FuncUnit(UnitModel(ICaseString("input"), 1, [
-                            ICaseString("")], LockInfo(False, False)), [])
-
     def test_IndexedSet_repr(self):
         """Test IndexedSet representation.
 
@@ -157,24 +146,6 @@ class CoverageTest(TestCase):
 
         """
         repr(processor_utils.sets.IndexedSet(lambda elem: elem))
-
-    def test_LockInfo_ne_operator(self):
-        """Test LockInfo != operator.
-
-        `self` is this test case.
-
-        """
-        assert LockInfo(False, False) != LockInfo(True, False)
-
-    def test_UnitModel_ne_operator(self):
-        """Test UnitModel != operator.
-
-        `self` is this test case.
-
-        """
-        assert UnitModel(ICaseString(""), 1, [ICaseString("")], LockInfo(
-            False, False)) != UnitModel(
-            ICaseString("input"), 1, [ICaseString("")], LockInfo(False, False))
 
 
 class TestBlocking:

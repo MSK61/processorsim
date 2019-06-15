@@ -43,7 +43,6 @@ import pytest
 from pytest import mark
 from test_env import TEST_DIR
 from reg_access import AccessGroup, AccessType, RegAccessQueue, RegAccQBuilder
-import unittest
 
 
 class TestAccessPlan:
@@ -93,38 +92,6 @@ class TestAccessPlan:
         builder.append(req_type, len(TEST_DIR))
         assert builder.create() == RegAccessQueue(
             [AccessGroup(req_type, [len(TEST_DIR)])])
-
-
-class CoverageTest(unittest.TestCase):
-
-    """Test case for fulfilling complete code coverage"""
-
-    def test_AccessGroup_ne_operator(self):
-        """Test AccessGroup != operator.
-
-        `self` is this test case.
-
-        """
-        assert AccessGroup(AccessType.READ) != AccessGroup(AccessType.WRITE)
-
-    def test_RegAccessQueue_ne_operator(self):
-        """Test RegAccessQueue != operator.
-
-        `self` is this test case.
-
-        """
-        assert RegAccessQueue([]) != RegAccessQueue(
-            [AccessGroup(AccessType.READ)])
-
-    def test_RegAccessQueue_repr(self):
-        """Test RegAccessQueue representation.
-
-        `self` is this test case.
-
-        """
-        assert repr(RegAccessQueue([AccessGroup(
-            AccessType.READ,
-            [0])])) == "RegAccessQueue([AccessGroup(AccessType.READ, [0])])"
 
 
 def main():
