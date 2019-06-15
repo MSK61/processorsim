@@ -43,8 +43,8 @@ from errors import UndefElemError
 from . import exception
 from .exception import BadWidthError, BlockedCapError, ComponentInfo, \
     DupElemError
+import functools
 import itertools
-from functools import reduce
 import logging
 import networkx
 from networkx import DiGraph
@@ -215,8 +215,9 @@ def get_abilities(processor):
     `processor` is the processor to retrieve whose capabilities.
 
     """
-    return reduce(lambda old_caps, port: old_caps.union(port.capabilities),
-                  processor.in_out_ports + processor.in_ports, frozenset())
+    return functools.reduce(
+        lambda old_caps, port: old_caps.union(port.capabilities),
+        processor.in_out_ports + processor.in_ports, frozenset())
 
 
 def load_isa(raw_desc, capabilities):
