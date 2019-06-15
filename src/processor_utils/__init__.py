@@ -55,7 +55,6 @@ import str_utils
 from str_utils import ICaseString
 import sys
 from . import units
-from .units import sorted_models
 __all__ = ["exception", "load_proc_desc", "ProcessorDesc", "units"]
 _OLD_NODE_KEY = "old_node"
 # unit attributes
@@ -87,7 +86,7 @@ class ProcessorDesc:
 
         """
         self._in_ports, self._in_out_ports = map(
-            sorted_models, [in_ports, in_out_ports])
+            units.sorted_models, [in_ports, in_out_ports])
         self._out_ports = self._sorted_units(out_ports)
         self.internal_units = internal_units
 
