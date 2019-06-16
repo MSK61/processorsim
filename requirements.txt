@@ -19,7 +19,6 @@
 #
 ############################################################
 networkx
-pytest>=3.6
 pytest-codestyle
 pytest-cov
 pytest-flakes
