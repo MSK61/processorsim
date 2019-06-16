@@ -40,58 +40,54 @@
 ############################################################
 
 import pytest
-from pytest import mark
 from test_env import TEST_DIR
-from reg_access import AccessGroup, AccessType, RegAccessQueue, RegAccQBuilder
+import reg_access
+from reg_access import AccessGroup, AccessType
+import typing
+
+
+class _Request(typing.NamedTuple):
+
+    """Single access request"""
+
+    req_type: AccessType
+
+    req_owner: int
 
 
 class TestAccessPlan:
 
     """Test case for creating register access plans"""
 
-    def test_adding_read_after_read_adds_to_previous_read(self):
-        """Test adding one read request after another.
-
-        `self` is this test case.
-
-        """
-        builder = RegAccQBuilder()
-        builder.append(AccessType.READ, 0)
-        builder.append(AccessType.READ, 1)
-        assert builder.create() == RegAccessQueue(
-            [AccessGroup(AccessType.READ, [0, 1])])
-
-    @mark.parametrize(
-        "prev_req, new_req", [(AccessType.READ, AccessType.WRITE),
-                              (AccessType.WRITE, AccessType.WRITE),
-                              (AccessType.WRITE, AccessType.READ)])
-    def test_adding_request_after_another_creates_new_one(
-            self, prev_req, new_req):
+    @pytest.mark.parametrize("reqs, result_queue", [
+        ([_Request(AccessType.READ, len(TEST_DIR))],
+            [AccessGroup(AccessType.READ, [len(TEST_DIR)])]), ([_Request(
+                AccessType.WRITE, 0)], [AccessGroup(AccessType.WRITE, [0])]), (
+            [_Request(AccessType.READ, 0), _Request(AccessType.WRITE, 1)],
+            [AccessGroup(AccessType.READ, [0]),
+             AccessGroup(AccessType.WRITE, [1])]), (
+            [_Request(AccessType.WRITE, 0), _Request(AccessType.WRITE, 1)],
+            [AccessGroup(AccessType.WRITE, [0]),
+             AccessGroup(AccessType.WRITE, [1])]), (
+            [_Request(AccessType.WRITE, 0), _Request(AccessType.READ, 1)],
+            [AccessGroup(AccessType.WRITE, [0]),
+             AccessGroup(AccessType.READ, [1])]), (
+            [_Request(AccessType.READ, 0), _Request(AccessType.READ, 1)],
+            [AccessGroup(AccessType.READ, [0, 1])])])
+    def test_adding_requests_produces_suitable_queue(self, reqs, result_queue):
         """Test adding one request after another.
 
         `self` is this test case.
-        `prev_req` is the previous request.
-        `new_req` is the new request.
+        `reqs` are the requests to add.
+        `result_queue` is the result queue.
 
         """
-        builder = RegAccQBuilder()
-        builder.append(prev_req, 0)
-        builder.append(new_req, 1)
-        assert builder.create() == RegAccessQueue(
-            [AccessGroup(prev_req, [0]), AccessGroup(new_req, [1])])
+        builder = reg_access.RegAccQBuilder()
 
-    @mark.parametrize("req_type", [AccessType.READ, AccessType.WRITE])
-    def test_adding_request_to_empty_queue_creates_new_request(self, req_type):
-        """Test adding a request to an empty queue.
+        for cur_req in reqs:
+            builder.append(cur_req.req_type, cur_req.req_owner)
 
-        `self` is this test case.
-        `req_type` is the type of the request to add.
-
-        """
-        builder = RegAccQBuilder()
-        builder.append(req_type, len(TEST_DIR))
-        assert builder.create() == RegAccessQueue(
-            [AccessGroup(req_type, [len(TEST_DIR)])])
+        assert builder.create() == reg_access.RegAccessQueue(result_queue)
 
 
 def main():
