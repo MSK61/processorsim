@@ -75,7 +75,7 @@ class TestAccessPlan:
             [_Request(AccessType.READ, 0), _Request(AccessType.READ, 1)],
             [AccessGroup(AccessType.READ, [0, 1])])])
     def test_adding_requests_produces_suitable_queue(self, reqs, result_queue):
-        """Test adding one request after another.
+        """Test adding requests.
 
         `self` is this test case.
         `reqs` are the requests to add.
