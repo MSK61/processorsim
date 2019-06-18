@@ -59,6 +59,15 @@ class TestAccessPlan:
 
     """Test case for register access queues"""
 
+    def test_access_with_right_type_and_owner_is_granted(self):
+        """Test requesting access with matching type and owner.
+
+        `self` is this test case.
+
+        """
+        assert RegAccessQueue([AccessGroup(AccessType.READ, [0])]).can_access(
+            AccessType.READ, 0)
+
     @pytest.mark.parametrize("reqs, result_queue", [
         ([_Request(AccessType.READ, len(TEST_DIR))],
             [AccessGroup(AccessType.READ, [len(TEST_DIR)])]), ([_Request(
@@ -88,15 +97,6 @@ class TestAccessPlan:
             builder.append(cur_req.req_type, cur_req.req_owner)
 
         assert builder.create() == RegAccessQueue(result_queue)
-
-    def test_access_with_right_type_and_owner_is_granted(self):
-        """Test requesting access with matching type and owner.
-
-        `self` is this test case.
-
-        """
-        assert RegAccessQueue([AccessGroup(AccessType.READ, [0])]).can_access(
-            AccessType.READ, 0)
 
 
 def main():
