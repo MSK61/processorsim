@@ -42,7 +42,7 @@
 import pytest
 from test_env import TEST_DIR
 import reg_access
-from reg_access import AccessGroup, AccessType
+from reg_access import AccessGroup, AccessType, RegAccessQueue
 import typing
 
 
@@ -87,7 +87,7 @@ class TestAccessPlan:
         for cur_req in reqs:
             builder.append(cur_req.req_type, cur_req.req_owner)
 
-        assert builder.create() == reg_access.RegAccessQueue(result_queue)
+        assert builder.create() == RegAccessQueue(result_queue)
 
     def test_access_with_right_type_and_owner_is_granted(self):
         """Test requesting access with matching type and owner.
@@ -95,8 +95,8 @@ class TestAccessPlan:
         `self` is this test case.
 
         """
-        assert reg_access.RegAccessQueue(
-            [AccessGroup(AccessType.READ, [0])]).can_access(AccessType.READ, 0)
+        assert RegAccessQueue([AccessGroup(AccessType.READ, [0])]).can_access(
+            AccessType.READ, 0)
 
 
 def main():
