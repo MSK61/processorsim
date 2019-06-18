@@ -83,6 +83,16 @@ class RegAccessQueue(typing.NamedTuple):
 
     """Access request queue for a single register"""
 
+    def can_access(self, req_type, req_owner):
+        """Request access to the register.
+
+        `self` is this access request queue.
+        `req_type` is the request type.
+        `req_owner` is the request owner.
+
+        """
+        return True
+
     queue: List[AccessGroup]
 
 
