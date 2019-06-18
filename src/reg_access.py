@@ -59,10 +59,6 @@ class AccessGroup:
 
     """Access group"""
 
-    access_type: AccessType
-
-    reqs: List[int]
-
     def __init__(self, gr_type, initial_reqs=None):
         """Create an access group.
 
@@ -77,6 +73,10 @@ class AccessGroup:
 
         if initial_reqs:
             self.reqs.extend(initial_reqs)
+
+    access_type: AccessType
+
+    reqs: List[int]
 
 
 class RegAccessQueue(typing.NamedTuple):

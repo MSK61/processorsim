@@ -48,10 +48,6 @@ class Instruction:
 
     """Instruction"""
 
-    sources: typing.Any
-
-    destination: str
-
     def __init__(self, sources, dst):
         """Create an instruction.
 
@@ -62,6 +58,10 @@ class Instruction:
         """
         self.sources = tuple(sorted(sources))
         self.destination = dst
+
+    sources: typing.Any
+
+    destination: str
 
 
 @dataclass
