@@ -61,10 +61,10 @@ class TestAccessPlan:
     """Test case for register access queues"""
 
     @mark.parametrize(
-        "queue, result",
-        [([AccessGroup(AccessType.READ, [0])], True), ([AccessGroup(
-            AccessType.WRITE, [0])], False), ([AccessGroup(AccessType.WRITE, [
-                1]), AccessGroup(AccessType.READ, [0])], False)])
+        "queue, result", [([AccessGroup(AccessType.READ, [0])], True), (
+            [AccessGroup(AccessType.WRITE, [0])], False), (
+            [AccessGroup(AccessType.WRITE, [1]), AccessGroup(AccessType.READ, [
+                0])], False), ([AccessGroup(AccessType.READ, [1])], False)])
     def test_access(self, queue, result):
         """Test requesting access.
 
