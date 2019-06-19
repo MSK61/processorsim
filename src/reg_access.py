@@ -91,7 +91,7 @@ class RegAccessQueue(typing.NamedTuple):
         `req_owner` is the request owner.
 
         """
-        return True
+        return req_type == self.queue[0].access_type
 
     queue: List[AccessGroup]
 

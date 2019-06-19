@@ -40,6 +40,7 @@
 ############################################################
 
 import pytest
+from pytest import mark
 from test_env import TEST_DIR
 import reg_access
 from reg_access import AccessGroup, AccessType, RegAccessQueue
@@ -59,30 +60,38 @@ class TestAccessPlan:
 
     """Test case for register access queues"""
 
-    def test_access_with_right_type_and_owner_is_granted(self):
-        """Test requesting access with matching type and owner.
+    @mark.parametrize("queue, req, result", [
+        ([AccessGroup(AccessType.READ, [0])], _Request(AccessType.READ, 0),
+            True), ([AccessGroup(AccessType.WRITE, [0])],
+                    _Request(AccessType.READ, 0), False),
+        ([AccessGroup(AccessType.READ, [0]), AccessGroup(AccessType.WRITE, [
+            1])], _Request(AccessType.WRITE, 1), False)])
+    def test_access(self, queue, req, result):
+        """Test requesting access.
 
         `self` is this test case.
+        `queue` is the access queue under test.
+        `req` is the requested access.
+        `result` is the request result.
 
         """
-        assert RegAccessQueue([AccessGroup(AccessType.READ, [0])]).can_access(
-            AccessType.READ, 0)
+        assert RegAccessQueue(queue).can_access(
+            req.req_type, req.req_owner) == result
 
-    @pytest.mark.parametrize("reqs, result_queue", [
-        ([_Request(AccessType.READ, len(TEST_DIR))],
-            [AccessGroup(AccessType.READ, [len(TEST_DIR)])]), ([_Request(
-                AccessType.WRITE, 0)], [AccessGroup(AccessType.WRITE, [0])]), (
-            [_Request(AccessType.READ, 0), _Request(AccessType.WRITE, 1)],
-            [AccessGroup(AccessType.READ, [0]),
-             AccessGroup(AccessType.WRITE, [1])]), (
-            [_Request(AccessType.WRITE, 0), _Request(AccessType.WRITE, 1)],
-            [AccessGroup(AccessType.WRITE, [0]),
-             AccessGroup(AccessType.WRITE, [1])]), (
-            [_Request(AccessType.WRITE, 0), _Request(AccessType.READ, 1)],
-            [AccessGroup(AccessType.WRITE, [0]),
-             AccessGroup(AccessType.READ, [1])]), (
-            [_Request(AccessType.READ, 0), _Request(AccessType.READ, 1)],
-            [AccessGroup(AccessType.READ, [0, 1])])])
+    @mark.parametrize("reqs, result_queue", [([_Request(AccessType.READ, len(
+        TEST_DIR))], [AccessGroup(AccessType.READ, [len(TEST_DIR)])]),
+        ([_Request(AccessType.WRITE, 0)], [AccessGroup(AccessType.WRITE, [
+            0])]), ([_Request(AccessType.READ, 0), _Request(
+                AccessType.WRITE, 1)], [AccessGroup(AccessType.READ, [0]),
+                                        AccessGroup(AccessType.WRITE, [1])]),
+        ([_Request(AccessType.WRITE, 0), _Request(AccessType.WRITE, 1)], [
+            AccessGroup(AccessType.WRITE, [0]), AccessGroup(AccessType.WRITE, [
+                1])]),
+        ([_Request(AccessType.WRITE, 0), _Request(AccessType.READ, 1)], [
+            AccessGroup(AccessType.WRITE, [0]), AccessGroup(AccessType.READ, [
+                1])]),
+        ([_Request(AccessType.READ, 0), _Request(AccessType.READ, 1)], [
+            AccessGroup(AccessType.READ, [0, 1])])])
     def test_adding_requests_produces_suitable_queue(self, reqs, result_queue):
         """Test adding requests.
 
