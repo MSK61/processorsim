@@ -60,23 +60,20 @@ class TestAccessPlan:
 
     """Test case for register access queues"""
 
-    @mark.parametrize("queue, req, result", [
-        ([AccessGroup(AccessType.READ, [0])], _Request(AccessType.READ, 0),
-            True), ([AccessGroup(AccessType.WRITE, [0])],
-                    _Request(AccessType.READ, 0), False),
-        ([AccessGroup(AccessType.READ, [0]), AccessGroup(AccessType.WRITE, [
-            1])], _Request(AccessType.WRITE, 1), False)])
-    def test_access(self, queue, req, result):
+    @mark.parametrize(
+        "queue, result",
+        [([AccessGroup(AccessType.READ, [0])], True), ([AccessGroup(
+            AccessType.WRITE, [0])], False), ([AccessGroup(AccessType.WRITE, [
+                1]), AccessGroup(AccessType.READ, [0])], False)])
+    def test_access(self, queue, result):
         """Test requesting access.
 
         `self` is this test case.
         `queue` is the access queue under test.
-        `req` is the requested access.
         `result` is the request result.
 
         """
-        assert RegAccessQueue(queue).can_access(
-            req.req_type, req.req_owner) == result
+        assert RegAccessQueue(queue).can_access(AccessType.READ, 0) == result
 
     @mark.parametrize("reqs, result_queue", [([_Request(AccessType.READ, len(
         TEST_DIR))], [AccessGroup(AccessType.READ, [len(TEST_DIR)])]),
