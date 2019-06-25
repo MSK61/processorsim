@@ -104,6 +104,17 @@ class TestAccessPlan:
 
         assert builder.create() == RegAccessQueue(result_queue)
 
+    def test_removing_request_from_single_request_group_removes_the_group(
+            self):
+        """Test removing a request from a single-request group.
+
+        `self` is this test case.
+
+        """
+        queue = RegAccessQueue([AccessGroup(AccessType.READ, [0])])
+        queue.dequeue(0)
+        assert queue == RegAccessQueue([])
+
 
 def main():
     """entry point for running test in this module"""

@@ -94,6 +94,15 @@ class RegAccessQueue(typing.NamedTuple):
         return req_type == self.queue[
             0].access_type and req_owner in self.queue[0].reqs
 
+    def dequeue(self, req_owner):
+        """Remove a request from this queue.
+
+        `self` is this access request queue.
+        `req_owner` is the request owner.
+
+        """
+        self.queue.pop()
+
     queue: List[AccessGroup]
 
 
