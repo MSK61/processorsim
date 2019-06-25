@@ -38,10 +38,9 @@
 #
 ############################################################
 
-import dataclasses
+from dataclasses import dataclass
 import enum
 from enum import auto
-import typing
 from typing import List
 
 
@@ -54,7 +53,7 @@ class AccessType(enum.Enum):
     WRITE = auto()
 
 
-@dataclasses.dataclass
+@dataclass
 class AccessGroup:
 
     """Access group"""
@@ -79,9 +78,24 @@ class AccessGroup:
     reqs: List[int]
 
 
-class RegAccessQueue(typing.NamedTuple):
+@dataclass
+class RegAccessQueue:
 
     """Access request queue for a single register"""
+
+    def __init__(self, reqs):
+        """Create an access queue.
+
+        `self` is this access request queue.
+        `reqs` are the requests in the queue.
+
+        """
+        # Typically a queue pushes new elements at the back and removes
+        # old elements from the front. Since this queue is going to
+        # support removal only without addition, we reverse the given
+        # queue to make the queue front at the list tail and make use of
+        # the fast access to the list tail.
+        self.queue = list(reversed(reqs))
 
     def can_access(self, req_type, req_owner):
         """Request access to the register.
@@ -92,7 +106,7 @@ class RegAccessQueue(typing.NamedTuple):
 
         """
         return req_type == self.queue[
-            0].access_type and req_owner in self.queue[0].reqs
+            -1].access_type and req_owner in self.queue[-1].reqs
 
     def dequeue(self, req_owner):
         """Remove a request from this queue.
