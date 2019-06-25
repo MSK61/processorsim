@@ -89,7 +89,7 @@ class TestAccessPlan:
                 1])]),
         ([_Request(AccessType.READ, 0), _Request(AccessType.READ, 1)], [
             AccessGroup(AccessType.READ, [0, 1])])])
-    def test_adding_requests_produces_suitable_queue(self, reqs, result_queue):
+    def test_adding_requests(self, reqs, result_queue):
         """Test adding requests.
 
         `self` is this test case.
@@ -106,7 +106,7 @@ class TestAccessPlan:
 
     @mark.parametrize("owner_groups, rem_owners",
                       [([[0]], []), ([[0], [1]], [1]), ([[0, 1]], [1])])
-    def test_removing(self, owner_groups, rem_owners):
+    def test_removing_requests(self, owner_groups, rem_owners):
         """Test removing requests.
 
         `self` is this test case.
