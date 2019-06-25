@@ -41,7 +41,7 @@
 from dataclasses import dataclass
 import enum
 from enum import auto
-from typing import List
+import typing
 
 
 class AccessType(enum.Enum):
@@ -68,14 +68,14 @@ class AccessGroup:
 
         """
         self.access_type = gr_type
-        self.reqs = []
+        self.reqs = set()
 
         if initial_reqs:
-            self.reqs.extend(initial_reqs)
+            self.reqs |= frozenset(initial_reqs)
 
     access_type: AccessType
 
-    reqs: List[int]
+    reqs: typing.MutableSet[int]
 
 
 @dataclass
@@ -115,9 +115,12 @@ class RegAccessQueue:
         `req_owner` is the request owner.
 
         """
-        self.queue.pop()
+        self.queue[-1].reqs.remove(req_owner)
 
-    queue: List[AccessGroup]
+        if not self.queue[-1].reqs:
+            self.queue.pop()
+
+    queue: typing.List[AccessGroup]
 
 
 class RegAccQBuilder:
@@ -143,7 +146,7 @@ class RegAccQBuilder:
         if not self._can_merge(req_type):
             self._queue.append(AccessGroup(req_type))
 
-        self._queue[-1].reqs.append(req_owner)
+        self._queue[-1].reqs.add(req_owner)
 
     def create(self):
         """Create the request access queue.

@@ -104,19 +104,19 @@ class TestAccessPlan:
 
         assert builder.create() == RegAccessQueue(result_queue)
 
-    @mark.parametrize("req_owners, rem_owners", [([0], []), ([0, 1], [1])])
-    def test_removing_request_removes_foremost_request_group(
-            self, req_owners, rem_owners):
-        """Test removing a request from a single-request group.
+    @mark.parametrize("owner_groups, rem_owners",
+                      [([[0]], []), ([[0], [1]], [1]), ([[0, 1]], [1])])
+    def test_removing(self, owner_groups, rem_owners):
+        """Test removing requests.
 
         `self` is this test case.
-        `req_owners` are the initial queue request owners.
+        `owner_groups` are the initial queue request owner groups.
         `rem_owners` are the request owners remaining in the queue after
                      removal.
 
         """
         queue = RegAccessQueue(
-            [AccessGroup(AccessType.READ, [owner]) for owner in req_owners])
+            [AccessGroup(AccessType.READ, group) for group in owner_groups])
         queue.dequeue(0)
         assert queue == RegAccessQueue(
             [AccessGroup(AccessType.READ, [owner]) for owner in rem_owners])
