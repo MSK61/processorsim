@@ -39,7 +39,7 @@
 ############################################################
 
 from container_utils import concat_dicts
-import dataclasses
+from dataclasses import dataclass
 from errors import UndefElemError
 from . import exception
 from .exception import BadWidthError, BlockedCapError, ComponentInfo, \
@@ -48,7 +48,7 @@ import functools
 import itertools
 import logging
 import networkx
-from networkx import DiGraph
+from networkx import dfs_postorder_nodes, DiGraph
 from operator import itemgetter
 import os
 from .sets import IndexedSet, SelfIndexSet
@@ -69,7 +69,7 @@ _UNIT_WLOCK_KEY = "writeLock"
 _UNIT_WIDTH_KEY = "width"
 
 
-@dataclasses.dataclass
+@dataclass
 class ProcessorDesc:
 
     """Processor description"""
@@ -119,6 +119,27 @@ class _CapabilityInfo(typing.NamedTuple):
     name: ICaseString
 
     unit: str
+
+
+@dataclass
+class _PathLockInfo:
+
+    """Path locking information"""
+
+    def __init__(self, num_of_locks, next_node):
+        """Create path locking information.
+
+        `self` is this path locking information.
+        `num_of_locks` is the number of locks in the path.
+        `next_node` is the node next to the start one.
+
+        """
+        self.num_of_locks = num_of_locks
+        self.next_node = next_node
+
+    num_of_locks: int
+
+    next_node: ICaseString
 
 
 class _PortGroup:
@@ -191,6 +212,21 @@ def load_proc_desc(raw_desc):
     proc_desc = _create_graph(raw_desc["units"], raw_desc["dataPath"])
     _prep_proc_desc(proc_desc)
     return _make_processor(proc_desc)
+
+
+def _accum_locks(path_locks, unit):
+    """Accumulate successor locks into the given unit.
+
+    `path_locks` are the map from a unit to the information of the path
+                 with maximum locks.
+    `unit` is the unit to accumulate the successor path to.
+    The function accumulates the locks in the successor unit to the path
+    starting at the given unit.
+
+    """
+    if path_locks[unit].next_node:
+        path_locks[unit].num_of_locks += path_locks[
+            path_locks[unit].next_node].num_of_locks
 
 
 def _add_capability(unit, cap, cap_list, unit_cap_reg, global_cap_reg):
@@ -473,6 +509,21 @@ def _chk_instr(instr, instr_registry):
             old_instr, instr)
 
 
+def _chk_multi_lock(processor):
+    """Check if the processor has paths with multiple locks.
+
+    `processor` is the processor to check for multi-lock paths.
+    The function raises a MultiLockError if any paths with multiple
+    locks exist.
+
+    """
+    post_ord = dfs_postorder_nodes(processor)
+    path_locks = {}
+
+    for unit in post_ord:
+        _chk_path_locks(unit, processor, path_locks)
+
+
 def _chk_non_empty(processor, in_ports):
     """Check if the processor still has input ports.
 
@@ -485,6 +536,27 @@ def _chk_non_empty(processor, in_ports):
         next(filter(lambda port: port in processor, in_ports))
     except StopIteration:  # No ports exist.
         raise exception.EmptyProcError("No input ports found")
+
+
+def _chk_path_locks(start, processor, path_locks):
+    """Check if paths from the given start unit contains multiple locks.
+
+    `start` is the starting unit of paths to check.
+    `processor` is the processor containing the start unit.
+    `path_locks` are the map from a unit to the information of the path
+                 with maximum locks.
+    The function raises a MultiLockError if any paths originating from
+    the given unit have multiple locks.
+
+    """
+    path_locks[start] = _PathLockInfo(
+        1 if processor.node[start][_UNIT_RLOCK_KEY] else 0,
+        max(processor.successors(start), default=None,
+            key=lambda succ: path_locks[succ].num_of_locks))
+    _accum_locks(path_locks, start)
+
+    if path_locks[start].num_of_locks > 1:
+        raise exception.MultiLockError()
 
 
 def _chk_ports_flow(
@@ -962,7 +1034,7 @@ def _post_order(graph):
     unit_map = dict(
         map(lambda unit: _get_unit_entry(unit, graph.node[unit]), graph))
     return map(lambda name: FuncUnit(unit_map[name], _get_preds(
-        graph, name, unit_map)), networkx.dfs_postorder_nodes(graph))
+        graph, name, unit_map)), dfs_postorder_nodes(graph))
 
 
 def _prep_proc_desc(processor):
@@ -984,6 +1056,7 @@ def _prep_proc_desc(processor):
     _chk_terminals(processor, port_info)
     _chk_non_empty(processor, port_info.in_ports)
     _chk_flow(processor)
+    _chk_multi_lock(processor)
 
 
 def _rm_dead_end(processor, dead_end, in_ports):

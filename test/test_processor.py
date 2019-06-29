@@ -326,6 +326,23 @@ class TestEdges:
         _chk_warn(map(str, edges), warn_call)
 
 
+class TestLocks:
+
+    """Test case for checking processors for path locks"""
+
+    def test_path_with_multiple_read_locks_raises_MultiLockError(self):
+        """Test loading a processor with multiple read locks in paths.
+
+        `self` is this test case.
+
+        """
+        raises(exception.MultiLockError, processor_utils.load_proc_desc,
+               {"units": [{"name": "input", "width": 1,
+                           "capabilities": ["ALU"], "readLock": True},
+                {"name": "output", "width": 1, "capabilities": ["ALU"],
+                 "readLock": True}], "dataPath": [["input", "output"]]})
+
+
 class TestLoop:
 
     """Test case for loading processors with loops"""
