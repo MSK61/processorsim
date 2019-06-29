@@ -190,7 +190,7 @@ def load_proc_desc(raw_desc):
     """
     proc_desc = _create_graph(raw_desc["units"], raw_desc["dataPath"])
     _prep_proc_desc(proc_desc)
-    return _make_processor(proc_desc, _post_order(proc_desc))
+    return _make_processor(proc_desc)
 
 
 def _add_capability(unit, cap, cap_list, unit_cap_reg, global_cap_reg):
@@ -900,13 +900,13 @@ def _make_cap_graph(processor, capability):
     return cap_graph
 
 
-def _make_processor(proc_graph, post_ord):
+def _make_processor(proc_graph):
     """Create a processor description from the given units.
 
     `proc_desc` is the processor graph.
-    `post_ord` is the post-order of the processor units.
 
     """
+    post_ord = _post_order(proc_graph)
     in_out_ports = []
     in_ports = []
     internal_units = []
