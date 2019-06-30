@@ -54,7 +54,7 @@ class CodeError(RuntimeError):
         """Create a syntax error.
 
         `self` is this syntax error.
-        `msg_tmpl` is the error format message taking the line number as
+        `msg_tmpl` is the error message format taking the line number as
                    a positional argument.
         `line` is the number of the line containing the error.
         `instr` is the instruction causing the error.

@@ -78,7 +78,7 @@ class StallError(RuntimeError):
         """Create a stalled processor error.
 
         `self` is this stalled processor error.
-        `msg_tmpl` is the error format message taking the stalled
+        `msg_tmpl` is the error message format taking the stalled
                    processor state as a positional argument.
         `stalled_state` is the stalled processor state.
 

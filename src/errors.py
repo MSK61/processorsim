@@ -31,10 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
-#               Fedora release 25 (Twenty Five)
-#               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
-#               Ubuntu 17.04
+# environment:  Komodo IDE, version 11.1.1 build 91089, python 3.7.3,
+#               Fedora release 30 (Thirty)
 #
 # notes:        This is a private program.
 #
@@ -49,7 +47,7 @@ class UndefElemError(RuntimeError):
         """Create an unknown element error.
 
         `self` is this unknown element error.
-        `msg_tmpl` is the error format message taking the unknown
+        `msg_tmpl` is the error message format taking the unknown
                    element as a positional argument.
         `elem` is the unknown element.
 

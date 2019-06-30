@@ -51,7 +51,7 @@ class BadEdgeError(RuntimeError):
         """Create a bad edge error.
 
         `self` is this bad edge error.
-        `msg_tmpl` is the error format message taking the bad edge as a
+        `msg_tmpl` is the error message format taking the bad edge as a
                    positional argument.
         `edge` is the bad edge.
 
@@ -81,7 +81,7 @@ class BadWidthError(RuntimeError):
         """Create a bad width error.
 
         `self` is this bad width error.
-        `msg_tmpl` is the error format message taking in order the
+        `msg_tmpl` is the error message format taking in order the
                    offending unit and width as positional arguments.
         `unit` is the unit with a bad width.
         `width` is the bad width.
@@ -129,7 +129,7 @@ class BlockedCapError(RuntimeError):
         """Create a blocked input capability error.
 
         `self` is this blocked input capability error.
-        `msg_tmpl` is the error format message taking in order the
+        `msg_tmpl` is the error message format taking in order the
                    capability, port, actual, and maximum bus widths as
                    positional arguments.
         `blocking_info` is the blocking information.
@@ -196,7 +196,7 @@ class DeadInputError(RuntimeError):
         """Create a dead input error.
 
         `self` is this dead input error.
-        `msg_tmpl` is the error format message taking the blocked port
+        `msg_tmpl` is the error message format taking the blocked port
                    as a positional argument.
         `port` is the blocked input port.
 
@@ -222,7 +222,7 @@ class DupElemError(RuntimeError):
         """Create a duplicate element error.
 
         `self` is this duplicate element error.
-        `msg_tmpl` is the error format message taking in order the old
+        `msg_tmpl` is the error message format taking in order the old
                    and new elements as positional arguments.
         `old_elem` is the element already existing.
         `new_elem` is the element just discovered.
