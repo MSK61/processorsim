@@ -330,17 +330,27 @@ class TestLocks:
 
     """Test case for checking processors for path locks"""
 
-    def test_path_with_multiple_read_locks_raises_MultiLockError(self):
+    @mark.parametrize(
+        "in_unit, out_unit", [("input", "output"), ("in_unit", "out_unit")])
+    def test_path_with_multiple_read_locks_raises_MultiLockError(
+            self, in_unit, out_unit):
         """Test loading a processor with multiple read locks in paths.
 
         `self` is this test case.
+        `in_unit` is the input unit.
+        `out_unit` is the output unit.
 
         """
-        raises(exception.MultiLockError, processor_utils.load_proc_desc,
-               {"units": [{"name": "input", "width": 1,
-                           "capabilities": ["ALU"], "readLock": True},
-                {"name": "output", "width": 1, "capabilities": ["ALU"],
-                 "readLock": True}], "dataPath": [["input", "output"]]})
+        ex_info = raises(
+            exception.MultiLockError, processor_utils.load_proc_desc,
+            {"units":
+             [{"name": in_unit, "width": 1, "capabilities": ["ALU"],
+               "readLock": True},
+              {"name": out_unit, "width": 1, "capabilities": ["ALU"],
+               "readLock": True}], "dataPath": [[in_unit, out_unit]]})
+        assert ex_info.value.segment == [
+            ICaseString(unit) for unit in [in_unit, out_unit]] and str(
+            ex_info.value).find(", ".join([in_unit, out_unit])) >= 0
 
 
 class TestLoop:

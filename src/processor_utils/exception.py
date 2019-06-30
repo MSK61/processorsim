@@ -264,3 +264,41 @@ class EmptyProcError(RuntimeError):
 class MultiLockError(RuntimeError):
 
     """Bad edge error"""
+
+    def __init__(self, msg_tmpl, segment):
+        """Create a multi-lock error.
+
+        `self` is this multi-lock error.
+        `msg_tmpl` is the error message format taking the multi-lock
+                   segment as a positional argument.
+        `segment` is the path segment containing multiple locks.
+
+        """
+        self._segment = segment
+        RuntimeError.__init__(self, msg_tmpl.format(self._format_path()))
+
+    def _format_nodes(self):
+        """Format the associated path nodes.
+
+        `self` is this multi-lock error.
+
+        """
+        sep = ", "
+        return sep.join(map(str, self._segment))
+
+    def _format_path(self):
+        """Format the associated path.
+
+        `self` is this multi-lock error.
+
+        """
+        return "[{}]".format(self._format_nodes())
+
+    @property
+    def segment(self):
+        """path segment containing multiple locks
+
+        `self` is this multi-lock error.
+
+        """
+        return self._segment

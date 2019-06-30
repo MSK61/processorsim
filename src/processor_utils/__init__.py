@@ -556,7 +556,9 @@ def _chk_path_locks(start, processor, path_locks):
     _accum_locks(path_locks, start)
 
     if path_locks[start].num_of_locks > 1:
-        raise exception.MultiLockError()
+        raise exception.MultiLockError(
+            "Path segment with multiple locks found, {}",
+            _create_path(path_locks, start))
 
 
 def _chk_ports_flow(
@@ -745,6 +747,23 @@ def _create_isa(isa_dict, cap_registry):
         lambda isa_entry: map(ICaseString, isa_entry), isa_dict.items())
     return dict(map(lambda isa_entry: _add_instr(
         instr_registry, cap_registry, *isa_entry), isa_spec))
+
+
+def _create_path(path_locks, start):
+    """Construct the path containing multiple locks.
+
+    `path_locks` are the map from a unit to the information of the path
+                 with maximum locks.
+    `start` is the starting unit of paths to check.
+
+    """
+    multiLockPath = []
+    cur_node = start
+
+    while cur_node:
+        cur_node = _update_path(multiLockPath, cur_node, path_locks)
+
+    return multiLockPath
 
 
 def _dist_edge_caps(graph):
@@ -1218,6 +1237,21 @@ def _update_graph(idx, unit, processor, width_graph, unit_idx_map):
     width_graph.add_node(
         idx, **concat_dicts(processor.node[unit], {_OLD_NODE_KEY: unit}))
     unit_idx_map[unit] = idx
+
+
+def _update_path(multiLockPath, new_node, path_locks):
+    """Update the path containing multiple locks.
+
+    `multiLockPath` is the multi-lock path to update.
+    `new_node` is the node to append to the path.
+    `path_locks` are the map from a unit to the information of the path
+                 with maximum locks.
+    The function appends the given node to the path and returns the next
+    node to examine.
+
+    """
+    multiLockPath.append(new_node)
+    return path_locks[new_node].next_node
 
 
 _add_src_path()
