@@ -47,7 +47,7 @@ from test_utils import chk_error, read_proc_file, ValInStrCheck
 import container_utils
 import errors
 import processor_utils
-from processor_utils import exception, ProcessorDesc
+from processor_utils import exception, load_proc_desc, ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from str_utils import ICaseString
 from unittest import TestCase
@@ -341,13 +341,10 @@ class TestLocks:
         `out_unit` is the output unit.
 
         """
-        ex_info = raises(
-            exception.MultiLockError, processor_utils.load_proc_desc,
-            {"units":
-             [{"name": in_unit, "width": 1, "capabilities": ["ALU"],
-               "readLock": True},
-              {"name": out_unit, "width": 1, "capabilities": ["ALU"],
-               "readLock": True}], "dataPath": [[in_unit, out_unit]]})
+        ex_info = raises(exception.MultiLockError, load_proc_desc, {"units": [
+            {"name": in_unit, "width": 1, "capabilities": ["ALU"], "readLock":
+                True}, {"name": out_unit, "width": 1, "capabilities": ["ALU"],
+                        "readLock": True}], "dataPath": [[in_unit, out_unit]]})
         assert ex_info.value.segment == [
             ICaseString(unit) for unit in [in_unit, out_unit]] and str(
             ex_info.value).find(", ".join([in_unit, out_unit])) >= 0
@@ -380,7 +377,7 @@ class TestProcessors:
         `self` is this test case.
 
         """
-        assert processor_utils.load_proc_desc(
+        assert load_proc_desc(
             {"units": [{"name": "fullSys", "width": 1, "capabilities": ["ALU"],
                         "readLock": True, "writeLock": True}], "dataPath": [
                 ]}) == ProcessorDesc(
