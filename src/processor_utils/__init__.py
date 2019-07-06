@@ -126,17 +126,6 @@ class _PathLockInfo:
 
     """Path locking information"""
 
-    def __init__(self, num_of_locks, next_node):
-        """Create path locking information.
-
-        `self` is this path locking information.
-        `num_of_locks` is the number of locks in the path.
-        `next_node` is the node next to the start one.
-
-        """
-        self.num_of_locks = num_of_locks
-        self.next_node = next_node
-
     num_of_locks: int
 
     next_node: ICaseString
