@@ -330,17 +330,19 @@ class TestLocks:
 
     """Test case for checking processors for path locks"""
 
-    @mark.parametrize("in_unit, out_unit, lock_prop", [
-        ("input", "output", "readLock"), ("in_unit", "out_unit", "readLock"),
-        ("input", "output", "writeLock")])
+    @mark.parametrize("in_unit, out_unit, lock_prop, lock_type",
+                      [("input", "output", "readLock", "read"),
+                       ("in_unit", "out_unit", "readLock", "read"),
+                       ("input", "output", "writeLock", "write")])
     def test_path_with_multiple_locks_raises_MultiLockError(
-            self, in_unit, out_unit, lock_prop):
+            self, in_unit, out_unit, lock_prop, lock_type):
         """Test loading a processor with multiple locks in paths.
 
         `self` is this test case.
         `in_unit` is the input unit.
         `out_unit` is the output unit.
         `lock_prop` is the lock property name.
+        `lock_prop` is the lock type.
 
         """
         ex_info = raises(exception.MultiLockError, load_proc_desc, {"units": [
@@ -349,7 +351,12 @@ class TestLocks:
                 "ALU"], lock_prop: True}], "dataPath": [[in_unit, out_unit]]})
         assert ex_info.value.segment == [
             ICaseString(unit) for unit in [in_unit, out_unit]]
-        assert ", ".join([in_unit, out_unit]) in str(ex_info.value)
+        assert ex_info.value.lock_type == lock_type
+        ex_props = [", ".join([in_unit, out_unit]), lock_type]
+        ex_str = str(ex_info.value)
+
+        for prop in ex_props:
+            assert prop in ex_str
 
 
 class TestLoop:

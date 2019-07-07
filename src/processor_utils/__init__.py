@@ -43,7 +43,7 @@ from dataclasses import dataclass
 from errors import UndefElemError
 from . import exception
 from .exception import BadWidthError, BlockedCapError, ComponentInfo, \
-    DupElemError
+    DupElemError, MultiLockError
 import functools
 import itertools
 import logging
@@ -174,6 +174,15 @@ class _SatInfo(NamedTuple):
     write_path: _PathLockInfo
 
 
+class _PathDescriptor(NamedTuple):
+
+    """Path descriptor in multi-lock analysis"""
+
+    selector: typing.Callable[[_SatInfo], _PathLockInfo]
+
+    lock_type: str
+
+
 def get_abilities(processor):
     """Retrieve all capabilities supported by the given processor.
 
@@ -212,26 +221,28 @@ def load_proc_desc(raw_desc):
     return _make_processor(proc_desc)
 
 
-def _accum_locks(path_locks, path_sel, unit):
+def _accum_locks(path_locks, path_desc, unit):
     """Accumulate successor locks into the given unit.
 
     `path_locks` are the map from a unit to the information of the path
                  with maximum locks.
-    `path_sel` is the path selection function.
+    `path_desc` is the path descriptor.
     `unit` is the unit to accumulate the successor path to.
     The function accumulates the locks in the successor unit to the path
     starting at the given unit. It raises a MultiLockError if any paths
     originating from the given unit have multiple locks.
 
     """
-    cur_node = path_sel(path_locks[unit])
-    cur_node.num_of_locks += path_sel(
+    cur_node = path_desc.selector(path_locks[unit])
+    cur_node.num_of_locks += path_desc.selector(
         path_locks[cur_node.next_node]).num_of_locks
 
     if cur_node.num_of_locks > 1:
-        raise exception.MultiLockError(
-            "Path segment with multiple locks found, {}",
-            _create_path(path_locks, path_sel, unit))
+        raise MultiLockError(
+            "Path segment with multiple {{{}}} locks found, {{{}}}".format(
+                MultiLockError.LOCK_TYPE_KEY, MultiLockError.SEG_KEY),
+            _create_path(path_locks, path_desc.selector, unit),
+            path_desc.lock_type)
 
 
 def _add_capability(unit, cap, cap_list, unit_cap_reg, global_cap_reg):
@@ -561,9 +572,10 @@ def _chk_path_locks(start, processor, path_locks):
             path_locks), _init_path_lock(processor.node[start][
                 _UNIT_WLOCK_KEY], succ_lst, _get_write_path, path_locks))
 
-    for path_sel in [_get_read_path, _get_write_path]:
-        if path_sel(path_locks[start]).next_node:
-            _accum_locks(path_locks, path_sel, start)
+    for path_desc in [_PathDescriptor(_get_read_path, "read"),
+                      _PathDescriptor(_get_write_path, "write")]:
+        if path_desc.selector(path_locks[start]).next_node:
+            _accum_locks(path_locks, path_desc, start)
 
 
 def _chk_ports_flow(

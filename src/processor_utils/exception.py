@@ -267,17 +267,20 @@ class MultiLockError(RuntimeError):
 
     """Bad edge error"""
 
-    def __init__(self, msg_tmpl, segment):
+    def __init__(self, msg_tmpl, segment, lock_type):
         """Create a multi-lock error.
 
         `self` is this multi-lock error.
         `msg_tmpl` is the error message format taking the multi-lock
                    segment as a positional argument.
         `segment` is the path segment containing multiple locks.
+        `lock_type` is the type of locks along the path.
 
         """
         self._segment = segment
-        RuntimeError.__init__(self, msg_tmpl.format(self._format_path()))
+        RuntimeError.__init__(self, msg_tmpl.format(**{
+            self.SEG_KEY: self._format_path(), self.LOCK_TYPE_KEY: lock_type}))
+        self._lock_type = lock_type
 
     def _format_nodes(self):
         """Format the associated path nodes.
@@ -297,6 +300,15 @@ class MultiLockError(RuntimeError):
         return "[{}]".format(self._format_nodes())
 
     @property
+    def lock_type(self):
+        """type of locks along the path
+
+        `self` is this multi-lock error.
+
+        """
+        return self._lock_type
+
+    @property
     def segment(self):
         """path segment containing multiple locks
 
@@ -304,3 +316,8 @@ class MultiLockError(RuntimeError):
 
         """
         return self._segment
+
+    # parameter keys in message format
+    SEG_KEY = "segment"
+
+    LOCK_TYPE_KEY = "lock_type"
