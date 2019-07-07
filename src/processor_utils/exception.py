@@ -87,7 +87,8 @@ class BadWidthError(RuntimeError):
         `width` is the bad width.
 
         """
-        RuntimeError.__init__(self, msg_tmpl.format(unit, width))
+        RuntimeError.__init__(self, msg_tmpl.format(
+            **{self.UNIT_KEY: unit, self.WIDTH_KEY: width}))
         self._unit = unit
         self._width = width
 
@@ -109,10 +110,10 @@ class BadWidthError(RuntimeError):
         """
         return self._width
 
-    # parameter indices in message format
-    UNIT_IDX = 0
+    # parameter keys in message format
+    UNIT_KEY = "unit"
 
-    WIDTH_IDX = 1
+    WIDTH_KEY = "width"
 
 
 class BlockedCapError(RuntimeError):
@@ -135,9 +136,9 @@ class BlockedCapError(RuntimeError):
         `blocking_info` is the blocking information.
 
         """
-        RuntimeError.__init__(
-            self, msg_tmpl.format(blocking_info.capability_info.reporting_name,
-                                  blocking_info.port_info.reporting_name))
+        RuntimeError.__init__(self, msg_tmpl.format(**{
+            self.CAPABILITY_KEY: blocking_info.capability_info.reporting_name,
+            self.PORT_KEY: blocking_info.port_info.reporting_name}))
         self._capability = blocking_info.capability_info.std_name
         self._port = blocking_info.port_info.std_name
 
@@ -159,10 +160,10 @@ class BlockedCapError(RuntimeError):
         """
         return self._port
 
-    # parameter indices in message format
-    CAPABILITY_IDX = 0
+    # parameter keys in message format
+    CAPABILITY_KEY = "capability"
 
-    PORT_IDX = 1
+    PORT_KEY = "port"
 
 
 class ComponentInfo(NamedTuple):
@@ -228,7 +229,8 @@ class DupElemError(RuntimeError):
         `new_elem` is the element just discovered.
 
         """
-        RuntimeError.__init__(self, msg_tmpl.format(old_elem, new_elem))
+        RuntimeError.__init__(self, msg_tmpl.format(
+            **{self.OLD_ELEM_KEY: old_elem, self.NEW_ELEM_KEY: new_elem}))
         self._old_elem = old_elem
         self._new_elem = new_elem
 
@@ -250,10 +252,10 @@ class DupElemError(RuntimeError):
         """
         return self._old_elem
 
-    # parameter indices in message format
-    OLD_ELEM_IDX = 0
+    # parameter keys in message format
+    OLD_ELEM_KEY = "old_elem"
 
-    NEW_ELEM_IDX = 1
+    NEW_ELEM_KEY = "new_elem"
 
 
 class EmptyProcError(RuntimeError):

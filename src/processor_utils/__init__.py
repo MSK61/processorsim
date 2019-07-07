@@ -510,7 +510,7 @@ def _chk_instr(instr, instr_registry):
     if old_instr is not None:
         raise DupElemError(
             "Instruction {{{}}} previously added as {{{}}}".format(
-                DupElemError.NEW_ELEM_IDX, DupElemError.OLD_ELEM_IDX),
+                DupElemError.NEW_ELEM_KEY, DupElemError.OLD_ELEM_KEY),
             old_instr, instr)
 
 
@@ -627,7 +627,7 @@ def _chk_unit_flow(min_width, capability_info, port_info):
     if not min_width:
         raise BlockedCapError(
             "{{{}}} blocked from {{{}}}".format(
-                BlockedCapError.CAPABILITY_IDX, BlockedCapError.PORT_IDX),
+                BlockedCapError.CAPABILITY_KEY, BlockedCapError.PORT_KEY),
             exception.CapPortInfo(capability_info, port_info))
 
 
@@ -645,7 +645,7 @@ def _chk_unit_name(name, name_registry):
     if old_name is not None:
         raise DupElemError(
             "Functional unit {{{}}} previously added as {{{}}}".format(
-                DupElemError.NEW_ELEM_IDX, DupElemError.OLD_ELEM_IDX),
+                DupElemError.NEW_ELEM_KEY, DupElemError.OLD_ELEM_KEY),
             old_name, name)
 
 
@@ -659,7 +659,7 @@ def _chk_unit_width(unit):
     if unit[_UNIT_WIDTH_KEY] <= 0:
         raise BadWidthError(
             "Functional unit {{{}}} has a bad width {{{}}}.".format(
-                BadWidthError.UNIT_IDX, BadWidthError.WIDTH_IDX),
+                BadWidthError.UNIT_KEY, BadWidthError.WIDTH_KEY),
             *itemgetter(_UNIT_NAME_KEY, _UNIT_WIDTH_KEY)(unit))
 
 

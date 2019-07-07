@@ -60,7 +60,8 @@ class CodeError(RuntimeError):
         `instr` is the instruction causing the error.
 
         """
-        RuntimeError.__init__(self, msg_tmpl.format(line, instr))
+        RuntimeError.__init__(self, msg_tmpl.format(
+            **{self.LINE_NUM_KEY: line, self.INSTR_KEY: instr}))
         self._line = line
         self._instruction = instr
 
@@ -82,10 +83,10 @@ class CodeError(RuntimeError):
         """
         return self._line
 
-    # parameter indices in message format
-    LINE_NUM_IDX = 0
+    # parameter keys in message format
+    LINE_NUM_KEY = "line"
 
-    INSTR_IDX = 1
+    INSTR_KEY = "instruction"
 
 
 class _LineInfo(typing.NamedTuple):
@@ -172,7 +173,7 @@ def _get_line_parts(src_line_info):
     if len(line_parts) == 1:
         raise CodeError(
             "No operands provided for instruction {{{}}} at line "
-            "{{{}}}".format(CodeError.INSTR_IDX, CodeError.LINE_NUM_IDX),
+            "{{{}}}".format(CodeError.INSTR_KEY, CodeError.LINE_NUM_KEY),
             src_line_info[0] + 1, line_parts[0])
 
     return _LineInfo(*line_parts)
@@ -198,5 +199,5 @@ def _get_operands(src_line_info, line_num):
         return operands
     raise CodeError(
         "Operand {} empty for instruction {{{}}} at line {{{}}}".format(
-            first_missing[0] + 1, CodeError.INSTR_IDX, CodeError.LINE_NUM_IDX),
+            first_missing[0] + 1, CodeError.INSTR_KEY, CodeError.LINE_NUM_KEY),
         line_num, src_line_info.instruction)
