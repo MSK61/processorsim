@@ -349,7 +349,7 @@ class TestLocks:
                 "ALU"], lock_prop: True}], "dataPath": [[in_unit, out_unit]]})
         assert ex_info.value.segment == [
             ICaseString(unit) for unit in [in_unit, out_unit]]
-        assert str(ex_info.value).find(", ".join([in_unit, out_unit])) >= 0
+        assert ", ".join([in_unit, out_unit]) in str(ex_info.value)
 
 
 class TestLoop:
