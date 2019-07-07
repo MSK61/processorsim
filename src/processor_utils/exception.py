@@ -109,7 +109,7 @@ class BadWidthError(RuntimeError):
         """
         return self._width
 
-    # parameter indices in format message
+    # parameter indices in message format
     UNIT_IDX = 0
 
     WIDTH_IDX = 1
@@ -159,7 +159,7 @@ class BlockedCapError(RuntimeError):
         """
         return self._port
 
-    # parameter indices in format message
+    # parameter indices in message format
     CAPABILITY_IDX = 0
 
     PORT_IDX = 1
@@ -250,7 +250,7 @@ class DupElemError(RuntimeError):
         """
         return self._old_elem
 
-    # parameter indices in format message
+    # parameter indices in message format
     OLD_ELEM_IDX = 0
 
     NEW_ELEM_IDX = 1

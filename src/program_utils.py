@@ -82,7 +82,7 @@ class CodeError(RuntimeError):
         """
         return self._line
 
-    # parameter indices in format message
+    # parameter indices in message format
     LINE_NUM_IDX = 0
 
     INSTR_IDX = 1
