@@ -55,7 +55,7 @@ from .sets import IndexedSet, SelfIndexSet
 from str_utils import ICaseString
 import sys
 import typing
-from typing import Tuple
+from typing import NamedTuple, Tuple
 from . import units
 from .units import FuncUnit, UnitModel
 __all__ = ["exception", "load_proc_desc", "ProcessorDesc", "units"]
@@ -112,7 +112,7 @@ class ProcessorDesc:
     internal_units: typing.List[FuncUnit]
 
 
-class _CapabilityInfo(typing.NamedTuple):
+class _CapabilityInfo(NamedTuple):
 
     """Unit capability information"""
 
@@ -165,6 +165,15 @@ class _PortGroup:
         return self._out_ports
 
 
+class _SatInfo(NamedTuple):
+
+    """Lock saturation information"""
+
+    read_path: _PathLockInfo
+
+    write_path: _PathLockInfo
+
+
 def get_abilities(processor):
     """Retrieve all capabilities supported by the given processor.
 
@@ -203,19 +212,26 @@ def load_proc_desc(raw_desc):
     return _make_processor(proc_desc)
 
 
-def _accum_locks(path_locks, unit):
+def _accum_locks(path_locks, path_sel, unit):
     """Accumulate successor locks into the given unit.
 
     `path_locks` are the map from a unit to the information of the path
                  with maximum locks.
+    `path_sel` is the path selection function.
     `unit` is the unit to accumulate the successor path to.
     The function accumulates the locks in the successor unit to the path
-    starting at the given unit.
+    starting at the given unit. It raises a MultiLockError if any paths
+    originating from the given unit have multiple locks.
 
     """
-    if path_locks[unit].next_node:
-        path_locks[unit].num_of_locks += path_locks[
-            path_locks[unit].next_node].num_of_locks
+    cur_node = path_sel(path_locks[unit])
+    cur_node.num_of_locks += path_sel(
+        path_locks[cur_node.next_node]).num_of_locks
+
+    if cur_node.num_of_locks > 1:
+        raise exception.MultiLockError(
+            "Path segment with multiple locks found, {}",
+            _create_path(path_locks, path_sel, unit))
 
 
 def _add_capability(unit, cap, cap_list, unit_cap_reg, global_cap_reg):
@@ -538,16 +554,16 @@ def _chk_path_locks(start, processor, path_locks):
     the given unit have multiple locks.
 
     """
-    path_locks[start] = _PathLockInfo(
-        1 if processor.node[start][_UNIT_RLOCK_KEY] else 0,
-        max(processor.successors(start), default=None,
-            key=lambda succ: path_locks[succ].num_of_locks))
-    _accum_locks(path_locks, start)
+    succ_lst = list(processor.successors(start))
+    path_locks[start] = _SatInfo(
+        _init_path_lock(
+            processor.node[start][_UNIT_RLOCK_KEY], succ_lst, _get_read_path,
+            path_locks), _init_path_lock(processor.node[start][
+                _UNIT_WLOCK_KEY], succ_lst, _get_write_path, path_locks))
 
-    if path_locks[start].num_of_locks > 1:
-        raise exception.MultiLockError(
-            "Path segment with multiple locks found, {}",
-            _create_path(path_locks, start))
+    for path_sel in [_get_read_path, _get_write_path]:
+        if path_sel(path_locks[start]).next_node:
+            _accum_locks(path_locks, path_sel, start)
 
 
 def _chk_ports_flow(
@@ -738,11 +754,12 @@ def _create_isa(isa_dict, cap_registry):
         instr_registry, cap_registry, *isa_entry), isa_spec))
 
 
-def _create_path(path_locks, start):
+def _create_path(path_locks, path_sel, start):
     """Construct the path containing multiple locks.
 
     `path_locks` are the map from a unit to the information of the path
                  with maximum locks.
+    `path_sel` is the path selection function.
     `start` is the starting unit of paths to check.
 
     """
@@ -750,7 +767,8 @@ def _create_path(path_locks, start):
     cur_node = start
 
     while cur_node:
-        cur_node = _update_path(multiLockPath, cur_node, path_locks)
+        cur_node = path_sel(path_locks[
+            _update_path(multiLockPath, cur_node, path_locks)]).next_node
 
     return multiLockPath
 
@@ -883,6 +901,15 @@ def _get_preds(processor, unit, unit_map):
     return map(unit_map.get, processor.predecessors(unit))
 
 
+def _get_read_path(sat_info):
+    """Retrieve the read path from the given saturation information.
+
+    `sat_info` is the saturation information.
+
+    """
+    return sat_info.read_path
+
+
 def _get_std_edge(edge, unit_registry):
     """Return a validated edge.
 
@@ -927,6 +954,15 @@ def _get_unit_name(unit, unit_registry):
     return std_name
 
 
+def _get_write_path(sat_info):
+    """Retrieve the write path from the given saturation information.
+
+    `sat_info` is the saturation information.
+
+    """
+    return sat_info.write_path
+
+
 def _init_cap_reg(capabilities):
     """Initialize a capability registry.
 
@@ -942,6 +978,21 @@ def _init_cap_reg(capabilities):
         cap_registry.add(cap)
 
     return cap_registry
+
+
+def _init_path_lock(unit_lock, succ_lst, path_sel, path_locks):
+    """Initialize the path lock information.
+
+    `unit_lock` is the lock status of the unit.
+    `succ_lst` is the list of successor units.
+    `path_sel` is the path selection function.
+    `path_locks` are the map from a unit to the information of the path
+                 with maximum locks.
+
+    """
+    return _PathLockInfo(
+        1 if unit_lock else 0, max(succ_lst, default=None, key=lambda succ:
+                                   path_sel(path_locks[succ]).num_of_locks))
 
 
 def _load_caps(unit, cap_registry):
@@ -1235,12 +1286,11 @@ def _update_path(multiLockPath, new_node, path_locks):
     `new_node` is the node to append to the path.
     `path_locks` are the map from a unit to the information of the path
                  with maximum locks.
-    The function appends the given node to the path and returns the next
-    node to examine.
+    The function appends the given node and returns it.
 
     """
     multiLockPath.append(new_node)
-    return path_locks[new_node].next_node
+    return new_node
 
 
 _add_src_path()
