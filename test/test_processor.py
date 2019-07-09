@@ -352,11 +352,11 @@ class TestLocks:
         assert ex_info.value.segment == [
             ICaseString(unit) for unit in [in_unit, out_unit]]
         assert ex_info.value.lock_type == lock_type
-        ex_props = [", ".join([in_unit, out_unit]), lock_type]
         ex_str = str(ex_info.value)
-
-        for prop in ex_props:
-            assert prop in ex_str
+        lock_type_idx = ex_str.find(lock_type)
+        assert lock_type_idx >= 0
+        assert ex_str.find(
+            ", ".join([in_unit, out_unit]), lock_type_idx + 1) >= 0
 
 
 class TestLoop:
