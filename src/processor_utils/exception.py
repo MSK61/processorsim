@@ -39,6 +39,7 @@
 #
 ############################################################
 
+from string import Template
 import str_utils
 from typing import NamedTuple
 
@@ -56,7 +57,8 @@ class BadEdgeError(RuntimeError):
         `edge` is the bad edge.
 
         """
-        RuntimeError.__init__(self, msg_tmpl.format(edge))
+        RuntimeError.__init__(
+            self, Template(msg_tmpl).substitute({self.EDGE_KEY: edge}))
         self._edge = edge
 
     @property
@@ -67,6 +69,8 @@ class BadEdgeError(RuntimeError):
 
         """
         return self._edge
+
+    EDGE_KEY = "edge"  # parameter key in message format
 
 
 class BadWidthError(RuntimeError):
@@ -87,8 +91,8 @@ class BadWidthError(RuntimeError):
         `width` is the bad width.
 
         """
-        RuntimeError.__init__(self, msg_tmpl.format(
-            **{self.UNIT_KEY: unit, self.WIDTH_KEY: width}))
+        RuntimeError.__init__(self, Template(msg_tmpl).substitute(
+            {self.UNIT_KEY: unit, self.WIDTH_KEY: width}))
         self._unit = unit
         self._width = width
 
@@ -136,9 +140,9 @@ class BlockedCapError(RuntimeError):
         `blocking_info` is the blocking information.
 
         """
-        RuntimeError.__init__(self, msg_tmpl.format(**{
-            self.CAPABILITY_KEY: blocking_info.capability_info.reporting_name,
-            self.PORT_KEY: blocking_info.port_info.reporting_name}))
+        RuntimeError.__init__(self, Template(msg_tmpl).substitute(
+            {self.CAPABILITY_KEY: blocking_info.capability_info.reporting_name,
+             self.PORT_KEY: blocking_info.port_info.reporting_name}))
         self._capability = blocking_info.capability_info.std_name
         self._port = blocking_info.port_info.std_name
 
@@ -202,7 +206,8 @@ class DeadInputError(RuntimeError):
         `port` is the blocked input port.
 
         """
-        RuntimeError.__init__(self, msg_tmpl.format(port))
+        RuntimeError.__init__(
+            self, Template(msg_tmpl).substitute({self.PORT_KEY: port}))
         self._port = port
 
     @property
@@ -213,6 +218,8 @@ class DeadInputError(RuntimeError):
 
         """
         return self._port
+
+    PORT_KEY = "port"  # parameter key in message format
 
 
 class DupElemError(RuntimeError):
@@ -229,8 +236,8 @@ class DupElemError(RuntimeError):
         `new_elem` is the element just discovered.
 
         """
-        RuntimeError.__init__(self, msg_tmpl.format(
-            **{self.OLD_ELEM_KEY: old_elem, self.NEW_ELEM_KEY: new_elem}))
+        RuntimeError.__init__(self, Template(msg_tmpl).substitute(
+            {self.OLD_ELEM_KEY: old_elem, self.NEW_ELEM_KEY: new_elem}))
         self._old_elem = old_elem
         self._new_elem = new_elem
 
@@ -278,7 +285,7 @@ class MultiLockError(RuntimeError):
 
         """
         self._segment = segment
-        RuntimeError.__init__(self, msg_tmpl.format(**{
+        RuntimeError.__init__(self, Template(msg_tmpl).substitute({
             self.SEG_KEY: self._format_path(), self.LOCK_TYPE_KEY: lock_type}))
         self._lock_type = lock_type
 

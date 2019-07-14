@@ -45,6 +45,7 @@ import dataclasses
 import heapq
 import itertools
 import processor_utils
+import string
 from str_utils import ICaseString
 import typing
 from typing import NamedTuple
@@ -83,7 +84,8 @@ class StallError(RuntimeError):
         `stalled_state` is the stalled processor state.
 
         """
-        RuntimeError.__init__(self, msg_tmpl.format(stalled_state))
+        RuntimeError.__init__(self, string.Template(msg_tmpl).substitute(
+            {self.STATE_KEY: stalled_state}))
         self._stalled_state = stalled_state
 
     @property
@@ -94,6 +96,8 @@ class StallError(RuntimeError):
 
         """
         return self._stalled_state
+
+    STATE_KEY = "state"  # parameter key in message format
 
 
 class _HostedInstr(NamedTuple):
@@ -240,7 +244,8 @@ def _chk_stall(old_util, new_util, consumed):
     """
     if new_util == old_util:
         raise StallError(
-            "Processor stalled after being fed {} instructions", consumed)
+            "Processor stalled after being fed ${} instructions".format(
+                StallError.STATE_KEY), consumed)
 
 
 def _clr_src_units(instructions, util_info):

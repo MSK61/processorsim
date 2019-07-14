@@ -38,11 +38,12 @@
 #
 ############################################################
 
-import errors
+from errors import UndefElemError
 import itertools
 import operator
 import program_defs
 from re import split
+import string
 import typing
 
 
@@ -60,8 +61,8 @@ class CodeError(RuntimeError):
         `instr` is the instruction causing the error.
 
         """
-        RuntimeError.__init__(self, msg_tmpl.format(
-            **{self.LINE_NUM_KEY: line, self.INSTR_KEY: instr}))
+        RuntimeError.__init__(self, string.Template(msg_tmpl).substitute(
+            {self.LINE_NUM_KEY: line, self.INSTR_KEY: instr}))
         self._line = line
         self._instruction = instr
 
@@ -153,9 +154,8 @@ def _get_cap(isa, instr):
     try:
         return isa[instr.name.upper()]
     except KeyError:  # unsupported instruction
-        raise errors.UndefElemError(
-            "Unsupported instruction {{}} at line {}".format(instr.line),
-            instr.name)
+        raise UndefElemError("Unsupported instruction ${} at line {}".format(
+            UndefElemError.ELEM_KEY, instr.line), instr.name)
 
 
 def _get_line_parts(src_line_info):
@@ -172,8 +172,8 @@ def _get_line_parts(src_line_info):
 
     if len(line_parts) == 1:
         raise CodeError(
-            "No operands provided for instruction {{{}}} at line "
-            "{{{}}}".format(CodeError.INSTR_KEY, CodeError.LINE_NUM_KEY),
+            "No operands provided for instruction ${} at line ${}".format(
+                CodeError.INSTR_KEY, CodeError.LINE_NUM_KEY),
             src_line_info[0] + 1, line_parts[0])
 
     return _LineInfo(*line_parts)
@@ -197,7 +197,6 @@ def _get_operands(src_line_info, line_num):
             lambda op_entry: op_entry[1], operand_entries))
     except StopIteration:  # all operands present
         return operands
-    raise CodeError(
-        "Operand {} empty for instruction {{{}}} at line {{{}}}".format(
-            first_missing[0] + 1, CodeError.INSTR_KEY, CodeError.LINE_NUM_KEY),
-        line_num, src_line_info.instruction)
+    raise CodeError("Operand {} empty for instruction ${} at line ${}".format(
+        first_missing[0] + 1, CodeError.INSTR_KEY, CodeError.LINE_NUM_KEY),
+                    line_num, src_line_info.instruction)

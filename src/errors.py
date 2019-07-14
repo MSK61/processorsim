@@ -38,6 +38,8 @@
 #
 ############################################################
 
+import string
+
 
 class UndefElemError(RuntimeError):
 
@@ -52,7 +54,8 @@ class UndefElemError(RuntimeError):
         `elem` is the unknown element.
 
         """
-        RuntimeError.__init__(self, msg_tmpl.format(elem))
+        RuntimeError.__init__(
+            self, string.Template(msg_tmpl).substitute({self.ELEM_KEY: elem}))
         self._elem = elem
 
     @property
@@ -63,3 +66,5 @@ class UndefElemError(RuntimeError):
 
         """
         return self._elem
+
+    ELEM_KEY = "elem"  # parameter key in message format
