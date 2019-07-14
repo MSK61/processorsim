@@ -154,8 +154,9 @@ def _get_cap(isa, instr):
     try:
         return isa[instr.name.upper()]
     except KeyError:  # unsupported instruction
-        raise UndefElemError("Unsupported instruction ${} at line {}".format(
-            UndefElemError.ELEM_KEY, instr.line), instr.name)
+        raise UndefElemError(
+            f"Unsupported instruction ${UndefElemError.ELEM_KEY} at line "
+            f"{instr.line}", instr.name)
 
 
 def _get_line_parts(src_line_info):
@@ -172,9 +173,9 @@ def _get_line_parts(src_line_info):
 
     if len(line_parts) == 1:
         raise CodeError(
-            "No operands provided for instruction ${} at line ${}".format(
-                CodeError.INSTR_KEY, CodeError.LINE_NUM_KEY),
-            src_line_info[0] + 1, line_parts[0])
+            f"No operands provided for instruction ${CodeError.INSTR_KEY} at "
+            f"line ${CodeError.LINE_NUM_KEY}", src_line_info[0] + 1,
+            line_parts[0])
 
     return _LineInfo(*line_parts)
 
@@ -197,6 +198,7 @@ def _get_operands(src_line_info, line_num):
             lambda op_entry: op_entry[1], operand_entries))
     except StopIteration:  # all operands present
         return operands
-    raise CodeError("Operand {} empty for instruction ${} at line ${}".format(
-        first_missing[0] + 1, CodeError.INSTR_KEY, CodeError.LINE_NUM_KEY),
-                    line_num, src_line_info.instruction)
+    raise CodeError(
+        f"Operand {first_missing[0] + 1} empty for instruction "
+        f"${CodeError.INSTR_KEY} at line ${CodeError.LINE_NUM_KEY}", line_num,
+        src_line_info.instruction)

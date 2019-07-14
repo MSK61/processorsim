@@ -122,7 +122,7 @@ def format_obj(cls_name, field_strings):
 
     """
     sep = ", "
-    return '{}({})'.format(cls_name, sep.join(field_strings))
+    return f"{cls_name}({sep.join(field_strings)})"
 
 
 def get_obj_repr(cls_name, fields):

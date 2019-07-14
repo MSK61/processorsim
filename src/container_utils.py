@@ -154,7 +154,7 @@ class BagValDict:
         `self` is this dictionary.
 
         """
-        return "{{{}}}".format(self._format_elems())
+        return f"{{{self._format_elems()}}}"
 
     def _format_elems(self):
         """Format the elements of this dictionary.
@@ -163,8 +163,8 @@ class BagValDict:
 
         """
         items = map(lambda item: (item[0], sorted(item[1])), self.iteritems())
-        item_strings = map(lambda item: "{}: {}".format(
-            repr(item[0]), item[1]), sorted(items, key=itemgetter(0)))
+        item_strings = map(lambda item: f"{item[0]!r}: {item[1]}",
+                           sorted(items, key=itemgetter(0)))
         sep = ", "
         return sep.join(item_strings)
 

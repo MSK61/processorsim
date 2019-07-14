@@ -239,10 +239,9 @@ def _accum_locks(path_locks, path_desc, unit):
 
     if cur_node.num_of_locks > 1:
         raise MultiLockError(
-            "Path segment with multiple ${} locks found, ${}".format(
-                MultiLockError.LOCK_TYPE_KEY, MultiLockError.SEG_KEY),
-            _create_path(path_locks, path_desc.selector, unit),
-            path_desc.lock_type)
+            f"Path segment with multiple ${MultiLockError.LOCK_TYPE_KEY} locks"
+            f" found, ${MultiLockError.SEG_KEY}", _create_path(
+                path_locks, path_desc.selector, unit), path_desc.lock_type)
 
 
 def _add_capability(unit, cap, cap_list, unit_cap_reg, global_cap_reg):
@@ -283,9 +282,8 @@ def _add_edge(processor, edge, unit_registry, edge_registry):
     good_edge_len = 2
 
     if len(edge) != good_edge_len:
-        raise BadEdgeError(
-            "Edge ${} doesn't connect exactly 2 functional units.".format(
-                BadEdgeError.EDGE_KEY), edge)
+        raise BadEdgeError(f"Edge ${BadEdgeError.EDGE_KEY} doesn't connect "
+                           "exactly 2 functional units.", edge)
 
     processor.add_edge(*_get_std_edge(edge, unit_registry))
     old_edge = edge_registry.get(edge)
@@ -520,9 +518,9 @@ def _chk_instr(instr, instr_registry):
     old_instr = instr_registry.get(instr)
 
     if old_instr is not None:
-        raise DupElemError("Instruction ${} previously added as ${}".format(
-            DupElemError.NEW_ELEM_KEY, DupElemError.OLD_ELEM_KEY), old_instr,
-                           instr)
+        raise DupElemError(
+            f"Instruction ${DupElemError.NEW_ELEM_KEY} previously added as "
+            f"${DupElemError.OLD_ELEM_KEY}", old_instr, instr)
 
 
 def _chk_multi_lock(processor):
@@ -638,9 +636,9 @@ def _chk_unit_flow(min_width, capability_info, port_info):
     """
     if not min_width:
         raise BlockedCapError(
-            "${} blocked from ${}".format(
-                BlockedCapError.CAPABILITY_KEY, BlockedCapError.PORT_KEY),
-            exception.CapPortInfo(capability_info, port_info))
+            f"${BlockedCapError.CAPABILITY_KEY} blocked from "
+            f"${BlockedCapError.PORT_KEY}", exception.CapPortInfo(
+                capability_info, port_info))
 
 
 def _chk_unit_name(name, name_registry):
@@ -656,9 +654,8 @@ def _chk_unit_name(name, name_registry):
 
     if old_name is not None:
         raise DupElemError(
-            "Functional unit ${} previously added as ${}".format(
-                DupElemError.NEW_ELEM_KEY, DupElemError.OLD_ELEM_KEY),
-            old_name, name)
+            f"Functional unit ${DupElemError.NEW_ELEM_KEY} previously added as"
+            f" ${DupElemError.OLD_ELEM_KEY}", old_name, name)
 
 
 def _chk_unit_width(unit):
@@ -669,8 +666,8 @@ def _chk_unit_width(unit):
 
     """
     if unit[_UNIT_WIDTH_KEY] <= 0:
-        raise BadWidthError("Functional unit ${} has a bad width ${}.".format(
-            BadWidthError.UNIT_KEY, BadWidthError.WIDTH_KEY),
+        raise BadWidthError(f"Functional unit ${BadWidthError.UNIT_KEY} has a "
+                            f"bad width ${BadWidthError.WIDTH_KEY}.",
                             *itemgetter(_UNIT_NAME_KEY, _UNIT_WIDTH_KEY)(unit))
 
 
@@ -837,8 +834,8 @@ def _get_cap_name(capability, cap_registry):
     std_cap = cap_registry.get(capability)
 
     if std_cap is None:
-        raise UndefElemError("Unsupported capability ${}".format(
-            UndefElemError.ELEM_KEY), capability)
+        raise UndefElemError(
+            f"Unsupported capability ${UndefElemError.ELEM_KEY}", capability)
 
     return std_cap
 
@@ -961,8 +958,8 @@ def _get_unit_name(unit, unit_registry):
     std_name = unit_registry.get(unit)
 
     if std_name is None:
-        raise UndefElemError("Undefined functional unit ${}".format(
-            UndefElemError.ELEM_KEY), unit)
+        raise UndefElemError(
+            f"Undefined functional unit ${UndefElemError.ELEM_KEY}", unit)
 
     return std_name
 
@@ -1142,9 +1139,9 @@ def _rm_dead_end(processor, dead_end, in_ports):
 
     """
     if dead_end in in_ports:  # an in-port turned in-out port
-        raise DeadInputError("No feasible path found from input port ${} to "
-                             "any output ports".format(
-                                DeadInputError.PORT_KEY), dead_end)
+        raise DeadInputError("No feasible path found from input port "
+                             f"${DeadInputError.PORT_KEY} to any output ports",
+                             dead_end)
 
     logging.warning("Dead end detected at unit %s, removing...", dead_end)
     processor.remove_node(dead_end)

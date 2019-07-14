@@ -243,9 +243,8 @@ def _chk_stall(old_util, new_util, consumed):
 
     """
     if new_util == old_util:
-        raise StallError(
-            "Processor stalled after being fed ${} instructions".format(
-                StallError.STATE_KEY), consumed)
+        raise StallError("Processor stalled after being fed "
+                         f"${StallError.STATE_KEY} instructions", consumed)
 
 
 def _clr_src_units(instructions, util_info):

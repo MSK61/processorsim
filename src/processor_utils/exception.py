@@ -304,7 +304,7 @@ class MultiLockError(RuntimeError):
         `self` is this multi-lock error.
 
         """
-        return "[{}]".format(self._format_nodes())
+        return f"[{self._format_nodes()}]"
 
     @property
     def lock_type(self):
