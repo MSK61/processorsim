@@ -844,7 +844,7 @@ def _get_cap_units(processor):
     """Create a mapping between capabilities and supporting input ports.
 
     `processor` is the processor to create a capability-port map for.
-    The function return an iterable of tuples; each tuple represents a
+    The function returns an iterable of tuples; each tuple represents a
     capability and its supporting units.
 
     """
