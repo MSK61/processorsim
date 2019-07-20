@@ -594,7 +594,7 @@ def _chk_ports_flow(
         map(lambda anal_entry: (anal_entry[1][_OLD_NODE_KEY], anal_entry[0]),
             anal_graph.nodes(True)))
     unified_out = _aug_out_ports(
-        anal_graph, [unit_anal_map.get(port) for port in out_ports])
+        anal_graph, [unit_anal_map[port] for port in out_ports])
     unified_out = _split_nodes(anal_graph)[unified_out]
     _dist_edge_caps(anal_graph)
 
