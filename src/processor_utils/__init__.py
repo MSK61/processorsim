@@ -1018,7 +1018,6 @@ def _make_cap_graph(processor, capability):
     cap_graph = DiGraph(
         filter(lambda edge: _cap_in_edge(processor, capability, edge),
                processor.edges))
-    # for in-out ports, which aren't included in any edges
     cap_graph.add_nodes_from(processor.nodes(True))
     return cap_graph
 
