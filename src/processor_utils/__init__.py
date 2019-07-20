@@ -427,22 +427,31 @@ def _cap_in_edge(processor, capability, edge):
 
 
 def _chk_cap_flow(
-        processor, cap_graph, capability_info, in_ports, port_name_func):
-    """Check the flow capacity for the given capability.
+        anal_graph, capability_info, in_ports, out_ports, port_name_func):
+    """Check the flow capacity for the given capability and ports.
 
-    `processor` is the original processor containing the capability and
-                input ports.
-    `cap_graph` is the capability-focused processor.
+    `anal_graph` is the analysis graph.
     `capability_info` is the capability information.
     `in_ports` are the input ports supporting the given capability.
+    `out_ports` are the output ports of the original processor.
     `port_name_func` is the port reporting name function.
     The function raises a BlockedCapError if the capability through any
     input port can't flow with full or partial capacity from this input
     port to the output ports.
 
     """
-    _chk_ports_flow(_get_anal_graph(cap_graph), capability_info, in_ports,
-                    _get_out_ports(processor), port_name_func)
+    unit_anal_map = dict(
+        map(lambda anal_entry: (anal_entry[1][_OLD_NODE_KEY], anal_entry[0]),
+            anal_graph.nodes(True)))
+    unified_out = _aug_out_ports(
+        anal_graph, [unit_anal_map[port] for port in out_ports])
+    unified_out = _split_nodes(anal_graph)[unified_out]
+    _dist_edge_caps(anal_graph)
+
+    for cur_port in in_ports:
+        _chk_unit_flow(networkx.maximum_flow_value(
+            anal_graph, unit_anal_map[cur_port], unified_out), capability_info,
+                       ComponentInfo(cur_port, port_name_func(cur_port)))
 
 
 def _chk_caps_flow(processor):
@@ -457,9 +466,9 @@ def _chk_caps_flow(processor):
     cap_units = _get_cap_units(processor)
 
     for cap, in_ports in cap_units:
-        _chk_cap_flow(processor, _make_cap_graph(processor, cap),
+        _chk_cap_flow(_get_anal_graph(_make_cap_graph(processor, cap)),
                       ComponentInfo(cap, "Capability " + cap), in_ports,
-                      lambda port: "port " + port)
+                      _get_out_ports(processor), lambda port: "port " + port)
 
 
 def _chk_cycles(processor):
@@ -574,34 +583,6 @@ def _chk_path_locks(start, processor, path_locks):
                       _PathDescriptor(_get_write_path, "write")]:
         if path_desc.selector(path_locks[start]).next_node:
             _accum_locks(path_locks, path_desc, start)
-
-
-def _chk_ports_flow(
-        anal_graph, capability_info, in_ports, out_ports, port_name_func):
-    """Check the flow capacity for the given capability and ports.
-
-    `anal_graph` is the analysis graph.
-    `capability_info` is the capability information.
-    `in_ports` are the input ports supporting the given capability.
-    `out_ports` are the output ports of the original processor.
-    `port_name_func` is the port reporting name function.
-    The function raises a BlockedCapError if the capability through any
-    input port can't flow with full or partial capacity from this input
-    port to the output ports.
-
-    """
-    unit_anal_map = dict(
-        map(lambda anal_entry: (anal_entry[1][_OLD_NODE_KEY], anal_entry[0]),
-            anal_graph.nodes(True)))
-    unified_out = _aug_out_ports(
-        anal_graph, [unit_anal_map[port] for port in out_ports])
-    unified_out = _split_nodes(anal_graph)[unified_out]
-    _dist_edge_caps(anal_graph)
-
-    for cur_port in in_ports:
-        _chk_unit_flow(networkx.maximum_flow_value(
-            anal_graph, unit_anal_map[cur_port], unified_out), capability_info,
-                       ComponentInfo(cur_port, port_name_func(cur_port)))
 
 
 def _chk_terminals(processor, orig_port_info):
