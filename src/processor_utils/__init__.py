@@ -422,8 +422,19 @@ def _cap_in_edge(processor, capability, edge):
     `edge` is the edge to check.
 
     """
-    return all(map(lambda unit:
-                   capability in processor.nodes[unit][_UNIT_CAPS_KEY], edge))
+    return all(
+        map(lambda unit: _cap_in_unit(processor, capability, unit), edge))
+
+
+def _cap_in_unit(processor, capability, unit):
+    """Check if the given capability is supported by the unit.
+
+    `processor` is the processor containing the unit.
+    `capability` is the capability to check.
+    `unit` is the unit to check.
+
+    """
+    return capability in processor.nodes[unit][_UNIT_CAPS_KEY]
 
 
 def _chk_cap_flow(
@@ -454,22 +465,14 @@ def _chk_cap_flow(
                        ComponentInfo(cur_port, port_name_func(cur_port)))
 
 
-def _chk_caps_flow(processor):
-    """Check the flow capacity for every capability in the processor.
+def _chk_caps(processor):
+    """Perform per-capability checks.
 
-    `processor` is the processor to check.
-    The function raises a BlockedCapError if any capability through any
-    supporting input port can't flow with full or partial capacity from
-    this input port to the output ports.
+    `processor` is the processor to check whose capabilities.
 
     """
-    cap_units = _get_cap_units(processor)
-    out_ports = list(_get_out_ports(processor))
-
-    for cap, in_ports in cap_units:
-        _chk_cap_flow(_get_anal_graph(_make_cap_graph(processor, cap)),
-                      ComponentInfo(cap, "Capability " + cap), in_ports,
-                      out_ports, lambda port: "port " + port)
+    if processor.number_of_nodes() > 1:
+        _do_cap_checks(processor)
 
 
 def _chk_cycles(processor):
@@ -502,20 +505,6 @@ def _chk_edge(processor, edge):
     return common_caps
 
 
-def _chk_flow(processor):
-    """Check the flow of every supported capability in every input port.
-
-    `processor` is the processor to check whose capability flow.
-    The function tests the flow of every supported capability through
-    every compatible input port. If any capability through any input
-    port can't flow with full or partial capacity from this input port
-    to the output ports, the function raises a BlockedCapError.
-
-    """
-    if processor.number_of_nodes() > 1:
-        _chk_caps_flow(processor)
-
-
 def _chk_instr(instr, instr_registry):
     """Check the given instruction.
 
@@ -533,15 +522,15 @@ def _chk_instr(instr, instr_registry):
             f"${DupElemError.OLD_ELEM_KEY}", old_instr, instr)
 
 
-def _chk_multi_lock(processor):
+def _chk_multi_lock(processor, post_ord):
     """Check if the processor has paths with multiple locks.
 
     `processor` is the processor to check for multi-lock paths.
+    `post_ord` is the post-order of the processor functional units.
     The function raises a MultiLockError if any paths with multiple
     locks exist.
 
     """
-    post_ord = dfs_postorder_nodes(processor)
     path_locks = {}
 
     for unit in post_ord:
@@ -761,6 +750,39 @@ def _create_path(path_locks, path_sel, start):
             _update_path(multiLockPath, cur_node, path_locks)]).next_node
 
     return multiLockPath
+
+
+def _do_cap_check(cap_graph, post_ord, cap, in_ports, out_ports):
+    """Perform checks for the given capability.
+
+    `cap_graph` is the capability-focused processor.
+    `post_ord` is the post-order of the given processor functional
+               units.
+    `cap` is the capability to check.
+    `in_ports` are the input ports supporting the given capability.
+    `out_ports` are the output ports of the original processor.
+
+    """
+    _chk_cap_flow(
+        _get_anal_graph(cap_graph), ComponentInfo(cap, "Capability " + cap),
+        in_ports, out_ports, lambda port: "port " + port)
+    _chk_multi_lock(cap_graph, post_ord)
+
+
+def _do_cap_checks(processor):
+    """Perform per-capability checks.
+
+    `processor` is the processor to check.
+
+    """
+    cap_units = _get_cap_units(processor)
+    out_ports = list(_get_out_ports(processor))
+    post_ord = list(dfs_postorder_nodes(processor))
+
+    for cap, in_ports in cap_units:
+        _do_cap_check(
+            _make_cap_graph(processor, cap), filter(lambda unit: _cap_in_unit(
+                processor, cap, unit), post_ord), cap, in_ports, out_ports)
 
 
 def _dist_edge_caps(graph):
@@ -1106,8 +1128,7 @@ def _prep_proc_desc(processor):
     _rm_empty_units(processor)
     _chk_terminals(processor, port_info)
     _chk_non_empty(processor, port_info.in_ports)
-    _chk_flow(processor)
-    _chk_multi_lock(processor)
+    _chk_caps(processor)
 
 
 def _rm_dead_end(processor, dead_end, in_ports):

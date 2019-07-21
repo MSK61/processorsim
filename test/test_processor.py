@@ -330,6 +330,26 @@ class TestLocks:
 
     """Test case for checking processors for path locks"""
 
+    def test_paths_with_multiple_locks_are_only_detected_per_capability(self):
+        """Test detecting multi-lock paths per capability.
+
+        `self` is this test case.
+        The method asserts that multiple locks across a path with different
+        capabilities don't raise an exception as long as single-capability
+        paths don't have multiple locks.
+
+        """
+        load_proc_desc(
+            {"units": [{"name": "ALU input", "width": 1, "capabilities": [
+                "ALU"], "readLock": True}, {
+                "name": "MEM input", "width": 1, "capabilities": ["MEM"]},
+                {"name": "center", "width": 1, "capabilities": ["ALU", "MEM"]},
+                {"name": "ALU output", "width": 1, "capabilities": ["ALU"]},
+                {"name": "MEM output", "width": 1, "capabilities": ["MEM"],
+                 "readLock": True}],
+             "dataPath": [["ALU input", "center"], ["MEM input", "center"],
+                          ["center", "ALU output"], ["center", "MEM output"]]})
+
     @mark.parametrize("in_unit, out_unit, lock_prop, lock_type",
                       [("input", "output", "readLock", "read"),
                        ("in_unit", "out_unit", "readLock", "read"),
