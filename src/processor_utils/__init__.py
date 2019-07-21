@@ -344,7 +344,7 @@ def _add_port_link(graph, old_port, new_port, link):
     `link` is the link connecting the two ports.
 
     """
-    graph.node[new_port][_UNIT_WIDTH_KEY] += graph.node[old_port][
+    graph.nodes[new_port][_UNIT_WIDTH_KEY] += graph.nodes[old_port][
         _UNIT_WIDTH_KEY]
     graph.add_edge(*link)
 
@@ -422,8 +422,8 @@ def _cap_in_edge(processor, capability, edge):
     `edge` is the edge to check.
 
     """
-    return all(map(
-        lambda unit: capability in processor.node[unit][_UNIT_CAPS_KEY], edge))
+    return all(map(lambda unit:
+                   capability in processor.nodes[unit][_UNIT_CAPS_KEY], edge))
 
 
 def _chk_cap_flow(
@@ -492,8 +492,8 @@ def _chk_edge(processor, edge):
     the common capabilities between the units connected by the edge.
 
     """
-    common_caps = processor.node[edge[1]][_UNIT_CAPS_KEY].intersection(
-        processor.node[edge[0]][_UNIT_CAPS_KEY])
+    common_caps = processor.nodes[edge[1]][_UNIT_CAPS_KEY].intersection(
+        processor.nodes[edge[0]][_UNIT_CAPS_KEY])
 
     if not common_caps:
         _rm_dummy_edge(processor, edge)
@@ -575,8 +575,8 @@ def _chk_path_locks(start, processor, path_locks):
     succ_lst = list(processor.successors(start))
     path_locks[start] = _SatInfo(
         _init_path_lock(
-            processor.node[start][_UNIT_RLOCK_KEY], succ_lst, _get_read_path,
-            path_locks), _init_path_lock(processor.node[start][
+            processor.nodes[start][_UNIT_RLOCK_KEY], succ_lst, _get_read_path,
+            path_locks), _init_path_lock(processor.nodes[start][
                 _UNIT_WLOCK_KEY], succ_lst, _get_write_path, path_locks))
 
     for path_desc in [_PathDescriptor(_get_read_path, "read"),
@@ -679,11 +679,11 @@ def _clean_unit(processor, unit):
     the given unit.
 
     """
-    processor.node[unit][_UNIT_CAPS_KEY] = frozenset(
-        processor.node[unit][_UNIT_CAPS_KEY])
+    processor.nodes[unit][_UNIT_CAPS_KEY] = frozenset(
+        processor.nodes[unit][_UNIT_CAPS_KEY])
     pred_caps = map(lambda edge: _chk_edge(processor, edge),
                     list(processor.in_edges(unit)))
-    processor.node[unit][_UNIT_CAPS_KEY] = frozenset().union(*pred_caps)
+    processor.nodes[unit][_UNIT_CAPS_KEY] = frozenset().union(*pred_caps)
 
 
 def _coll_cap_edges(graph):
@@ -833,7 +833,7 @@ def _get_cap_units(processor):
     in_ports = _get_in_ports(processor)
 
     for cur_port in in_ports:
-        for cur_cap in processor.node[cur_port][_UNIT_CAPS_KEY]:
+        for cur_cap in processor.nodes[cur_port][_UNIT_CAPS_KEY]:
             cap_unit_map.setdefault(cur_cap, []).append(cur_port)
 
     return cap_unit_map.items()
@@ -1082,7 +1082,7 @@ def _post_order(graph):
 
     """
     unit_map = dict(
-        map(lambda unit: _get_unit_entry(unit, graph.node[unit]), graph))
+        map(lambda unit: _get_unit_entry(unit, graph.nodes[unit]), graph))
     return map(lambda name: FuncUnit(unit_map[name], _get_preds(
         graph, name, unit_map)), dfs_postorder_nodes(graph))
 
@@ -1174,7 +1174,7 @@ def _set_capacities(graph, cap_edges):
     """
     for cur_edge in cap_edges:
         graph[cur_edge[0]][cur_edge[1]]["capacity"] = min(
-            map(lambda unit: graph.node[unit][_UNIT_WIDTH_KEY], cur_edge))
+            map(lambda unit: graph.nodes[unit][_UNIT_WIDTH_KEY], cur_edge))
 
 
 def _single_edge(edges):
@@ -1205,7 +1205,7 @@ def _split_node(graph, old_node, new_node):
 
     """
     graph.add_node(
-        new_node, **{_UNIT_WIDTH_KEY: graph.node[old_node][_UNIT_WIDTH_KEY]})
+        new_node, **{_UNIT_WIDTH_KEY: graph.nodes[old_node][_UNIT_WIDTH_KEY]})
     _mov_out_links(graph, list(graph.out_edges(old_node)), new_node)
     graph.add_edge(old_node, new_node)
     return new_node
@@ -1266,7 +1266,7 @@ def _update_graph(idx, unit, processor, width_graph, unit_idx_map):
 
     """
     width_graph.add_node(
-        idx, **concat_dicts(processor.node[unit], {_OLD_NODE_KEY: unit}))
+        idx, **concat_dicts(processor.nodes[unit], {_OLD_NODE_KEY: unit}))
     unit_idx_map[unit] = idx
 
 
