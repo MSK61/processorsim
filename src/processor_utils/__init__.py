@@ -464,11 +464,12 @@ def _chk_caps_flow(processor):
 
     """
     cap_units = _get_cap_units(processor)
+    out_ports = list(_get_out_ports(processor))
 
     for cap, in_ports in cap_units:
         _chk_cap_flow(_get_anal_graph(_make_cap_graph(processor, cap)),
                       ComponentInfo(cap, "Capability " + cap), in_ports,
-                      _get_out_ports(processor), lambda port: "port " + port)
+                      out_ports, lambda port: "port " + port)
 
 
 def _chk_cycles(processor):
