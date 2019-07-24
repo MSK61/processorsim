@@ -375,8 +375,9 @@ class TestLocks:
         ex_str = str(ex_info.value)
         lock_type_idx = ex_str.find(lock_type)
         assert lock_type_idx >= 0
-        assert ex_str.find(
-            ", ".join([in_unit, out_unit]), lock_type_idx + 1) >= 0
+        cap_idx = ex_str.find("ALU", lock_type_idx + 1)
+        assert cap_idx >= 0
+        assert ex_str.find(", ".join([in_unit, out_unit]), cap_idx + 1) >= 0
 
 
 class TestLoop:

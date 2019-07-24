@@ -240,8 +240,9 @@ def _accum_locks(path_locks, path_desc, unit):
     if cur_node.num_of_locks > 1:
         raise MultiLockError(
             f"Path segment with multiple ${MultiLockError.LOCK_TYPE_KEY} locks"
-            f" found, ${MultiLockError.SEG_KEY}", _create_path(
-                path_locks, path_desc.selector, unit), path_desc.lock_type)
+            f" for capability ALU found, ${MultiLockError.SEG_KEY}",
+            _create_path(path_locks, path_desc.selector, unit),
+            path_desc.lock_type)
 
 
 def _add_capability(unit, cap, cap_list, unit_cap_reg, global_cap_reg):
