@@ -85,9 +85,9 @@ class CodeError(RuntimeError):
         return self._line
 
     # parameter keys in message format
-    LINE_NUM_KEY = "line"
-
     INSTR_KEY = "instruction"
+
+    LINE_NUM_KEY = "line"
 
 
 class _LineInfo(typing.NamedTuple):

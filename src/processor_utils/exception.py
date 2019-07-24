@@ -325,6 +325,6 @@ class MultiLockError(RuntimeError):
         return self._segment
 
     # parameter keys in message format
-    SEG_KEY = "segment"
-
     LOCK_TYPE_KEY = "lock_type"
+
+    SEG_KEY = "segment"
