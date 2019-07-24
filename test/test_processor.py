@@ -362,7 +362,7 @@ class TestLocks:
         `in_unit` is the input unit.
         `out_unit` is the output unit.
         `lock_prop` is the lock property name.
-        `lock_prop` is the lock type.
+        `lock_type` is the lock type.
 
         """
         ex_info = raises(exception.MultiLockError, load_proc_desc, {"units": [
