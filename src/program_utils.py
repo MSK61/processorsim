@@ -62,7 +62,7 @@ class CodeError(RuntimeError):
 
         """
         RuntimeError.__init__(self, string.Template(msg_tmpl).substitute(
-            {self.LINE_NUM_KEY: line, self.INSTR_KEY: instr}))
+            {self.INSTR_KEY: instr, self.LINE_NUM_KEY: line}))
         self._line = line
         self._instruction = instr
 

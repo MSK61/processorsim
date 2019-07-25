@@ -286,7 +286,7 @@ class MultiLockError(RuntimeError):
         """
         self._segment = segment
         RuntimeError.__init__(self, Template(msg_tmpl).substitute({
-            self.SEG_KEY: self._format_path(), self.LOCK_TYPE_KEY: lock_type}))
+            self.LOCK_TYPE_KEY: lock_type, self.SEG_KEY: self._format_path()}))
         self._lock_type = lock_type
 
     def _format_nodes(self):
