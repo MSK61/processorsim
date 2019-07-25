@@ -221,12 +221,13 @@ def load_proc_desc(raw_desc):
     return _make_processor(proc_desc)
 
 
-def _accum_locks(path_locks, path_desc, unit):
+def _accum_locks(path_locks, path_desc, capability, unit):
     """Accumulate successor locks into the given unit.
 
     `path_locks` are the map from a unit to the information of the path
                  with maximum locks.
     `path_desc` is the path descriptor.
+    `capability` is the capability of lock paths under consideration.
     `unit` is the unit to accumulate the successor path to.
     The function accumulates the locks in the successor unit to the path
     starting at the given unit. It raises a MultiLockError if any paths
@@ -240,9 +241,10 @@ def _accum_locks(path_locks, path_desc, unit):
     if cur_node.num_of_locks > 1:
         raise MultiLockError(
             f"Path segment with multiple ${MultiLockError.LOCK_TYPE_KEY} locks"
-            f" for capability ALU found, ${MultiLockError.SEG_KEY}",
+            f" for capability ${MultiLockError.CAP_KEY} found, "
+            f"${MultiLockError.SEG_KEY}",
             _create_path(path_locks, path_desc.selector, unit),
-            path_desc.lock_type)
+            path_desc.lock_type, capability)
 
 
 def _add_capability(unit, cap, cap_list, unit_cap_reg, global_cap_reg):
@@ -523,11 +525,12 @@ def _chk_instr(instr, instr_registry):
             f"${DupElemError.OLD_ELEM_KEY}", old_instr, instr)
 
 
-def _chk_multi_lock(processor, post_ord):
+def _chk_multi_lock(processor, post_ord, capability):
     """Check if the processor has paths with multiple locks.
 
     `processor` is the processor to check for multi-lock paths.
     `post_ord` is the post-order of the processor functional units.
+    `capability` is the capability of lock paths under consideration.
     The function raises a MultiLockError if any paths with multiple
     locks exist.
 
@@ -535,7 +538,7 @@ def _chk_multi_lock(processor, post_ord):
     path_locks = {}
 
     for unit in post_ord:
-        _chk_path_locks(unit, processor, path_locks)
+        _chk_path_locks(unit, processor, path_locks, capability)
 
 
 def _chk_non_empty(processor, in_ports):
@@ -552,13 +555,14 @@ def _chk_non_empty(processor, in_ports):
         raise exception.EmptyProcError("No input ports found")
 
 
-def _chk_path_locks(start, processor, path_locks):
+def _chk_path_locks(start, processor, path_locks, capability):
     """Check if paths from the given start unit contains multiple locks.
 
     `start` is the starting unit of paths to check.
     `processor` is the processor containing the start unit.
     `path_locks` are the map from a unit to the information of the path
                  with maximum locks.
+    `capability` is the capability of lock paths under consideration.
     The function raises a MultiLockError if any paths originating from
     the given unit have multiple locks.
 
@@ -573,7 +577,7 @@ def _chk_path_locks(start, processor, path_locks):
     for path_desc in [_PathDescriptor(_get_read_path, "read"),
                       _PathDescriptor(_get_write_path, "write")]:
         if path_desc.selector(path_locks[start]).next_node:
-            _accum_locks(path_locks, path_desc, start)
+            _accum_locks(path_locks, path_desc, capability, start)
 
 
 def _chk_terminals(processor, orig_port_info):
@@ -767,7 +771,7 @@ def _do_cap_check(cap_graph, post_ord, cap, in_ports, out_ports):
     _chk_cap_flow(
         _get_anal_graph(cap_graph), ComponentInfo(cap, "Capability " + cap),
         in_ports, out_ports, lambda port: "port " + port)
-    _chk_multi_lock(cap_graph, post_ord)
+    _chk_multi_lock(cap_graph, post_ord, cap)
 
 
 def _do_cap_checks(processor):

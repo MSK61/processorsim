@@ -50,6 +50,7 @@ import processor_utils
 from processor_utils import exception, load_proc_desc, ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from str_utils import ICaseString
+from typing import NamedTuple
 from unittest import TestCase
 
 
@@ -326,60 +327,6 @@ class TestEdges:
         _chk_warn(map(str, edges), warn_call)
 
 
-class TestLocks:
-
-    """Test case for checking processors for path locks"""
-
-    def test_paths_with_multiple_locks_are_only_detected_per_capability(self):
-        """Test detecting multi-lock paths per capability.
-
-        `self` is this test case.
-        The method asserts that multiple locks across a path with different
-        capabilities don't raise an exception as long as single-capability
-        paths don't have multiple locks.
-
-        """
-        load_proc_desc(
-            {"units": [{"name": "ALU input", "width": 1, "capabilities": [
-                "ALU"], "readLock": True}, {
-                "name": "MEM input", "width": 1, "capabilities": ["MEM"]},
-                {"name": "center", "width": 1, "capabilities": ["ALU", "MEM"]},
-                {"name": "ALU output", "width": 1, "capabilities": ["ALU"]},
-                {"name": "MEM output", "width": 1, "capabilities": ["MEM"],
-                 "readLock": True}],
-             "dataPath": [["ALU input", "center"], ["MEM input", "center"],
-                          ["center", "ALU output"], ["center", "MEM output"]]})
-
-    @mark.parametrize("in_unit, out_unit, lock_prop, lock_type",
-                      [("input", "output", "readLock", "read"),
-                       ("in_unit", "out_unit", "readLock", "read"),
-                       ("input", "output", "writeLock", "write")])
-    def test_path_with_multiple_locks_raises_MultiLockError(
-            self, in_unit, out_unit, lock_prop, lock_type):
-        """Test loading a processor with multiple locks in paths.
-
-        `self` is this test case.
-        `in_unit` is the input unit.
-        `out_unit` is the output unit.
-        `lock_prop` is the lock property name.
-        `lock_type` is the lock type.
-
-        """
-        ex_info = raises(exception.MultiLockError, load_proc_desc, {"units": [
-            {"name": in_unit, "width": 1, "capabilities": ["ALU"],
-             lock_prop: True}, {"name": out_unit, "width": 1, "capabilities": [
-                "ALU"], lock_prop: True}], "dataPath": [[in_unit, out_unit]]})
-        assert ex_info.value.segment == [
-            ICaseString(unit) for unit in [in_unit, out_unit]]
-        assert ex_info.value.lock_type == lock_type
-        ex_str = str(ex_info.value)
-        lock_type_idx = ex_str.find(lock_type)
-        assert lock_type_idx >= 0
-        cap_idx = ex_str.find("ALU", lock_type_idx + 1)
-        assert cap_idx >= 0
-        assert ex_str.find(", ".join([in_unit, out_unit]), cap_idx + 1) >= 0
-
-
 class TestLoop:
 
     """Test case for loading processors with loops"""
@@ -530,6 +477,86 @@ class TestWidth:
         chk_error([ValInStrCheck("Capability " + ex_chk.value.capability,
                                  "Capability MEM"), ValInStrCheck(
             "port " + ex_chk.value.port, "port input")], ex_chk.value)
+
+
+class _IoProcessor(NamedTuple):
+
+    """Single input, single output processor"""
+
+    in_unit: str
+
+    out_unit: str
+
+    capability: str
+
+
+class _LockTestData(NamedTuple):
+
+    """Lock test data"""
+
+    prop_name: str
+
+    lock_type: str
+
+
+class TestLocks:
+
+    """Test case for checking processors for path locks"""
+
+    def test_paths_with_multiple_locks_are_only_detected_per_capability(self):
+        """Test detecting multi-lock paths per capability.
+
+        `self` is this test case.
+        The method asserts that multiple locks across a path with different
+        capabilities don't raise an exception as long as single-capability
+        paths don't have multiple locks.
+
+        """
+        load_proc_desc(
+            {"units": [{"name": "ALU input", "width": 1, "capabilities": [
+                "ALU"], "readLock": True}, {
+                "name": "MEM input", "width": 1, "capabilities": ["MEM"]},
+                {"name": "center", "width": 1, "capabilities": ["ALU", "MEM"]},
+                {"name": "ALU output", "width": 1, "capabilities": ["ALU"]},
+                {"name": "MEM output", "width": 1, "capabilities": ["MEM"],
+                 "readLock": True}],
+             "dataPath": [["ALU input", "center"], ["MEM input", "center"],
+                          ["center", "ALU output"], ["center", "MEM output"]]})
+
+    @mark.parametrize(
+        "proc_desc, lock_data", [(_IoProcessor("input", "output", "ALU"),
+                                  _LockTestData("readLock", "read")), (
+            _IoProcessor("in_unit", "out_unit", "ALU"),
+            _LockTestData("readLock", "read")),
+            (_IoProcessor("input", "output", "ALU"),
+             _LockTestData("writeLock", "write")), (_IoProcessor(
+                "input", "output", "MEM"), _LockTestData("readLock", "read"))])
+    def test_path_with_multiple_locks_raises_MultiLockError(
+            self, proc_desc, lock_data):
+        """Test loading a processor with multiple locks in paths.
+
+        `self` is this test case.
+        `proc_desc` is the processor description.
+        `lock_data` is the lock test data.
+
+        """
+        ex_info = raises(exception.MultiLockError, load_proc_desc, {
+            "units": [{
+                "name": proc_desc.in_unit, "width": 1, "capabilities":
+                [proc_desc.capability], lock_data.prop_name: True},
+                {"name": proc_desc.out_unit, "width": 1, "capabilities":
+                 [proc_desc.capability], lock_data.prop_name: True}],
+            "dataPath": [[proc_desc.in_unit, proc_desc.out_unit]]})
+        assert ex_info.value.segment == [ICaseString(unit) for unit in [
+            proc_desc.in_unit, proc_desc.out_unit]]
+        assert ex_info.value.lock_type == lock_data.lock_type
+        ex_str = str(ex_info.value)
+        lock_type_idx = ex_str.find(lock_data.lock_type)
+        assert lock_type_idx >= 0
+        cap_idx = ex_str.find(proc_desc.capability, lock_type_idx + 1)
+        assert cap_idx >= 0
+        assert ex_str.find(", ".join([proc_desc.in_unit, proc_desc.out_unit]),
+                           cap_idx + 1) >= 0
 
 
 def main():
