@@ -18,8 +18,5 @@
 # <http://www.gnu.org/licenses/>.
 #
 ############################################################
-*.pyc
-.cache
 .coverage
-.komodotools
-.pytest_cache
+__pycache__
