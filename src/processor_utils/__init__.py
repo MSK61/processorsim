@@ -454,9 +454,8 @@ def _chk_cap_flow(
     port to the output ports.
 
     """
-    unit_anal_map = dict(
-        map(lambda anal_entry: (anal_entry[1][_OLD_NODE_KEY], anal_entry[0]),
-            anal_graph.nodes(True)))
+    unit_anal_map = {unit_attrs[_OLD_NODE_KEY]: unit for unit,
+                     unit_attrs in anal_graph.nodes(True)}
     unified_out = _aug_out_ports(
         anal_graph, [unit_anal_map[port] for port in out_ports])
     unified_out = _split_nodes(anal_graph)[unified_out]
