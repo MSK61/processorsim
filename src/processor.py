@@ -39,12 +39,15 @@
 #
 ############################################################
 
+import collections
 import container_utils
 import copy
 import dataclasses
 import heapq
 import itertools
 import processor_utils
+import reg_access
+from reg_access import AccessType
 import string
 from str_utils import ICaseString
 import typing
@@ -184,6 +187,7 @@ def simulate(program, processor):
 
     """
     util_tbl = []
+    _build_acc_plan(enumerate(program))
     issue_rec = _IssueInfo()
     prog_len = len(program)
 
@@ -213,6 +217,56 @@ def _accept_instr(instr, inputs, util_info):
         return False
     util_info[acceptor.name].append(InstrState(instr))
     return True
+
+
+def _add_access(instr, instr_index, builders):
+    """Append the instruction access to the given plan.
+
+    `instr` is the instruction to append whose access to the access
+            plan.
+    `instr_index` is the instruction index.
+    `builders` are the registry access plan builders.
+
+    """
+    _add_rd_access(instr_index, builders, instr.sources)
+    _add_wr_access(instr_index, builders[instr.destination])
+
+
+def _add_rd_access(instr, builders, registers):
+    """Register the read access of the given registers.
+
+    `instr` is the instruction index.
+    `builders` are the registry access plan builders.
+    `registers` are the registers which will be read-accessed.
+
+    """
+    for reg in registers:
+        builders[reg].append(AccessType.READ, instr)
+
+
+def _add_wr_access(instr, builder):
+    """Register the write access of the given instruction.
+
+    `instr` is the instruction index.
+    `builder` is the access plan builder.
+
+    """
+    builder.append(AccessType.WRITE, instr)
+
+
+def _build_acc_plan(program):
+    """Build the registry access plan through the program lifetime.
+
+    `program` is the program to build a registry access plan for.
+    The function returns the registry access plan.
+
+    """
+    builders = collections.defaultdict(reg_access.RegAccQBuilder)
+
+    for instr_index, instr in program:
+        _add_access(instr, instr_index, builders)
+
+    return {reg: builder.create() for reg, builder in builders.items()}
 
 
 def _build_cap_map(inputs):
