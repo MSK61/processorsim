@@ -27,6 +27,7 @@
     "files.exclude": {
         ".coverage": true,
         ".pytest_cache": true,
-        "**/__pycache__": true
+        "**/__pycache__": true,
+        ".vscode/tags": true
     }
 }
