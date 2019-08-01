@@ -951,8 +951,8 @@ def _get_unit_entry(name, attrs):
     """
     lock_info = units.LockInfo(
         *itemgetter(_UNIT_RLOCK_KEY, _UNIT_WLOCK_KEY)(attrs))
-    return name, UnitModel(name, *itemgetter(_UNIT_WIDTH_KEY, _UNIT_CAPS_KEY)(
-        attrs) + (lock_info,))
+    return name, UnitModel(name, *(
+        itemgetter(_UNIT_WIDTH_KEY, _UNIT_CAPS_KEY)(attrs) + (lock_info,)))
 
 
 def _get_unit_name(unit, unit_registry):
