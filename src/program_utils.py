@@ -44,6 +44,7 @@ import operator
 import program_defs
 from re import split
 import string
+import str_utils
 import typing
 
 
@@ -197,7 +198,7 @@ def _get_operands(src_line_info, line_num):
         first_missing = next(itertools.filterfalse(
             lambda op_entry: op_entry[1], operand_entries))
     except StopIteration:  # all operands present
-        return operands
+        return [str_utils.ICaseString(op) for op in operands]
     raise CodeError(
         f"Operand {first_missing[0] + 1} empty for instruction "
         f"${CodeError.INSTR_KEY} at line ${CodeError.LINE_NUM_KEY}", line_num,

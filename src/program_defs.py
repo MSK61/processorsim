@@ -59,9 +59,9 @@ class Instruction:
         self.sources = tuple(sorted(sources))
         self.destination = dst
 
-    sources: typing.Any
+    sources: typing.Tuple[ICaseString]
 
-    destination: str
+    destination: ICaseString
 
 
 @dataclass

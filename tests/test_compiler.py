@@ -45,6 +45,7 @@ import test_utils
 import container_utils
 import errors
 import program_defs
+from program_defs import ProgInstruction
 import program_utils
 from program_utils import CodeError
 from str_utils import ICaseString
@@ -68,7 +69,18 @@ class TestProgLoad:
         """
         assert test_utils.compile_prog(
             prog_file, {"ADD": ICaseString("ALU")}) == [
-            program_defs.HwInstruction(ICaseString("ALU"), inputs, "R14")]
+                program_defs.HwInstruction(ICaseString("ALU"), [ICaseString(
+                    cur_input) for cur_input in inputs], ICaseString("R14"))]
+
+    def test_same_operand_with_different_case_is_detected(self):
+        """Test loading a program with operands in different cases.
+
+        `self` is this test case.
+
+        """
+        assert program_utils.read_program(["ADD R1, R2, r2"]) == [
+            ProgInstruction("ADD", 1, [
+                ICaseString(reg) for reg in ["R2", "r2"]], ICaseString("R1"))]
 
     @mark.parametrize(
         "prog_file, instr, line_num",
@@ -159,8 +171,8 @@ class TestSyntax:
         `prog_file` is the program file.
 
         """
-        self._test_program(prog_file, [
-            program_defs.ProgInstruction("ADD", 1, ["R11", "R15"], "R14")])
+        self._test_program(prog_file, [ProgInstruction("ADD", 1, [
+            ICaseString(reg) for reg in ["R11", "R15"]], ICaseString("R14"))])
 
     @staticmethod
     def _chk_syn_err(syn_err, line_num, instr):
