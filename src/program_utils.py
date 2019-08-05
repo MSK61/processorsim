@@ -141,7 +141,7 @@ def _create_instr(src_line_info):
     operands = _get_operands(src_line_info, line_num)
     dst = next(operands)
     return program_defs.ProgInstruction(
-        src_line_info.instruction, line_num, operands, dst)
+        src_line_info.instruction, line_num, frozenset(operands), dst)
 
 
 def _get_cap(isa, instr):

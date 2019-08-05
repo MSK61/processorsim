@@ -79,8 +79,7 @@ class TestProgLoad:
 
         """
         assert program_utils.read_program(["ADD R1, R2, r2"]) == [
-            ProgInstruction("ADD", 1, [
-                ICaseString(reg) for reg in ["R2", "r2"]], ICaseString("R1"))]
+            ProgInstruction("ADD", 1, [ICaseString("R2")], ICaseString("R1"))]
 
     @mark.parametrize(
         "prog_file, instr, line_num",
