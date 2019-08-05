@@ -139,8 +139,9 @@ def _create_instr(src_line_info):
     line_num = src_line_info[0] + 1
     src_line_info = _get_line_parts(src_line_info)
     operands = _get_operands(src_line_info, line_num)
+    dst = next(operands)
     return program_defs.ProgInstruction(
-        src_line_info.instruction, line_num, operands[1:], operands[0])
+        src_line_info.instruction, line_num, operands, dst)
 
 
 def _get_cap(isa, instr):
@@ -198,7 +199,7 @@ def _get_operands(src_line_info, line_num):
         first_missing = next(itertools.filterfalse(
             lambda op_entry: op_entry[1], operand_entries))
     except StopIteration:  # all operands present
-        return [str_utils.ICaseString(op) for op in operands]
+        return map(str_utils.ICaseString, operands)
     raise CodeError(
         f"Operand {first_missing[0] + 1} empty for instruction "
         f"${CodeError.INSTR_KEY} at line ${CodeError.LINE_NUM_KEY}", line_num,
