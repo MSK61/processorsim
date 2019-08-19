@@ -32,13 +32,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.36.1, python 3.7.3, Fedora release
+# environment:  Visual Studdio Code 1.37.1, python 3.7.3, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+from mock import patch
 import pytest
 from pytest import mark, raises
 import test_utils
@@ -78,8 +79,11 @@ class TestProgLoad:
         `self` is this test case.
 
         """
-        assert program_utils.read_program(["ADD R1, R2, r2"]) == [
-            ProgInstruction("ADD", 1, [ICaseString("R2")], ICaseString("R1"))]
+        with patch("logging.warning") as warn_mock:
+            assert program_utils.read_program(["ADD R1, R2, r2"]) == [
+                ProgInstruction(
+                    "ADD", 1, [ICaseString("R2")], ICaseString("R1"))]
+        assert warn_mock.call_args
 
     @mark.parametrize(
         "prog_file, instr, line_num",
@@ -170,8 +174,11 @@ class TestSyntax:
         `prog_file` is the program file.
 
         """
-        self._test_program(prog_file, [ProgInstruction("ADD", 1, [
-            ICaseString(reg) for reg in ["R11", "R15"]], ICaseString("R14"))])
+        with patch("logging.warning") as warn_mock:
+            self._test_program(
+                prog_file, [ProgInstruction("ADD", 1, [ICaseString(
+                    reg) for reg in ["R11", "R15"]], ICaseString("R14"))])
+        assert not warn_mock.call_args
 
     @staticmethod
     def _chk_syn_err(syn_err, line_num, instr):

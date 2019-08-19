@@ -31,14 +31,15 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.36.1, python 3.7.3, Fedora release
+# environment:  Visual Studdio Code 1.37.1, python 3.7.3, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-from container_utils import concat_dicts
+import container_utils
+from container_utils import concat_dicts, IndexedSet, SelfIndexSet
 from dataclasses import dataclass
 from errors import UndefElemError
 from . import exception
@@ -51,7 +52,6 @@ import networkx
 from networkx import dfs_postorder_nodes, DiGraph
 from operator import itemgetter
 import os
-from .sets import IndexedSet, SelfIndexSet
 from str_utils import ICaseString
 import sys
 import typing
@@ -325,11 +325,9 @@ def _add_new_cap(cap, cap_list, unit_cap_reg, global_cap_reg):
                      so far.
 
     """
-    std_cap = global_cap_reg.get(cap)
+    std_cap = container_utils.get_from_set(global_cap_reg, cap)
 
-    if not std_cap:
-        std_cap = _add_to_set(global_cap_reg, cap)
-    elif std_cap.name.raw_str != cap.name.raw_str:
+    if std_cap.name.raw_str != cap.name.raw_str:
         logging.warning("Capability %s in unit %s previously defined as %s in "
                         "unit %s, using original definition...", cap.name,
                         cap.unit, std_cap.name, std_cap.unit)
@@ -355,17 +353,6 @@ def _add_port_link(graph, old_port, new_port, link):
 def _add_src_path():
     """Add the source path to the python search path."""
     sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
-
-
-def _add_to_set(elem_set, elem):
-    """Add an element to the given set.
-
-    `elem_set` is the set to add the element to.
-    `elem` is the element to add.
-
-    """
-    elem_set.add(elem)
-    return elem
 
 
 def _add_unit(processor, unit, unit_registry, cap_registry):

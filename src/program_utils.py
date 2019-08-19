@@ -31,15 +31,16 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.36.1, python 3.7.3, Fedora release
+# environment:  Visual Studdio Code 1.37.1, python 3.7.3, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import container_utils
 from errors import UndefElemError
-import itertools
+import logging
 import operator
 import program_defs
 from re import split
@@ -138,11 +139,9 @@ def _create_instr(src_line_info):
     """
     line_num = src_line_info[0] + 1
     src_line_info = _get_line_parts(src_line_info)
-    operands = map(
-        str_utils.ICaseString, _get_operands(src_line_info, line_num))
-    dst = next(operands)
-    return program_defs.ProgInstruction(
-        src_line_info.instruction, line_num, frozenset(operands), dst)
+    operands = _get_operands(src_line_info, line_num)
+    return program_defs.ProgInstruction(src_line_info.instruction, line_num,
+                                        frozenset(operands[1:]), operands[0])
 
 
 def _get_cap(isa, instr):
@@ -194,14 +193,38 @@ def _get_operands(src_line_info, line_num):
 
     """
     sep_pat = r"\s*,\s*"
-    operands = split(sep_pat, src_line_info.operands)
-    operand_entries = enumerate(operands)
-    try:
-        first_missing = next(itertools.filterfalse(
-            lambda op_entry: op_entry[1], operand_entries))
-    except StopIteration:  # all operands present
-        return operands
-    raise CodeError(
-        f"Operand {first_missing[0] + 1} empty for instruction "
-        f"${CodeError.INSTR_KEY} at line ${CodeError.LINE_NUM_KEY}", line_num,
-        src_line_info.instruction)
+    operands = enumerate(split(sep_pat, src_line_info.operands))
+    reg_registry = container_utils.SelfIndexSet()
+    valid_ops = []
+
+    for op_entry in operands:
+        valid_ops.append(_get_reg_name(op_entry[1], op_entry[0] + 1, line_num,
+                         src_line_info.instruction, reg_registry))
+
+    return valid_ops
+
+
+def _get_reg_name(op_name, op_idx, line_num, instr, reg_registry):
+    """Extract the registry name.
+
+    `op_name` is the operand name.
+    `op_idx` is the one-based operand index.
+    `line_num` is the line number of the enclosing instruction.
+    `instr` is the enclosing instruction.
+    `reg_registry` is the register name registry.
+    The function returns the register name. It raises a CodeError if the
+    operand is invalid.
+
+    """
+    if not op_name:
+        raise CodeError(
+            f"Operand {op_idx} empty for instruction ${CodeError.INSTR_KEY} at"
+            f" line ${CodeError.LINE_NUM_KEY}", line_num, instr)
+
+    std_reg = container_utils.get_from_set(
+        reg_registry, str_utils.ICaseString(op_name))
+
+    if std_reg.raw_str != op_name:
+        logging.warning("")
+
+    return std_reg

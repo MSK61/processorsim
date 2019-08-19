@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.36.1, python 3.7.3, Fedora release
+# environment:  Visual Studdio Code 1.37.1, python 3.7.3, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -46,7 +46,6 @@ from pytest import mark, raises
 from test_utils import chk_error, read_proc_file, ValInStrCheck
 import container_utils
 import errors
-import processor_utils
 from processor_utils import exception, load_proc_desc, ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from str_utils import ICaseString
@@ -146,7 +145,7 @@ class CoverageTest(TestCase):
         `self` is this test case.
 
         """
-        repr(processor_utils.sets.IndexedSet(lambda elem: elem))
+        repr(container_utils.IndexedSet(lambda elem: elem))
 
 
 class TestBlocking:
