@@ -261,13 +261,13 @@ def _add_capability(unit, cap, cap_list, unit_cap_reg, global_cap_reg):
     """
     old_cap = unit_cap_reg.get(cap)
 
-    if old_cap is None:
-        _add_new_cap(
-            _CapabilityInfo(cap, unit), cap_list, unit_cap_reg, global_cap_reg)
-    else:
+    if old_cap:
         logging.warning(
             "Capability %s previously added as %s for unit %s, ignoring...",
             cap, old_cap, unit)
+    else:
+        _add_new_cap(
+            _CapabilityInfo(cap, unit), cap_list, unit_cap_reg, global_cap_reg)
 
 
 def _add_edge(processor, edge, unit_registry, edge_registry):
@@ -291,11 +291,11 @@ def _add_edge(processor, edge, unit_registry, edge_registry):
     processor.add_edge(*_get_std_edge(edge, unit_registry))
     old_edge = edge_registry.get(edge)
 
-    if old_edge is None:
-        edge_registry.add(edge)
-    else:
+    if old_edge:
         logging.warning(
             "Edge %s previously added as %s, ignoring...", edge, old_edge)
+    else:
+        edge_registry.add(edge)
 
 
 def _add_instr(instr_registry, cap_registry, instr, cap):
@@ -327,7 +327,7 @@ def _add_new_cap(cap, cap_list, unit_cap_reg, global_cap_reg):
     """
     std_cap = global_cap_reg.get(cap)
 
-    if std_cap is None:
+    if not std_cap:
         std_cap = _add_to_set(global_cap_reg, cap)
     elif std_cap.name.raw_str != cap.name.raw_str:
         logging.warning("Capability %s in unit %s previously defined as %s in "
@@ -518,7 +518,7 @@ def _chk_instr(instr, instr_registry):
     """
     old_instr = instr_registry.get(instr)
 
-    if old_instr is not None:
+    if old_instr:
         raise DupElemError(
             f"Instruction ${DupElemError.NEW_ELEM_KEY} previously added as "
             f"${DupElemError.OLD_ELEM_KEY}", old_instr, instr)
@@ -627,7 +627,7 @@ def _chk_unit_name(name, name_registry):
     """
     old_name = name_registry.get(name)
 
-    if old_name is not None:
+    if old_name:
         raise DupElemError(
             f"Functional unit ${DupElemError.NEW_ELEM_KEY} previously added as"
             f" ${DupElemError.OLD_ELEM_KEY}", old_name, name)
@@ -841,7 +841,7 @@ def _get_cap_name(capability, cap_registry):
     """
     std_cap = cap_registry.get(capability)
 
-    if std_cap is None:
+    if not std_cap:
         raise UndefElemError(
             f"Unsupported capability ${UndefElemError.ELEM_KEY}", capability)
 
@@ -965,7 +965,7 @@ def _get_unit_name(unit, unit_registry):
     """
     std_name = unit_registry.get(unit)
 
-    if std_name is None:
+    if not std_name:
         raise UndefElemError(
             f"Undefined functional unit ${UndefElemError.ELEM_KEY}", unit)
 
