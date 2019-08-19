@@ -31,12 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
-#               Fedora release 25 (Twenty Five)
-#               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
-#               Ubuntu 17.04
-#               Komodo IDE, version 10.2.1 build 89853, python 2.7.13,
-#               Fedora release 26 (Twenty Six)
+# environment:  Visual Studdio Code 1.36.1, python 3.7.3, Fedora release
+#               30 (Thirty)
 #
 # notes:        This is a private program.
 #
