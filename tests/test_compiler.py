@@ -48,7 +48,7 @@ import errors
 import program_defs
 from program_defs import ProgInstruction
 import program_utils
-from program_utils import CodeError
+from program_utils import CodeError, read_program
 from str_utils import ICaseString
 from test_utils import read_prog_file
 
@@ -74,8 +74,9 @@ class TestProgLoad:
                     cur_input) for cur_input in inputs], ICaseString("R14"))]
 
     @mark.parametrize("dup_reg", ["R2", "R3"])
-    def test_same_operand_with_different_case_is_detected(self, dup_reg):
-        """Test loading a program with operands in different cases.
+    def test_same_operand_with_different_case_in_same_instruction_is_detected(
+            self, dup_reg):
+        """Test loading operands in different cases(same instruction).
 
         `self` is this test case.
         `dup_reg` is the duplicate register.
@@ -84,13 +85,33 @@ class TestProgLoad:
         lower_reg = dup_reg.lower()
         upper_reg = dup_reg.upper()
         with patch("logging.warning") as warn_mock:
-            assert program_utils.read_program(
-                [f"ADD R1, {upper_reg}, {lower_reg}"]) == [ProgInstruction(
+            assert read_program([f"ADD R1, {upper_reg}, {lower_reg}"]) == [
+                ProgInstruction(
                     "ADD", 1, [ICaseString(dup_reg)], ICaseString("R1"))]
         assert warn_mock.call_args
         warn_msg = warn_mock.call_args[0][0] % warn_mock.call_args[0][1:]
 
         for reg in [lower_reg, upper_reg]:
+            assert reg in warn_msg
+
+    def test_same_operand_with_different_case_in_two_instructions_is_detected(
+            self):
+        """Test loading operands in different cases(two instructions).
+
+        `self` is this test case.
+        `dup_reg` is the duplicate register.
+
+        """
+        with patch("logging.warning") as warn_mock:
+            assert read_program(["ADD R1, R2, R3", "ADD R4, r2, R5"]) == [
+                ProgInstruction(
+                    "ADD", 1, (ICaseString(reg) for reg in ["R2", "R3"]),
+                    ICaseString("R1")), ProgInstruction("ADD", 2, (ICaseString(
+                        reg) for reg in ["r2", "R5"]), ICaseString("R4"))]
+        assert warn_mock.call_args
+        warn_msg = warn_mock.call_args[0][0] % warn_mock.call_args[0][1:]
+
+        for reg in ["r2", "R2"]:
             assert reg in warn_msg
 
     @mark.parametrize(

@@ -126,20 +126,22 @@ def read_program(prog_file):
     """
     program = filter(
         operator.itemgetter(1), enumerate(map(str.strip, prog_file)))
-    return [_create_instr(instr) for instr in program]
+    reg_registry = container_utils.SelfIndexSet()
+    return [_create_instr(instr, reg_registry) for instr in program]
 
 
-def _create_instr(src_line_info):
+def _create_instr(src_line_info, reg_registry):
     """Convert the source line to a program instruction.
 
     `src_line_info` is the program instruction line information.
+    `reg_registry` is the register name registry.
     The function returns the created program instruction. It raises a
     CodeError if the instruction is malformed.
 
     """
     line_num = src_line_info[0] + 1
     src_line_info = _get_line_parts(src_line_info)
-    operands = _get_operands(src_line_info, line_num)
+    operands = _get_operands(src_line_info, line_num, reg_registry)
     return program_defs.ProgInstruction(src_line_info.instruction, line_num,
                                         frozenset(operands[1:]), operands[0])
 
@@ -182,11 +184,12 @@ def _get_line_parts(src_line_info):
     return _LineInfo(*line_parts)
 
 
-def _get_operands(src_line_info, line_num):
+def _get_operands(src_line_info, line_num, reg_registry):
     """Extract operands from the given line.
 
     `src_line_info` is the source line information.
     `line_num` is the line number in the original input.
+    `reg_registry` is the register name registry.
     The function returns the relevant instruction operands as extracted
     from the line. It raises a CodeError if any of the operands is
     invalid.
@@ -194,7 +197,6 @@ def _get_operands(src_line_info, line_num):
     """
     sep_pat = r"\s*,\s*"
     operands = enumerate(split(sep_pat, src_line_info.operands))
-    reg_registry = container_utils.SelfIndexSet()
     valid_ops = []
 
     for op_entry in operands:
