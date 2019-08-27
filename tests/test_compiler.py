@@ -98,7 +98,6 @@ class TestProgLoad:
         """Test loading operands in different cases(two instructions).
 
         `self` is this test case.
-        `dup_reg` is the duplicate register.
 
         """
         with patch("logging.warning") as warn_mock:
