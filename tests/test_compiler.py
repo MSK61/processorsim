@@ -105,9 +105,9 @@ class TestProgLoad:
         with patch("logging.warning") as warn_mock:
             assert read_program(["ADD R1, R2, R3", "ADD R4, r2, R5"]) == [
                 ProgInstruction(
-                    "ADD", 1, (ICaseString(reg) for reg in ["R2", "R3"]),
-                    ICaseString("R1")), ProgInstruction("ADD", 2, (ICaseString(
-                        reg) for reg in ["r2", "R5"]), ICaseString("R4"))]
+                    "ADD", 1, map(ICaseString, ["R2", "R3"]),
+                    ICaseString("R1")), ProgInstruction("ADD", 2, map(
+                        ICaseString, ["r2", "R5"]), ICaseString("R4"))]
         assert warn_mock.call_args
         warn_msg = warn_mock.call_args[0][0] % warn_mock.call_args[0][1:]
 
