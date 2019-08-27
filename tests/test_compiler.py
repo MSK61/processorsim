@@ -73,17 +73,25 @@ class TestProgLoad:
                 program_defs.HwInstruction(ICaseString("ALU"), [ICaseString(
                     cur_input) for cur_input in inputs], ICaseString("R14"))]
 
-    def test_same_operand_with_different_case_is_detected(self):
+    @mark.parametrize("dup_reg", ["R2", "R3"])
+    def test_same_operand_with_different_case_is_detected(self, dup_reg):
         """Test loading a program with operands in different cases.
 
         `self` is this test case.
+        `dup_reg` is the duplicate register.
 
         """
+        lower_reg = dup_reg.lower()
+        upper_reg = dup_reg.upper()
         with patch("logging.warning") as warn_mock:
-            assert program_utils.read_program(["ADD R1, R2, r2"]) == [
-                ProgInstruction(
-                    "ADD", 1, [ICaseString("R2")], ICaseString("R1"))]
+            assert program_utils.read_program(
+                [f"ADD R1, {upper_reg}, {lower_reg}"]) == [ProgInstruction(
+                    "ADD", 1, [ICaseString(dup_reg)], ICaseString("R1"))]
         assert warn_mock.call_args
+        warn_msg = warn_mock.call_args[0][0] % warn_mock.call_args[0][1:]
+
+        for reg in [lower_reg, upper_reg]:
+            assert reg in warn_msg
 
     @mark.parametrize(
         "prog_file, instr, line_num",

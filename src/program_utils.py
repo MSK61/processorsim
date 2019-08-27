@@ -225,6 +225,7 @@ def _get_reg_name(op_name, op_idx, line_num, instr, reg_registry):
         reg_registry, str_utils.ICaseString(op_name))
 
     if std_reg.raw_str != op_name:
-        logging.warning("")
+        logging.warning(f"Register {op_name} previously referred to as "
+                        f"{std_reg.raw_str}, using original reference...")
 
     return std_reg
