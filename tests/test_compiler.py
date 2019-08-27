@@ -68,10 +68,9 @@ class TestProgLoad:
         `inputs` are the instruction inputs.
 
         """
-        assert test_utils.compile_prog(
-            prog_file, {"ADD": ICaseString("ALU")}) == [
-                program_defs.HwInstruction(ICaseString("ALU"), [ICaseString(
-                    cur_input) for cur_input in inputs], ICaseString("R14"))]
+        assert test_utils.compile_prog(prog_file, {"ADD": ICaseString(
+            "ALU")}) == [program_defs.HwInstruction(ICaseString("ALU"), map(
+                ICaseString, inputs), ICaseString("R14"))]
 
     @mark.parametrize("dup_reg", ["R2", "R3"])
     def test_same_operand_with_different_case_in_same_instruction_is_detected(
@@ -204,9 +203,8 @@ class TestSyntax:
 
         """
         with patch("logging.warning") as warn_mock:
-            self._test_program(
-                prog_file, [ProgInstruction("ADD", 1, [ICaseString(
-                    reg) for reg in ["R11", "R15"]], ICaseString("R14"))])
+            self._test_program(prog_file, [ProgInstruction("ADD", 1, map(
+                ICaseString, ["R11", "R15"]), ICaseString("R14"))])
         assert not warn_mock.call_args
 
     @staticmethod
