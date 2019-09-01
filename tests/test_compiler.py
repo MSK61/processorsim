@@ -39,6 +39,7 @@
 #
 ############################################################
 
+import itertools
 from mock import patch
 import pytest
 from pytest import mark, raises
@@ -93,23 +94,28 @@ class TestProgLoad:
         for reg in [lower_reg, upper_reg]:
             assert reg in warn_msg
 
+    @mark.parametrize("preamble", [0, 2])
     def test_same_operand_with_different_case_in_two_instructions_is_detected(
-            self):
+            self, preamble):
         """Test loading operands in different cases(two instructions).
 
         `self` is this test case.
+        `preamble` is the number of lines preceding the instructions
+                   containing registers.
 
         """
         with patch("logging.warning") as warn_mock:
-            assert read_program(["ADD R1, R2, R3", "ADD R4, r2, R5"]) == [
-                ProgInstruction(
-                    "ADD", 1, map(ICaseString, ["R2", "R3"]),
-                    ICaseString("R1")), ProgInstruction("ADD", 2, map(
-                        ICaseString, ["r2", "R5"]), ICaseString("R4"))]
+            assert read_program(
+                itertools.chain(itertools.repeat("", preamble), [
+                    "ADD R1, R2, R3", "ADD R4, r2, R5"])) == [
+                        ProgInstruction("ADD", preamble + 1, map(
+                            ICaseString, ["R2", "R3"]), ICaseString("R1")),
+                        ProgInstruction("ADD", preamble + 2, map(
+                            ICaseString, ["r2", "R5"]), ICaseString("R4"))]
         assert warn_mock.call_args
         warn_msg = warn_mock.call_args[0][0] % warn_mock.call_args[0][1:]
 
-        for reg in ["r2", "R2"]:
+        for reg in ["r2", "R2", str(preamble + 1)]:
             assert reg in warn_msg
 
     @mark.parametrize(

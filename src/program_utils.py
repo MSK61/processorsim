@@ -45,8 +45,8 @@ import operator
 import program_defs
 from re import split
 import string
-import str_utils
-import typing
+from str_utils import ICaseString
+from typing import NamedTuple
 
 
 class CodeError(RuntimeError):
@@ -92,13 +92,22 @@ class CodeError(RuntimeError):
     LINE_NUM_KEY = "line"
 
 
-class _LineInfo(typing.NamedTuple):
+class _LineInfo(NamedTuple):
 
     """Source line information"""
 
     instruction: str
 
     operands: str
+
+
+class _OperandInfo(NamedTuple):
+
+    """Instruction operand information"""
+
+    name: ICaseString
+
+    line: int
 
 
 def compile_program(prog, isa):
@@ -126,7 +135,7 @@ def read_program(prog_file):
     """
     program = filter(
         operator.itemgetter(1), enumerate(map(str.strip, prog_file)))
-    reg_registry = container_utils.SelfIndexSet()
+    reg_registry = container_utils.IndexedSet(lambda reg: reg.name)
     return [_create_instr(instr, reg_registry) for instr in program]
 
 
@@ -200,8 +209,8 @@ def _get_operands(src_line_info, line_num, reg_registry):
     valid_ops = []
 
     for op_entry in operands:
-        valid_ops.append(_get_reg_name(op_entry[1], op_entry[0] + 1, line_num,
-                         src_line_info.instruction, reg_registry))
+        valid_ops.append(_get_reg_name(ICaseString(op_entry[1]), op_entry[
+            0] + 1, line_num, src_line_info.instruction, reg_registry))
 
     return valid_ops
 
@@ -224,10 +233,11 @@ def _get_reg_name(op_name, op_idx, line_num, instr, reg_registry):
             f" line ${CodeError.LINE_NUM_KEY}", line_num, instr)
 
     std_reg = container_utils.get_from_set(
-        reg_registry, str_utils.ICaseString(op_name))
+        reg_registry, _OperandInfo(op_name, line_num))
 
-    if std_reg.raw_str != op_name:
-        logging.warning(f"Register {op_name} previously referred to as "
-                        f"{std_reg.raw_str}, using original reference...")
+    if std_reg.name.raw_str != op_name.raw_str:
+        logging.warning(f"Register {op_name} on line {line_num} previously "
+                        f"referred to as {std_reg.name} on line "
+                        f"{std_reg.line}, using original reference...")
 
-    return std_reg
+    return std_reg.name
