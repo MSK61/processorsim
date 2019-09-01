@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.37.1, python 3.7.3, Fedora release
+# environment:  Visual Studdio Code 1.37.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -115,7 +115,7 @@ class TestProgLoad:
         assert warn_mock.call_args
         warn_msg = warn_mock.call_args[0][0] % warn_mock.call_args[0][1:]
 
-        for reg in ["r2", "R2", str(preamble + 1)]:
+        for reg in ["r2", str(preamble + 2), "R2", str(preamble + 1)]:
             assert reg in warn_msg
 
     @mark.parametrize(
