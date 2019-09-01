@@ -209,8 +209,8 @@ def _get_operands(src_line_info, line_num, reg_registry):
     valid_ops = []
 
     for op_entry in operands:
-        valid_ops.append(_get_reg_name(ICaseString(op_entry[1]), op_entry[
-            0] + 1, line_num, src_line_info.instruction, reg_registry))
+        valid_ops.append(_get_reg_name(op_entry[1], op_entry[0] + 1, line_num,
+                         src_line_info.instruction, reg_registry))
 
     return valid_ops
 
@@ -233,9 +233,9 @@ def _get_reg_name(op_name, op_idx, line_num, instr, reg_registry):
             f" line ${CodeError.LINE_NUM_KEY}", line_num, instr)
 
     std_reg = container_utils.get_from_set(
-        reg_registry, _OperandInfo(op_name, line_num))
+        reg_registry, _OperandInfo(ICaseString(op_name), line_num))
 
-    if std_reg.name.raw_str != op_name.raw_str:
+    if std_reg.name.raw_str != op_name:
         logging.warning(f"Register {op_name} on line {line_num} previously "
                         f"referred to as {std_reg.name} on line "
                         f"{std_reg.line}, using original reference...")

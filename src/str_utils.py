@@ -48,14 +48,6 @@ class ICaseString(typing.NamedTuple):
 
     """Case-insensitive string"""
 
-    def __bool__(self):
-        """Test the emptiness of this case-insensitive string.
-
-        `self` is this case-insensitive string.
-
-        """
-        return bool(self.raw_str)
-
     def __contains__(self, item):
         """Check if the item is a substring.
 
