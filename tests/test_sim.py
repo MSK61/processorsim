@@ -113,19 +113,22 @@ class TestPipeline:
                 [FuncUnit(out_unit, [big_input, mid2])], [],
                 [FuncUnit(mid2, [mid1, small_input2]),
                  FuncUnit(mid1, [small_input1])])) == [
-            BagValDict({ICaseString("big input"): [
-                InstrState(0), InstrState(1), InstrState(2), InstrState(3)],
-                        ICaseString("small input 1"): [InstrState(4)],
-                        ICaseString("small input 2"): [InstrState(5)]}),
-            BagValDict(
-                {ICaseString("big input"): [InstrState(2, True), InstrState(
-                    3, True)], ICaseString("output"):
-                 [InstrState(0), InstrState(1)], ICaseString("middle 1"): [
-                    InstrState(4)], ICaseString("middle 2"): [InstrState(5)]}),
-            BagValDict({ICaseString("output"): [InstrState(2), InstrState(3)],
-                        ICaseString("middle 2"):
-                        [InstrState(5, True), InstrState(4)]}), BagValDict(
-                {ICaseString("output"): [InstrState(4), InstrState(5)]})]
+                     BagValDict(cp_util) for cp_util in [
+                         {ICaseString("big input"):
+                          [InstrState(0), InstrState(1), InstrState(2),
+                          InstrState(3)],
+                          ICaseString("small input 1"): [InstrState(4)],
+                          ICaseString("small input 2"): [InstrState(5)]},
+                         {ICaseString("big input"):
+                          [InstrState(2, True), InstrState(3, True)],
+                          ICaseString("output"): [InstrState(0), InstrState(
+                              1)], ICaseString("middle 1"): [InstrState(4)],
+                          ICaseString("middle 2"): [InstrState(5)]},
+                         {ICaseString("output"): [InstrState(2), InstrState(
+                             3)], ICaseString("middle 2"): [InstrState(
+                                 5, True), InstrState(4)]},
+                         {ICaseString("output"):
+                          [InstrState(4), InstrState(5)]}]]
 
 
 class TestSim:
@@ -232,12 +235,12 @@ class TestStall:
              HwInstruction(ICaseString("ALU"), [], "R2")],
             ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
                           [FuncUnit(mid, [in_unit])])) == [
-            BagValDict({ICaseString("input"): [InstrState(0), InstrState(1)]}),
-            BagValDict(
-                {ICaseString("middle"): [InstrState(0), InstrState(1)]}),
-            BagValDict({ICaseString("middle"): [InstrState(1, True)],
-                        ICaseString("output"): [InstrState(0)]}),
-            BagValDict({ICaseString("output"): [InstrState(1)]})]
+            BagValDict(cp_util) for cp_util in [
+                {ICaseString("input"): [InstrState(0), InstrState(1)]},
+                {ICaseString("middle"): [InstrState(0), InstrState(1)]},
+                {ICaseString("middle"): [InstrState(1, True)],
+                 ICaseString("output"): [InstrState(0)]},
+                {ICaseString("output"): [InstrState(1)]}]]
 
 
 def main():
