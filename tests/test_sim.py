@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.36.1, python 3.7.3, Fedora release
+# environment:  Visual Studdio Code 1.37.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -64,9 +64,9 @@ class TestBasic:
         ([HwInstruction(ICaseString("MEM"), [], "R12"), HwInstruction(
             ICaseString("ALU"), ["R11", "R15"], "R14")], read_proc_file(
             "processors", "multiplexedInputSplitOutputProcessor.yaml"),
-            [{ICaseString("input"): [InstrState(1), InstrState(0)]},
-                {ICaseString("ALU output"): [InstrState(1)],
-                 ICaseString("MEM output"): [InstrState(0)]}])])
+            [{ICaseString("input"): [InstrState(instr) for instr in [1, 0]]},
+             {ICaseString("ALU output"): [InstrState(1)],
+             ICaseString("MEM output"): [InstrState(0)]}])])
     def test_sim(self, prog, cpu, util_tbl):
         """Test executing a program.
 
@@ -115,20 +115,20 @@ class TestPipeline:
                  FuncUnit(mid1, [small_input1])])) == [
                      BagValDict(cp_util) for cp_util in [
                          {ICaseString("big input"):
-                          [InstrState(0), InstrState(1), InstrState(2),
-                          InstrState(3)],
+                          [InstrState(instr) for instr in [0, 1, 2, 3]],
                           ICaseString("small input 1"): [InstrState(4)],
                           ICaseString("small input 2"): [InstrState(5)]},
                          {ICaseString("big input"):
-                          [InstrState(2, True), InstrState(3, True)],
-                          ICaseString("output"): [InstrState(0), InstrState(
-                              1)], ICaseString("middle 1"): [InstrState(4)],
+                          [InstrState(instr, True) for instr in [2, 3]],
+                          ICaseString("output"):
+                          [InstrState(instr) for instr in [0, 1]],
+                          ICaseString("middle 1"): [InstrState(4)],
                           ICaseString("middle 2"): [InstrState(5)]},
-                         {ICaseString("output"): [InstrState(2), InstrState(
-                             3)], ICaseString("middle 2"): [InstrState(
-                                 5, True), InstrState(4)]},
                          {ICaseString("output"):
-                          [InstrState(4), InstrState(5)]}]]
+                          [InstrState(instr) for instr in [2, 3]],
+                          ICaseString("middle 2"): [InstrState(5, True),
+                          InstrState(4)]}, {ICaseString("output"): [
+                              InstrState(instr) for instr in [4, 5]]}]]
 
 
 class TestSim:
@@ -172,9 +172,9 @@ class TestSim:
          "dualCoreMemALUProcessor.yaml",
          [{ICaseString("core 2"): [InstrState(0)]}]),
         ("2InstructionProgram.asm", "2WideALUProcessor.yaml",
-         [{ICaseString("fullSys"): [InstrState(0), InstrState(1)]}]),
+         [{ICaseString("fullSys"): [InstrState(instr) for instr in [0, 1]]}]),
         ("3InstructionProgram.asm", "2WideALUProcessor.yaml",
-         [{ICaseString("fullSys"): [InstrState(0), InstrState(1)]},
+         [{ICaseString("fullSys"): [InstrState(instr) for instr in [0, 1]]},
           {ICaseString("fullSys"): [InstrState(2)]}]),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
          "twoConnectedUnitsProcessor.yaml", [{ICaseString("input"): [
@@ -235,12 +235,12 @@ class TestStall:
              HwInstruction(ICaseString("ALU"), [], "R2")],
             ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
                           [FuncUnit(mid, [in_unit])])) == [
-            BagValDict(cp_util) for cp_util in [
-                {ICaseString("input"): [InstrState(0), InstrState(1)]},
-                {ICaseString("middle"): [InstrState(0), InstrState(1)]},
-                {ICaseString("middle"): [InstrState(1, True)],
-                 ICaseString("output"): [InstrState(0)]},
-                {ICaseString("output"): [InstrState(1)]}]]
+            BagValDict(cp_util) for cp_util in [{
+                ICaseString("input"): [InstrState(instr) for instr in [0, 1]]},
+                {ICaseString("middle"): [InstrState(instr) for instr in [
+                    0, 1]]}, {ICaseString("middle"): [InstrState(1, True)],
+                              ICaseString("output"): [InstrState(0)]},
+                             {ICaseString("output"): [InstrState(1)]}]]
 
 
 def main():
