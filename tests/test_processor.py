@@ -96,8 +96,9 @@ class CleanTest(TestCase):
         out1_unit = ICaseString("output 1")
         out2_unit = ICaseString("output 2")
         assert proc_desc == ProcessorDesc(
-            [UnitModel(ICaseString("input 1"), 1, [alu_cap], lock_info),
-             UnitModel(ICaseString("input 2"), 1, [mem_cap], lock_info)],
+            map(lambda unit_params: UnitModel(*unit_params),
+                [[ICaseString("input 1"), 1, [alu_cap], lock_info],
+                [ICaseString("input 2"), 1, [mem_cap], lock_info]]),
             map(lambda unit_params: FuncUnit(*unit_params),
                 [[UnitModel(out1_unit, 1, [alu_cap], lock_info),
                   [name_input_map[ICaseString("input 1")]]],
@@ -203,11 +204,10 @@ class TestCaps:
         in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits.yaml"
         with patch("logging.warning") as warn_mock:
             assert read_proc_file("capabilities", in_file) == ProcessorDesc(
-                [], [],
-                [UnitModel(
-                    ICaseString("core 1"), 1, [ICaseString("ALU")], LockInfo(
-                        False, False)), UnitModel(ICaseString("core 2"), 1, [
-                            ICaseString("ALU")], LockInfo(False, False))], [])
+                [], [], map(lambda unit_params: UnitModel(*unit_params), [
+                    [ICaseString("core 1"), 1, [ICaseString("ALU")],
+                     LockInfo(False, False)], [ICaseString("core 2"), 1, [
+                         ICaseString("ALU")], LockInfo(False, False)]]), [])
         _chk_warn(["ALU", "core 1", "alu", "core 2"], warn_mock.call_args)
         assert ICaseString.__name__ not in warn_mock.call_args[0][
             0] % warn_mock.call_args[0][1:]

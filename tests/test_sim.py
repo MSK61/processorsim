@@ -138,11 +138,10 @@ class TestSim:
         `self` is this test case.
 
         """
-        inputs = [
-            UnitModel(
-                ICaseString("ALU input"), 1, [ICaseString("ALU")], LockInfo(
-                    False, False)), UnitModel(ICaseString("MEM input"), 1, [
-                        ICaseString("MEM")], LockInfo(False, False))]
+        inputs = [UnitModel(*unit_params) for unit_params in [
+            [ICaseString("ALU input"), 1, [ICaseString("ALU")],
+             LockInfo(False, False)], [ICaseString("MEM input"), 1, [
+                 ICaseString("MEM")], LockInfo(False, False)]]]
         output = FuncUnit(UnitModel(ICaseString("output"), 1, [ICaseString(
             "ALU"), ICaseString("MEM")], LockInfo(False, False)), inputs)
         TestBasic().test_sim(
