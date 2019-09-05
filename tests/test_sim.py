@@ -65,7 +65,7 @@ class TestBasic:
             "MEM"), [], "R12"], [ICaseString("ALU"), ["R11", "R15"], "R14"]]],
          read_proc_file(
              "processors", "multiplexedInputSplitOutputProcessor.yaml"),
-         [{ICaseString("input"): [InstrState(instr) for instr in [1, 0]]},
+         [{ICaseString("input"): map(InstrState, [1, 0])},
          {ICaseString("ALU output"): [InstrState(1)],
           ICaseString("MEM output"): [InstrState(0)]}])])
     def test_sim(self, prog, cpu, util_tbl):
@@ -235,12 +235,12 @@ class TestStall:
              HwInstruction(ICaseString("ALU"), [], "R2")],
             ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
                           [FuncUnit(mid, [in_unit])])) == [
-            BagValDict(cp_util) for cp_util in [{
-                ICaseString("input"): [InstrState(instr) for instr in [0, 1]]},
-                {ICaseString("middle"): [InstrState(instr) for instr in [
-                    0, 1]]}, {ICaseString("middle"): [InstrState(1, True)],
-                              ICaseString("output"): [InstrState(0)]},
-                             {ICaseString("output"): [InstrState(1)]}]]
+            BagValDict(cp_util) for cp_util in [
+                {ICaseString("input"): map(InstrState, [0, 1])},
+                {ICaseString("middle"): map(InstrState, [0, 1])},
+                {ICaseString("middle"): [InstrState(1, True)],
+                 ICaseString("output"): [InstrState(0)]},
+                {ICaseString("output"): [InstrState(1)]}]]
 
 
 def main():
