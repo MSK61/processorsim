@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.37.1, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.38.0, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -59,14 +59,15 @@ class TestBasic:
 
     @mark.parametrize("prog, cpu, util_tbl", [
         ([HwInstruction(ICaseString("alu"), ["R11", "R15"], "R14")],
-            read_proc_file("processors", "singleALUProcessor.yaml"),
-            [{ICaseString("fullSys"): [InstrState(0)]}]),
-        ([HwInstruction(ICaseString("MEM"), [], "R12"), HwInstruction(
-            ICaseString("ALU"), ["R11", "R15"], "R14")], read_proc_file(
-            "processors", "multiplexedInputSplitOutputProcessor.yaml"),
-            [{ICaseString("input"): [InstrState(instr) for instr in [1, 0]]},
-             {ICaseString("ALU output"): [InstrState(1)],
-             ICaseString("MEM output"): [InstrState(0)]}])])
+         read_proc_file("processors", "singleALUProcessor.yaml"),
+         [{ICaseString("fullSys"): [InstrState(0)]}]),
+        ([HwInstruction(*instr_params) for instr_params in [[ICaseString(
+            "MEM"), [], "R12"], [ICaseString("ALU"), ["R11", "R15"], "R14"]]],
+         read_proc_file(
+             "processors", "multiplexedInputSplitOutputProcessor.yaml"),
+         [{ICaseString("input"): [InstrState(instr) for instr in [1, 0]]},
+         {ICaseString("ALU output"): [InstrState(1)],
+          ICaseString("MEM output"): [InstrState(0)]}])])
     def test_sim(self, prog, cpu, util_tbl):
         """Test executing a program.
 
@@ -115,20 +116,19 @@ class TestPipeline:
                  FuncUnit(mid1, [small_input1])])) == [
                      BagValDict(cp_util) for cp_util in [
                          {ICaseString("big input"):
-                          [InstrState(instr) for instr in [0, 1, 2, 3]],
+                          map(InstrState, [0, 1, 2, 3]),
                           ICaseString("small input 1"): [InstrState(4)],
                           ICaseString("small input 2"): [InstrState(5)]},
                          {ICaseString("big input"):
-                          [InstrState(instr, True) for instr in [2, 3]],
-                          ICaseString("output"):
-                          [InstrState(instr) for instr in [0, 1]],
+                          map(lambda instr: InstrState(instr, True), [2, 3]),
+                          ICaseString("output"): map(InstrState, [0, 1]),
                           ICaseString("middle 1"): [InstrState(4)],
                           ICaseString("middle 2"): [InstrState(5)]},
-                         {ICaseString("output"):
-                          [InstrState(instr) for instr in [2, 3]],
-                          ICaseString("middle 2"): [InstrState(5, True),
-                          InstrState(4)]}, {ICaseString("output"): [
-                              InstrState(instr) for instr in [4, 5]]}]]
+                         {ICaseString("output"): map(InstrState, [2, 3]),
+                          ICaseString("middle 2"):
+                          map(lambda state_params: InstrState(*state_params),
+                          [[5, True], [4]])},
+                         {ICaseString("output"): map(InstrState, [4, 5])}]]
 
 
 class TestSim:
@@ -172,9 +172,9 @@ class TestSim:
          "dualCoreMemALUProcessor.yaml",
          [{ICaseString("core 2"): [InstrState(0)]}]),
         ("2InstructionProgram.asm", "2WideALUProcessor.yaml",
-         [{ICaseString("fullSys"): [InstrState(instr) for instr in [0, 1]]}]),
+         [{ICaseString("fullSys"): map(InstrState, [0, 1])}]),
         ("3InstructionProgram.asm", "2WideALUProcessor.yaml",
-         [{ICaseString("fullSys"): [InstrState(instr) for instr in [0, 1]]},
+         [{ICaseString("fullSys"): map(InstrState, [0, 1])},
           {ICaseString("fullSys"): [InstrState(2)]}]),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
          "twoConnectedUnitsProcessor.yaml", [{ICaseString("input"): [

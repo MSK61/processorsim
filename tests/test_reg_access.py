@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.36.1, python 3.7.3, Fedora release
+# environment:  Visual Studdio Code 1.38.0, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -44,27 +44,18 @@ from pytest import mark
 from test_env import TEST_DIR
 import reg_access
 from reg_access import AccessGroup, AccessType, RegAccessQueue
-import typing
-
-
-class _Request(typing.NamedTuple):
-
-    """Single access request"""
-
-    req_type: AccessType
-
-    req_owner: int
 
 
 class TestAccessPlan:
 
     """Test case for register access queues"""
 
-    @mark.parametrize(
-        "queue, result", [([AccessGroup(AccessType.READ, [0])], True), (
-            [AccessGroup(AccessType.WRITE, [0])], False), (
-            [AccessGroup(AccessType.WRITE, [1]), AccessGroup(AccessType.READ, [
-                0])], False), ([AccessGroup(AccessType.READ, [1])], False)])
+    @mark.parametrize("queue, result", [
+        ([AccessGroup(AccessType.READ, [0])], True),
+        ([AccessGroup(AccessType.WRITE, [0])], False),
+        ([AccessGroup(*gr_params) for gr_params in [
+            [AccessType.WRITE, [1]], [AccessType.READ, [0]]]], False),
+        ([AccessGroup(AccessType.READ, [1])], False)])
     def test_access(self, queue, result):
         """Test requesting access.
 
@@ -75,20 +66,20 @@ class TestAccessPlan:
         """
         assert RegAccessQueue(queue).can_access(AccessType.READ, 0) == result
 
-    @mark.parametrize("reqs, result_queue", [([_Request(AccessType.READ, len(
-        TEST_DIR))], [AccessGroup(AccessType.READ, [len(TEST_DIR)])]),
-        ([_Request(AccessType.WRITE, 0)], [AccessGroup(AccessType.WRITE, [
-            0])]), ([_Request(AccessType.READ, 0), _Request(
-                AccessType.WRITE, 1)], [AccessGroup(AccessType.READ, [0]),
-                                        AccessGroup(AccessType.WRITE, [1])]),
-        ([_Request(AccessType.WRITE, 0), _Request(AccessType.WRITE, 1)], [
-            AccessGroup(AccessType.WRITE, [0]), AccessGroup(AccessType.WRITE, [
-                1])]),
-        ([_Request(AccessType.WRITE, 0), _Request(AccessType.READ, 1)], [
-            AccessGroup(AccessType.WRITE, [0]), AccessGroup(AccessType.READ, [
-                1])]),
-        ([_Request(AccessType.READ, 0), _Request(AccessType.READ, 1)], [
-            AccessGroup(AccessType.READ, [0, 1])])])
+    @mark.parametrize("reqs, result_queue", [([[AccessType.READ, len(
+        TEST_DIR)]], [AccessGroup(AccessType.READ, [len(TEST_DIR)])]),
+        ([[AccessType.WRITE, 0]], [AccessGroup(AccessType.WRITE, [0])]),
+        ([[AccessType.READ, 0], [AccessType.WRITE, 1]],
+         [AccessGroup(*gr_params) for gr_params in [
+             [AccessType.READ, [0]], [AccessType.WRITE, [1]]]]),
+        ([[AccessType.WRITE, 0], [AccessType.WRITE, 1]],
+         [AccessGroup(*gr_params) for gr_params in [
+             [AccessType.WRITE, [0]], [AccessType.WRITE, [1]]]]),
+        ([[AccessType.WRITE, 0], [AccessType.READ, 1]],
+         [AccessGroup(*gr_params) for gr_params in [
+             [AccessType.WRITE, [0]], [AccessType.READ, [1]]]]),
+        ([[AccessType.READ, 0], [AccessType.READ, 1]],
+         [AccessGroup(AccessType.READ, [0, 1])])])
     def test_adding_requests(self, reqs, result_queue):
         """Test adding requests.
 
@@ -100,7 +91,7 @@ class TestAccessPlan:
         builder = reg_access.RegAccQBuilder()
 
         for cur_req in reqs:
-            builder.append(cur_req.req_type, cur_req.req_owner)
+            builder.append(*cur_req)
 
         assert builder.create() == RegAccessQueue(result_queue)
 

@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.36.1, python 3.7.3, Fedora release
+# environment:  Visual Studdio Code 1.38.0, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -102,13 +102,13 @@ class TestHwDescLoad:
                 return_value={instr: icase_cap}) as isa_mock:
             assert processor.read_processor(hw_file) == processor.HwDesc(
                 proc_mock.return_value, isa_mock.return_value)
+        mock_checks = map(lambda chk_params: _MockCheck(*chk_params), [
+            [proc_mock, [{"units": [{"name": "fullSys", "width": 1,
+                         "capabilities": [capability]}], "dataPath": []}]],
+            [ability_mock, [proc_mock.return_value]],
+            [isa_mock, [{instr: capability}, ability_mock.return_value]]])
 
-        for mock_chk in [
-            _MockCheck(proc_mock, [
-                {"units": [{"name": "fullSys", "width": 1,
-                            "capabilities": [capability]}], "dataPath": []}]),
-            _MockCheck(ability_mock, [proc_mock.return_value]), _MockCheck(
-                isa_mock, [{instr: capability}, ability_mock.return_value])]:
+        for mock_chk in mock_checks:
             mock_chk.assert_call()
 
 
