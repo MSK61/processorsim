@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.37.1, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.38.0, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -108,10 +108,11 @@ class TestProgLoad:
             assert read_program(
                 itertools.chain(itertools.repeat("", preamble), [
                     "ADD R1, R2, R3", "ADD R4, r2, R5"])) == [
-                        ProgInstruction("ADD", preamble + 1, map(
-                            ICaseString, ["R2", "R3"]), ICaseString("R1")),
-                        ProgInstruction("ADD", preamble + 2, map(
-                            ICaseString, ["r2", "R5"]), ICaseString("R4"))]
+                        ProgInstruction(*instr_params) for instr_params in [[
+                            "ADD", preamble + 1,
+                            map(ICaseString, ["R2", "R3"]), ICaseString("R1")],
+                            ["ADD", preamble + 2, map(ICaseString, [
+                                "r2", "R5"]), ICaseString("R4")]]]
         assert warn_mock.call_args
         warn_msg = warn_mock.call_args[0][0] % warn_mock.call_args[0][1:]
 
