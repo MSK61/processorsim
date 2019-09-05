@@ -109,21 +109,23 @@ class TestPipeline:
             [ICaseString("ALU"), [], "R5"], [ICaseString("ALU"), [], "R6"]]],
             ProcessorDesc([big_input, small_input1, small_input2], [
                 FuncUnit(out_unit, [big_input, mid2])], [],
-                [FuncUnit(mid2, [mid1, small_input2]), FuncUnit(mid1, [
-                    small_input1])])) == [BagValDict(cp_util) for cp_util in [
-                        {ICaseString("big input"):
-                         map(InstrState, [0, 1, 2, 3]),
-                         ICaseString("small input 1"): [InstrState(4)],
-                         ICaseString("small input 2"): [InstrState(5)]},
-                        {ICaseString("big input"):
-                         map(lambda instr: InstrState(instr, True), [2, 3]),
-                         ICaseString("output"): map(InstrState, [0, 1]),
-                         ICaseString("middle 1"): [InstrState(4)],
-                         ICaseString("middle 2"): [InstrState(5)]},
-                        {ICaseString("output"): map(InstrState, [2, 3]),
-                         ICaseString("middle 2"): map(lambda state_params:
-                         InstrState(*state_params), [[5, True], [4]])},
-                        {ICaseString("output"): map(InstrState, [4, 5])}]]
+                [FuncUnit(*unit_params) for unit_params in [
+                    [mid2, [mid1, small_input2]],
+                    [mid1, [small_input1]]]])) == [
+                        BagValDict(cp_util) for cp_util in [
+                            {ICaseString("big input"):
+                             map(InstrState, [0, 1, 2, 3]),
+                             ICaseString("small input 1"): [InstrState(4)],
+                             ICaseString("small input 2"): [InstrState(5)]},
+                            {ICaseString("big input"): map(
+                                lambda instr: InstrState(instr, True), [2, 3]),
+                             ICaseString("output"): map(InstrState, [0, 1]),
+                             ICaseString("middle 1"): [InstrState(4)],
+                             ICaseString("middle 2"): [InstrState(5)]},
+                            {ICaseString("output"): map(InstrState, [2, 3]),
+                             ICaseString("middle 2"): map(lambda state_params:
+                             InstrState(*state_params), [[5, True], [4]])},
+                            {ICaseString("output"): map(InstrState, [4, 5])}]]
 
 
 class TestSim:

@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.37.1, python 3.7.3, Fedora release
+# environment:  Visual Studdio Code 1.38.0, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -98,10 +98,11 @@ class CleanTest(TestCase):
         assert proc_desc == ProcessorDesc(
             [UnitModel(ICaseString("input 1"), 1, [alu_cap], lock_info),
              UnitModel(ICaseString("input 2"), 1, [mem_cap], lock_info)],
-            [FuncUnit(UnitModel(out1_unit, 1, [alu_cap], lock_info),
-                      [name_input_map[ICaseString("input 1")]]),
-             FuncUnit(UnitModel(out2_unit, 1, [mem_cap], lock_info),
-                      [name_input_map[ICaseString("input 2")]])], [], [])
+            map(lambda unit_params: FuncUnit(*unit_params),
+                [[UnitModel(out1_unit, 1, [alu_cap], lock_info),
+                  [name_input_map[ICaseString("input 1")]]],
+                 [UnitModel(out2_unit, 1, [mem_cap], lock_info),
+                  [name_input_map[ICaseString("input 2")]]]]), [], [])
         _chk_warn(["input 2", "output 1"], warn_mock.call_args)
 
     def test_output_more_capable_than_input(self):
@@ -371,11 +372,10 @@ class TestProcessors:
         assert not proc_desc.in_out_ports
         alu_cap = ICaseString("ALU")
         lock_info = LockInfo(False, False)
-        out_ports = FuncUnit(
-            UnitModel(ICaseString("output 1"), 1, [alu_cap], lock_info),
-            proc_desc.in_ports), FuncUnit(
-            UnitModel(ICaseString("output 2"), 1, [alu_cap], lock_info),
-            [proc_desc.internal_units[0].model])
+        out_ports = tuple(FuncUnit(*unit_params) for unit_params in [
+            [UnitModel(ICaseString("output 1"), 1, [alu_cap], lock_info),
+             proc_desc.in_ports], [UnitModel(ICaseString("output 2"), 1, [
+                 alu_cap], lock_info), [proc_desc.internal_units[0].model]]])
         in_unit = ICaseString("input")
         internal_unit = UnitModel(
             ICaseString("middle"), 1, [alu_cap], lock_info)
