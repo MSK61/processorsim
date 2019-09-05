@@ -103,32 +103,27 @@ class TestPipeline:
                          LockInfo(False, False))
         out_unit = UnitModel(ICaseString("output"), 2, [ICaseString("ALU")],
                              LockInfo(False, False))
-        assert simulate(
-            [HwInstruction(ICaseString("ALU"), [], "R1"),
-             HwInstruction(ICaseString("ALU"), [], "R2"),
-             HwInstruction(ICaseString("ALU"), [], "R3"),
-             HwInstruction(ICaseString("ALU"), [], "R4"),
-             HwInstruction(ICaseString("ALU"), [], "R5"),
-             HwInstruction(ICaseString("ALU"), [], "R6")], ProcessorDesc(
-                [big_input, small_input1, small_input2],
-                [FuncUnit(out_unit, [big_input, mid2])], [],
-                [FuncUnit(mid2, [mid1, small_input2]),
-                 FuncUnit(mid1, [small_input1])])) == [
-                     BagValDict(cp_util) for cp_util in [
-                         {ICaseString("big input"):
-                          map(InstrState, [0, 1, 2, 3]),
-                          ICaseString("small input 1"): [InstrState(4)],
-                          ICaseString("small input 2"): [InstrState(5)]},
-                         {ICaseString("big input"):
-                          map(lambda instr: InstrState(instr, True), [2, 3]),
-                          ICaseString("output"): map(InstrState, [0, 1]),
-                          ICaseString("middle 1"): [InstrState(4)],
-                          ICaseString("middle 2"): [InstrState(5)]},
-                         {ICaseString("output"): map(InstrState, [2, 3]),
-                          ICaseString("middle 2"):
-                          map(lambda state_params: InstrState(*state_params),
-                          [[5, True], [4]])},
-                         {ICaseString("output"): map(InstrState, [4, 5])}]]
+        assert simulate([HwInstruction(*instr_params) for instr_params in [
+            [ICaseString("ALU"), [], "R1"], [ICaseString("ALU"), [], "R2"],
+            [ICaseString("ALU"), [], "R3"], [ICaseString("ALU"), [], "R4"],
+            [ICaseString("ALU"), [], "R5"], [ICaseString("ALU"), [], "R6"]]],
+            ProcessorDesc([big_input, small_input1, small_input2], [
+                FuncUnit(out_unit, [big_input, mid2])], [],
+                [FuncUnit(mid2, [mid1, small_input2]), FuncUnit(mid1, [
+                    small_input1])])) == [BagValDict(cp_util) for cp_util in [
+                        {ICaseString("big input"):
+                         map(InstrState, [0, 1, 2, 3]),
+                         ICaseString("small input 1"): [InstrState(4)],
+                         ICaseString("small input 2"): [InstrState(5)]},
+                        {ICaseString("big input"):
+                         map(lambda instr: InstrState(instr, True), [2, 3]),
+                         ICaseString("output"): map(InstrState, [0, 1]),
+                         ICaseString("middle 1"): [InstrState(4)],
+                         ICaseString("middle 2"): [InstrState(5)]},
+                        {ICaseString("output"): map(InstrState, [2, 3]),
+                         ICaseString("middle 2"): map(lambda state_params:
+                         InstrState(*state_params), [[5, True], [4]])},
+                        {ICaseString("output"): map(InstrState, [4, 5])}]]
 
 
 class TestSim:
@@ -149,8 +144,9 @@ class TestSim:
         output = FuncUnit(UnitModel(ICaseString("output"), 1, [ICaseString(
             "ALU"), ICaseString("MEM")], LockInfo(False, False)), inputs)
         TestBasic().test_sim(
-            [HwInstruction(ICaseString("MEM"), [], "R12"), HwInstruction(
-                ICaseString("ALU"), ["R11", "R15"], "R14")],
+            [HwInstruction(*instr_params) for instr_params in [
+                [ICaseString("MEM"), [], "R12"],
+                [ICaseString("ALU"), ["R11", "R15"], "R14"]]],
             ProcessorDesc(inputs, [output], [], []),
             [{ICaseString("MEM input"): [InstrState(0)], ICaseString(
                 "ALU input"): [InstrState(1)]}, {ICaseString("output"): [
@@ -230,9 +226,8 @@ class TestStall:
                         LockInfo(False, False))
         out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")],
                              LockInfo(False, False))
-        assert simulate(
-            [HwInstruction(ICaseString("ALU"), [], "R1"),
-             HwInstruction(ICaseString("ALU"), [], "R2")],
+        assert simulate([HwInstruction(*instr_params) for instr_params in [
+            [ICaseString("ALU"), [], "R1"], [ICaseString("ALU"), [], "R2"]]],
             ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
                           [FuncUnit(mid, [in_unit])])) == [
             BagValDict(cp_util) for cp_util in [
