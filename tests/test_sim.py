@@ -51,6 +51,7 @@ from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from program_defs import HwInstruction
 from str_utils import ICaseString
 from test_utils import read_proc_file
+from unittest import TestCase
 
 
 class TestBasic:
@@ -81,7 +82,7 @@ class TestBasic:
             BagValDict(inst_util) for inst_util in util_tbl]
 
 
-class TestPipeline:
+class PipelineTest(TestCase):
 
     """Test case for instruction flow in the pipeline"""
 
@@ -211,7 +212,7 @@ class TestSim:
             ex_chk.value.processor_state, len(valid_prog))], ex_chk.value)
 
 
-class TestStall:
+class StallTest(TestCase):
 
     """Test case for stalled instructions"""
 
