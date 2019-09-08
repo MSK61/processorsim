@@ -44,7 +44,7 @@ from pytest import mark
 import test_utils
 from container_utils import BagValDict
 import processor
-from processor import InstrState, simulate
+from processor import InstrState, simulate, StallState
 import processor_utils
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
@@ -118,14 +118,15 @@ class PipelineTest(TestCase):
                              map(InstrState, [0, 1, 2, 3]),
                              ICaseString("small input 1"): [InstrState(4)],
                              ICaseString("small input 2"): [InstrState(5)]},
-                            {ICaseString("big input"): map(
-                                lambda instr: InstrState(instr, True), [2, 3]),
+                            {ICaseString("big input"): map(lambda instr:
+                             InstrState(instr, StallState.STRUCTURAL), [2, 3]),
                              ICaseString("output"): map(InstrState, [0, 1]),
                              ICaseString("middle 1"): [InstrState(4)],
                              ICaseString("middle 2"): [InstrState(5)]},
                             {ICaseString("output"): map(InstrState, [2, 3]),
                              ICaseString("middle 2"): map(lambda state_params:
-                             InstrState(*state_params), [[5, True], [4]])},
+                             InstrState(*state_params),
+                             [[5, StallState.STRUCTURAL], [4]])},
                             {ICaseString("output"): map(InstrState, [4, 5])}]]
 
 
@@ -150,10 +151,11 @@ class TestSim:
                 [ICaseString("MEM"), [], "R12"],
                 [ICaseString("ALU"), ["R11", "R15"], "R14"]]],
             ProcessorDesc(inputs, [output], [], []),
-            [{ICaseString("MEM input"): [InstrState(0)], ICaseString(
-                "ALU input"): [InstrState(1)]}, {ICaseString("output"): [
-                    InstrState(0)], ICaseString("ALU input"): [InstrState(
-                        1, True)]}, {ICaseString("output"): [InstrState(1)]}])
+            [{ICaseString("MEM input"): [InstrState(0)],
+             ICaseString("ALU input"): [InstrState(1)]},
+             {ICaseString("output"): [InstrState(0)],
+             ICaseString("ALU input"): [InstrState(1, StallState.STRUCTURAL)]},
+             {ICaseString("output"): [InstrState(1)]}])
 
     @mark.parametrize("prog_file, proc_file, util_info", [
         ("empty.asm", "singleALUProcessor.yaml", []),
@@ -235,7 +237,7 @@ class StallTest(TestCase):
             BagValDict(cp_util) for cp_util in [
                 {ICaseString("input"): map(InstrState, [0, 1])},
                 {ICaseString("middle"): map(InstrState, [0, 1])},
-                {ICaseString("middle"): [InstrState(1, True)],
+                {ICaseString("middle"): [InstrState(1, StallState.STRUCTURAL)],
                  ICaseString("output"): [InstrState(0)]},
                 {ICaseString("output"): [InstrState(1)]}]]
 

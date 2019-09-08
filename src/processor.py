@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.36.1, python 3.7.3, Fedora release
+# environment:  Visual Studdio Code 1.38.0, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -43,6 +43,8 @@ import collections
 import container_utils
 import copy
 import dataclasses
+import enum
+from enum import auto
 import heapq
 import itertools
 import processor_utils
@@ -62,16 +64,6 @@ class HwDesc(NamedTuple):
     processor: processor_utils.ProcessorDesc
 
     isa: typing.Mapping[str, ICaseString]
-
-
-@dataclasses.dataclass(order=True)
-class InstrState:
-
-    """Instruction state"""
-
-    instr: int
-
-    stalled: bool = False
 
 
 class StallError(RuntimeError):
@@ -101,6 +93,37 @@ class StallError(RuntimeError):
         return self._stalled_state
 
     STATE_KEY = "state"  # parameter key in message format
+
+
+class StallState(enum.Enum):
+
+    """Instruction stalling state"""
+
+    NO_STALL = auto()
+
+    STRUCTURAL = auto()
+
+
+@dataclasses.dataclass(order=True)
+class InstrState:
+
+    """Instruction state"""
+
+    def __init__(self, instr, stalled=StallState.NO_STALL):
+        """Create an instruction state.
+
+        `self` is this instruction state.
+        `instr` is the instruction index.
+        `stalled` is the instruction stall status.
+
+        """
+        assert type(stalled) == StallState
+        self.instr = instr
+        self.stalled = stalled
+
+    instr: int
+
+    stalled: StallState
 
 
 class _HostedInstr(NamedTuple):
@@ -446,7 +469,7 @@ def _mov_candidate(candidate, unit, util_info):
     `util_info` is the unit utilization information.
 
     """
-    candidate.stalled = False
+    candidate.stalled = StallState.NO_STALL
     util_info[unit].append(candidate)
 
 
@@ -510,7 +533,7 @@ def _stall_unit(unit, util_info):
 
     """
     for instr in util_info[unit]:
-        instr.stalled = True
+        instr.stalled = StallState.STRUCTURAL
 
 
 def _stall_units(units, util_info):

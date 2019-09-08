@@ -36,8 +36,8 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Komodo IDE, version 11.1.1 build 91089, python 3.7.3,
-#               Fedora release 30 (Thirty)
+# environment:  Visual Studdio Code 1.38.0, python 3.7.4, Fedora release
+#               30 (Thirty)
 #
 # notes:        This is a private program.
 #
@@ -47,6 +47,7 @@ from itertools import chain
 import logging
 import operator
 import processor
+from processor import StallState
 import program_utils
 import str_utils
 import sys
@@ -64,9 +65,18 @@ class _InstrPosition(NamedTuple):
 
     """Instruction position"""
 
+    def __str__(self):
+        """Return the printable string of this instruction position.
+
+        `self` is this instruction position.
+
+        """
+        stall_map = {StallState.NO_STALL: 'U', StallState.STRUCTURAL: 'S'}
+        return f"{stall_map[self.stalled]}:{self.unit}"
+
     unit: str_utils.ICaseString
 
-    stalled: bool
+    stalled: StallState
 
 
 class _InstrFlight(NamedTuple):
@@ -213,9 +223,8 @@ def _get_flight_row(flight):
     `flight` is the flight to convert.
 
     """
-    stall_label = 'S'
-    return [""] * flight.start_time + [stall_label if path_stop.stalled else (
-            "U:" + path_stop.unit) for path_stop in flight.stops]
+    return [""] * flight.start_time + [
+        str(path_stop) for path_stop in flight.stops]
 
 
 def _get_last_tick(sim_res):
