@@ -525,14 +525,13 @@ def _space_avail(unit, util_info):
     return unit.width - _get_unit_util(unit.name, util_info)
 
 
-def _stall_unit(unit, util_info):
+def _stall_unit(unit_util):
     """Mark instructions in the given unit as stalled.
 
-    `unit` is the unit to mark instructions in.
-    `util_info` is the unit utilization information.
+    `unit_util` is the unit utilization information.
 
     """
-    for instr in util_info[unit]:
+    for instr in unit_util:
         instr.stalled = StallState.STRUCTURAL
 
 
@@ -544,7 +543,7 @@ def _stall_units(units, util_info):
 
     """
     for unit in units:
-        _stall_unit(unit.name, util_info)
+        _stall_unit(util_info[unit.name])
 
 
 def _update_flights(unit, program, util_info):
@@ -555,5 +554,5 @@ def _update_flights(unit, program, util_info):
     `util_info` is the unit utilization information.
 
     """
-    _stall_unit(unit.model.name, util_info)
+    _stall_unit(util_info[unit.model.name])
     _fill_unit(unit, program, util_info)
