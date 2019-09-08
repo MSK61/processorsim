@@ -310,9 +310,9 @@ def _build_cap_map(inputs):
 def _chk_stall(old_util, new_util, consumed):
     """Check if the processor has stalled.
 
-    `old_util` is the old utilization information of the previous clock
+    `old_util` is the utilization information of the previous clock
                pulse.
-    `new_util` is the new utilization information of the current clock
+    `new_util` is the utilization information of the current clock
                pulse.
     `consumed` is the number of instructions fed to the pipeline so far.
     The function analyzes old and new utilization information and throws
