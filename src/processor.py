@@ -307,8 +307,8 @@ def _build_cap_map(inputs):
     return cap_map
 
 
-def _chk_stall(old_util, new_util, consumed):
-    """Check if the processor has stalled.
+def _chk_full_stall(old_util, new_util, consumed):
+    """Check if the whole processor has stalled.
 
     `old_util` is the utilization information of the previous clock
                pulse.
@@ -316,12 +316,29 @@ def _chk_stall(old_util, new_util, consumed):
                pulse.
     `consumed` is the number of instructions fed to the pipeline so far.
     The function analyzes old and new utilization information and throws
-    a StallError if a stall is detected.
+    a StallError if a full stall is detected.
 
     """
     if new_util == old_util:
         raise StallError("Processor stalled after being fed "
                          f"${StallError.STATE_KEY} instructions", consumed)
+
+
+def _chk_hazards(old_util, new_util):
+    """Check different types of hazards.
+
+    `old_util` is the utilization information of the previous clock
+               pulse.
+    `new_util` is the utilization information of the current clock
+               pulse.
+    The function analyzes old and new utilization information and marks
+    stalled instructions appropriately according to idientified hazards.
+
+    """
+    for unit in new_util:
+        if unit in old_util:
+            _stall_unit(frozenset(map(
+                lambda instr: instr.instr, old_util[unit])), new_util[unit])
 
 
 def _clr_src_units(instructions, util_info):
@@ -365,7 +382,6 @@ def _fill_cp_util(processor, program, util_info, issue_rec):
     _flush_outputs(out_ports, util_info)
     _mov_flights(list(processor.out_ports) + processor.internal_units, program,
                  util_info)
-    _stall_units(processor.in_ports, util_info)
     _fill_inputs(_build_cap_map(processor.in_out_ports + processor.in_ports),
                  program, util_info, issue_rec)
     issue_rec.pump_outputs(_count_outputs(out_ports, util_info))
@@ -495,7 +511,7 @@ def _mov_flights(dst_units, program, util_info):
 
     """
     for cur_dst in dst_units:
-        _update_flights(cur_dst, program, util_info)
+        _fill_unit(cur_dst, program, util_info)
 
 
 def _run_cycle(program, processor, util_tbl, issue_rec):
@@ -511,7 +527,8 @@ def _run_cycle(program, processor, util_tbl, issue_rec):
     old_util = util_tbl[-1] if util_tbl else container_utils.BagValDict()
     cp_util = copy.deepcopy(old_util)
     _fill_cp_util(processor, program, cp_util, issue_rec)
-    _chk_stall(old_util, cp_util, issue_rec.entered)
+    _chk_hazards(old_util, cp_util)
+    _chk_full_stall(old_util, cp_util, issue_rec.entered)
     util_tbl.append(cp_util)
 
 
@@ -525,34 +542,15 @@ def _space_avail(unit, util_info):
     return unit.width - _get_unit_util(unit.name, util_info)
 
 
-def _stall_unit(unit_util):
+def _stall_unit(old_unit_util, new_unit_util):
     """Mark instructions in the given unit as stalled.
 
-    `unit_util` is the unit utilization information.
+    `old_unit_util` is the unit utilization information of the previous
+                    clock pulse.
+    `new_unit_util` is the unit utilization information of the current
+                    clock pulse.
 
     """
-    for instr in unit_util:
-        instr.stalled = StallState.STRUCTURAL
-
-
-def _stall_units(units, util_info):
-    """Mark instructions in the given units as stalled.
-
-    `units` are the units to mark instructions in.
-    `util_info` is the unit utilization information.
-
-    """
-    for unit in units:
-        _stall_unit(util_info[unit.name])
-
-
-def _update_flights(unit, program, util_info):
-    """Update instruction in the given unit.
-
-    `unit` is the unit to update instructions in.
-    `program` is the master instruction list.
-    `util_info` is the unit utilization information.
-
-    """
-    _stall_unit(util_info[unit.model.name])
-    _fill_unit(unit, program, util_info)
+    for instr in new_unit_util:
+        if instr.instr in old_unit_util:
+            instr.stalled = StallState.STRUCTURAL
