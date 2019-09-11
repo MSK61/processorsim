@@ -27,8 +27,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.36.1, python 3.7.3, Fedora release
-#               30 (Thirty)
+# environment:  Visual Studdio Code 1.38.0, Fedora release 30 (Thirty)
 #
 # notes:        This is a private program.
 #
