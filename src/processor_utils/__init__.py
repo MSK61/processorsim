@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.37.1, python 3.7.3, Fedora release
+# environment:  Visual Studdio Code 1.38.0, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -1193,7 +1193,7 @@ def _set_capacities(graph, cap_edges):
 def _single_edge(edges):
     """Select the one and only edge.
 
-    `edges` are an iterator over edges. Must contain a single edge.
+    `edges` are an iterator over edges.
     The function returns the only edge in the given edges, or None if
     the edges don't contain exactly a single edge.
 
