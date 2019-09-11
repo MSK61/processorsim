@@ -873,6 +873,22 @@ def _get_in_ports(processor):
     return _get_ports(processor.in_degree())
 
 
+def _get_one_edge(edges):
+    """Select the one and only edge.
+
+    `edges` are an iterator over non-empty edges.
+    The function returns the only edge in the given edges, or None if
+    more than one exists. If no edges exist at all, it raises a
+    StopIteration exception.
+
+    """
+    only_edge = next(edges)
+    try:
+        next(edges)
+    except StopIteration:  # only one edge
+        return only_edge
+
+
 def _get_out_ports(processor):
     """Find the output ports.
 
@@ -1199,11 +1215,7 @@ def _single_edge(edges):
 
     """
     try:
-        only_edge = next(edges)
-        try:
-            next(edges)
-        except StopIteration:  # only one edge
-            return only_edge
+        return _get_one_edge(edges)
     except StopIteration:  # Input edges are empty.
         pass
 
