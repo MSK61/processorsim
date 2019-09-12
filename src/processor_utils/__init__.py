@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.0, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -577,9 +577,8 @@ def _chk_terminals(processor, orig_port_info):
     after trimming actions during optimization.
 
     """
-    all_out_ports = _get_out_ports(processor)
-    new_out_ports = [
-        port for port in all_out_ports if port not in orig_port_info.out_ports]
+    new_out_ports = frozenset(_get_out_ports(processor)).difference(
+        orig_port_info.out_ports)
 
     for out_port in new_out_ports:
         _rm_dead_end(processor, out_port, orig_port_info.in_ports)
