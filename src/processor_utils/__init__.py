@@ -58,7 +58,8 @@ import typing
 from typing import NamedTuple, Tuple
 from . import units
 from .units import FuncUnit, UnitModel
-__all__ = ["exception", "load_proc_desc", "ProcessorDesc", "units"]
+__all__ = ["exception", "get_abilities", "load_isa", "load_proc_desc",
+           "ProcessorDesc", "units"]
 _OLD_NODE_KEY = "old_node"
 # unit attributes
 _UNIT_CAPS_KEY = "capabilities"
