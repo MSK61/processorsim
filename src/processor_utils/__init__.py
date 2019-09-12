@@ -743,6 +743,16 @@ def _create_path(path_locks, path_sel, start):
     return multiLockPath
 
 
+def _dist_edge_caps(graph):
+    """Distribute capacities over edges as needed.
+
+    `graph` is the graph containing edges.
+    The function distributes capacities over capping edges.
+
+    """
+    _set_capacities(graph, _coll_cap_edges(graph))
+
+
 def _do_cap_check(cap_graph, post_ord, cap, in_ports, out_ports):
     """Perform checks for the given capability.
 
@@ -774,16 +784,6 @@ def _do_cap_checks(processor):
         _do_cap_check(
             _make_cap_graph(processor, cap), filter(lambda unit: _cap_in_unit(
                 processor, cap, unit), post_ord), cap, in_ports, out_ports)
-
-
-def _dist_edge_caps(graph):
-    """Distribute capacities over edges as needed.
-
-    `graph` is the graph containing edges.
-    The function distributes capacities over capping edges.
-
-    """
-    _set_capacities(graph, _coll_cap_edges(graph))
 
 
 def _get_anal_graph(processor):
