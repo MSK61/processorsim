@@ -44,7 +44,7 @@ from dataclasses import dataclass
 from errors import UndefElemError
 from . import exception
 from .exception import BadEdgeError, BadWidthError, BlockedCapError, \
-    ComponentInfo, DeadInputError, DupElemError, MultiLockError
+    ComponentInfo, DeadInputError, DupElemError, MultilockError
 import functools
 import itertools
 import logging
@@ -231,7 +231,7 @@ def _accum_locks(path_locks, path_desc, capability, unit):
     `capability` is the capability of lock paths under consideration.
     `unit` is the unit to accumulate the successor path to.
     The function accumulates the locks in the successor unit to the path
-    starting at the given unit. It raises a MultiLockError if any paths
+    starting at the given unit. It raises a MultilockError if any paths
     originating from the given unit have multiple locks.
 
     """
@@ -240,10 +240,10 @@ def _accum_locks(path_locks, path_desc, capability, unit):
         path_locks[cur_node.next_node]).num_of_locks
 
     if cur_node.num_of_locks > 1:
-        raise MultiLockError(
-            f"Path segment with multiple ${MultiLockError.LOCK_TYPE_KEY} locks"
-            f" for capability ${MultiLockError.CAP_KEY} found, "
-            f"${MultiLockError.SEG_KEY}",
+        raise MultilockError(
+            f"Path segment with multiple ${MultilockError.LOCK_TYPE_KEY} locks"
+            f" for capability ${MultilockError.CAP_KEY} found, "
+            f"${MultilockError.SEG_KEY}",
             _create_path(path_locks, path_desc.selector, unit),
             path_desc.lock_type, capability)
 
@@ -518,7 +518,7 @@ def _chk_multi_lock(processor, post_ord, capability):
     `processor` is the processor to check for multi-lock paths.
     `post_ord` is the post-order of the processor functional units.
     `capability` is the capability of lock paths under consideration.
-    The function raises a MultiLockError if any paths with multiple
+    The function raises a MultilockError if any paths with multiple
     locks exist.
 
     """
@@ -550,7 +550,7 @@ def _chk_path_locks(start, processor, path_locks, capability):
     `path_locks` are the map from a unit to the information of the path
                  with maximum locks.
     `capability` is the capability of lock paths under consideration.
-    The function raises a MultiLockError if any paths originating from
+    The function raises a MultilockError if any paths originating from
     the given unit have multiple locks.
 
     """

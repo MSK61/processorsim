@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.0, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -539,7 +539,7 @@ class TestLocks:
         `lock_data` is the lock test data.
 
         """
-        ex_info = raises(exception.MultiLockError, load_proc_desc, {
+        ex_info = raises(exception.MultilockError, load_proc_desc, {
             "units": [{
                 "name": proc_desc.in_unit, "width": 1, "capabilities":
                 [proc_desc.capability], lock_data.prop_name: True},
