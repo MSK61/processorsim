@@ -512,7 +512,7 @@ def _chk_instr(instr, instr_registry):
             f"${DupElemError.OLD_ELEM_KEY}", old_instr, instr)
 
 
-def _chk_multi_lock(processor, post_ord, capability):
+def _chk_multilock(processor, post_ord, capability):
     """Check if the processor has paths with multiple locks.
 
     `processor` is the processor to check for multi-lock paths.
@@ -767,7 +767,7 @@ def _do_cap_check(cap_graph, post_ord, cap, in_ports, out_ports):
     _chk_cap_flow(
         _get_anal_graph(cap_graph), ComponentInfo(cap, "Capability " + cap),
         in_ports, out_ports, lambda port: "port " + port)
-    _chk_multi_lock(cap_graph, post_ord, cap)
+    _chk_multilock(cap_graph, post_ord, cap)
 
 
 def _do_cap_checks(processor):
