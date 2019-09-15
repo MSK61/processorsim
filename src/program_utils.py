@@ -31,22 +31,22 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.37.1, python 3.7.3, Fedora release
+# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import container_utils
-from errors import UndefElemError
 import logging
 import operator
-import program_defs
 from re import split
 import string
-from str_utils import ICaseString
 from typing import NamedTuple
+import container_utils
+from errors import UndefElemError
+import program_defs
+from str_utils import ICaseString
 
 
 class CodeError(RuntimeError):
@@ -209,8 +209,9 @@ def _get_operands(src_line_info, line_num, reg_registry):
     valid_ops = []
 
     for op_entry in operands:
-        valid_ops.append(_get_reg_name(op_entry[1], op_entry[0] + 1, line_num,
-                         src_line_info.instruction, reg_registry))
+        valid_ops.append(
+            _get_reg_name(op_entry[1], op_entry[0] + 1, line_num,
+                          src_line_info.instruction, reg_registry))
 
     return valid_ops
 
@@ -236,8 +237,8 @@ def _get_reg_name(op_name, op_idx, line_num, instr, reg_registry):
         reg_registry, _OperandInfo(ICaseString(op_name), line_num))
 
     if std_reg.name.raw_str != op_name:
-        logging.warning(f"Register {op_name} on line {line_num} previously "
-                        f"referred to as {std_reg.name} on line "
-                        f"{std_reg.line}, using original reference...")
+        logging.warning("Register %s on line %d previously referred to as %s "
+                        "on line %d, using original reference...", op_name,
+                        line_num, std_reg.name, std_reg.line)
 
     return std_reg.name

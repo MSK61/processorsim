@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# pylint: disable=invalid-name
+# pylint: enable=invalid-name
 
 """
 simulates running a program through a processor architecture
@@ -36,7 +38,7 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.0, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -46,14 +48,14 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 from itertools import chain
 import logging
 import operator
-import processor
-from processor import StallState
-import program_utils
-import str_utils
 import sys
 import argparse
 import typing
 from typing import NamedTuple
+import processor
+from processor import StallState
+import program_utils
+import str_utils
 _COL_SEP = '\t'
 # command-line option variables
 # variable to receive the processor architecture file
@@ -146,6 +148,12 @@ def process_command_line(argv):
 
 
 def main(argv=None):
+    """Run the program.
+
+    `argv` is the command-line arguments, defaulting to None.
+    The function returns the program exit code.
+
+    """
     processor_file, program_file = get_in_files(argv)
     logging.basicConfig(level=logging.INFO)
     with processor_file, program_file:
@@ -204,17 +212,18 @@ def _cui_to_icu(cxuxi, instructions):
     return ixcxu
 
 
-def _fill_cp_util(cp, cp_util, ixcxu):
+def _fill_cp_util(clock_pulse, cp_util, ixcxu):
     """Fill the given clock utilization into the IxCxU map.
 
-    `cp` is the clock pulse.
+    `clock_pulse` is the clock pulse.
     `cp_util` is the clock pulse utilization information.
     `ixcxu` is the InstructionxClockxUnit utilization map to fill.
 
     """
     for unit in cp_util:
         for instr in cp_util[unit]:
-            ixcxu[instr.instr][cp] = _InstrPosition(unit, instr.stalled)
+            ixcxu[instr.instr][clock_pulse] = _InstrPosition(
+                unit, instr.stalled)
 
 
 def _get_flight_row(flight):
@@ -309,5 +318,4 @@ def _print_tbl_hdr(sim_res):
 
 
 if __name__ == '__main__':
-    status = main()
-    sys.exit(status)
+    sys.exit(main())

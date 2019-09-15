@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.36.1, python 3.7.3, Fedora release
+# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -39,10 +39,10 @@
 ############################################################
 
 from os.path import join
+import yaml
 import test_env
 import processor_utils
 import program_utils
-import yaml
 TEST_DATA_DIR = join(test_env.TEST_DIR, "data")
 
 

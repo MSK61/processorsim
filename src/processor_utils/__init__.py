@@ -38,39 +38,31 @@
 #
 ############################################################
 
-import container_utils
-from container_utils import concat_dicts, IndexedSet, SelfIndexSet
-from dataclasses import dataclass
-from errors import UndefElemError
-from . import exception
-from .exception import BadEdgeError, BadWidthError, BlockedCapError, \
-    ComponentInfo, DeadInputError, DupElemError, MultilockError
+import dataclasses
 import functools
-import itertools
 import logging
-import networkx
-from networkx import dfs_postorder_nodes, DiGraph
 from operator import itemgetter
 import os
-from str_utils import ICaseString
 import sys
 import typing
-from typing import NamedTuple, Tuple
+from typing import Tuple
+import networkx
+import container_utils
+from container_utils import IndexedSet, SelfIndexSet
+from errors import UndefElemError
+from str_utils import ICaseString
+from . import checks
+from .exception import BadEdgeError, BadWidthError, DupElemError
+from . import optimization
+from . import port_defs
 from . import units
-from .units import FuncUnit, UnitModel
+from .units import FuncUnit, UNIT_CAPS_KEY, UnitModel, UNIT_NAME_KEY, \
+    UNIT_RLOCK_KEY, UNIT_WIDTH_KEY, UNIT_WLOCK_KEY
 __all__ = ["exception", "get_abilities", "load_isa", "load_proc_desc",
            "ProcessorDesc", "units"]
-_OLD_NODE_KEY = "old_node"
-# unit attributes
-_UNIT_CAPS_KEY = "capabilities"
-_UNIT_NAME_KEY = "name"
-# unit lock attributes
-_UNIT_RLOCK_KEY = "readLock"
-_UNIT_WLOCK_KEY = "writeLock"
-_UNIT_WIDTH_KEY = "width"
 
 
-@dataclass
+@dataclasses.dataclass
 class ProcessorDesc:
 
     """Processor description"""
@@ -113,75 +105,13 @@ class ProcessorDesc:
     internal_units: typing.List[FuncUnit]
 
 
-class _CapabilityInfo(NamedTuple):
+class _CapabilityInfo(typing.NamedTuple):
 
     """Unit capability information"""
 
     name: ICaseString
 
     unit: str
-
-
-@dataclass
-class _PathLockInfo:
-
-    """Path locking information"""
-
-    num_of_locks: int
-
-    next_node: ICaseString
-
-
-class _PortGroup:
-
-    """Port group information"""
-
-    def __init__(self, processor):
-        """Extract port information from the given processor.
-
-        `self` is this port group.
-        `processor` is the processor to extract port group information
-                    from.
-
-        """
-        self._in_ports, self._out_ports = map(lambda port_getter: tuple(
-            port_getter(processor)), [_get_in_ports, _get_out_ports])
-
-    @property
-    def in_ports(self):
-        """Input ports
-
-        `self` is this port group.
-
-        """
-        return self._in_ports
-
-    @property
-    def out_ports(self):
-        """Output ports
-
-        `self` is this port group.
-
-        """
-        return self._out_ports
-
-
-class _SatInfo(NamedTuple):
-
-    """Lock saturation information"""
-
-    read_path: _PathLockInfo
-
-    write_path: _PathLockInfo
-
-
-class _PathDescriptor(NamedTuple):
-
-    """Path descriptor in multi-lock analysis"""
-
-    selector: typing.Callable[[_SatInfo], _PathLockInfo]
-
-    lock_type: str
 
 
 def get_abilities(processor):
@@ -220,32 +150,6 @@ def load_proc_desc(raw_desc):
     proc_desc = _create_graph(raw_desc["units"], raw_desc["dataPath"])
     _prep_proc_desc(proc_desc)
     return _make_processor(proc_desc)
-
-
-def _accum_locks(path_locks, path_desc, capability, unit):
-    """Accumulate successor locks into the given unit.
-
-    `path_locks` are the map from a unit to the information of the path
-                 with maximum locks.
-    `path_desc` is the path descriptor.
-    `capability` is the capability of lock paths under consideration.
-    `unit` is the unit to accumulate the successor path to.
-    The function accumulates the locks in the successor unit to the path
-    starting at the given unit. It raises a MultilockError if any paths
-    originating from the given unit have multiple locks.
-
-    """
-    cur_node = path_desc.selector(path_locks[unit])
-    cur_node.num_of_locks += path_desc.selector(
-        path_locks[cur_node.next_node]).num_of_locks
-
-    if cur_node.num_of_locks > 1:
-        raise MultilockError(
-            f"Path segment with multiple ${MultilockError.LOCK_TYPE_KEY} locks"
-            f" for capability ${MultilockError.CAP_KEY} found, "
-            f"${MultilockError.SEG_KEY}",
-            _create_path(path_locks, path_desc.selector, unit),
-            path_desc.lock_type, capability)
 
 
 def _add_capability(unit, cap, cap_list, unit_cap_reg, global_cap_reg):
@@ -337,20 +241,6 @@ def _add_new_cap(cap, cap_list, unit_cap_reg, global_cap_reg):
     unit_cap_reg.add(cap.name)
 
 
-def _add_port_link(graph, old_port, new_port, link):
-    """Add a link between old and new ports.
-
-    `graph` is the graph containing ports.
-    `old_port` is the old port.
-    `new_port` is the new port.
-    `link` is the link connecting the two ports.
-
-    """
-    graph.nodes[new_port][_UNIT_WIDTH_KEY] += graph.nodes[old_port][
-        _UNIT_WIDTH_KEY]
-    graph.add_edge(*link)
-
-
 def _add_src_path():
     """Add the source path to the python search path."""
     sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
@@ -365,134 +255,15 @@ def _add_unit(processor, unit, unit_registry, cap_registry):
     `cap_registry` is the store of previously added capabilities.
 
     """
-    unit_name = ICaseString(unit[_UNIT_NAME_KEY])
+    unit_name = ICaseString(unit[UNIT_NAME_KEY])
     _chk_unit_name(unit_name, unit_registry)
     _chk_unit_width(unit)
     unit_locks = map(lambda attr: (attr, unit.get(attr, False)),
-                     [_UNIT_RLOCK_KEY, _UNIT_WLOCK_KEY])
-    processor.add_node(unit_name, **concat_dicts(
-        {_UNIT_WIDTH_KEY: unit[_UNIT_WIDTH_KEY],
-         _UNIT_CAPS_KEY: _load_caps(unit, cap_registry)}, dict(unit_locks)))
+                     [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY])
+    processor.add_node(unit_name, **container_utils.concat_dicts(
+        {UNIT_WIDTH_KEY: unit[UNIT_WIDTH_KEY],
+         UNIT_CAPS_KEY: _load_caps(unit, cap_registry)}, dict(unit_locks)))
     unit_registry.add(unit_name)
-
-
-def _aug_out_ports(processor, out_ports):
-    """Unify the output ports in the processor.
-
-    `processor` is the processor containing the output ports.
-    `out_ports` are the output ports to weld.
-    The function connects several output ports into a single output port
-    and returns that single port.
-
-    """
-    return _aug_terminals(processor, out_ports, lambda *outputs: outputs)
-
-
-def _aug_terminals(graph, ports, edge_func):
-    """Unify terminals indicated by degrees in the graph.
-
-    `graph` is the graph containing terminals.
-    `ports` are the terminals to unify.
-    `edge_func` is the creation function for edges connecting old
-                terminals to the new one. It takes as parameters the old
-                and the new terminals in order and returns a tuple
-                representing the directed edge between the two.
-    The function tries to connect several terminals into a single new
-    terminal. The function returns the newly added port.
-
-    """
-    return ports[0] if len(ports) == 1 else _unify_ports(
-        graph, ports, edge_func)
-
-
-def _cap_in_edge(processor, capability, edge):
-    """Check if the given capability is supported by the edge.
-
-    `processor` is the processor containing the edge.
-    `capability` is the capability to check.
-    `edge` is the edge to check.
-
-    """
-    return all(
-        map(lambda unit: _cap_in_unit(processor, capability, unit), edge))
-
-
-def _cap_in_unit(processor, capability, unit):
-    """Check if the given capability is supported by the unit.
-
-    `processor` is the processor containing the unit.
-    `capability` is the capability to check.
-    `unit` is the unit to check.
-
-    """
-    return capability in processor.nodes[unit][_UNIT_CAPS_KEY]
-
-
-def _chk_cap_flow(
-        anal_graph, capability_info, in_ports, out_ports, port_name_func):
-    """Check the flow capacity for the given capability and ports.
-
-    `anal_graph` is the analysis graph.
-    `capability_info` is the capability information.
-    `in_ports` are the input ports supporting the given capability.
-    `out_ports` are the output ports of the original processor.
-    `port_name_func` is the port reporting name function.
-    The function raises a BlockedCapError if the capability through any
-    input port can't flow with full or partial capacity from this input
-    port to the output ports.
-
-    """
-    unit_anal_map = {unit_attrs[_OLD_NODE_KEY]: unit for unit,
-                     unit_attrs in anal_graph.nodes(True)}
-    unified_out = _aug_out_ports(
-        anal_graph, [unit_anal_map[port] for port in out_ports])
-    unified_out = _split_nodes(anal_graph)[unified_out]
-    _dist_edge_caps(anal_graph)
-
-    for cur_port in in_ports:
-        _chk_unit_flow(networkx.maximum_flow_value(
-            anal_graph, unit_anal_map[cur_port], unified_out), capability_info,
-                       ComponentInfo(cur_port, port_name_func(cur_port)))
-
-
-def _chk_caps(processor):
-    """Perform per-capability checks.
-
-    `processor` is the processor to check whose capabilities.
-
-    """
-    if processor.number_of_nodes() > 1:
-        _do_cap_checks(processor)
-
-
-def _chk_cycles(processor):
-    """Check the given processor for cycles.
-
-    `processor` is the processor to check.
-    The function raises a NetworkXUnfeasible if the processor isn't a
-    DAG.
-
-    """
-    if not networkx.is_directed_acyclic_graph(processor):
-        raise networkx.NetworkXUnfeasible()
-
-
-def _chk_edge(processor, edge):
-    """Check if the edge is useful.
-
-    `processor` is the processor containing the edge.
-    `edge` is the edge to check.
-    The function removes the given edge if it isn't needed. It returns
-    the common capabilities between the units connected by the edge.
-
-    """
-    common_caps = processor.nodes[edge[1]][_UNIT_CAPS_KEY].intersection(
-        processor.nodes[edge[0]][_UNIT_CAPS_KEY])
-
-    if not common_caps:
-        _rm_dummy_edge(processor, edge)
-
-    return common_caps
 
 
 def _chk_instr(instr, instr_registry):
@@ -510,97 +281,6 @@ def _chk_instr(instr, instr_registry):
         raise DupElemError(
             f"Instruction ${DupElemError.NEW_ELEM_KEY} previously added as "
             f"${DupElemError.OLD_ELEM_KEY}", old_instr, instr)
-
-
-def _chk_multilock(processor, post_ord, capability):
-    """Check if the processor has paths with multiple locks.
-
-    `processor` is the processor to check for multi-lock paths.
-    `post_ord` is the post-order of the processor functional units.
-    `capability` is the capability of lock paths under consideration.
-    The function raises a MultilockError if any paths with multiple
-    locks exist.
-
-    """
-    path_locks = {}
-
-    for unit in post_ord:
-        _chk_path_locks(unit, processor, path_locks, capability)
-
-
-def _chk_non_empty(processor, in_ports):
-    """Check if the processor still has input ports.
-
-    `processor` is the processor to check.
-    `in_ports` are the processor original input ports.
-    The function raises an EmptyProcError if no input ports still exist.
-
-    """
-    try:
-        next(filter(lambda port: port in processor, in_ports))
-    except StopIteration:  # No ports exist.
-        raise exception.EmptyProcError("No input ports found")
-
-
-def _chk_path_locks(start, processor, path_locks, capability):
-    """Check if paths from the given start unit contains multiple locks.
-
-    `start` is the starting unit of paths to check.
-    `processor` is the processor containing the start unit.
-    `path_locks` are the map from a unit to the information of the path
-                 with maximum locks.
-    `capability` is the capability of lock paths under consideration.
-    The function raises a MultilockError if any paths originating from
-    the given unit have multiple locks.
-
-    """
-    succ_lst = list(processor.successors(start))
-    path_locks[start] = _SatInfo(
-        _init_path_lock(
-            processor.nodes[start][_UNIT_RLOCK_KEY], succ_lst, _get_read_path,
-            path_locks), _init_path_lock(processor.nodes[start][
-                _UNIT_WLOCK_KEY], succ_lst, _get_write_path, path_locks))
-
-    for path_desc in [_PathDescriptor(_get_read_path, "read"),
-                      _PathDescriptor(_get_write_path, "write")]:
-        if path_desc.selector(path_locks[start]).next_node:
-            _accum_locks(path_locks, path_desc, capability, start)
-
-
-def _chk_terminals(processor, orig_port_info):
-    """Check if new terminals have appeared after optimization.
-
-    `processor` is the processor to check.
-    `orig_port_info` is the original port information(before
-                     optimization).
-    The function removes spurious output ports that might have appeared
-    after trimming actions during optimization.
-
-    """
-    new_out_ports = frozenset(_get_out_ports(processor)).difference(
-        orig_port_info.out_ports)
-
-    for out_port in new_out_ports:
-        _rm_dead_end(processor, out_port, orig_port_info.in_ports)
-
-
-def _chk_unit_flow(min_width, capability_info, port_info):
-    """Check the flow volume from an input port to outputs.
-
-    `min_width` is the minimum bus width.
-    `capability_info` is the information of the capability whose flow is
-                      checked.
-    `port_info` is the information of the port the flow is checked
-                starting from.
-    The function raises a BlockedCapError if the minimum bus width is
-    zero.
-
-    """
-    if not min_width:
-        raise BlockedCapError(
-            f"${BlockedCapError.CAPABILITY_KEY} blocked from "
-            f"${BlockedCapError.PORT_KEY}", exception.CapPortInfo(
-                capability_info, port_info))
 
 
 def _chk_unit_name(name, name_registry):
@@ -627,61 +307,10 @@ def _chk_unit_width(unit):
     The function raises a BadWidthError if the width isn't positive.
 
     """
-    if unit[_UNIT_WIDTH_KEY] <= 0:
+    if unit[UNIT_WIDTH_KEY] <= 0:
         raise BadWidthError(f"Functional unit ${BadWidthError.UNIT_KEY} has a "
                             f"bad width ${BadWidthError.WIDTH_KEY}.",
-                            *itemgetter(_UNIT_NAME_KEY, _UNIT_WIDTH_KEY)(unit))
-
-
-def _clean_struct(processor):
-    """Clean the given processor structure.
-
-    `processor` is the processor to clean whose structure.
-    The function removes capabilities in each unit that aren't supported
-    in any of its predecessor units. It also removes incompatible edges(those
-    connecting units having no capabilities in common).
-
-    """
-    hw_units = networkx.topological_sort(processor)
-
-    for unit in hw_units:
-        if processor.in_degree(unit):  # Skip in-ports.
-            _clean_unit(processor, unit)
-
-
-def _clean_unit(processor, unit):
-    """Clean the given unit properties.
-
-    `processor` is the processor containing the unit.
-    `unit` is the unit to clean whose properties.
-    The function restricts the capabilities of the given unit to only
-    those supported by its predecessors. It also removes incoming edges
-    coming from a predecessor unit having no capabilities in common with
-    the given unit.
-
-    """
-    processor.nodes[unit][_UNIT_CAPS_KEY] = frozenset(
-        processor.nodes[unit][_UNIT_CAPS_KEY])
-    pred_caps = map(lambda edge: _chk_edge(processor, edge),
-                    list(processor.in_edges(unit)))
-    processor.nodes[unit][_UNIT_CAPS_KEY] = frozenset().union(*pred_caps)
-
-
-def _coll_cap_edges(graph):
-    """Collect capping edges from the given graph.
-
-    `graph` is the graph to collect edges from.
-    The function returns capping edges. A capping edge is the sole edge
-    on either side of a node that determines the maximum flow through
-    the node.
-
-    """
-    out_degrees = graph.out_degree()
-    cap_edges = map(lambda in_deg: _get_cap_edge(
-        graph.in_edges(in_deg[0]), graph.out_edges(in_deg[0])),
-                    filter(lambda in_deg: in_deg[1] == 1 or
-                           out_degrees[in_deg[0]] == 1, graph.in_degree()))
-    return frozenset(cap_edges)
+                            *itemgetter(UNIT_NAME_KEY, UNIT_WIDTH_KEY)(unit))
 
 
 def _create_graph(hw_units, links):
@@ -693,7 +322,7 @@ def _create_graph(hw_units, links):
     flow through the processor functional units.
 
     """
-    flow_graph = DiGraph()
+    flow_graph = networkx.DiGraph()
     unit_registry = SelfIndexSet()
     edge_registry = IndexedSet(
         lambda edge: tuple(_get_edge_units(edge, unit_registry)))
@@ -724,99 +353,6 @@ def _create_isa(isa_dict, cap_registry):
         instr_registry, cap_registry, *isa_entry), isa_spec))
 
 
-def _create_path(path_locks, path_sel, start):
-    """Construct the path containing multiple locks.
-
-    `path_locks` are the map from a unit to the information of the path
-                 with maximum locks.
-    `path_sel` is the path selection function.
-    `start` is the starting unit of paths to check.
-
-    """
-    multiLockPath = []
-    cur_node = start
-
-    while cur_node:
-        cur_node = path_sel(path_locks[
-            _update_path(multiLockPath, cur_node, path_locks)]).next_node
-
-    return multiLockPath
-
-
-def _dist_edge_caps(graph):
-    """Distribute capacities over edges as needed.
-
-    `graph` is the graph containing edges.
-    The function distributes capacities over capping edges.
-
-    """
-    _set_capacities(graph, _coll_cap_edges(graph))
-
-
-def _do_cap_check(cap_graph, post_ord, cap, in_ports, out_ports):
-    """Perform checks for the given capability.
-
-    `cap_graph` is the capability-focused processor.
-    `post_ord` is the post-order of the given processor functional
-               units.
-    `cap` is the capability to check.
-    `in_ports` are the input ports supporting the given capability.
-    `out_ports` are the output ports of the original processor.
-
-    """
-    _chk_cap_flow(
-        _get_anal_graph(cap_graph), ComponentInfo(cap, "Capability " + cap),
-        in_ports, out_ports, lambda port: "port " + port)
-    _chk_multilock(cap_graph, post_ord, cap)
-
-
-def _do_cap_checks(processor):
-    """Perform per-capability checks.
-
-    `processor` is the processor to check.
-
-    """
-    cap_units = _get_cap_units(processor)
-    out_ports = list(_get_out_ports(processor))
-    post_ord = list(dfs_postorder_nodes(processor))
-
-    for cap, in_ports in cap_units:
-        _do_cap_check(
-            _make_cap_graph(processor, cap), filter(lambda unit: _cap_in_unit(
-                processor, cap, unit), post_ord), cap, in_ports, out_ports)
-
-
-def _get_anal_graph(processor):
-    """Create a processor bus width analysis graph.
-
-    `processor` is the processor to build an analysis graph from.
-
-    """
-    width_graph = DiGraph()
-    hw_units = enumerate(processor)
-    new_nodes = {}
-
-    for idx, unit in hw_units:
-        _update_graph(idx, unit, processor, width_graph, new_nodes)
-
-    width_graph.add_edges_from(
-        map(lambda edge: itemgetter(*edge)(new_nodes), processor.edges))
-    return width_graph
-
-
-def _get_cap_edge(in_edges, out_edges):
-    """Select the capping edge.
-
-    `in_edges` is an iterator over input edges.
-    `out_edges` is an iterator over output edges.
-    A capping edge is the sole edge on either side of a node that
-    determines the maximum flow through the node. Either the input edges
-    or the output edges must contain exactly one edge.
-
-    """
-    return _single_edge(iter(in_edges)) or next(iter(out_edges))
-
-
 def _get_cap_name(capability, cap_registry):
     """Return a supported capability name.
 
@@ -835,24 +371,6 @@ def _get_cap_name(capability, cap_registry):
     return std_cap
 
 
-def _get_cap_units(processor):
-    """Create a mapping between capabilities and supporting input ports.
-
-    `processor` is the processor to create a capability-port map for.
-    The function returns an iterable of tuples; each tuple represents a
-    capability and its supporting units.
-
-    """
-    cap_unit_map = {}
-    in_ports = _get_in_ports(processor)
-
-    for cur_port in in_ports:
-        for cur_cap in processor.nodes[cur_port][_UNIT_CAPS_KEY]:
-            cap_unit_map.setdefault(cur_cap, []).append(cur_port)
-
-    return cap_unit_map.items()
-
-
 def _get_edge_units(edge, unit_registry):
     """Return the units of an edge.
 
@@ -861,52 +379,6 @@ def _get_edge_units(edge, unit_registry):
 
     """
     return map(lambda unit: unit_registry.get(ICaseString(unit)), edge)
-
-
-def _get_in_ports(processor):
-    """Find the input ports.
-
-    `processor` is the processor to find whose input ports.
-    The function returns an iterator over the processor input ports.
-
-    """
-    return _get_ports(processor.in_degree())
-
-
-def _get_one_edge(edges):
-    """Select the one and only edge.
-
-    `edges` are an iterator over non-empty edges.
-    The function returns the only edge in the given edges, or None if
-    more than one exists. If no edges exist at all, it raises a
-    StopIteration exception.
-
-    """
-    only_edge = next(edges)
-    try:
-        next(edges)
-    except StopIteration:  # only one edge
-        return only_edge
-
-
-def _get_out_ports(processor):
-    """Find the output ports.
-
-    `processor` is the processor to find whose output ports.
-    The function returns an iterator over the processor output ports.
-
-    """
-    return _get_ports(processor.out_degree())
-
-
-def _get_ports(degrees):
-    """Find the ports with respect to the given degrees.
-
-    `degrees` are the degrees of all units.
-    A port is a unit with zero degree.
-
-    """
-    return map(itemgetter(0), itertools.filterfalse(itemgetter(1), degrees))
 
 
 def _get_preds(processor, unit, unit_map):
@@ -919,15 +391,6 @@ def _get_preds(processor, unit, unit_map):
 
     """
     return map(unit_map.get, processor.predecessors(unit))
-
-
-def _get_read_path(sat_info):
-    """Retrieve the read path from the given saturation information.
-
-    `sat_info` is the saturation information.
-
-    """
-    return sat_info.read_path
 
 
 def _get_std_edge(edge, unit_registry):
@@ -952,9 +415,9 @@ def _get_unit_entry(name, attrs):
 
     """
     lock_info = units.LockInfo(
-        *itemgetter(_UNIT_RLOCK_KEY, _UNIT_WLOCK_KEY)(attrs))
+        *itemgetter(UNIT_RLOCK_KEY, UNIT_WLOCK_KEY)(attrs))
     return name, UnitModel(name, *(
-        itemgetter(_UNIT_WIDTH_KEY, _UNIT_CAPS_KEY)(attrs) + (lock_info,)))
+        itemgetter(UNIT_WIDTH_KEY, UNIT_CAPS_KEY)(attrs) + (lock_info,)))
 
 
 def _get_unit_name(unit, unit_registry):
@@ -975,15 +438,6 @@ def _get_unit_name(unit, unit_registry):
     return std_name
 
 
-def _get_write_path(sat_info):
-    """Retrieve the write path from the given saturation information.
-
-    `sat_info` is the saturation information.
-
-    """
-    return sat_info.write_path
-
-
 def _init_cap_reg(capabilities):
     """Initialize a capability registry.
 
@@ -1001,21 +455,6 @@ def _init_cap_reg(capabilities):
     return cap_registry
 
 
-def _init_path_lock(unit_lock, succ_lst, path_sel, path_locks):
-    """Initialize the path lock information.
-
-    `unit_lock` is the lock status of the unit.
-    `succ_lst` is the list of successor units.
-    `path_sel` is the path selection function.
-    `path_locks` are the map from a unit to the information of the path
-                 with maximum locks.
-
-    """
-    return _PathLockInfo(
-        1 if unit_lock else 0, max(succ_lst, default=None, key=lambda succ:
-                                   path_sel(path_locks[succ]).num_of_locks))
-
-
 def _load_caps(unit, cap_registry):
     """Load the given unit capabilities.
 
@@ -1027,29 +466,11 @@ def _load_caps(unit, cap_registry):
     cap_list = []
     unit_cap_reg = SelfIndexSet()
 
-    for cur_cap in unit[_UNIT_CAPS_KEY]:
-        _add_capability(unit[_UNIT_NAME_KEY], ICaseString(cur_cap), cap_list,
+    for cur_cap in unit[UNIT_CAPS_KEY]:
+        _add_capability(unit[UNIT_NAME_KEY], ICaseString(cur_cap), cap_list,
                         unit_cap_reg, cap_registry)
 
     return cap_list
-
-
-def _make_cap_graph(processor, capability):
-    """Create a graph condensed for the given capability.
-
-    `processor` is the processor to create a graph from.
-    `capability` is the capability to consider while constructing the
-                 graph.
-    The function creates a graph with all units in the original
-    processor but only with edges connecting units having the given
-    capability in common.
-
-    """
-    cap_graph = DiGraph(
-        filter(lambda edge: _cap_in_edge(processor, capability, edge),
-               processor.edges))
-    cap_graph.add_nodes_from(processor.nodes(True))
-    return cap_graph
 
 
 def _make_processor(proc_graph):
@@ -1079,30 +500,6 @@ def _make_processor(proc_graph):
     return ProcessorDesc(in_ports, out_ports, in_out_ports, internal_units)
 
 
-def _mov_out_link(graph, link, new_node):
-    """Move an outgoing link from an old node to a new one.
-
-    `graph` is the graph containing the nodes.
-    `link` is the outgoing link to move.
-    `new_node` is the node to move the outgoing link to.
-
-    """
-    graph.add_edge(new_node, link[1])
-    graph.remove_edge(*link)
-
-
-def _mov_out_links(graph, out_links, new_node):
-    """Move outgoing links from an old node to a new one.
-
-    `graph` is the graph containing the nodes.
-    `out_links` are the outgoing links to move.
-    `new_node` is the node to move the outgoing links to.
-
-    """
-    for cur_link in out_links:
-        _mov_out_link(graph, cur_link, new_node)
-
-
 def _post_order(graph):
     """Create a post-order for the given processor.
 
@@ -1114,7 +511,7 @@ def _post_order(graph):
     unit_map = dict(
         map(lambda unit: _get_unit_entry(unit, graph.nodes[unit]), graph))
     return map(lambda name: FuncUnit(unit_map[name], _get_preds(
-        graph, name, unit_map)), dfs_postorder_nodes(graph))
+        graph, name, unit_map)), networkx.dfs_postorder_nodes(graph))
 
 
 def _prep_proc_desc(processor):
@@ -1129,184 +526,13 @@ def _prep_proc_desc(processor):
     exceeds the minimum bus width.
 
     """
-    _chk_cycles(processor)
-    port_info = _PortGroup(processor)
-    _clean_struct(processor)
-    _rm_empty_units(processor)
-    _chk_terminals(processor, port_info)
-    _chk_non_empty(processor, port_info.in_ports)
-    _chk_caps(processor)
-
-
-def _rm_dead_end(processor, dead_end, in_ports):
-    """Remove a dead end from the given processor.
-
-    `processor` is the processor to remove the dead end from.
-    `dead_end` is the dead end to remove.
-    `in_ports` are the processor original input ports.
-    A dead end is a port that looks like an output port after
-    optimization actions have cut it off real output ports.
-
-    """
-    if dead_end in in_ports:  # an in-port turned in-out port
-        raise DeadInputError("No feasible path found from input port "
-                             f"${DeadInputError.PORT_KEY} to any output ports",
-                             dead_end)
-
-    logging.warning("Dead end detected at unit %s, removing...", dead_end)
-    processor.remove_node(dead_end)
-
-
-def _rm_dummy_edge(processor, edge):
-    """Remove an edge from the given processor.
-
-    `processor` is the processor to remove the edge from.
-    `edge` is the edge to remove.
-
-    """
-    logging.warning("Units %s and %s have no capabilities in common, "
-                    "removing connecting edge...", *edge)
-    processor.remove_edge(*edge)
-
-
-def _rm_empty_unit(processor, unit):
-    """Remove a unit from the given processor.
-
-    `processor` is the processor to remove the unit from.
-    `unit` is the unit to remove.
-
-    """
-    logging.warning("No capabilities defined for unit %s, removing...", unit)
-    processor.remove_node(unit)
-
-
-def _rm_empty_units(processor):
-    """Remove empty units from the given processor.
-
-    `processor` is the processor to clean.
-    The function removes units with no capabilities from the processor.
-
-    """
-    unit_entries = list(processor.nodes(True))
-
-    for unit, attrs in unit_entries:
-        if not attrs[_UNIT_CAPS_KEY]:
-            _rm_empty_unit(processor, unit)
-
-
-def _set_capacities(graph, cap_edges):
-    """Assign capacities to capping edges.
-
-    `graph` is the graph containing edges.
-    `cap_edges` are the capping edges.
-
-    """
-    for cur_edge in cap_edges:
-        graph[cur_edge[0]][cur_edge[1]]["capacity"] = min(
-            map(lambda unit: graph.nodes[unit][_UNIT_WIDTH_KEY], cur_edge))
-
-
-def _single_edge(edges):
-    """Select the one and only edge.
-
-    `edges` are an iterator over edges.
-    The function returns the only edge in the given edges, or None if
-    the edges don't contain exactly a single edge.
-
-    """
-    try:
-        return _get_one_edge(edges)
-    except StopIteration:  # Input edges are empty.
-        pass
-
-
-def _split_node(graph, old_node, new_node):
-    """Split a node into old and new ones.
-
-    `graph` is the graph containing the node to be split.
-    `old_node` is the existing node.
-    `new_node` is the node added after splitting.
-    The function returns the new node.
-
-    """
-    graph.add_node(
-        new_node, **{_UNIT_WIDTH_KEY: graph.nodes[old_node][_UNIT_WIDTH_KEY]})
-    _mov_out_links(graph, list(graph.out_edges(old_node)), new_node)
-    graph.add_edge(old_node, new_node)
-    return new_node
-
-
-def _split_nodes(graph):
-    """Split nodes in the given graph as necessary.
-
-    `graph` is the graph containing nodes.
-    The function splits nodes having multiple links on one side and a
-    non-capping link on the other. A link on one side is capping if it's
-    the only link on this side.
-    The function returns a dictionary mapping each unit to its output
-    twin(if one was created) or itself if it wasn't split.
-
-    """
-    out_degrees = graph.out_degree()
-    out_twins = map(
-        lambda in_deg_item:
-        (in_deg_item[0],
-         _split_node(graph, in_deg_item[0], len(out_degrees) + in_deg_item[
-            0]) if in_deg_item[1] != 1 and out_degrees[in_deg_item[0]] != 1 and
-         (in_deg_item[1] or out_degrees[in_deg_item[0]]) else in_deg_item[0]),
-        list(graph.in_degree()))
-    return dict(out_twins)
-
-
-def _unify_ports(graph, ports, edge_func):
-    """Unify ports in the graph.
-
-    `graph` is the graph containing terminals.
-    `ports` are the ports to unify.
-    `edge_func` is the creation function for edges connecting old
-                terminals to the new one. It takes as parameters the old
-                and the new terminals in order and returns a tuple
-                representing the directed edge between the two.
-    The function returns the new port.
-
-    """
-    unified_port = graph.number_of_nodes()
-    graph.add_node(unified_port, **{_UNIT_WIDTH_KEY: 0})
-
-    for cur_port in ports:
-        _add_port_link(
-            graph, cur_port, unified_port, edge_func(cur_port, unified_port))
-
-    return unified_port
-
-
-def _update_graph(idx, unit, processor, width_graph, unit_idx_map):
-    """Update width graph structures.
-
-    `idx` is the unit index.
-    `unit` is the unit name.
-    `processor` is the original processor.
-    `width_graph` is the bus width analysis graph.
-    `unit_idx_map` is the mapping between unit names and indices.
-
-    """
-    width_graph.add_node(
-        idx, **concat_dicts(processor.nodes[unit], {_OLD_NODE_KEY: unit}))
-    unit_idx_map[unit] = idx
-
-
-def _update_path(multiLockPath, new_node, path_locks):
-    """Update the path containing multiple locks.
-
-    `multiLockPath` is the multi-lock path to update.
-    `new_node` is the node to append to the path.
-    `path_locks` are the map from a unit to the information of the path
-                 with maximum locks.
-    The function appends the given node and returns it.
-
-    """
-    multiLockPath.append(new_node)
-    return new_node
+    checks.chk_cycles(processor)
+    port_info = port_defs.PortGroup(processor)
+    optimization.clean_struct(processor)
+    optimization.rm_empty_units(processor)
+    optimization.chk_terminals(processor, port_info)
+    checks.chk_non_empty(processor, port_info.in_ports)
+    checks.chk_caps(processor)
 
 
 _add_src_path()

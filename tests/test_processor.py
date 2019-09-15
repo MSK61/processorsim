@@ -39,6 +39,8 @@
 #
 ############################################################
 
+from typing import NamedTuple
+from unittest import TestCase
 from mock import patch
 import networkx
 import pytest
@@ -49,8 +51,6 @@ import errors
 from processor_utils import exception, load_proc_desc, ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from str_utils import ICaseString
-from typing import NamedTuple
-from unittest import TestCase
 
 
 class CleanTest(TestCase):
@@ -98,7 +98,7 @@ class CleanTest(TestCase):
         assert proc_desc == ProcessorDesc(
             map(lambda unit_params: UnitModel(*unit_params),
                 [[ICaseString("input 1"), 1, [alu_cap], lock_info],
-                [ICaseString("input 2"), 1, [mem_cap], lock_info]]),
+                 [ICaseString("input 2"), 1, [mem_cap], lock_info]]),
             map(lambda unit_params: FuncUnit(*unit_params),
                 [[UnitModel(out1_unit, 1, [alu_cap], lock_info),
                   [name_input_map[ICaseString("input 1")]]],
@@ -132,14 +132,15 @@ class CleanTest(TestCase):
             assert read_proc_file(
                 "optimization",
                 "unitWithNoCapabilities.yaml") == ProcessorDesc(
-                [], [], [UnitModel(ICaseString("core 1"), 1, [
-                    ICaseString("ALU")], LockInfo(False, False))], [])
+                    [], [], [UnitModel(ICaseString("core 1"), 1, [
+                        ICaseString("ALU")], LockInfo(False, False))], [])
         _chk_warn(["core 2"], warn_mock.call_args)
 
 
 class CoverageTest(TestCase):
 
     """Test case for fulfilling complete code coverage"""
+    # pylint: disable=invalid-name
 
     def test_IndexedSet_repr(self):
         """Test IndexedSet representation.
@@ -154,6 +155,7 @@ class TestBlocking:
 
     """Test case for detecting blocked inputs"""
 
+    # pylint: disable=invalid-name
     @mark.parametrize(
         "in_file, isolated_input", [("isolatedInputPort.yaml", "input 2"), (
             "processorWithNoCapableOutputs.yaml", "input")])
@@ -173,12 +175,14 @@ class TestBlocking:
             exception.DeadInputError, read_proc_file, "blocking", in_file)
         chk_error([ValInStrCheck(
             ex_chk.value.port, ICaseString(isolated_input))], ex_chk.value)
+    # pylint: enable=invalid-name
 
 
 class TestCaps:
 
     """Test case for loading capabilities"""
 
+    # pylint: disable=invalid-name
     @mark.parametrize("in_file", [
         "processorWithNoCapableInputs.yaml",
         "singleUnitWithNoCapabilities.yaml", "emptyProcessor.yaml"])
@@ -193,6 +197,7 @@ class TestCaps:
         assert "input" in ICaseString(
             str(raises(exception.EmptyProcError, read_proc_file,
                        "capabilities", in_file).value))
+    # pylint: enable=invalid-name
 
     def test_same_capability_with_different_case_in_two_units_is_detected(
             self):
@@ -229,6 +234,7 @@ class TestCaps:
             _chk_one_unit("capabilities", in_file)
         _chk_warn(capabilities, warn_mock.call_args)
 
+    # pylint: disable=invalid-name
     @mark.parametrize(
         "in_file, bad_width", [("singleUnitWithZeroWidth.yaml", 0),
                                ("singleUnitWithNegativeWidth.yaml", -1)])
@@ -245,12 +251,14 @@ class TestCaps:
             exception.BadWidthError, read_proc_file, "capabilities", in_file)
         chk_error([ValInStrCheck(ex_chk.value.unit, "fullSys"),
                    ValInStrCheck(ex_chk.value.width, bad_width)], ex_chk.value)
+    # pylint: enable=invalid-name
 
 
 class TestEdges:
 
     """Test case for loading edges"""
 
+    # pylint: disable=invalid-name
     def test_edge_with_unknown_unit_raises_UndefElemError(self):
         """Test loading an edge involving an unknown unit.
 
@@ -261,7 +269,9 @@ class TestEdges:
                         "edgeWithUnknownUnit.yaml")
         chk_error([ValInStrCheck(ex_chk.value.element, ICaseString("input"))],
                   ex_chk.value)
+    # pylint: enable=invalid-name
 
+    # pylint: disable=invalid-name
     @mark.parametrize("in_file, bad_edge", [("emptyEdge.yaml", []), (
         "3UnitEdge.yaml", ["input", "middle", "output"])])
     def test_edge_with_wrong_number_of_units_raises_BadEdgeError(
@@ -276,6 +286,7 @@ class TestEdges:
         ex_chk = raises(
             exception.BadEdgeError, read_proc_file, "edges", in_file)
         chk_error([ValInStrCheck(ex_chk.value.edge, bad_edge)], ex_chk.value)
+    # pylint: enable=invalid-name
 
     def test_three_identical_edges_are_detected(self):
         """Test loading three identical edges with the same units.
@@ -298,10 +309,10 @@ class TestEdges:
     @mark.parametrize(
         "in_file, edges",
         [("twoEdgesWithSameUnitNamesAndCase.yaml", [["input", "output"]]),
-            ("twoEdgesWithSameUnitNamesAndLowerThenUpperCase.yaml",
-             [["input", "output"], ["INPUT", "OUTPUT"]]),
-            ("twoEdgesWithSameUnitNamesAndUpperThenLowerCase.yaml",
-             [["INPUT", "OUTPUT"], ["input", "output"]])])
+         ("twoEdgesWithSameUnitNamesAndLowerThenUpperCase.yaml",
+          [["input", "output"], ["INPUT", "OUTPUT"]]),
+         ("twoEdgesWithSameUnitNamesAndUpperThenLowerCase.yaml",
+          [["INPUT", "OUTPUT"], ["input", "output"]])])
     def test_two_identical_edges_are_detected(self, in_file, edges):
         """Test loading two identical edges with the same units.
 
@@ -331,6 +342,7 @@ class TestLoop:
 
     """Test case for loading processors with loops"""
 
+    # pylint: disable=invalid-name
     @mark.parametrize("in_file", [
         "selfNodeProcessor.yaml", "bidirectionalEdgeProcessor.yaml",
         "bigLoopProcessor.yaml"])
@@ -342,6 +354,7 @@ class TestLoop:
 
         """
         raises(networkx.NetworkXUnfeasible, read_proc_file, "loops", in_file)
+    # pylint: enable=invalid-name
 
 
 class TestProcessors:
@@ -356,10 +369,10 @@ class TestProcessors:
         """
         assert load_proc_desc(
             {"units": [{"name": "fullSys", "width": 1, "capabilities": ["ALU"],
-                        "readLock": True, "writeLock": True}], "dataPath": [
-                ]}) == ProcessorDesc(
-            [], [], [UnitModel(ICaseString("fullSys"), 1, [ICaseString("ALU")],
-                               LockInfo(True, True))], [])
+                        "readLock": True, "writeLock": True}],
+             "dataPath": []}) == ProcessorDesc(
+                 [], [], [UnitModel(ICaseString("fullSys"), 1, [
+                     ICaseString("ALU")], LockInfo(True, True))], [])
 
     def test_processor_with_four_connected_functional_units(self):
         """Test loading a processor with four functional units.
@@ -381,8 +394,8 @@ class TestProcessors:
             ICaseString("middle"), 1, [alu_cap], lock_info)
         assert (proc_desc.in_ports, proc_desc.out_ports,
                 proc_desc.internal_units) == (
-            (UnitModel(in_unit, 1, [alu_cap], lock_info),), out_ports,
-            [FuncUnit(internal_unit, proc_desc.in_ports)])
+                    (UnitModel(in_unit, 1, [alu_cap], lock_info),), out_ports,
+                    [FuncUnit(internal_unit, proc_desc.in_ports)])
 
     @mark.parametrize(
         "in_file", ["twoConnectedUnitsProcessor.yaml",
@@ -440,8 +453,9 @@ class TestUnits:
             ICaseString("ALU")], LockInfo(False, False)), [mid2])]
         assert ProcessorDesc(
             in_units, out_units, [], [mid2_unit, mid1_unit]) != ProcessorDesc(
-            in_units, out_units, [], [mid1_unit, mid2_unit])
+                in_units, out_units, [], [mid1_unit, mid2_unit])
 
+    # pylint: disable=invalid-name
     @mark.parametrize("in_file, dup_unit", [
         ("twoUnitsWithSameNameAndCase.yaml", "fullSys"),
         ("twoUnitsWithSameNameAndDifferentCase.yaml", "FULLsYS")])
@@ -456,15 +470,18 @@ class TestUnits:
         """
         ex_chk = raises(
             exception.DupElemError, read_proc_file, "units", in_file)
-        chk_error([ValInStrCheck(
-            ex_chk.value.new_element, ICaseString(dup_unit)), ValInStrCheck(
-            ex_chk.value.old_element, ICaseString("fullSys"))], ex_chk.value)
+        chk_error(
+            [ValInStrCheck(ex_chk.value.new_element, ICaseString(dup_unit)),
+             ValInStrCheck(ex_chk.value.old_element, ICaseString("fullSys"))],
+            ex_chk.value)
+    # pylint: enable=invalid-name
 
 
 class TestWidth:
 
     """Test case for checking data path width"""
 
+    # pylint: disable=invalid-name
     def test_unconsumed_capabilitiy_raises_BlockedCapError(self):
         """Test an input with a capability not consumed at all.
 
@@ -473,9 +490,11 @@ class TestWidth:
         """
         ex_chk = raises(exception.BlockedCapError, read_proc_file, "widths",
                         "inputPortWithUnconsumedCapability.yaml")
-        chk_error([ValInStrCheck("Capability " + ex_chk.value.capability,
-                                 "Capability MEM"), ValInStrCheck(
-            "port " + ex_chk.value.port, "port input")], ex_chk.value)
+        chk_error([ValInStrCheck(
+            "Capability " + ex_chk.value.capability, "Capability MEM"),
+                   ValInStrCheck("port " + ex_chk.value.port, "port input")],
+                  ex_chk.value)
+    # pylint: enable=invalid-name
 
 
 class _IoProcessor(NamedTuple):
@@ -511,26 +530,28 @@ class TestLocks:
         paths don't have multiple locks.
 
         """
-        load_proc_desc(
-            {"units": [{"name": "ALU input", "width": 1, "capabilities": [
-                "ALU"], "readLock": True}, {
-                "name": "MEM input", "width": 1, "capabilities": ["MEM"]},
-                {"name": "center", "width": 1, "capabilities": ["ALU", "MEM"]},
-                {"name": "ALU output", "width": 1, "capabilities": ["ALU"]},
-                {"name": "MEM output", "width": 1, "capabilities": ["MEM"],
-                 "readLock": True}],
-             "dataPath": [["ALU input", "center"], ["MEM input", "center"],
-                          ["center", "ALU output"], ["center", "MEM output"]]})
+        load_proc_desc({"units": [
+            {"name": "ALU input", "width": 1, "capabilities": ["ALU"],
+             "readLock": True},
+            {"name": "MEM input", "width": 1, "capabilities": ["MEM"]},
+            {"name": "center", "width": 1, "capabilities": ["ALU", "MEM"]},
+            {"name": "ALU output", "width": 1, "capabilities": ["ALU"]},
+            {"name": "MEM output", "width": 1, "capabilities": ["MEM"],
+             "readLock": True}], "dataPath": [
+                 ["ALU input", "center"], ["MEM input", "center"],
+                 ["center", "ALU output"], ["center", "MEM output"]]})
 
-    @mark.parametrize(
-        "proc_desc, lock_data", [(_IoProcessor("input", "output", "ALU"),
-                                  _LockTestData("readLock", "read")), (
-            _IoProcessor("in_unit", "out_unit", "ALU"),
-            _LockTestData("readLock", "read")),
-            (_IoProcessor("input", "output", "ALU"),
-             _LockTestData("writeLock", "write")), (_IoProcessor(
-                "input", "output", "MEM"), _LockTestData("readLock", "read"))])
-    def test_path_with_multiple_locks_raises_MultiLockError(
+    # pylint: disable=invalid-name
+    @mark.parametrize("proc_desc, lock_data", [
+        (_IoProcessor("input", "output", "ALU"),
+         _LockTestData("readLock", "read")),
+        (_IoProcessor("in_unit", "out_unit", "ALU"),
+         _LockTestData("readLock", "read")),
+        (_IoProcessor("input", "output", "ALU"),
+         _LockTestData("writeLock", "write")),
+        (_IoProcessor("input", "output", "MEM"),
+         _LockTestData("readLock", "read"))])
+    def test_path_with_multiple_locks_raises_MultilockError(
             self, proc_desc, lock_data):
         """Test loading a processor with multiple locks in paths.
 
@@ -540,9 +561,9 @@ class TestLocks:
 
         """
         ex_info = raises(exception.MultilockError, load_proc_desc, {
-            "units": [{
-                "name": proc_desc.in_unit, "width": 1, "capabilities":
-                [proc_desc.capability], lock_data.prop_name: True},
+            "units": [
+                {"name": proc_desc.in_unit, "width": 1, "capabilities":
+                 [proc_desc.capability], lock_data.prop_name: True},
                 {"name": proc_desc.out_unit, "width": 1, "capabilities":
                  [proc_desc.capability], lock_data.prop_name: True}],
             "dataPath": [[proc_desc.in_unit, proc_desc.out_unit]]})
@@ -556,6 +577,7 @@ class TestLocks:
         assert cap_idx >= 0
         assert ex_str.find(", ".join([proc_desc.in_unit, proc_desc.out_unit]),
                            cap_idx + 1) >= 0
+    # pylint: enable=invalid-name
 
 
 def main():

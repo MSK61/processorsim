@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.36.1, python 3.7.3, Fedora release
+# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -51,6 +51,7 @@ class TestIsa:
 
     """Test case for loading instruction sets"""
 
+    # pylint: disable=invalid-name
     def test_isa_with_unsupported_capabilitiy_raises_UndefElemError(self):
         """Test loading an instruction set with an unknown capability.
 
@@ -61,6 +62,7 @@ class TestIsa:
                         "singleInstructionISA.yaml", [ICaseString("MEM")])
         chk_error([ValInStrCheck(ex_chk.value.element, ICaseString("ALU"))],
                   ex_chk.value)
+    # pylint: enable=invalid-name
 
     @pytest.mark.parametrize("in_file, supported_caps, exp_isa", [
         ("emptyISA.yaml", ["ALU"], {}),
@@ -80,6 +82,7 @@ class TestIsa:
         assert read_isa_file(
             in_file, map(ICaseString, supported_caps)) == exp_isa
 
+    # pylint: disable=invalid-name
     def test_two_instructions_with_same_name_raise_DupElemError(self):
         """Test loading two instructions with the same name.
 
@@ -92,6 +95,7 @@ class TestIsa:
         chk_error([ValInStrCheck(ex_chk.value.new_element, ICaseString("add")),
                    ValInStrCheck(ex_chk.value.old_element,
                                  ICaseString("ADD"))], ex_chk.value)
+    # pylint: enable=invalid-name
 
 
 def main():

@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Komodo IDE, version 11.1.1 build 91089, python 3.7.3,
-#               Fedora release 30 (Thirty)
+# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
+#               30 (Thirty)
 #
 # notes:        This is a private program.
 #
@@ -40,10 +40,17 @@
 
 from dataclasses import dataclass
 import operator
-from str_utils import ICaseString
 import typing
 from typing import Collection
+from str_utils import ICaseString
 __all__ = ["LockInfo", "FuncUnit", "UnitModel"]
+# unit attributes
+UNIT_CAPS_KEY = "capabilities"
+UNIT_NAME_KEY = "name"
+# unit lock attributes
+UNIT_RLOCK_KEY = "readLock"
+UNIT_WLOCK_KEY = "writeLock"
+UNIT_WIDTH_KEY = "width"
 
 
 class LockInfo(typing.NamedTuple):
@@ -99,7 +106,7 @@ class FuncUnit:
                 of this unit.
 
         """
-        assert type(model) == UnitModel
+        assert isinstance(model, UnitModel)
         self.model = model
         self.predecessors = sorted_models(preds)
 

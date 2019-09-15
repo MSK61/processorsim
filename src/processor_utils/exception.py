@@ -40,8 +40,8 @@
 ############################################################
 
 from string import Template
-import str_utils
 from typing import NamedTuple
+import str_utils
 
 
 class BadEdgeError(RuntimeError):

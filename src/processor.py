@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.0, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -40,21 +40,21 @@
 ############################################################
 
 import collections
-import container_utils
 import copy
 import dataclasses
 import enum
 from enum import auto
 import heapq
 import itertools
-import processor_utils
-import reg_access
-from reg_access import AccessType
 import string
-from str_utils import ICaseString
 import typing
 from typing import NamedTuple
 import yaml
+import container_utils
+import processor_utils
+import reg_access
+from reg_access import AccessType
+from str_utils import ICaseString
 
 
 class HwDesc(NamedTuple):
@@ -117,7 +117,7 @@ class InstrState:
         `stalled` is the instruction stall status.
 
         """
-        assert type(stalled) == StallState
+        assert isinstance(stalled, StallState)
         self.instr = instr
         self.stalled = stalled
 
@@ -456,15 +456,14 @@ def _get_candidates(unit, program, util_info):
 
     """
     candidates = map(
-        lambda src_unit:
-            map(lambda instr_info: _HostedInstr(src_unit.name, instr_info[0]),
-                _get_accepted(util_info[src_unit.name], program,
-                              unit.model.capabilities)),
-            filter(lambda pred: pred.name in util_info, unit.predecessors))
+        lambda src_unit: map(lambda instr_info: _HostedInstr(
+            src_unit.name, instr_info[0]), _get_accepted(util_info[
+                src_unit.name], program, unit.model.capabilities)), filter(
+                    lambda pred: pred.name in util_info, unit.predecessors))
     return heapq.nsmallest(
         _space_avail(unit.model, util_info), itertools.chain(*candidates),
         key=lambda instr_info:
-            util_info[instr_info.host][instr_info.index_in_host].instr)
+        util_info[instr_info.host][instr_info.index_in_host].instr)
 
 
 def _get_unit_util(unit, util_info):

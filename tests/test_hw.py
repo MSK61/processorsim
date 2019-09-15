@@ -32,23 +32,23 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.0, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import os.path
+import typing
 import mock
 from mock import patch
-import os.path
 import pytest
 import test_utils
 import processor
 import processor_utils
 from processor_utils import units
 from str_utils import ICaseString
-import typing
 
 
 class _MockCheck(typing.NamedTuple):
@@ -90,21 +90,26 @@ class TestHwDescLoad:
         full_sys_unit = ICaseString("fullSys")
         icase_cap = ICaseString(capability)
         lock_info = units.LockInfo(False, False)
-        with open(os.path.join(test_utils.TEST_DATA_DIR, "fullHwDesc",
-                               hw_file)) as hw_file, patch(
-            "processor_utils.load_proc_desc",
-            return_value=processor_utils.ProcessorDesc(
-                [], [], [units.UnitModel(full_sys_unit, 1, [icase_cap],
-                                         lock_info)], [])) as proc_mock, patch(
-            "processor_utils.get_abilities",
-            return_value=frozenset([icase_cap])) as ability_mock, patch(
-            "processor_utils.load_isa",
-                return_value={instr: icase_cap}) as isa_mock:
-            assert processor.read_processor(hw_file) == processor.HwDesc(
+        with open(os.path.join(
+                test_utils.TEST_DATA_DIR, "fullHwDesc",
+                hw_file)) as hw_src, patch(
+                    "processor_utils.load_proc_desc",
+                    return_value=processor_utils.ProcessorDesc(
+                        [], [], [units.UnitModel(
+                            full_sys_unit, 1, [icase_cap], lock_info)],
+                        [])) as proc_mock, patch(
+                            "processor_utils.get_abilities",
+                            return_value=frozenset(
+                                [icase_cap])) as ability_mock, patch(
+                                    "processor_utils.load_isa",
+                                    return_value={
+                                        instr: icase_cap}) as isa_mock:
+            assert processor.read_processor(hw_src) == processor.HwDesc(
                 proc_mock.return_value, isa_mock.return_value)
         mock_checks = map(lambda chk_params: _MockCheck(*chk_params), [
-            [proc_mock, [{"units": [{"name": "fullSys", "width": 1,
-                         "capabilities": [capability]}], "dataPath": []}]],
+            [proc_mock,
+             [{"units": [{"name": "fullSys", "width": 1,
+                          "capabilities": [capability]}], "dataPath": []}]],
             [ability_mock, [proc_mock.return_value]],
             [isa_mock, [{instr: capability}, ability_mock.return_value]]])
 

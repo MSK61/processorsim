@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.0, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -44,6 +44,7 @@ from mock import patch
 import pytest
 from pytest import mark, raises
 import test_utils
+from test_utils import read_prog_file
 import container_utils
 import errors
 import program_defs
@@ -51,7 +52,6 @@ from program_defs import ProgInstruction
 import program_utils
 from program_utils import CodeError, read_program
 from str_utils import ICaseString
-from test_utils import read_prog_file
 
 
 class TestProgLoad:
@@ -108,9 +108,9 @@ class TestProgLoad:
             assert read_program(
                 itertools.chain(itertools.repeat("", preamble), [
                     "ADD R1, R2, R3", "ADD R4, r2, R5"])) == [
-                        ProgInstruction(*instr_params) for instr_params in [[
-                            "ADD", preamble + 1,
-                            map(ICaseString, ["R2", "R3"]), ICaseString("R1")],
+                        ProgInstruction(*instr_params) for instr_params in [
+                            ["ADD", preamble + 1, map(
+                                ICaseString, ["R2", "R3"]), ICaseString("R1")],
                             ["ADD", preamble + 2, map(ICaseString, [
                                 "r2", "R5"]), ICaseString("R4")]]]
         assert warn_mock.call_args
@@ -119,10 +119,11 @@ class TestProgLoad:
         for reg in ["r2", str(preamble + 2), "R2", str(preamble + 1)]:
             assert reg in warn_msg
 
+    # pylint: disable=invalid-name
     @mark.parametrize(
         "prog_file, instr, line_num",
         [("subtractProgram.asm", "SUB", 1), ("multiplyProgram.asm", "MUL", 2),
-            ("lowerCaseSubtractProgram.asm", "sub", 1)])
+         ("lowerCaseSubtractProgram.asm", "sub", 1)])
     def test_unsupported_instruction_raises_UndefElemError(
             self, prog_file, instr, line_num):
         """Test loading a program with an unknown instruction.
@@ -139,6 +140,7 @@ class TestProgLoad:
         assert ex_chk.value.element == instr
         assert container_utils.contains(
             str(ex_chk.value), [instr, str(line_num)])
+    # pylint: enable=invalid-name
 
 
 class TestSyntax:
@@ -155,6 +157,7 @@ class TestSyntax:
         """
         self._test_program(prog_file, [])
 
+    # pylint: disable=invalid-name
     @mark.parametrize("prog_file, line_num, instr, operand", [
         ("firstInstructionWithSecondOpernadEmpty.asm", 1, "ADD", 2),
         ("secondInstructionWithFirstOpernadEmpty.asm", 2, "SUB", 1)])
@@ -173,7 +176,9 @@ class TestSyntax:
         ex_chk = raises(CodeError, read_prog_file, prog_file)
         self._chk_syn_err(ex_chk.value, line_num, instr)
         assert str(operand) in str(ex_chk.value)
+    # pylint: enable=invalid-name
 
+    # pylint: disable=invalid-name
     @mark.parametrize("prog_file, line_num, instr",
                       [("firstInstructionWithNoOperands.asm", 1, "ADD"),
                        ("secondInstructionWithNoOperands.asm", 2, "SUB")])
@@ -190,6 +195,7 @@ class TestSyntax:
         """
         self._chk_syn_err(raises(CodeError, read_prog_file, prog_file).value,
                           line_num, instr)
+    # pylint: enable=invalid-name
 
     @mark.parametrize("prog_file", [
         "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",

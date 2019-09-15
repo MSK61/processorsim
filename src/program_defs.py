@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.36.1, python 3.7.3, Fedora release
+# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -39,8 +39,8 @@
 ############################################################
 
 from dataclasses import dataclass
-from str_utils import ICaseString
 import typing
+from str_utils import ICaseString
 
 
 @dataclass(repr=False)
@@ -78,7 +78,7 @@ class HwInstruction(Instruction):
         `dst` is the register written by the instruction.
 
         """
-        assert type(categ) == ICaseString
+        assert isinstance(categ, ICaseString)
         Instruction.__init__(self, frozenset(sources), dst)
         self.categ = categ
 

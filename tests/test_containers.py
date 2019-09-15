@@ -32,21 +32,22 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.36.1, python 3.7.3, Fedora release
+# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import unittest
 import test_env
 from container_utils import BagValDict
-import unittest
 
 
 class CoverageTest(unittest.TestCase):
 
     """Test case for fulfilling complete code coverage"""
+    # pylint: disable=invalid-name
 
     def test_BagValDict_ne_operator(self):
         """Test BagValDict != operator.
