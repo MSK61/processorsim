@@ -43,6 +43,7 @@ import operator
 from re import split
 import string
 from typing import NamedTuple
+
 import container_utils
 from errors import UndefElemError
 import program_defs

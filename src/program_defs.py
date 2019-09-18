@@ -40,6 +40,7 @@
 
 from dataclasses import dataclass
 import typing
+
 from str_utils import ICaseString
 
 

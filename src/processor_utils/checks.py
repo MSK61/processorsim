@@ -43,8 +43,10 @@ import dataclasses
 import operator
 import typing
 from typing import NamedTuple
+
 import networkx
 from networkx import DiGraph
+
 import container_utils
 import str_utils
 from . import exception

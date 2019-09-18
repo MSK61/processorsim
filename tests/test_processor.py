@@ -41,10 +41,12 @@
 
 from typing import NamedTuple
 from unittest import TestCase
+
 from mock import patch
 import networkx
 import pytest
 from pytest import mark, raises
+
 from test_utils import chk_error, read_proc_file, ValInStrCheck
 import container_utils
 import errors

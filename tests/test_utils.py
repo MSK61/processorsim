@@ -39,7 +39,9 @@
 ############################################################
 
 from os.path import join
+
 import yaml
+
 import test_env
 import processor_utils
 import program_utils

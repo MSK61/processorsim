@@ -40,8 +40,10 @@
 ############################################################
 
 from unittest import TestCase
+
 import pytest
 from pytest import mark
+
 import test_utils
 from test_utils import read_proc_file
 from container_utils import BagValDict

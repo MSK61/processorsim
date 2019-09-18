@@ -42,6 +42,7 @@ from dataclasses import dataclass
 import operator
 import typing
 from typing import Collection
+
 from str_utils import ICaseString
 __all__ = ["LockInfo", "FuncUnit", "UnitModel"]
 # unit attributes

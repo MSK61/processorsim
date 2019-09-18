@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.0, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -40,7 +40,9 @@
 ############################################################
 
 from os.path import join
+
 import pytest
+
 from test_utils import TEST_DATA_DIR
 import processorSim
 

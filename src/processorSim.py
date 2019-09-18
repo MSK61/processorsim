@@ -52,6 +52,7 @@ import sys
 import argparse
 import typing
 from typing import NamedTuple
+
 import processor
 from processor import StallState
 import program_utils

@@ -46,7 +46,9 @@ import os
 import sys
 import typing
 from typing import Tuple
+
 import networkx
+
 import container_utils
 from container_utils import IndexedSet, SelfIndexSet
 from errors import UndefElemError

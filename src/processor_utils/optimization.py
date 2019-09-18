@@ -39,7 +39,9 @@
 ############################################################
 
 import logging
+
 import networkx
+
 from .exception import DeadInputError
 from . import port_defs
 from .units import UNIT_CAPS_KEY

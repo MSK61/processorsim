@@ -49,7 +49,9 @@ import itertools
 import string
 import typing
 from typing import NamedTuple
+
 import yaml
+
 import container_utils
 import processor_utils
 import reg_access

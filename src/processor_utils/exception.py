@@ -41,6 +41,7 @@
 
 from string import Template
 from typing import NamedTuple
+
 import str_utils
 
 

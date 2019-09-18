@@ -40,9 +40,11 @@
 ############################################################
 
 import itertools
+
 from mock import patch
 import pytest
 from pytest import mark, raises
+
 import test_utils
 from test_utils import read_prog_file
 import container_utils
