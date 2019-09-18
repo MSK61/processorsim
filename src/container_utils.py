@@ -170,9 +170,9 @@ class BagValDict:
         return sep.join(item_strings)
 
 
-class IndexedSet:
+class IndexedSetBase:
 
-    """Indexed set"""
+    """Indexed set base class"""
 
     def __init__(self, index_func):
         """Create an indexed set.
@@ -215,7 +215,12 @@ class IndexedSet:
         self._std_form_map[self._index_func(elem)] = elem
 
 
-class SelfIndexSet(IndexedSet):
+class IndexedSet(IndexedSetBase):
+
+    """Indexed set"""
+
+
+class SelfIndexSet(IndexedSetBase):
 
     """Self-indexed string set"""
 
@@ -225,7 +230,7 @@ class SelfIndexSet(IndexedSet):
         `self` is this set.
 
         """
-        IndexedSet.__init__(self, lambda elem: elem)
+        IndexedSetBase.__init__(self, lambda elem: elem)
 
 
 def concat_dicts(dict1, dict2):
