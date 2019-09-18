@@ -17,7 +17,7 @@
  * along with processorSim.  If not, see <http://www.gnu.org/licenses/>.
  *
  ************************************************************/
- {
+{
     "python.testing.unittestEnabled": false,
     "python.testing.nosetestsEnabled": false,
     "python.testing.pytestEnabled": true,
