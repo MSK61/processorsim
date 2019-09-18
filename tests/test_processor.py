@@ -42,7 +42,7 @@
 from typing import NamedTuple
 from unittest import TestCase
 
-from mock import patch
+from unittest.mock import patch
 import networkx
 import pytest
 from pytest import mark, raises

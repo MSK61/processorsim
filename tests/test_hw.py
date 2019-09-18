@@ -42,8 +42,8 @@
 import os.path
 import typing
 
-import mock
-from mock import patch
+import unittest.mock
+from unittest.mock import patch
 import pytest
 
 import test_utils
@@ -65,7 +65,7 @@ class _MockCheck(typing.NamedTuple):
         """
         self.mock_obj.assert_called_with(*self.params)
 
-    mock_obj: mock.MagicMock
+    mock_obj: unittest.mock.MagicMock
 
     params: typing.Iterable
 

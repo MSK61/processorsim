@@ -41,7 +41,7 @@
 
 import itertools
 
-from mock import patch
+from unittest.mock import patch
 import pytest
 from pytest import mark, raises
 
