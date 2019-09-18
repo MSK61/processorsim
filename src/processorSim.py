@@ -73,8 +73,8 @@ class _InstrPosition(NamedTuple):
         `self` is this instruction position.
 
         """
-        stall_map = {StallState.NO_STALL: 'U', StallState.STRUCTURAL: 'S'}
-        return f"{stall_map[self.stalled]}:{self.unit}"
+        return "{}:{}".format({StallState.NO_STALL: 'U', StallState.STRUCTURAL:
+                               'S'}[self.stalled], self.unit)
 
     unit: str_utils.ICaseString
 
