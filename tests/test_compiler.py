@@ -40,8 +40,8 @@
 ############################################################
 
 import itertools
-
 from unittest.mock import patch
+
 import pytest
 from pytest import mark, raises
 

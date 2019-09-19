@@ -41,9 +41,9 @@
 
 import os.path
 import typing
-
 import unittest.mock
 from unittest.mock import patch
+
 import pytest
 
 import test_utils
