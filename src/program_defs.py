@@ -45,7 +45,7 @@ from str_utils import ICaseString
 
 
 @dataclass(repr=False)
-class Instruction:
+class _Instruction:
 
     """Instruction"""
 
@@ -66,7 +66,7 @@ class Instruction:
 
 
 @dataclass
-class HwInstruction(Instruction):
+class HwInstruction(_Instruction):
 
     """Hardware instruction"""
 
@@ -80,14 +80,14 @@ class HwInstruction(Instruction):
 
         """
         assert isinstance(categ, ICaseString)
-        Instruction.__init__(self, frozenset(sources), dst)
+        _Instruction.__init__(self, frozenset(sources), dst)
         self.categ = categ
 
     categ: ICaseString
 
 
 @dataclass
-class ProgInstruction(Instruction):
+class ProgInstruction(_Instruction):
 
     """Program instruction"""
 
@@ -101,7 +101,7 @@ class ProgInstruction(Instruction):
         `dst` is the register written by the instruction.
 
         """
-        Instruction.__init__(self, sources, dst)
+        _Instruction.__init__(self, sources, dst)
         self.name = name
         self.line = line
 
