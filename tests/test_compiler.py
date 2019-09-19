@@ -232,10 +232,8 @@ class TestSyntax:
 
         """
         test_utils.chk_error(
-            map(
-                lambda err_params: test_utils.ValInStrCheck(*err_params),
-                [[syn_err.instruction, instr], [syn_err.line, line_num]]),
-            syn_err)
+            map(lambda err_params: test_utils.ValInStrCheck(*err_params),
+                [[syn_err.instr, instr], [syn_err.line, line_num]]), syn_err)
 
     @staticmethod
     def _test_program(prog_file, loaded_prog):

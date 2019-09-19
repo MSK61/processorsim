@@ -67,16 +67,16 @@ class CodeError(RuntimeError):
         RuntimeError.__init__(self, string.Template(msg_tmpl).substitute(
             {self.INSTR_KEY: instr, self.LINE_NUM_KEY: line}))
         self._line = line
-        self._instruction = instr
+        self._instr = instr
 
     @property
-    def instruction(self):
+    def instr(self):
         """Instruction where the error is encountered
 
         `self` is this syntax error.
 
         """
-        return self._instruction
+        return self._instr
 
     @property
     def line(self):
