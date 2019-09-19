@@ -44,6 +44,7 @@ import typing
 import unittest.mock
 from unittest.mock import patch
 
+import attr
 import pytest
 
 import test_utils
@@ -53,7 +54,8 @@ from processor_utils import units
 from str_utils import ICaseString
 
 
-class _MockCheck(typing.NamedTuple):
+@attr.s(auto_attribs=True, frozen=True)
+class _MockCheck:
 
     """Test case for checking mock calls"""
 

@@ -40,8 +40,9 @@
 
 from dataclasses import dataclass
 import operator
-import typing
 from typing import Collection
+
+import attr
 
 from str_utils import ICaseString
 __all__ = ["LockInfo", "FuncUnit", "UnitModel"]
@@ -54,7 +55,8 @@ UNIT_WLOCK_KEY = "writeLock"
 UNIT_WIDTH_KEY = "width"
 
 
-class LockInfo(typing.NamedTuple):
+@attr.s(auto_attribs=True, frozen=True)
+class LockInfo:
 
     """Parameter locking information in units"""
 

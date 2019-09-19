@@ -17,6 +17,7 @@
 # along with processorSim.  If not, see <http://www.gnu.org/licenses/>.
 #
 ############################################################
+attrs
 networkx
 pytest-codestyle
 pytest-cov

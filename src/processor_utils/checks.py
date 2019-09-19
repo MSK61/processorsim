@@ -42,8 +42,8 @@
 import dataclasses
 import operator
 import typing
-from typing import NamedTuple
 
+import attr
 import networkx
 from networkx import DiGraph
 
@@ -67,7 +67,8 @@ class _PathLockInfo:
     next_node: str_utils.ICaseString
 
 
-class _SatInfo(NamedTuple):
+@attr.s(auto_attribs=True, frozen=True)
+class _SatInfo:
 
     """Lock saturation information"""
 
@@ -76,7 +77,8 @@ class _SatInfo(NamedTuple):
     write_path: _PathLockInfo
 
 
-class _PathDescriptor(NamedTuple):
+@attr.s(auto_attribs=True, frozen=True)
+class _PathDescriptor:
 
     """Path descriptor in multi-lock analysis"""
 

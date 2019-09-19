@@ -39,10 +39,10 @@
 #
 ############################################################
 
-from typing import NamedTuple
 from unittest import TestCase
 from unittest.mock import patch
 
+import attr
 import networkx
 import pytest
 from pytest import mark, raises
@@ -499,7 +499,8 @@ class TestWidth:
     # pylint: enable=invalid-name
 
 
-class _IoProcessor(NamedTuple):
+@attr.s(auto_attribs=True, frozen=True)
+class _IoProcessor:
 
     """Single input, single output processor"""
 
@@ -510,7 +511,8 @@ class _IoProcessor(NamedTuple):
     capability: str
 
 
-class _LockTestData(NamedTuple):
+@attr.s(auto_attribs=True, frozen=True)
+class _LockTestData:
 
     """Lock test data"""
 

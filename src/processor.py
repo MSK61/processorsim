@@ -48,8 +48,8 @@ import heapq
 import itertools
 import string
 import typing
-from typing import NamedTuple
 
+import attr
 import yaml
 
 import container_utils
@@ -59,7 +59,8 @@ from reg_access import AccessType
 from str_utils import ICaseString
 
 
-class HwDesc(NamedTuple):
+@attr.s(auto_attribs=True, frozen=True)
+class HwDesc:
 
     """Hardware description"""
 
@@ -128,7 +129,8 @@ class InstrState:
     stalled: StallState
 
 
-class _HostedInstr(NamedTuple):
+@attr.s(auto_attribs=True, frozen=True)
+class _HostedInstr:
 
     """Instruction hosted inside a functional unit"""
 

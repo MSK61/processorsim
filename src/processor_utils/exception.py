@@ -40,7 +40,8 @@
 ############################################################
 
 from string import Template
-from typing import NamedTuple
+
+import attr
 
 import str_utils
 
@@ -171,7 +172,8 @@ class BlockedCapError(RuntimeError):
     PORT_KEY = "port"
 
 
-class ComponentInfo(NamedTuple):
+@attr.s(auto_attribs=True, frozen=True)
+class ComponentInfo:
 
     """Component information"""
 
@@ -180,7 +182,8 @@ class ComponentInfo(NamedTuple):
     reporting_name: str
 
 
-class CapPortInfo(NamedTuple):
+@attr.s(auto_attribs=True, frozen=True)
+class CapPortInfo:
 
     """Capability-port combination information"""
 

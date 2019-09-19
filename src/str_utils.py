@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Komodo IDE, version 11.1.1 build 91089, python 3.7.3,
-#               Fedora release 30 (Thirty)
+# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
+#               30 (Thirty)
 #
 # notes:        This is a private program.
 #
@@ -42,9 +42,12 @@ import functools
 import operator
 import typing
 
+import attr
+
 
 @functools.total_ordering
-class ICaseString(typing.NamedTuple):
+@attr.s(auto_attribs=True, cmp=False, frozen=True)
+class ICaseString:
 
     """Case-insensitive string"""
 
@@ -111,7 +114,8 @@ class ICaseString(typing.NamedTuple):
 
     raw_str: str
 
-    _canonical = staticmethod(str.lower)
+    _canonical: typing.ClassVar[typing.Callable[[str], str]] = staticmethod(
+        str.lower)
 
 
 def format_obj(cls_name, field_strings):

@@ -51,7 +51,8 @@ import operator
 import sys
 import argparse
 import typing
-from typing import NamedTuple
+
+import attr
 
 import processor
 from processor import StallState
@@ -64,7 +65,8 @@ _PROC_OPT_VAR = "processor_file"
 _PROG_OPT_VAR = "prog_file"  # variable to receive the program file
 
 
-class _InstrPosition(NamedTuple):
+@attr.s(auto_attribs=True, frozen=True)
+class _InstrPosition:
 
     """Instruction position"""
 
@@ -82,7 +84,8 @@ class _InstrPosition(NamedTuple):
     stalled: StallState
 
 
-class _InstrFlight(NamedTuple):
+@attr.s(auto_attribs=True, frozen=True)
+class _InstrFlight:
 
     """Instruction flight"""
 

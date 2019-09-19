@@ -42,7 +42,8 @@ import logging
 import operator
 from re import split
 import string
-from typing import NamedTuple
+
+import attr
 
 import container_utils
 from errors import UndefElemError
@@ -93,7 +94,8 @@ class CodeError(RuntimeError):
     LINE_NUM_KEY = "line"
 
 
-class _LineInfo(NamedTuple):
+@attr.s(auto_attribs=True, frozen=True)
+class _LineInfo:
 
     """Source line information"""
 
@@ -102,7 +104,8 @@ class _LineInfo(NamedTuple):
     operands: str
 
 
-class _OperandInfo(NamedTuple):
+@attr.s(auto_attribs=True, frozen=True)
+class _OperandInfo:
 
     """Instruction operand information"""
 

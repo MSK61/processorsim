@@ -47,6 +47,7 @@ import sys
 import typing
 from typing import Tuple
 
+import attr
 import networkx
 
 import container_utils
@@ -107,7 +108,8 @@ class ProcessorDesc:
     internal_units: typing.List[FuncUnit]
 
 
-class _CapabilityInfo(typing.NamedTuple):
+@attr.s(auto_attribs=True, frozen=True)
+class _CapabilityInfo:
 
     """Unit capability information"""
 
