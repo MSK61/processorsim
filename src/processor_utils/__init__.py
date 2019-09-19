@@ -44,7 +44,6 @@ import logging
 from operator import itemgetter
 import os
 import sys
-import typing
 from typing import Tuple
 
 import attr
@@ -88,7 +87,7 @@ class ProcessorDesc:
         self.in_ports, self.in_out_ports = map(
             units.sorted_models, [in_ports, in_out_ports])
         self.out_ports = self._sorted_units(out_ports)
-        self.internal_units = internal_units
+        self.internal_units = tuple(internal_units)
 
     @staticmethod
     def _sorted_units(hw_units):
@@ -105,7 +104,7 @@ class ProcessorDesc:
 
     in_out_ports: Tuple[UnitModel]
 
-    internal_units: typing.List[FuncUnit]
+    internal_units: Tuple[FuncUnit]
 
 
 @attr.s(auto_attribs=True, frozen=True)
