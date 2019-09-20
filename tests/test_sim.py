@@ -61,13 +61,13 @@ class TestBasic:
     """Test case for basic simulation scenarios"""
 
     @mark.parametrize("prog, cpu, util_tbl", [
-        ([HwInstruction(ICaseString("alu"), ["R11", "R15"], "R14")],
+        ([HwInstruction(["R11", "R15"], "R14", ICaseString("alu"))],
          read_proc_file("processors", "singleALUProcessor.yaml"),
          [{ICaseString("fullSys"): [InstrState(0)]}]),
-        ([HwInstruction(*instr_params) for instr_params in [[ICaseString(
-            "MEM"), [], "R12"], [ICaseString("ALU"), ["R11", "R15"], "R14"]]],
-         read_proc_file(
-             "processors", "multiplexedInputSplitOutputProcessor.yaml"),
+        ([HwInstruction(*instr_params) for instr_params in [
+            [[], "R12", ICaseString("MEM")],
+            [["R11", "R15"], "R14", ICaseString("ALU")]]], read_proc_file(
+                "processors", "multiplexedInputSplitOutputProcessor.yaml"),
          [{ICaseString("input"): map(InstrState, [1, 0])},
           {ICaseString("ALU output"): [InstrState(1)],
            ICaseString("MEM output"): [InstrState(0)]}])])
@@ -108,10 +108,10 @@ class PipelineTest(TestCase):
                              LockInfo(False, False))
         assert simulate(
             [HwInstruction(*instr_params) for instr_params in [
-                [ICaseString("ALU"), [], "R1"], [ICaseString("ALU"), [], "R2"],
-                [ICaseString("ALU"), [], "R3"], [ICaseString("ALU"), [], "R4"],
-                [ICaseString("ALU"), [], "R5"],
-                [ICaseString("ALU"), [], "R6"]]],
+                [[], "R1", ICaseString("ALU")], [[], "R2", ICaseString("ALU")],
+                [[], "R3", ICaseString("ALU")], [[], "R4", ICaseString("ALU")],
+                [[], "R5", ICaseString("ALU")],
+                [[], "R6", ICaseString("ALU")]]],
             ProcessorDesc(
                 [big_input, small_input1, small_input2],
                 [FuncUnit(out_unit, [big_input, mid2])], [],
@@ -155,8 +155,8 @@ class TestSim:
             "ALU"), ICaseString("MEM")], LockInfo(False, False)), inputs)
         TestBasic().test_sim(
             [HwInstruction(*instr_params) for instr_params in [
-                [ICaseString("MEM"), [], "R12"],
-                [ICaseString("ALU"), ["R11", "R15"], "R14"]]],
+                [[], "R12", ICaseString("MEM")],
+                [["R11", "R15"], "R14", ICaseString("ALU")]]],
             ProcessorDesc(inputs, [output], [], []),
             [{ICaseString("MEM input"): [InstrState(0)],
               ICaseString("ALU input"): [InstrState(1)]},
@@ -206,7 +206,7 @@ class TestSim:
                 "singleInstructionISA.yaml", capabilities)), cpu, util_info)
 
     @mark.parametrize("valid_prog", [
-        [], [HwInstruction(ICaseString("ALU"), ["R11", "R15"], "R14")]])
+        [], [HwInstruction(["R11", "R15"], "R14", ICaseString("ALU"))]])
     def test_unsupported_instruction_stalls_pipeline(self, valid_prog):
         """Test executing an invalid instruction after a valid program.
 
@@ -215,7 +215,7 @@ class TestSim:
 
         """
         ex_chk = pytest.raises(processor.StallError, simulate, valid_prog + [
-            HwInstruction(ICaseString("MEM"), [], "R14")], read_proc_file(
+            HwInstruction([], "R14", ICaseString("MEM"))], read_proc_file(
                 "processors", "singleALUProcessor.yaml"))
         test_utils.chk_error([test_utils.ValInStrCheck(
             ex_chk.value.processor_state, len(valid_prog))], ex_chk.value)
@@ -237,11 +237,11 @@ class StallTest(TestCase):
                              LockInfo(False, True))
         assert simulate(
             [HwInstruction(*instr_params) for instr_params in [
-                [ICaseString("ALU"),
-                 [ICaseString(reg) for reg in ["R2", "R3"]],
-                 ICaseString("R1")],
-                [ICaseString("ALU"), [ICaseString(reg) for reg in [
-                    "R1", "R5"]], ICaseString("R4")]]],
+                [[ICaseString(reg) for reg in ["R2", "R3"]],
+                 ICaseString("R1"),
+                 ICaseString("ALU")],
+                [[ICaseString(reg) for reg in ["R1", "R5"]], ICaseString("R4"),
+                 ICaseString("ALU")]]],
             ProcessorDesc([in_unit], [FuncUnit(out_unit, [in_unit])], [],
                           [])) == [BagValDict(cp_util) for cp_util in [
                               {ICaseString("input"): [InstrState(0)]},
@@ -262,8 +262,9 @@ class StallTest(TestCase):
         out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")],
                              LockInfo(False, False))
         assert simulate(
-            [HwInstruction(*instr_params) for instr_params in [[ICaseString(
-                "ALU"), [], "R1"], [ICaseString("ALU"), [], "R2"]]],
+            [HwInstruction(*instr_params) for instr_params in [
+                [[], "R1", ICaseString("ALU")],
+                [[], "R2", ICaseString("ALU")]]],
             ProcessorDesc(
                 [in_unit], [FuncUnit(out_unit, [mid])], [], [FuncUnit(
                     mid, [in_unit])])) == [BagValDict(cp_util) for cp_util in [

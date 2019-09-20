@@ -126,8 +126,8 @@ def compile_program(prog, isa):
 
     """
     return [program_defs.HwInstruction(
-        _get_cap(isa, prog_instr), prog_instr.sources,
-        prog_instr.destination) for prog_instr in prog]
+        prog_instr.sources, prog_instr.destination,
+        _get_cap(isa, prog_instr)) for prog_instr in prog]
 
 
 def read_program(prog_file):
@@ -155,8 +155,8 @@ def _create_instr(src_line_info, reg_registry):
     line_num = src_line_info[0] + 1
     src_line_info = _get_line_parts(src_line_info)
     operands = _get_operands(src_line_info, line_num, reg_registry)
-    return program_defs.ProgInstruction(src_line_info.instruction, line_num,
-                                        frozenset(operands[1:]), operands[0])
+    return program_defs.ProgInstruction(
+        operands[1:], operands[0], src_line_info.instruction, line_num)
 
 
 def _get_cap(isa, instr):

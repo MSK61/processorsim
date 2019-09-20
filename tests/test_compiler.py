@@ -71,9 +71,9 @@ class TestProgLoad:
         `inputs` are the instruction inputs.
 
         """
-        assert test_utils.compile_prog(prog_file, {"ADD": ICaseString(
-            "ALU")}) == [program_defs.HwInstruction(ICaseString("ALU"), map(
-                ICaseString, inputs), ICaseString("R14"))]
+        assert test_utils.compile_prog(prog_file, {
+            "ADD": ICaseString("ALU")}) == [program_defs.HwInstruction(map(
+                ICaseString, inputs), ICaseString("R14"), ICaseString("ALU"))]
 
     @mark.parametrize("dup_reg", ["R2", "R3"])
     def test_same_operand_with_different_case_in_same_instruction_is_detected(
@@ -89,7 +89,7 @@ class TestProgLoad:
         with patch("logging.warning") as warn_mock:
             assert read_program([f"ADD R1, {upper_reg}, {lower_reg}"]) == [
                 ProgInstruction(
-                    "ADD", 1, [ICaseString(dup_reg)], ICaseString("R1"))]
+                    [ICaseString(dup_reg)], ICaseString("R1"), "ADD", 1)]
         assert warn_mock.call_args
         warn_msg = warn_mock.call_args[0][0] % warn_mock.call_args[0][1:]
 
@@ -111,10 +111,10 @@ class TestProgLoad:
                 itertools.chain(itertools.repeat("", preamble), [
                     "ADD R1, R2, R3", "ADD R4, r2, R5"])) == [
                         ProgInstruction(*instr_params) for instr_params in [
-                            ["ADD", preamble + 1, map(
-                                ICaseString, ["R2", "R3"]), ICaseString("R1")],
-                            ["ADD", preamble + 2, map(ICaseString, [
-                                "r2", "R5"]), ICaseString("R4")]]]
+                            [map(ICaseString, ["R2", "R3"]), ICaseString("R1"),
+                             "ADD", preamble + 1],
+                            [map(ICaseString, ["r2", "R5"]), ICaseString("R4"),
+                             "ADD", preamble + 2]]]
         assert warn_mock.call_args
         warn_msg = warn_mock.call_args[0][0] % warn_mock.call_args[0][1:]
 
@@ -217,8 +217,8 @@ class TestSyntax:
 
         """
         with patch("logging.warning") as warn_mock:
-            self._test_program(prog_file, [ProgInstruction("ADD", 1, map(
-                ICaseString, ["R11", "R15"]), ICaseString("R14"))])
+            self._test_program(prog_file, [ProgInstruction(map(
+                ICaseString, ["R11", "R15"]), ICaseString("R14"), "ADD", 1)])
         assert not warn_mock.call_args
 
     @staticmethod

@@ -389,8 +389,9 @@ class TestProcessors:
         lock_info = LockInfo(False, False)
         out_ports = tuple(FuncUnit(*unit_params) for unit_params in [
             [UnitModel(ICaseString("output 1"), 1, [alu_cap], lock_info),
-             proc_desc.in_ports], [UnitModel(ICaseString("output 2"), 1, [
-                 alu_cap], lock_info), [proc_desc.internal_units[0].model]]])
+             proc_desc.in_ports],
+            [UnitModel(ICaseString("output 2"), 1, [alu_cap], lock_info),
+             map(lambda unit: unit.model, proc_desc.internal_units)]])
         in_unit = ICaseString("input")
         internal_unit = UnitModel(
             ICaseString("middle"), 1, [alu_cap], lock_info)

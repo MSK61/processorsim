@@ -38,7 +38,6 @@
 #
 ############################################################
 
-from dataclasses import dataclass
 import operator
 from typing import Collection
 
@@ -65,53 +64,34 @@ class LockInfo:
     wr_lock: bool
 
 
-@dataclass
+@attr.s(auto_attribs=True, frozen=True)
 class UnitModel:
 
     """Functional unit model"""
-
-    def __init__(self, name, width, capabilities, lock_info):
-        """Create a functional unit model.
-
-        `self` is this functional unit model.
-        `name` is the unit model name.
-        `width` is the unit model capacity.
-        `capabilities` are the capabilities of instructions supported by
-                       this unit model.
-        `lock_info` is the parameter locking information.
-
-        """
-        self.name = name
-        self.width = width
-        self.capabilities = tuple(sorted(capabilities))
-        self.lock_info = lock_info
 
     name: ICaseString
 
     width: int
 
-    capabilities: Collection[ICaseString]
+    capabilities: Collection[ICaseString] = attr.ib(
+        converter=lambda capabilities: tuple(sorted(capabilities)))
 
     lock_info: LockInfo
 
 
-@dataclass
+def sorted_models(models):
+    """Create a sorted list of the given models.
+
+    `models` are the models to create a sorted list of.
+
+    """
+    return tuple(sorted(models, key=lambda model: model.name))
+
+
+@attr.s(cmp=False, frozen=True)
 class FuncUnit:
 
     """Processing functional unit"""
-
-    def __init__(self, model, preds):
-        """Create a functional unit.
-
-        `self` is this functional unit.
-        `model` is the unit model.
-        `preds` are the units whose outputs are connected to the input
-                of this unit.
-
-        """
-        assert isinstance(model, UnitModel)
-        self.model = model
-        self.predecessors = sorted_models(preds)
 
     def __eq__(self, other):
         """Test if the two functional units are identical.
@@ -125,15 +105,7 @@ class FuncUnit:
         return operator.eq(*criteria) and all(
             map(operator.is_, self.predecessors, other.predecessors))
 
-    model: UnitModel
+    model: UnitModel = attr.ib(
+        validator=attr.validators.instance_of(UnitModel))
 
-    predecessors: Collection[UnitModel]
-
-
-def sorted_models(models):
-    """Create a sorted list of the given models.
-
-    `models` are the models to create a sorted list of.
-
-    """
-    return tuple(sorted(models, key=lambda model: model.name))
+    predecessors: Collection[UnitModel] = attr.ib(converter=sorted_models)

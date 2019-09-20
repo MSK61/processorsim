@@ -41,7 +41,6 @@
 
 import collections
 import copy
-import dataclasses
 import enum
 from enum import auto
 import heapq
@@ -107,26 +106,16 @@ class StallState(enum.Enum):
     STRUCTURAL = auto()
 
 
-@dataclasses.dataclass(order=True)
+@attr.s
 class InstrState:
 
     """Instruction state"""
 
-    def __init__(self, instr, stalled=StallState.NO_STALL):
-        """Create an instruction state.
+    instr: int = attr.ib()
 
-        `self` is this instruction state.
-        `instr` is the instruction index.
-        `stalled` is the instruction stall status.
-
-        """
-        assert isinstance(stalled, StallState)
-        self.instr = instr
-        self.stalled = stalled
-
-    instr: int
-
-    stalled: StallState
+    stalled: StallState = attr.ib(
+        default=StallState.NO_STALL,
+        validator=attr.validators.instance_of(StallState))
 
 
 @attr.s(auto_attribs=True, frozen=True)

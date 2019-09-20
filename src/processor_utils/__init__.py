@@ -38,7 +38,6 @@
 #
 ############################################################
 
-import dataclasses
 import functools
 import logging
 from operator import itemgetter
@@ -58,53 +57,10 @@ from .exception import BadEdgeError, BadWidthError, DupElemError
 from . import optimization
 from . import port_defs
 from . import units
-from .units import FuncUnit, UNIT_CAPS_KEY, UnitModel, UNIT_NAME_KEY, \
-    UNIT_RLOCK_KEY, UNIT_WIDTH_KEY, UNIT_WLOCK_KEY
+from .units import FuncUnit, sorted_models, UNIT_CAPS_KEY, UnitModel, \
+    UNIT_NAME_KEY, UNIT_RLOCK_KEY, UNIT_WIDTH_KEY, UNIT_WLOCK_KEY
 __all__ = ["exception", "get_abilities", "load_isa", "load_proc_desc",
            "ProcessorDesc", "units"]
-
-
-@dataclasses.dataclass
-class ProcessorDesc:
-
-    """Processor description"""
-
-    def __init__(self, in_ports, out_ports, in_out_ports, internal_units):
-        """Create a processor.
-
-        `self` is this processor.
-        `in_ports` are the input-only ports.
-        `out_ports` are the output-only ports.
-        `in_out_ports` are the ports that act as both inputs and
-                       outputs.
-        `internal_units` are the internal units that are neither exposed
-                         as inputs nor outputs. Internal units should be
-                         specified in post-order with respect to their
-                         connecting edges(directed from the producing
-                         unit to the consuming one).
-
-        """
-        self.in_ports, self.in_out_ports = map(
-            units.sorted_models, [in_ports, in_out_ports])
-        self.out_ports = self._sorted_units(out_ports)
-        self.internal_units = tuple(internal_units)
-
-    @staticmethod
-    def _sorted_units(hw_units):
-        """Create a sorted list of the given units.
-
-        `hw_units` are the units to create a sorted list of.
-
-        """
-        return tuple(sorted(hw_units, key=lambda unit: unit.model.name))
-
-    in_ports: Tuple[UnitModel]
-
-    out_ports: Tuple[FuncUnit]
-
-    in_out_ports: Tuple[UnitModel]
-
-    internal_units: Tuple[FuncUnit]
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -536,6 +492,29 @@ def _prep_proc_desc(processor):
     optimization.chk_terminals(processor, port_info)
     checks.chk_non_empty(processor, port_info.in_ports)
     checks.chk_caps(processor)
+
+
+def _sorted_units(hw_units):
+    """Create a sorted list of the given units.
+
+    `hw_units` are the units to create a sorted list of.
+
+    """
+    return tuple(sorted(hw_units, key=lambda unit: unit.model.name))
+
+
+@attr.s(frozen=True)
+class ProcessorDesc:
+
+    """Processor description"""
+
+    in_ports: Tuple[UnitModel] = attr.ib(converter=sorted_models)
+
+    out_ports: Tuple[FuncUnit] = attr.ib(converter=_sorted_units)
+
+    in_out_ports: Tuple[UnitModel] = attr.ib(converter=sorted_models)
+
+    internal_units: Tuple[FuncUnit] = attr.ib(converter=tuple)
 
 
 _add_src_path()

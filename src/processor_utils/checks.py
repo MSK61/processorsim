@@ -39,7 +39,6 @@
 #
 ############################################################
 
-import dataclasses
 import operator
 import typing
 
@@ -57,7 +56,7 @@ from .units import UNIT_CAPS_KEY, UNIT_WIDTH_KEY
 _OLD_NODE_KEY = "old_node"
 
 
-@dataclasses.dataclass
+@attr.s(auto_attribs=True)
 class _PathLockInfo:
 
     """Path locking information"""

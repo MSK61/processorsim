@@ -31,17 +31,18 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Komodo IDE, version 11.1.1 build 91089, python 3.7.3,
-#               Fedora release 30 (Thirty)
+# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
+#               30 (Thirty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-from dataclasses import dataclass
 import enum
 from enum import auto
 import typing
+
+import attr
 
 
 class AccessType(enum.Enum):
@@ -53,49 +54,21 @@ class AccessType(enum.Enum):
     WRITE = auto()
 
 
-@dataclass
+@attr.s(frozen=True)
 class AccessGroup:
 
     """Access group"""
 
-    def __init__(self, gr_type, initial_reqs=None):
-        """Create an access group.
+    access_type: AccessType = attr.ib()
 
-        `self` is this access group.
-        `gr_type` is the request group type.
-        `initial_reqs` is the initial request list, defaulting to an
-                       empty list.
-
-        """
-        self.access_type = gr_type
-        self.reqs = set()
-
-        if initial_reqs:
-            self.reqs |= frozenset(initial_reqs)
-
-    access_type: AccessType
-
-    reqs: typing.MutableSet[int]
+    reqs: typing.MutableSet[int] = attr.ib(converter=set, factory=set)
 
 
-@dataclass
+@attr.s(frozen=True)
 class RegAccessQueue:
 
     """Access request queue for a single register"""
-
-    def __init__(self, reqs):
-        """Create an access queue.
-
-        `self` is this access request queue.
-        `reqs` are the requests in the queue.
-
-        """
-        # Typically a queue pushes new elements at the back and removes
-        # old elements from the front. Since this queue is going to
-        # support removal only without addition, we reverse the given
-        # queue to make the queue front at the list tail and make use of
-        # the fast access to the list tail.
-        self.queue = list(reversed(reqs))
+    # pylint: disable=unsubscriptable-object
 
     def can_access(self, req_type, req_owner):
         """Request access to the register.
@@ -118,9 +91,15 @@ class RegAccessQueue:
         self.queue[-1].reqs.remove(req_owner)
 
         if not self.queue[-1].reqs:
-            self.queue.pop()
+            self.queue.pop()  # pylint: disable=no-member
 
-    queue: typing.List[AccessGroup]
+    # Typically a queue pushes new elements at the back and removes old
+    # elements from the front. Since this queue is going to support
+    # removal only without addition, we reverse the given queue to make
+    # the queue front at the list tail and make use of the fast access
+    # to the list tail.
+    queue: typing.List[AccessGroup] = attr.ib(
+        converter=lambda reqs: list(reversed(reqs)))
 
 
 class RegAccQBuilder:

@@ -38,73 +38,47 @@
 #
 ############################################################
 
-from dataclasses import dataclass
 import typing
+
+import attr
 
 from str_utils import ICaseString
 
 
-@dataclass(repr=False)
+@attr.s(frozen=True, repr=False)
 class _Instruction:
 
     """Instruction"""
 
-    def __init__(self, sources, dst):
-        """Create an instruction.
+    sources: typing.Tuple[ICaseString] = attr.ib(
+        converter=lambda sources: tuple(_sorted_uniq(sources)))
 
-        `self` is this instruction.
-        `sources` are the source registers read by the instruction.
-        `dst` is the register written by the instruction.
-
-        """
-        self.sources = tuple(sorted(sources))
-        self.destination = dst
-
-    sources: typing.Tuple[ICaseString]
-
-    destination: ICaseString
+    destination: ICaseString = attr.ib()
 
 
-@dataclass
+@attr.s(frozen=True)
 class HwInstruction(_Instruction):
 
     """Hardware instruction"""
 
-    def __init__(self, categ, sources, dst):
-        """Create a hardware instruction.
-
-        `self` is this hardware instruction.
-        `categ` is the instruction category.
-        `sources` are the source registers read by the instruction.
-        `dst` is the register written by the instruction.
-
-        """
-        assert isinstance(categ, ICaseString)
-        _Instruction.__init__(self, frozenset(sources), dst)
-        self.categ = categ
-
-    categ: ICaseString
+    categ: ICaseString = attr.ib(
+        validator=attr.validators.instance_of(ICaseString))
 
 
-@dataclass
+@attr.s(auto_attribs=True, frozen=True)
 class ProgInstruction(_Instruction):
 
     """Program instruction"""
 
-    def __init__(self, name, line, sources, dst):
-        """Create a program instruction.
-
-        `self` is this program instruction.
-        `name` is the instruction name.
-        `line` is the number of the line containing the instruction.
-        `sources` are the source registers read by the instruction.
-        `dst` is the register written by the instruction.
-
-        """
-        _Instruction.__init__(self, sources, dst)
-        self.name = name
-        self.line = line
-
     name: str
 
     line: int
+
+
+def _sorted_uniq(elems):
+    """Sort the elements after filtering out duplicates.
+
+    `elems` are the elements to filter and sort.
+
+    """
+    return sorted(frozenset(elems))
