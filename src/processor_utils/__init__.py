@@ -217,7 +217,7 @@ def _add_unit(processor, unit, unit_registry, cap_registry):
     unit_name = ICaseString(unit[UNIT_NAME_KEY])
     _chk_unit_name(unit_name, unit_registry)
     _chk_unit_width(unit)
-    unit_locks = map(lambda attr: (attr, unit.get(attr, False)),
+    unit_locks = map(lambda cur_attr: (cur_attr, unit.get(cur_attr, False)),
                      [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY])
     processor.add_node(unit_name, **container_utils.concat_dicts(
         {UNIT_WIDTH_KEY: unit[UNIT_WIDTH_KEY],
