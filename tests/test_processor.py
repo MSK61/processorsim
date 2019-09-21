@@ -90,8 +90,10 @@ class CleanTest(TestCase):
         with patch("logging.warning") as warn_mock:
             proc_desc = read_proc_file(
                 "optimization", "incompatibleEdgeProcessor.yaml")
-        name_input_map = dict(
-            map(lambda in_port: (in_port.name, in_port), proc_desc.in_ports))
+        # pylint: disable=not-an-iterable
+        name_input_map = {
+            in_port.name: in_port for in_port in proc_desc.in_ports}
+        # pylint: enable=not-an-iterable
         alu_cap = ICaseString("ALU")
         lock_info = LockInfo(False, False)
         mem_cap = ICaseString("MEM")

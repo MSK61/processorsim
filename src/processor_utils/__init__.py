@@ -169,13 +169,12 @@ def _add_instr(instr_registry, cap_registry, instr, cap):
     `cap_registry` is the store of supported capabilities.
     `instr` is the instruction to add.
     `cap` is the instruction capability.
-    The function returns a tuple of the upper-case instruction and its
-    capability.
+    The function returns the instruction capability.
 
     """
     _chk_instr(instr, instr_registry)
     instr_registry.add(instr)
-    return instr.raw_str.upper(), _get_cap_name(cap, cap_registry)
+    return _get_cap_name(cap, cap_registry)
 
 
 def _add_new_cap(cap, cap_list, unit_cap_reg, global_cap_reg):
@@ -217,11 +216,11 @@ def _add_unit(processor, unit, unit_registry, cap_registry):
     unit_name = ICaseString(unit[UNIT_NAME_KEY])
     _chk_unit_name(unit_name, unit_registry)
     _chk_unit_width(unit)
-    unit_locks = map(lambda cur_attr: (cur_attr, unit.get(cur_attr, False)),
-                     [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY])
-    processor.add_node(unit_name, **container_utils.concat_dicts(
-        {UNIT_WIDTH_KEY: unit[UNIT_WIDTH_KEY],
-         UNIT_CAPS_KEY: _load_caps(unit, cap_registry)}, dict(unit_locks)))
+    processor.add_node(
+        unit_name, **container_utils.concat_dicts({UNIT_WIDTH_KEY: unit[
+            UNIT_WIDTH_KEY], UNIT_CAPS_KEY: _load_caps(unit, cap_registry)}, {
+                cur_attr: unit.get(cur_attr, False) for cur_attr in [
+                    UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}))
     unit_registry.add(unit_name)
 
 
@@ -306,10 +305,9 @@ def _create_isa(isa_dict, cap_registry):
 
     """
     instr_registry = SelfIndexSet()
-    isa_spec = map(
-        lambda isa_entry: map(ICaseString, isa_entry), isa_dict.items())
-    return dict(map(lambda isa_entry: _add_instr(
-        instr_registry, cap_registry, *isa_entry), isa_spec))
+    isa_spec = isa_dict.items()
+    return {instr.upper(): _add_instr(instr_registry, cap_registry, *(
+        map(ICaseString, [instr, cap]))) for instr, cap in isa_spec}
 
 
 def _get_cap_name(capability, cap_registry):
@@ -370,12 +368,12 @@ def _get_unit_entry(name, attrs):
 
     `name` is the unit name.
     `attrs` are the unit attribute dictionary.
-    The function returns a tuple of the unit name and model.
+    The function returns the unit model.
 
     """
     lock_info = units.LockInfo(
         *itemgetter(UNIT_RLOCK_KEY, UNIT_WLOCK_KEY)(attrs))
-    return name, UnitModel(name, *(
+    return UnitModel(name, *(
         itemgetter(UNIT_WIDTH_KEY, UNIT_CAPS_KEY)(attrs) + (lock_info,)))
 
 
@@ -467,8 +465,8 @@ def _post_order(graph):
     post-order.
 
     """
-    unit_map = dict(
-        map(lambda unit: _get_unit_entry(unit, graph.nodes[unit]), graph))
+    unit_map = {
+        unit: _get_unit_entry(unit, graph.nodes[unit]) for unit in graph}
     return map(lambda name: FuncUnit(unit_map[name], _get_preds(
         graph, name, unit_map)), networkx.dfs_postorder_nodes(graph))
 

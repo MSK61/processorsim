@@ -587,14 +587,10 @@ def _split_nodes(graph):
 
     """
     out_degrees = graph.out_degree()
-    out_twins = map(
-        lambda in_deg_item:
-        (in_deg_item[0],
-         _split_node(graph, in_deg_item[0], len(out_degrees) + in_deg_item[
-             0]) if in_deg_item[1] != 1 and out_degrees[in_deg_item[
-                 0]] != 1 and (in_deg_item[1] or out_degrees[in_deg_item[
-                     0]]) else in_deg_item[0]), list(graph.in_degree()))
-    return dict(out_twins)
+    in_degrees = list(graph.in_degree())
+    return {unit: _split_node(graph, unit, len(
+        out_degrees) + unit) if twin != 1 and out_degrees[unit] != 1 and (
+            twin or out_degrees[unit]) else unit for unit, twin in in_degrees}
 
 
 def _unify_ports(graph, ports, edge_func):
