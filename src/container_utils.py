@@ -79,7 +79,7 @@ class BagValDict:
 
         """
         assert type(other) is type(self)
-        other_items = list(other.iteritems())
+        other_items = list(other.items())
         lst_pairs = map(
             lambda pair: map(sorted, [pair[1], self[pair[0]]]), other_items)
         return eq(*map(len, [self, other_items])) and all(
@@ -109,7 +109,7 @@ class BagValDict:
         The function only considers keys with non-empty lists.
 
         """
-        return sum(map(lambda item: 1, self.iteritems()))
+        return sum(map(lambda item: 1, self.items()))
 
     def __ne__(self, other):
         """Test if the two dictionaries are different.
@@ -128,7 +128,7 @@ class BagValDict:
         """
         return str_utils.format_obj(type(self).__name__, [self._format_dict()])
 
-    def iteritems(self):
+    def items(self):
         """Return the items of this dictionary.
 
         `self` is this dictionary.
@@ -163,7 +163,7 @@ class BagValDict:
         `self` is this dictionary.
 
         """
-        items = map(lambda item: (item[0], sorted(item[1])), self.iteritems())
+        items = map(lambda item: (item[0], sorted(item[1])), self.items())
         item_strings = map(lambda item: f"{item[0]!r}: {item[1]}",
                            sorted(items, key=itemgetter(0)))
         sep = ", "
