@@ -329,9 +329,8 @@ def _chk_hazards(old_util, new_util):
 
     """
     for unit, new_unit_util in new_util:
-        if unit in old_util:
-            _stall_unit(frozenset(
-                map(lambda instr: instr.instr, old_util[unit])), new_unit_util)
+        _stall_unit(frozenset(
+            map(lambda instr: instr.instr, old_util[unit])), new_unit_util)
 
 
 def _clr_src_units(instructions, util_info):
