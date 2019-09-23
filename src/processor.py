@@ -328,10 +328,10 @@ def _chk_hazards(old_util, new_util):
     stalled instructions appropriately according to idientified hazards.
 
     """
-    for unit in new_util:
+    for unit, new_unit_util in new_util:
         if unit in old_util:
-            _stall_unit(frozenset(map(
-                lambda instr: instr.instr, old_util[unit])), new_util[unit])
+            _stall_unit(frozenset(
+                map(lambda instr: instr.instr, old_util[unit])), new_unit_util)
 
 
 def _clr_src_units(instructions, util_info):
@@ -519,7 +519,7 @@ def _run_cycle(program, processor, util_tbl, issue_rec):
     old_util = util_tbl[-1] if util_tbl else container_utils.BagValDict()
     cp_util = copy.deepcopy(old_util)
     _fill_cp_util(processor, program, cp_util, issue_rec)
-    _chk_hazards(old_util, cp_util)
+    _chk_hazards(old_util, cp_util.items())
     _chk_full_stall(old_util, cp_util, issue_rec.entered)
     util_tbl.append(cp_util)
 

@@ -211,7 +211,7 @@ def _cui_to_icu(cxuxi, instructions):
     ixcxu = list(map(lambda instr: {}, range(instructions)))
 
     for cur_cp, uxi_util in cxuxi:
-        _fill_cp_util(cur_cp, uxi_util, ixcxu)
+        _fill_cp_util(cur_cp, uxi_util.items(), ixcxu)
 
     return ixcxu
 
@@ -224,8 +224,8 @@ def _fill_cp_util(clock_pulse, cp_util, ixcxu):
     `ixcxu` is the InstructionxClockxUnit utilization map to fill.
 
     """
-    for unit in cp_util:
-        for instr in cp_util[unit]:
+    for unit, instr_lst in cp_util:
+        for instr in instr_lst:
             ixcxu[instr.instr][clock_pulse] = _InstrPosition(
                 unit, instr.stalled)
 
