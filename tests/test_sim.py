@@ -237,11 +237,8 @@ class StallTest(TestCase):
                              LockInfo(False, True))
         assert simulate(
             [HwInstruction(*instr_params) for instr_params in [
-                [[ICaseString(reg) for reg in ["R2", "R3"]],
-                 ICaseString("R1"),
-                 ICaseString("ALU")],
-                [[ICaseString(reg) for reg in ["R1", "R5"]], ICaseString("R4"),
-                 ICaseString("ALU")]]],
+                [[], ICaseString("R1"), ICaseString("ALU")],
+                [[ICaseString("R1")], ICaseString("R4"), ICaseString("ALU")]]],
             ProcessorDesc([in_unit], [FuncUnit(out_unit, [in_unit])], [],
                           [])) == [BagValDict(cp_util) for cp_util in [
                               {ICaseString("input"): [InstrState(0)]},
