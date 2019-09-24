@@ -44,15 +44,17 @@ import copy
 import enum
 from enum import auto
 import heapq
-import itertools
+from itertools import chain
 import string
 import typing
+from typing import Mapping
 
 import attr
 import yaml
 
 import container_utils
 import processor_utils
+from processor_utils import ProcessorDesc
 import reg_access
 from reg_access import AccessType
 from str_utils import ICaseString
@@ -63,9 +65,34 @@ class HwDesc:
 
     """Hardware description"""
 
-    processor: processor_utils.ProcessorDesc
+    processor: ProcessorDesc
 
-    isa: typing.Mapping[str, ICaseString]
+    isa: Mapping[str, ICaseString]
+
+
+@attr.s(frozen=True)
+class HwSpec:
+
+    """Hardware specification"""
+
+    processor_desc: ProcessorDesc = attr.ib()
+
+    name_unit_map: Mapping[
+        ICaseString, processor_utils.units.UnitModel] = attr.ib(init=False)
+
+    @name_unit_map.default
+    def _build_unit_map(self):
+        """Build the name-to-unit mapping.
+
+        `self` is this hardware specification.
+
+        """
+        # pylint: disable=no-member
+        return {unit.name: unit for unit in chain(
+            self.processor_desc.in_ports + self.processor_desc.in_out_ports,
+            map(lambda func_unit: func_unit.model,
+                self.processor_desc.out_ports +
+                self.processor_desc.internal_units))}
 
 
 class StallError(RuntimeError):
@@ -104,6 +131,8 @@ class StallState(enum.Enum):
     NO_STALL = auto()
 
     STRUCTURAL = auto()
+
+    DATA = auto()
 
 
 @attr.s
@@ -177,6 +206,16 @@ class _IssueInfo:
         return self._exited < self._entered
 
 
+@attr.s(auto_attribs=True, frozen=True)
+class _TransitionUtil:
+
+    """Utilization transition of a single unit between two pulses"""
+
+    old_util: typing.Collection[InstrState]
+
+    new_util: typing.Iterable[InstrState]
+
+
 def read_processor(proc_file):
     """Read the processor description from the given file.
 
@@ -194,21 +233,21 @@ def read_processor(proc_file):
         yaml_desc[isa_key], processor_utils.get_abilities(processor)))
 
 
-def simulate(program, processor):
+def simulate(program, hw_info):
     """Run the given program on the processor.
 
     `program` is the program to run.
-    `processor` is the processor to run the program on.
+    `hw_info` is the processor information.
     The function returns the pipeline diagram.
 
     """
     util_tbl = []
-    _build_acc_plan(enumerate(program))
+    acc_queues = _build_acc_plan(enumerate(program))
     issue_rec = _IssueInfo()
     prog_len = len(program)
 
     while issue_rec.entered < prog_len or issue_rec.in_flight:
-        _run_cycle(program, processor, util_tbl, issue_rec)
+        _run_cycle(program, acc_queues, hw_info, util_tbl, issue_rec)
 
     return util_tbl
 
@@ -317,20 +356,51 @@ def _chk_full_stall(old_util, new_util, consumed):
                          f"${StallError.STATE_KEY} instructions", consumed)
 
 
-def _chk_hazards(old_util, new_util):
+def _chk_hazards(old_util, new_util, name_unit_map, program, acc_queues):
     """Check different types of hazards.
 
     `old_util` is the utilization information of the previous clock
                pulse.
     `new_util` is the utilization information of the current clock
                pulse.
+    `name_unit_map` is the name-to-unit mapping.
+    `program` is the master instruction list.
+    `acc_queues` are the planned access queues for registers.
     The function analyzes old and new utilization information and marks
     stalled instructions appropriately according to idientified hazards.
 
     """
+    reqs_to_clear = {}
+
     for unit, new_unit_util in new_util:
-        _stall_unit(frozenset(
-            map(lambda instr: instr.instr, old_util[unit])), new_unit_util)
+        _stall_unit(name_unit_map[unit].lock_info.wr_lock, _TransitionUtil(
+            old_util[unit], new_unit_util), program, acc_queues, reqs_to_clear)
+
+    reqs_to_clear = reqs_to_clear.items()
+
+    for reg, req_lst in reqs_to_clear:
+        for cur_req in req_lst:
+            acc_queues[reg].dequeue(cur_req)
+
+
+def _clr_data_stall(wr_lock, reg_clears, instr, old_unit_util):
+    """Clear the data stall condition for this instruction.
+
+    `wr_lock` is the current unit write lock flag.
+    `reg_clears` are the requests to be cleared from the register access
+                 queue.
+    `instr` is the index of the instruction to clear whose data stall
+            condition.
+    `old_unit_util` is the unit utilization information of the previous
+                    clock pulse.
+
+    """
+    if wr_lock:
+        _update_clears(reg_clears, instr)
+
+    return StallState.STRUCTURAL if next(filter(
+        lambda old_instr: old_instr.instr == instr and old_instr.stalled !=
+        StallState.DATA, old_unit_util), None) else StallState.NO_STALL
 
 
 def _clr_src_units(instructions, util_info):
@@ -435,8 +505,9 @@ def _get_accepted(instructions, program, capabilities):
     index and the instruction itself.
 
     """
-    return filter(lambda instr: program[instr[1].instr].categ in capabilities,
-                  enumerate(instructions))
+    return filter(
+        lambda instr: instr[1].stalled != StallState.DATA and program[
+            instr[1].instr].categ in capabilities, enumerate(instructions))
 
 
 def _get_candidates(unit, program, util_info):
@@ -452,10 +523,9 @@ def _get_candidates(unit, program, util_info):
             src_unit.name, instr_info[0]), _get_accepted(util_info[
                 src_unit.name], program, unit.model.capabilities)), filter(
                     lambda pred: pred.name in util_info, unit.predecessors))
-    return heapq.nsmallest(
-        _space_avail(unit.model, util_info), itertools.chain(*candidates),
-        key=lambda instr_info:
-        util_info[instr_info.host][instr_info.index_in_host].instr)
+    return heapq.nsmallest(_space_avail(unit.model, util_info), chain(
+        *candidates), key=lambda instr_info: util_info[instr_info.host][
+            instr_info.index_in_host].instr)
 
 
 def _get_unit_util(unit, util_info):
@@ -505,20 +575,34 @@ def _mov_flights(dst_units, program, util_info):
         _fill_unit(cur_dst, program, util_info)
 
 
-def _run_cycle(program, processor, util_tbl, issue_rec):
+def _regs_accessed(instr, registers, acc_queues):
+    """Check if all needed registers can be accessed.
+
+    `instr` is the index of the instruction to check whose access to
+            registers.
+    `registers` are the instruction registers.
+    `acc_queues` are the planned access queues for registers.
+
+    """
+    return all(map(lambda src: acc_queues[src].can_access(
+        AccessType.READ, instr), registers))
+
+
+def _run_cycle(program, acc_queues, hw_info, util_tbl, issue_rec):
     """Run a single clock cycle.
 
     `program` is the program to run whose instructions.
-    `processor` is the processor to run whose pipeline for a clock
-                pulse.
+    `acc_queues` are the planned access queues for registers.
+    `hw_info` is the processor information.
     `util_tbl` is the utilization table.
     `issue_rec` is the issue record.
 
     """
     old_util = util_tbl[-1] if util_tbl else container_utils.BagValDict()
     cp_util = copy.deepcopy(old_util)
-    _fill_cp_util(processor, program, cp_util, issue_rec)
-    _chk_hazards(old_util, cp_util.items())
+    _fill_cp_util(hw_info.processor_desc, program, cp_util, issue_rec)
+    _chk_hazards(
+        old_util, cp_util.items(), hw_info.name_unit_map, program, acc_queues)
     _chk_full_stall(old_util, cp_util, issue_rec.entered)
     util_tbl.append(cp_util)
 
@@ -533,15 +617,32 @@ def _space_avail(unit, util_info):
     return unit.width - _get_unit_util(unit.name, util_info)
 
 
-def _stall_unit(old_unit_util, new_unit_util):
-    """Mark instructions in the given unit as stalled.
+def _stall_unit(wr_lock, trans_util, program, acc_queues, reqs_to_clear):
+    """Mark instructions in the given unit as stalled as needed.
 
-    `old_unit_util` is the unit utilization information of the previous
-                    clock pulse.
-    `new_unit_util` is the unit utilization information of the current
-                    clock pulse.
+    `wr_lock` is the unit write lock.
+    `trans_util` is the unit utilization transition information of the
+                 current and previous clock pulses.
+    `program` is the master instruction list.
+    `acc_queues` are the planned access queues for registers.
+    `reqs_to_clear` are the requests to be cleared from the access
+                    queues.
 
     """
-    for instr in new_unit_util:
-        if instr.instr in old_unit_util:
-            instr.stalled = StallState.STRUCTURAL
+    for instr in trans_util.new_util:
+        instr.stalled = _clr_data_stall(
+            wr_lock, reqs_to_clear.setdefault(
+                program[instr.instr].destination, []), instr.instr,
+            trans_util.old_util) if _regs_accessed(instr.instr, program[
+                instr.instr].sources, acc_queues) else StallState.DATA
+
+
+def _update_clears(reg_clears, instr):
+    """Update the list of register accesses to be cleared.
+
+    `reqs_to_clear` are the requests to be cleared from the access
+                    queues.
+    `instr` is the index of the instruction to unstall.
+
+    """
+    reg_clears.append(instr)

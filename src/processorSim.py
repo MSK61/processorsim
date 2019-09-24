@@ -117,9 +117,9 @@ def get_sim_res(processor_file, program_file):
     proc_desc = processor.read_processor(processor_file)
     prog = program_utils.read_program(program_file)
     compiled_prog = program_utils.compile_program(prog, proc_desc.isa)
+    proc_spec = processor.HwSpec(proc_desc.processor)
     return _get_sim_rows(
-        enumerate(processor.simulate(compiled_prog, proc_desc.processor)),
-        len(prog))
+        enumerate(processor.simulate(compiled_prog, proc_spec)), len(prog))
 
 
 def process_command_line(argv):

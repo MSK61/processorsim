@@ -48,7 +48,7 @@ import test_utils
 from test_utils import read_proc_file
 from container_utils import BagValDict
 import processor
-from processor import InstrState, simulate, StallState
+from processor import HwSpec, InstrState, simulate, StallState
 import processor_utils
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
@@ -80,7 +80,7 @@ class TestBasic:
         `util_tbl` is the expected utilization table.
 
         """
-        assert simulate(prog, cpu) == [
+        assert simulate(prog, HwSpec(cpu)) == [
             BagValDict(inst_util) for inst_util in util_tbl]
 
 
@@ -106,35 +106,30 @@ class PipelineTest(TestCase):
                          LockInfo(False, False))
         out_unit = UnitModel(ICaseString("output"), 2, [ICaseString("ALU")],
                              LockInfo(False, False))
+        proc_desc = ProcessorDesc([big_input, small_input1, small_input2], [
+            FuncUnit(out_unit, [big_input, mid2])], [], [
+                FuncUnit(*unit_params) for unit_params in [
+                    [mid2, [mid1, small_input2]], [mid1, [small_input1]]]])
         assert simulate(
             [HwInstruction(*instr_params) for instr_params in [
                 [[], "R1", ICaseString("ALU")], [[], "R2", ICaseString("ALU")],
                 [[], "R3", ICaseString("ALU")], [[], "R4", ICaseString("ALU")],
                 [[], "R5", ICaseString("ALU")],
                 [[], "R6", ICaseString("ALU")]]],
-            ProcessorDesc(
-                [big_input, small_input1, small_input2],
-                [FuncUnit(out_unit, [big_input, mid2])], [],
-                [FuncUnit(*unit_params) for unit_params in [
-                    [mid2, [mid1, small_input2]],
-                    [mid1, [small_input1]]]])) == [
-                        BagValDict(cp_util) for cp_util in [
-                            {ICaseString("big input"):
-                             map(InstrState, [0, 1, 2, 3]),
-                             ICaseString("small input 1"): [InstrState(4)],
-                             ICaseString("small input 2"): [InstrState(5)]},
-                            {ICaseString("big input"):
-                             map(lambda instr: InstrState(
-                                 instr, StallState.STRUCTURAL), [2, 3]),
-                             ICaseString("output"): map(InstrState, [0, 1]),
-                             ICaseString("middle 1"): [InstrState(4)],
-                             ICaseString("middle 2"): [InstrState(5)]},
-                            {ICaseString("output"): map(InstrState, [2, 3]),
-                             ICaseString("middle 2"):
-                             map(lambda state_params:
-                                 InstrState(*state_params),
-                                 [[5, StallState.STRUCTURAL], [4]])},
-                            {ICaseString("output"): map(InstrState, [4, 5])}]]
+            HwSpec(proc_desc)) == [BagValDict(cp_util) for cp_util in [
+                {ICaseString("big input"): map(InstrState, [0, 1, 2, 3]),
+                 ICaseString("small input 1"): [InstrState(4)],
+                 ICaseString("small input 2"): [InstrState(5)]},
+                {ICaseString("big input"): map(lambda instr: InstrState(
+                    instr, StallState.STRUCTURAL), [2, 3]),
+                 ICaseString("output"): map(InstrState, [0, 1]),
+                 ICaseString("middle 1"): [InstrState(4)],
+                 ICaseString("middle 2"): [InstrState(5)]},
+                {ICaseString("output"): map(InstrState, [2, 3]),
+                 ICaseString("middle 2"):
+                 map(lambda state_params: InstrState(*state_params),
+                     [[5, StallState.STRUCTURAL], [4]])},
+                {ICaseString("output"): map(InstrState, [4, 5])}]]
 
 
 class TestSim:
@@ -215,8 +210,8 @@ class TestSim:
 
         """
         ex_chk = pytest.raises(processor.StallError, simulate, valid_prog + [
-            HwInstruction([], "R14", ICaseString("MEM"))], read_proc_file(
-                "processors", "singleALUProcessor.yaml"))
+            HwInstruction([], "R14", ICaseString("MEM"))], HwSpec(
+                read_proc_file("processors", "singleALUProcessor.yaml")))
         test_utils.chk_error([test_utils.ValInStrCheck(
             ex_chk.value.processor_state, len(valid_prog))], ex_chk.value)
 
@@ -233,18 +228,19 @@ class StallTest(TestCase):
         """
         in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
                             LockInfo(True, False))
-        out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")],
-                             LockInfo(False, True))
+        out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, [
+            ICaseString("ALU")], LockInfo(False, True)), [in_unit])
         assert simulate(
             [HwInstruction(*instr_params) for instr_params in [
                 [[], ICaseString("R1"), ICaseString("ALU")],
                 [[ICaseString("R1")], ICaseString("R4"), ICaseString("ALU")]]],
-            ProcessorDesc([in_unit], [FuncUnit(out_unit, [in_unit])], [],
-                          [])) == [BagValDict(cp_util) for cp_util in [
-                              {ICaseString("input"): [InstrState(0)]},
-                              {ICaseString("input"): [InstrState(1)],
-                               ICaseString("output"): [InstrState(0)]},
-                              {ICaseString("output"): [InstrState(1)]}]]
+            HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
+                BagValDict(cp_util) for cp_util in [
+                    {ICaseString("input"): [InstrState(0)]},
+                    {ICaseString("input"): [InstrState(1, StallState.DATA)],
+                     ICaseString("output"): [InstrState(0)]},
+                    {ICaseString("input"): [InstrState(1)]},
+                    {ICaseString("output"): [InstrState(1)]}]]
 
     def test_internal_stall_is_detected(self):
         """Test detecting stalls in internal units.
@@ -258,13 +254,13 @@ class StallTest(TestCase):
                         LockInfo(False, False))
         out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")],
                              LockInfo(False, False))
+        proc_desc = ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
+                                  [FuncUnit(mid, [in_unit])])
         assert simulate(
             [HwInstruction(*instr_params) for instr_params in [
                 [[], "R1", ICaseString("ALU")],
-                [[], "R2", ICaseString("ALU")]]],
-            ProcessorDesc(
-                [in_unit], [FuncUnit(out_unit, [mid])], [], [FuncUnit(
-                    mid, [in_unit])])) == [BagValDict(cp_util) for cp_util in [
+                [[], "R2", ICaseString("ALU")]]], HwSpec(proc_desc)) == [
+                    BagValDict(cp_util) for cp_util in [
                         {ICaseString("input"): map(InstrState, [0, 1])},
                         {ICaseString("middle"): map(InstrState, [0, 1])},
                         {ICaseString("middle"):
