@@ -56,34 +56,6 @@ from sim_services import HwSpec, InstrState, simulate, StallState
 from str_utils import ICaseString
 
 
-class TestBasic:
-
-    """Test case for basic simulation scenarios"""
-
-    @mark.parametrize("prog, cpu, util_tbl", [
-        ([HwInstruction(["R11", "R15"], "R14", ICaseString("alu"))],
-         read_proc_file("processors", "singleALUProcessor.yaml"),
-         [{ICaseString("fullSys"): [InstrState(0)]}]),
-        ([HwInstruction(*instr_params) for instr_params in [
-            [[], "R12", ICaseString("MEM")],
-            [["R11", "R15"], "R14", ICaseString("ALU")]]], read_proc_file(
-                "processors", "multiplexedInputSplitOutputProcessor.yaml"),
-         [{ICaseString("input"): map(InstrState, [1, 0])},
-          {ICaseString("ALU output"): [InstrState(1)],
-           ICaseString("MEM output"): [InstrState(0)]}])])
-    def test_sim(self, prog, cpu, util_tbl):
-        """Test executing a program.
-
-        `self` is this test case.
-        `prog` is the program to run.
-        `cpu` is the processor to run the program on.
-        `util_tbl` is the expected utilization table.
-
-        """
-        assert simulate(prog, HwSpec(cpu)) == [
-            BagValDict(inst_util) for inst_util in util_tbl]
-
-
 class PipelineTest(TestCase):
 
     """Test case for instruction flow in the pipeline"""
@@ -130,6 +102,34 @@ class PipelineTest(TestCase):
                  map(lambda state_params: InstrState(*state_params),
                      [[5, StallState.STRUCTURAL], [4]])},
                 {ICaseString("output"): map(InstrState, [4, 5])}]]
+
+
+class TestBasic:
+
+    """Test case for basic simulation scenarios"""
+
+    @mark.parametrize("prog, cpu, util_tbl", [
+        ([HwInstruction(["R11", "R15"], "R14", ICaseString("alu"))],
+         read_proc_file("processors", "singleALUProcessor.yaml"),
+         [{ICaseString("fullSys"): [InstrState(0)]}]),
+        ([HwInstruction(*instr_params) for instr_params in [
+            [[], "R12", ICaseString("MEM")],
+            [["R11", "R15"], "R14", ICaseString("ALU")]]], read_proc_file(
+                "processors", "multiplexedInputSplitOutputProcessor.yaml"),
+         [{ICaseString("input"): map(InstrState, [1, 0])},
+          {ICaseString("ALU output"): [InstrState(1)],
+           ICaseString("MEM output"): [InstrState(0)]}])])
+    def test_sim(self, prog, cpu, util_tbl):
+        """Test executing a program.
+
+        `self` is this test case.
+        `prog` is the program to run.
+        `cpu` is the processor to run the program on.
+        `util_tbl` is the expected utilization table.
+
+        """
+        assert simulate(prog, HwSpec(cpu)) == [
+            BagValDict(inst_util) for inst_util in util_tbl]
 
 
 class TestSim:
