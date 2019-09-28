@@ -56,6 +56,34 @@ from sim_services import HwSpec, InstrState, simulate, StallState
 from str_utils import ICaseString
 
 
+class FlowTest(TestCase):
+
+    """Test case for instruction flow prioritization"""
+
+    def test_earlier_instructions_are_propagated_first(self):
+        """Test earlier instructions are selected first.
+
+        `self` is this test case.
+
+        """
+        inputs = [UnitModel(*unit_params) for unit_params in [
+            [ICaseString("ALU input"), 1, [ICaseString("ALU")],
+             LockInfo(False, False)], [ICaseString("MEM input"), 1, [
+                 ICaseString("MEM")], LockInfo(False, False)]]]
+        output = FuncUnit(UnitModel(ICaseString("output"), 1, [ICaseString(
+            "ALU"), ICaseString("MEM")], LockInfo(False, False)), inputs)
+        TestBasic().test_sim(
+            [HwInstruction(*instr_params) for instr_params in [
+                [[], "R12", ICaseString("MEM")],
+                [["R11", "R15"], "R14", ICaseString("ALU")]]],
+            ProcessorDesc(inputs, [output], [], []),
+            [{ICaseString("MEM input"): [InstrState(0)],
+              ICaseString("ALU input"): [InstrState(1)]},
+             {ICaseString("output"): [InstrState(0)], ICaseString("ALU input"):
+              [InstrState(1, StallState.STRUCTURAL)]},
+             {ICaseString("output"): [InstrState(1)]}])
+
+
 class PipelineTest(TestCase):
 
     """Test case for instruction flow in the pipeline"""
@@ -135,29 +163,6 @@ class TestBasic:
 class TestSim:
 
     """Test case for program simulation"""
-
-    def test_earlier_instructions_are_propagated_first(self):
-        """Test earlier instructions are selected first.
-
-        `self` is this test case.
-
-        """
-        inputs = [UnitModel(*unit_params) for unit_params in [
-            [ICaseString("ALU input"), 1, [ICaseString("ALU")],
-             LockInfo(False, False)], [ICaseString("MEM input"), 1, [
-                 ICaseString("MEM")], LockInfo(False, False)]]]
-        output = FuncUnit(UnitModel(ICaseString("output"), 1, [ICaseString(
-            "ALU"), ICaseString("MEM")], LockInfo(False, False)), inputs)
-        TestBasic().test_sim(
-            [HwInstruction(*instr_params) for instr_params in [
-                [[], "R12", ICaseString("MEM")],
-                [["R11", "R15"], "R14", ICaseString("ALU")]]],
-            ProcessorDesc(inputs, [output], [], []),
-            [{ICaseString("MEM input"): [InstrState(0)],
-              ICaseString("ALU input"): [InstrState(1)]},
-             {ICaseString("output"): [InstrState(0)], ICaseString("ALU input"):
-              [InstrState(1, StallState.STRUCTURAL)]},
-             {ICaseString("output"): [InstrState(1)]}])
 
     @mark.parametrize("prog_file, proc_file, util_info", [
         ("empty.asm", "singleALUProcessor.yaml", []),

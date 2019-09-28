@@ -110,22 +110,6 @@ class CleanTest(TestCase):
                   [name_input_map[ICaseString("input 2")]]]]), [], [])
         _chk_warn(["input 2", "output 1"], warn_mock.call_args)
 
-    def test_output_more_capable_than_input(self):
-        """Test an output which has more capabilities than the input.
-
-        `self` is this test case.
-
-        """
-        in_file = "oneCapabilityInputAndTwoCapabilitiesOutput.yaml"
-        proc_desc = read_proc_file("optimization", in_file)
-        alu_cap = ICaseString("ALU")
-        lock_info = LockInfo(False, False)
-        out_unit = ICaseString("output")
-        assert proc_desc == ProcessorDesc(
-            [UnitModel(ICaseString("input"), 1, [alu_cap], lock_info)],
-            [FuncUnit(UnitModel(out_unit, 1, [alu_cap], lock_info),
-                      proc_desc.in_ports)], [], [])
-
     def test_unit_with_empty_capabilities_is_removed(self):
         """Test loading a unit with no capabilities.
 
@@ -483,6 +467,22 @@ class TestUnits:
 class TestWidth:
 
     """Test case for checking data path width"""
+
+    def test_output_more_capable_than_input(self):
+        """Test an output which has more capabilities than the input.
+
+        `self` is this test case.
+
+        """
+        in_file = "oneCapabilityInputAndTwoCapabilitiesOutput.yaml"
+        proc_desc = read_proc_file("optimization", in_file)
+        alu_cap = ICaseString("ALU")
+        lock_info = LockInfo(False, False)
+        out_unit = ICaseString("output")
+        assert proc_desc == ProcessorDesc(
+            [UnitModel(ICaseString("input"), 1, [alu_cap], lock_info)],
+            [FuncUnit(UnitModel(out_unit, 1, [alu_cap], lock_info),
+                      proc_desc.in_ports)], [], [])
 
     # pylint: disable=invalid-name
     def test_unconsumed_capabilitiy_raises_BlockedCapError(self):
