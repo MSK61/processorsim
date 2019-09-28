@@ -273,9 +273,7 @@ class TestEdges:
                         "edgeWithUnknownUnit.yaml")
         chk_error([ValInStrCheck(ex_chk.value.element, ICaseString("input"))],
                   ex_chk.value)
-    # pylint: enable=invalid-name
 
-    # pylint: disable=invalid-name
     @mark.parametrize("in_file, bad_edge", [("emptyEdge.yaml", []), (
         "3UnitEdge.yaml", ["input", "middle", "output"])])
     def test_edge_with_wrong_number_of_units_raises_BadEdgeError(

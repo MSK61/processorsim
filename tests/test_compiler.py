@@ -178,9 +178,7 @@ class TestSyntax:
         ex_chk = raises(CodeError, read_prog_file, prog_file)
         self._chk_syn_err(ex_chk.value, line_num, instr)
         assert str(operand) in str(ex_chk.value)
-    # pylint: enable=invalid-name
 
-    # pylint: disable=invalid-name
     @mark.parametrize("prog_file, line_num, instr",
                       [("firstInstructionWithNoOperands.asm", 1, "ADD"),
                        ("secondInstructionWithNoOperands.asm", 2, "SUB")])
