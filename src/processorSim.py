@@ -54,9 +54,10 @@ import typing
 
 import attr
 
-import processor
-from processor import StallState
+import hw_loading
 import program_utils
+import sim_services
+from sim_services import StallState
 import str_utils
 _COL_SEP = '\t'
 # command-line option variables
@@ -114,12 +115,12 @@ def get_sim_res(processor_file, program_file):
     processor description file.
 
     """
-    proc_desc = processor.read_processor(processor_file)
+    proc_desc = hw_loading.read_processor(processor_file)
     prog = program_utils.read_program(program_file)
     compiled_prog = program_utils.compile_program(prog, proc_desc.isa)
-    proc_spec = processor.HwSpec(proc_desc.processor)
+    proc_spec = sim_services.HwSpec(proc_desc.processor)
     return _get_sim_rows(
-        enumerate(processor.simulate(compiled_prog, proc_spec)), len(prog))
+        enumerate(sim_services.simulate(compiled_prog, proc_spec)), len(prog))
 
 
 def process_command_line(argv):

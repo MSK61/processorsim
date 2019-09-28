@@ -48,7 +48,7 @@ import attr
 import pytest
 
 import test_utils
-import processor
+import hw_loading
 import processor_utils
 from processor_utils import units
 from str_utils import ICaseString
@@ -108,7 +108,7 @@ class TestHwDescLoad:
                                     "processor_utils.load_isa",
                                     return_value={
                                         instr: icase_cap}) as isa_mock:
-            assert processor.read_processor(hw_src) == processor.HwDesc(
+            assert hw_loading.read_processor(hw_src) == hw_loading.HwDesc(
                 proc_mock.return_value, isa_mock.return_value)
         mock_checks = map(lambda chk_params: _MockCheck(*chk_params), [
             [proc_mock,

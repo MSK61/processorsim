@@ -47,12 +47,12 @@ from pytest import mark
 import test_utils
 from test_utils import read_proc_file
 from container_utils import BagValDict
-import processor
-from processor import HwSpec, InstrState, simulate, StallState
 import processor_utils
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from program_defs import HwInstruction
+import sim_services
+from sim_services import HwSpec, InstrState, simulate, StallState
 from str_utils import ICaseString
 
 
@@ -209,9 +209,10 @@ class TestSim:
         `valid_prog` is a sequence of valid instructions.
 
         """
-        ex_chk = pytest.raises(processor.StallError, simulate, valid_prog + [
-            HwInstruction([], "R14", ICaseString("MEM"))], HwSpec(
-                read_proc_file("processors", "singleALUProcessor.yaml")))
+        ex_chk = pytest.raises(
+            sim_services.StallError, simulate,
+            valid_prog + [HwInstruction([], "R14", ICaseString("MEM"))],
+            HwSpec(read_proc_file("processors", "singleALUProcessor.yaml")))
         test_utils.chk_error([test_utils.ValInStrCheck(
             ex_chk.value.processor_state, len(valid_prog))], ex_chk.value)
 

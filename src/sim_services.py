@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""processor services"""
+"""simulation services"""
 
 ############################################################
 #
@@ -23,12 +23,11 @@
 #
 # program:      processor simulator
 #
-# file:         processor.py
+# file:         sim_services.py
 #
-# function:     processor management services
+# function:     program execution simulation services
 #
-# description:  loads processor description files and simulates program
-#               execution
+# description:  simulates program execution
 #
 # author:       Mohammed El-Afifi (ME)
 #
@@ -47,27 +46,14 @@ import heapq
 from itertools import chain
 import string
 import typing
-from typing import Mapping
 
 import attr
-import yaml
 
 import container_utils
 import processor_utils
-from processor_utils import ProcessorDesc
 import reg_access
 from reg_access import AccessType
 from str_utils import ICaseString
-
-
-@attr.s(auto_attribs=True, frozen=True)
-class HwDesc:
-
-    """Hardware description"""
-
-    processor: ProcessorDesc
-
-    isa: Mapping[str, ICaseString]
 
 
 @attr.s(frozen=True)
@@ -75,9 +61,9 @@ class HwSpec:
 
     """Hardware specification"""
 
-    processor_desc: ProcessorDesc = attr.ib()
+    processor_desc: processor_utils.ProcessorDesc = attr.ib()
 
-    name_unit_map: Mapping[
+    name_unit_map: typing.Mapping[
         ICaseString, processor_utils.units.UnitModel] = attr.ib(init=False)
 
     @name_unit_map.default
@@ -214,23 +200,6 @@ class _TransitionUtil:
     old_util: typing.Collection[InstrState]
 
     new_util: typing.Iterable[InstrState]
-
-
-def read_processor(proc_file):
-    """Read the processor description from the given file.
-
-    `proc_file` is the YAML file containing the processor description.
-    The function constructs necessary processing structures from the
-    given processor description file. It returns a processor
-    description.
-
-    """
-    yaml_desc = yaml.safe_load(proc_file)
-    microarch_key = "microarch"
-    processor = processor_utils.load_proc_desc(yaml_desc[microarch_key])
-    isa_key = "ISA"
-    return HwDesc(processor, processor_utils.load_isa(
-        yaml_desc[isa_key], processor_utils.get_abilities(processor)))
 
 
 def simulate(program, hw_info):
