@@ -309,6 +309,17 @@ def _build_cap_map(inputs):
     return cap_map
 
 
+def _calc_unstalled(instructions):
+    """Count the number of unstalled instructions.
+
+    `instructions` are the list of instructions to count unstalled ones
+                   in.
+
+    """
+    return container_utils.count_if(
+        lambda instr: instr.stalled == StallState.NO_STALL, instructions)
+
+
 def _chk_full_stall(old_util, new_util, consumed):
     """Check if the whole processor has stalled.
 
@@ -389,13 +400,14 @@ def _clr_src_units(instructions, util_info):
 
 
 def _count_outputs(outputs, util_info):
-    """Count the number of active outputs.
+    """Count the number of unstalled outputs.
 
     `outputs` are all the output units.
     `util_info` is the unit utilization information.
 
     """
-    return sum(map(lambda out_port: len(util_info[out_port.name]), outputs))
+    return sum(map(
+        lambda out_port: _calc_unstalled(util_info[out_port.name]), outputs))
 
 
 def _fill_cp_util(processor, program, util_info, issue_rec):
@@ -408,14 +420,11 @@ def _fill_cp_util(processor, program, util_info, issue_rec):
     `issue_rec` is the issue record.
 
     """
-    out_ports = processor.in_out_ports + tuple(
-        map(lambda port: port.model, processor.out_ports))
-    _flush_outputs(out_ports, util_info)
+    _flush_outputs(_get_out_ports(processor), util_info)
     _mov_flights(
         processor.out_ports + processor.internal_units, program, util_info)
     _fill_inputs(_build_cap_map(processor.in_out_ports + processor.in_ports),
                  program, util_info, issue_rec)
-    issue_rec.pump_outputs(_count_outputs(out_ports, util_info))
 
 
 def _fill_inputs(cap_unit_map, program, util_info, issue_rec):
@@ -461,7 +470,8 @@ def _flush_outputs(out_units, unit_util):
 
     """
     for cur_out in out_units:
-        del unit_util[cur_out.name]
+        if _has_no_stall(unit_util[cur_out.name]):
+            del unit_util[cur_out.name]
 
 
 def _get_accepted(instructions, program, capabilities):
@@ -502,6 +512,26 @@ def _get_new_guests(src_unit, instructions):
 
     """
     return map(lambda instr: _HostedInstr(src_unit, instr), instructions)
+
+
+def _get_out_ports(processor):
+    """Find all units at the processor output boundary.
+
+    `processor` is the processor to find whose output ports.
+
+    """
+    return processor.in_out_ports + tuple(
+        map(lambda port: port.model, processor.out_ports))
+
+
+def _has_no_stall(unit_util):
+    """Test the unit utilization has no stalled instructions.
+
+    `unit_util` is instructions currently hosted by the unit.
+
+    """
+    return all(
+        map(lambda instr: instr.stalled == StallState.NO_STALL, unit_util))
 
 
 def _mov_candidate(candidate, unit, util_info):
@@ -570,6 +600,8 @@ def _run_cycle(program, acc_queues, hw_info, util_tbl, issue_rec):
     _chk_hazards(
         old_util, cp_util.items(), hw_info.name_unit_map, program, acc_queues)
     _chk_full_stall(old_util, cp_util, issue_rec.entered)
+    issue_rec.pump_outputs(
+        _count_outputs(_get_out_ports(hw_info.processor_desc), cp_util))
     util_tbl.append(cp_util)
 
 

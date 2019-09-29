@@ -274,6 +274,26 @@ class StallTest(TestCase):
                          ICaseString("output"): [InstrState(0)]},
                         {ICaseString("output"): [InstrState(1)]}]]
 
+    def test_stalled_outputs_are_not_flushed(self):
+        """Test data hazards at output ports.
+
+        `self` is this test case.
+
+        """
+        cores = [
+            UnitModel(ICaseString("core 1"), 1, [ICaseString("ALU")], LockInfo(
+                False, True)), UnitModel(ICaseString("core 2"), 1, [
+                    ICaseString("ALU")], LockInfo(True, False))]
+        assert simulate(
+            [HwInstruction(*instr_params) for instr_params in [
+                [[], ICaseString("R1"), ICaseString("ALU")],
+                [[ICaseString("R1")], ICaseString("R4"), ICaseString("ALU")]]],
+            HwSpec(ProcessorDesc([], [], cores, []))) == [
+                BagValDict(cp_util) for cp_util in [
+                    {ICaseString("core 1"): [InstrState(0)],
+                     ICaseString("core 2"): [InstrState(1, StallState.DATA)]},
+                    {ICaseString("core 2"): [InstrState(1)]}]]
+
 
 def main():
     """entry point for running test in this module"""

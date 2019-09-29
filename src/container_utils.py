@@ -156,7 +156,7 @@ class BagValDict:
         `elems` is the iterator over elements to count.
 
         """
-        return sum(map(lambda elem: 1, elems))
+        return count_if(lambda elem: True, elems)
 
     def _format_dict(self):
         """Format this dictionary.
@@ -260,6 +260,16 @@ def contains(container, elems):
 
     """
     return all(map(lambda cur_elem: cur_elem in container, elems))
+
+
+def count_if(pred, elems):
+    """Count the number of elements matching the given predicate.
+
+    `pred` is the matching predicate.
+    `elems` is the iterator over elements to count matching ones in.
+
+    """
+    return sum(1 if pred(elem) else 0 for elem in elems)
 
 
 def get_from_set(elem_set, elem):
