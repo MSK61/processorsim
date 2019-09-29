@@ -394,8 +394,7 @@ def _count_outputs(outputs, util_info):
     `util_info` is the unit utilization information.
 
     """
-    return sum(map(
-        lambda out_port: _get_unit_util(out_port.name, util_info), outputs))
+    return sum(map(lambda out_port: len(util_info[out_port.name]), outputs))
 
 
 def _fill_cp_util(processor, program, util_info, issue_rec):
@@ -497,16 +496,6 @@ def _get_candidates(unit, program, util_info):
             instr_info.index_in_host].instr)
 
 
-def _get_unit_util(unit, util_info):
-    """Retrieve the given unit current utilization level.
-
-    `unit` is the unit to get whose utilization level.
-    `util_info` is the unit utilization information.
-
-    """
-    return len(util_info[unit])
-
-
 def _mov_candidate(candidate, unit, util_info):
     """Move a candidate instruction between units.
 
@@ -583,7 +572,7 @@ def _space_avail(unit, util_info):
     `util_info` is the unit utilization information.
 
     """
-    return unit.width - _get_unit_util(unit.name, util_info)
+    return unit.width - len(util_info[unit.name])
 
 
 def _stall_unit(wr_lock, trans_util, program, acc_queues, reqs_to_clear):
