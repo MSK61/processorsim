@@ -149,7 +149,7 @@ class StallTest(TestCase):
         assert simulate(
             [HwInstruction(*instr_params) for instr_params in [
                 [[], ICaseString("R1"), ICaseString("ALU")],
-                [[ICaseString("R1")], ICaseString("R4"), ICaseString("ALU")]]],
+                [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")]]],
             HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
                 BagValDict(cp_util) for cp_util in [
                     {ICaseString("input"): [InstrState(0)]},
@@ -197,7 +197,7 @@ class StallTest(TestCase):
         assert simulate(
             [HwInstruction(*instr_params) for instr_params in [
                 [[], ICaseString("R1"), ICaseString("ALU")],
-                [[ICaseString("R1")], ICaseString("R4"), ICaseString("ALU")]]],
+                [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")]]],
             HwSpec(ProcessorDesc([], [], cores, []))) == [
                 BagValDict(cp_util) for cp_util in [
                     {ICaseString("core 1"): [InstrState(0)],
