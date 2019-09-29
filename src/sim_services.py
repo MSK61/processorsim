@@ -462,16 +462,16 @@ def _fill_unit(unit, program, util_info):
                           reverse=True), util_info)
 
 
-def _flush_outputs(out_units, unit_util):
+def _flush_outputs(out_units, util_info):
     """Flush output units in preparation for a new cycle.
 
     `out_units` are the output processing units.
-    `unit_util` is the utilization information of the given unit.
+    `util_info` is the unit utilization information.
 
     """
     for cur_out in out_units:
-        if _has_no_stall(unit_util[cur_out.name]):
-            del unit_util[cur_out.name]
+        if _has_no_stall(util_info[cur_out.name]):
+            del util_info[cur_out.name]
 
 
 def _get_accepted(instructions, program, capabilities):
