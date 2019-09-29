@@ -61,16 +61,6 @@ class BagValDict:
         if initial_dict:
             self._add_items(initial_dict.items())
 
-    def __delitem__(self, key):
-        """Delete the list of the given key.
-
-        `self` is this dictionary.
-        `key` is the key to remove whose list.
-
-        """
-        if key in self._dict:  # Ignore non-existing keys.
-            del self._dict[key]
-
     def __eq__(self, other):
         """Test if the two dictionaries are identical.
 

@@ -462,6 +462,20 @@ def _fill_unit(unit, program, util_info):
                           reverse=True), util_info)
 
 
+def _flush_output(out_unit, util_info):
+    """Flush the output unit in preparation for a new cycle.
+
+    `out_unit` is the output processing unit.
+    `util_info` is the unit utilization information.
+
+    """
+    instr_indices = reversed(range(len(util_info[out_unit])))
+
+    for instr_index in instr_indices:
+        if util_info[out_unit][instr_index].stalled == StallState.NO_STALL:
+            del util_info[out_unit][instr_index]
+
+
 def _flush_outputs(out_units, util_info):
     """Flush output units in preparation for a new cycle.
 
@@ -470,8 +484,7 @@ def _flush_outputs(out_units, util_info):
 
     """
     for cur_out in out_units:
-        if _has_no_stall(util_info[cur_out.name]):
-            del util_info[cur_out.name]
+        _flush_output(cur_out.name, util_info)
 
 
 def _get_accepted(instructions, program, capabilities):
@@ -522,16 +535,6 @@ def _get_out_ports(processor):
     """
     return processor.in_out_ports + tuple(
         map(lambda port: port.model, processor.out_ports))
-
-
-def _has_no_stall(unit_util):
-    """Test the unit utilization has no stalled instructions.
-
-    `unit_util` is instructions currently hosted by the unit.
-
-    """
-    return all(
-        map(lambda instr: instr.stalled == StallState.NO_STALL, unit_util))
 
 
 def _mov_candidate(candidate, unit, util_info):
