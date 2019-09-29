@@ -84,53 +84,6 @@ class FlowTest(TestCase):
              {ICaseString("output"): [InstrState(1)]}])
 
 
-class OutputFlushTest(TestCase):
-
-    """Test case for flushing instructions at output ports"""
-
-    def test_only_stalled_instructions_are_not_flushed(self):
-        """Test partially stalled outputs.
-
-        `self` is this test case.
-
-        """
-        cores = [
-            UnitModel(ICaseString("core 1"), 1, [ICaseString("ALU")], LockInfo(
-                False, True)), UnitModel(ICaseString("core 2"), 2, [
-                    ICaseString("ALU")], LockInfo(True, False))]
-        assert simulate(
-            [HwInstruction(*instr_params) for instr_params in [
-                [[], ICaseString("R1"), ICaseString("ALU")],
-                [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")],
-                [[], ICaseString("R3"), ICaseString("ALU")]]],
-            HwSpec(ProcessorDesc([], [], cores, []))) == [
-                BagValDict(cp_util) for cp_util in [
-                    {ICaseString("core 1"): [InstrState(0)],
-                     ICaseString("core 2"):
-                     [InstrState(1, StallState.DATA), InstrState(2)]},
-                    {ICaseString("core 2"): [InstrState(1)]}]]
-
-    def test_stalled_outputs_are_not_flushed(self):
-        """Test data hazards at output ports.
-
-        `self` is this test case.
-
-        """
-        cores = [
-            UnitModel(ICaseString("core 1"), 1, [ICaseString("ALU")], LockInfo(
-                False, True)), UnitModel(ICaseString("core 2"), 1, [
-                    ICaseString("ALU")], LockInfo(True, False))]
-        assert simulate(
-            [HwInstruction(*instr_params) for instr_params in [
-                [[], ICaseString("R1"), ICaseString("ALU")],
-                [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")]]],
-            HwSpec(ProcessorDesc([], [], cores, []))) == [
-                BagValDict(cp_util) for cp_util in [
-                    {ICaseString("core 1"): [InstrState(0)],
-                     ICaseString("core 2"): [InstrState(1, StallState.DATA)]},
-                    {ICaseString("core 2"): [InstrState(1)]}]]
-
-
 class PipelineTest(TestCase):
 
     """Test case for instruction flow in the pipeline"""
@@ -258,6 +211,36 @@ class TestBasic:
         """
         assert simulate(prog, HwSpec(cpu)) == [
             BagValDict(inst_util) for inst_util in util_tbl]
+
+
+class TestOutputFlush:
+
+    """Test case for flushing instructions at output ports"""
+
+    @mark.parametrize(
+        "core2_width, extra_instr_lst, cp0_core2_load", [(1, [], []), (2, [
+            [[], ICaseString("R3"), ICaseString("ALU")]], [InstrState(2)])])
+    def test_stalled_outputs_are_not_flushed(
+            self, core2_width, extra_instr_lst, cp0_core2_load):
+        """Test data hazards at output ports.
+
+        `self` is this test case.
+
+        """
+        cores = [
+            UnitModel(ICaseString("core 1"), 1, [ICaseString("ALU")], LockInfo(
+                False, True)), UnitModel(ICaseString("core 2"), core2_width, [
+                    ICaseString("ALU")], LockInfo(True, False))]
+        assert simulate(
+            [HwInstruction(*instr_params) for instr_params in [
+                [[], ICaseString("R1"), ICaseString("ALU")],
+                [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")]] +
+             extra_instr_lst], HwSpec(ProcessorDesc([], [], cores, []))) == [
+                 BagValDict(cp_util) for cp_util in [
+                     {ICaseString("core 1"): [InstrState(0)],
+                      ICaseString("core 2"):
+                      [InstrState(1, StallState.DATA)] + cp0_core2_load},
+                     {ICaseString("core 2"): [InstrState(1)]}]]
 
 
 class TestSim:
