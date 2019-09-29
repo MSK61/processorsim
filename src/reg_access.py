@@ -91,7 +91,7 @@ class RegAccessQueue:
         self.queue[-1].reqs.remove(req_owner)
 
         if not self.queue[-1].reqs:
-            self.queue.pop()  # pylint: disable=no-member
+            del self.queue[-1]  # pylint: disable=unsupported-delete-operation
 
     # Typically a queue pushes new elements at the back and removes old
     # elements from the front. Since this queue is going to support

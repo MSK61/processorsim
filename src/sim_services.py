@@ -396,7 +396,7 @@ def _clr_src_units(instructions, util_info):
 
     """
     for cur_instr in instructions:
-        util_info[cur_instr.host].pop(cur_instr.index_in_host)
+        del util_info[cur_instr.host][cur_instr.index_in_host]
 
 
 def _count_outputs(outputs, util_info):
