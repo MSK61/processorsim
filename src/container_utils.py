@@ -109,7 +109,7 @@ class BagValDict:
         The function only considers keys with non-empty lists.
 
         """
-        return sum(map(lambda item: 1, self.items()))
+        return self._count(self.items())
 
     def __ne__(self, other):
         """Test if the two dictionaries are different.
@@ -148,6 +148,15 @@ class BagValDict:
         for key, elem_lst in elems:
             for elem in elem_lst:
                 self[key].append(elem)
+
+    @staticmethod
+    def _count(elems):
+        """Count the number of elements in the given iterator.
+
+        `elems` is the iterator over elements to count.
+
+        """
+        return sum(map(lambda elem: 1, elems))
 
     def _format_dict(self):
         """Format this dictionary.
