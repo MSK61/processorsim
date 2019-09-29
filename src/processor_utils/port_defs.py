@@ -38,9 +38,6 @@
 #
 ############################################################
 
-import itertools
-from operator import itemgetter
-
 
 class PortGroup:
 
@@ -103,4 +100,4 @@ def _get_ports(degrees):
     A port is a unit with zero degree.
 
     """
-    return map(itemgetter(0), itertools.filterfalse(itemgetter(1), degrees))
+    return (unit for unit, deg in degrees if not deg)

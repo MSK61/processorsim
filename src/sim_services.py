@@ -44,6 +44,7 @@ import enum
 from enum import auto
 import heapq
 from itertools import chain
+import operator
 import string
 import typing
 
@@ -469,13 +470,12 @@ def _get_accepted(instructions, program, capabilities):
     `instructions` are the instructions to filter.
     `program` is the master instruction list.
     `capabilities` are the capabilities to match instructions against.
-    The function returns an iterator over tuples of the instruction
-    index and the instruction itself.
+    The function returns an iterator over the instruction indices.
 
     """
-    return filter(
+    return map(operator.itemgetter(0), filter(
         lambda instr: instr[1].stalled != StallState.DATA and program[
-            instr[1].instr].categ in capabilities, enumerate(instructions))
+            instr[1].instr].categ in capabilities, enumerate(instructions)))
 
 
 def _get_candidates(unit, program, util_info):
@@ -486,14 +486,22 @@ def _get_candidates(unit, program, util_info):
     `util_info` is the unit utilization information.
 
     """
-    candidates = map(
-        lambda src_unit: map(lambda instr_info: _HostedInstr(
-            src_unit.name, instr_info[0]), _get_accepted(util_info[
-                src_unit.name], program, unit.model.capabilities)), filter(
-                    lambda pred: pred.name in util_info, unit.predecessors))
+    candidates = (_get_new_guests(pred.name, _get_accepted(util_info[
+        pred.name], program, unit.model.capabilities)) for pred in
+                  unit.predecessors if pred.name in util_info)
     return heapq.nsmallest(_space_avail(unit.model, util_info), chain(
         *candidates), key=lambda instr_info: util_info[instr_info.host][
             instr_info.index_in_host].instr)
+
+
+def _get_new_guests(src_unit, instructions):
+    """Prepare new hosted instructions.
+
+    `src_unit` is the old host of instructions.
+    `instructions` are the new instructions to be hosted.
+
+    """
+    return map(lambda instr: _HostedInstr(src_unit, instr), instructions)
 
 
 def _mov_candidate(candidate, unit, util_info):
