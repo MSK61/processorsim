@@ -138,14 +138,14 @@ class BagValDict:
         """
         return filter(itemgetter(1), self._dict.items())
 
-    def _add_items(self, items):
+    def _add_items(self, elems):
         """Add items to this dictionary.
 
         `self` is this dictionary.
-        `items` are the items to add.
+        `elems` are the items to add.
 
         """
-        for key, elem_lst in items:
+        for key, elem_lst in elems:
             for elem in elem_lst:
                 self[key].append(elem)
 
@@ -163,9 +163,9 @@ class BagValDict:
         `self` is this dictionary.
 
         """
-        items = map(lambda item: (item[0], sorted(item[1])), self.items())
+        elems = map(lambda item: (item[0], sorted(item[1])), self.items())
         item_strings = map(lambda item: f"{item[0]!r}: {item[1]}",
-                           sorted(items, key=itemgetter(0)))
+                           sorted(elems, key=itemgetter(0)))
         sep = ", "
         return sep.join(item_strings)
 
