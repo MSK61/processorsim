@@ -132,6 +132,79 @@ class PipelineTest(TestCase):
                 {ICaseString("output"): map(InstrState, [4, 5])}]]
 
 
+class StallTest(TestCase):
+
+    """Test case for stalled instructions"""
+
+    def test_data_hazards(self):
+        """Test detecting data hazards.
+
+        `self` is this test case.
+
+        """
+        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
+                            LockInfo(True, False))
+        out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, [
+            ICaseString("ALU")], LockInfo(False, True)), [in_unit])
+        assert simulate(
+            [HwInstruction(*instr_params) for instr_params in [
+                [[], ICaseString("R1"), ICaseString("ALU")],
+                [[ICaseString("R1")], ICaseString("R4"), ICaseString("ALU")]]],
+            HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
+                BagValDict(cp_util) for cp_util in [
+                    {ICaseString("input"): [InstrState(0)]},
+                    {ICaseString("input"): [InstrState(1, StallState.DATA)],
+                     ICaseString("output"): [InstrState(0)]},
+                    {ICaseString("input"): [InstrState(1)]},
+                    {ICaseString("output"): [InstrState(1)]}]]
+
+    def test_internal_stall_is_detected(self):
+        """Test detecting stalls in internal units.
+
+        `self` is this test case.
+
+        """
+        in_unit = UnitModel(ICaseString("input"), 2, [ICaseString("ALU")],
+                            LockInfo(False, False))
+        mid = UnitModel(ICaseString("middle"), 2, [ICaseString("ALU")],
+                        LockInfo(False, False))
+        out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")],
+                             LockInfo(False, False))
+        proc_desc = ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
+                                  [FuncUnit(mid, [in_unit])])
+        assert simulate(
+            [HwInstruction(*instr_params) for instr_params in [
+                [[], "R1", ICaseString("ALU")],
+                [[], "R2", ICaseString("ALU")]]], HwSpec(proc_desc)) == [
+                    BagValDict(cp_util) for cp_util in [
+                        {ICaseString("input"): map(InstrState, [0, 1])},
+                        {ICaseString("middle"): map(InstrState, [0, 1])},
+                        {ICaseString("middle"):
+                         [InstrState(1, StallState.STRUCTURAL)],
+                         ICaseString("output"): [InstrState(0)]},
+                        {ICaseString("output"): [InstrState(1)]}]]
+
+    def test_stalled_outputs_are_not_flushed(self):
+        """Test data hazards at output ports.
+
+        `self` is this test case.
+
+        """
+        cores = [
+            UnitModel(ICaseString("core 1"), 1, [ICaseString("ALU")], LockInfo(
+                False, True)), UnitModel(ICaseString("core 2"), 1, [
+                    ICaseString("ALU")], LockInfo(True, False))]
+        assert simulate(
+            [HwInstruction(*instr_params) for instr_params in [
+                [[], ICaseString("R1"), ICaseString("ALU")],
+                [[ICaseString("R1")], ICaseString("R4"), ICaseString("ALU")]]],
+            HwSpec(ProcessorDesc([], [], cores, []))) == [
+                BagValDict(cp_util) for cp_util in [
+                    {ICaseString("core 1"): [InstrState(0)],
+                     ICaseString("core 2"): [InstrState(1, StallState.DATA)]},
+                    {ICaseString("core 2"): [InstrState(1)]}]]
+
+
 class TestBasic:
 
     """Test case for basic simulation scenarios"""
@@ -220,79 +293,6 @@ class TestSim:
             HwSpec(read_proc_file("processors", "singleALUProcessor.yaml")))
         test_utils.chk_error([test_utils.ValInStrCheck(
             ex_chk.value.processor_state, len(valid_prog))], ex_chk.value)
-
-
-class StallTest(TestCase):
-
-    """Test case for stalled instructions"""
-
-    def test_data_hazards(self):
-        """Test detecting data hazards.
-
-        `self` is this test case.
-
-        """
-        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
-                            LockInfo(True, False))
-        out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, [
-            ICaseString("ALU")], LockInfo(False, True)), [in_unit])
-        assert simulate(
-            [HwInstruction(*instr_params) for instr_params in [
-                [[], ICaseString("R1"), ICaseString("ALU")],
-                [[ICaseString("R1")], ICaseString("R4"), ICaseString("ALU")]]],
-            HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
-                BagValDict(cp_util) for cp_util in [
-                    {ICaseString("input"): [InstrState(0)]},
-                    {ICaseString("input"): [InstrState(1, StallState.DATA)],
-                     ICaseString("output"): [InstrState(0)]},
-                    {ICaseString("input"): [InstrState(1)]},
-                    {ICaseString("output"): [InstrState(1)]}]]
-
-    def test_internal_stall_is_detected(self):
-        """Test detecting stalls in internal units.
-
-        `self` is this test case.
-
-        """
-        in_unit = UnitModel(ICaseString("input"), 2, [ICaseString("ALU")],
-                            LockInfo(False, False))
-        mid = UnitModel(ICaseString("middle"), 2, [ICaseString("ALU")],
-                        LockInfo(False, False))
-        out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")],
-                             LockInfo(False, False))
-        proc_desc = ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
-                                  [FuncUnit(mid, [in_unit])])
-        assert simulate(
-            [HwInstruction(*instr_params) for instr_params in [
-                [[], "R1", ICaseString("ALU")],
-                [[], "R2", ICaseString("ALU")]]], HwSpec(proc_desc)) == [
-                    BagValDict(cp_util) for cp_util in [
-                        {ICaseString("input"): map(InstrState, [0, 1])},
-                        {ICaseString("middle"): map(InstrState, [0, 1])},
-                        {ICaseString("middle"):
-                         [InstrState(1, StallState.STRUCTURAL)],
-                         ICaseString("output"): [InstrState(0)]},
-                        {ICaseString("output"): [InstrState(1)]}]]
-
-    def test_stalled_outputs_are_not_flushed(self):
-        """Test data hazards at output ports.
-
-        `self` is this test case.
-
-        """
-        cores = [
-            UnitModel(ICaseString("core 1"), 1, [ICaseString("ALU")], LockInfo(
-                False, True)), UnitModel(ICaseString("core 2"), 1, [
-                    ICaseString("ALU")], LockInfo(True, False))]
-        assert simulate(
-            [HwInstruction(*instr_params) for instr_params in [
-                [[], ICaseString("R1"), ICaseString("ALU")],
-                [[ICaseString("R1")], ICaseString("R4"), ICaseString("ALU")]]],
-            HwSpec(ProcessorDesc([], [], cores, []))) == [
-                BagValDict(cp_util) for cp_util in [
-                    {ICaseString("core 1"): [InstrState(0)],
-                     ICaseString("core 2"): [InstrState(1, StallState.DATA)]},
-                    {ICaseString("core 2"): [InstrState(1)]}]]
 
 
 def main():
