@@ -43,8 +43,11 @@ from os.path import join
 import yaml
 
 import test_env
+import container_utils
 import processor_utils
+from processor_utils.units import UnitModel
 import program_utils
+from str_utils import ICaseString
 TEST_DATA_DIR = join(test_env.TEST_DIR, "data")
 
 
@@ -93,6 +96,38 @@ def chk_error(verify_points, error):
 
     for cur_point in verify_points:
         idx = cur_point.check(error, idx)
+
+
+def chk_two_units(proc_dir, proc_file):
+    """Verify a two-unit processor.
+
+    `proc_dir` is the directory containing the processor description file.
+    `proc_file` is the processor description file.
+    The function asserts the order and descriptions of units and links
+    among them.
+
+    """
+    proc_desc = read_proc_file(proc_dir, proc_file)
+    alu_cap = ICaseString("ALU")
+    lock_info = processor_utils.units.LockInfo(False, False)
+    out_unit = ICaseString("output")
+    assert proc_desc == processor_utils.ProcessorDesc(
+        [UnitModel(ICaseString("input"), 1, [alu_cap], lock_info)],
+        [processor_utils.units.FuncUnit(UnitModel(
+            out_unit, 1, [alu_cap], lock_info), proc_desc.in_ports)], [], [])
+
+
+def chk_warn(tokens, warn_call):
+    """Verify tokens in a warning message.
+
+    `tokens` are the tokens to assess.
+    `warn_call` is the warning function mock call.
+    The method asserts that all tokens exist in the constructed warning
+    message.
+
+    """
+    assert warn_call
+    assert container_utils.contains(warn_call[0][0] % warn_call[0][1:], tokens)
 
 
 def compile_prog(prog_file, isa):

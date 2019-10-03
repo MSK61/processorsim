@@ -24,7 +24,7 @@
 #
 # program:      processor simulator
 #
-# file:         test_processor.py
+# file:         test_loading.py
 #
 # function:     processor loading service tests
 #
@@ -39,117 +39,18 @@
 #
 ############################################################
 
-from unittest import TestCase
 from unittest.mock import patch
 
-import attr
-import networkx
 import pytest
 from pytest import mark, raises
 
-from test_utils import chk_error, read_proc_file, ValInStrCheck
-import container_utils
+from test_utils import chk_error, chk_two_units, chk_warn, read_proc_file, \
+    ValInStrCheck
 import errors
-from processor_utils import exception, load_proc_desc, ProcessorDesc
+import processor_utils
+from processor_utils import exception, ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from str_utils import ICaseString
-
-
-class CleanTest(TestCase):
-
-    """Test case for cleaning(optimizing) a processor"""
-
-    def test_data_path_cut_before_output_is_removed(self):
-        """Test a data path that ends before reaching an output.
-
-        `self` is this test case.
-        Initially a data path never ends before reaching an output(since
-        outputs in the first place are taken from where all paths end),
-        however due to optimization operations a path may be cut before
-        reaching its output so that a dead end may appear.
-
-        """
-        with patch("logging.warning") as warn_mock:
-            proc_desc = read_proc_file(
-                "optimization", "pathThatGetsCutOffItsOutput.yaml")
-        out1_unit = ICaseString("output 1")
-        alu_cap = ICaseString("ALU")
-        lock_info = LockInfo(False, False)
-        assert proc_desc == ProcessorDesc(
-            [UnitModel(ICaseString("input"), 1, [alu_cap], lock_info)],
-            [FuncUnit(UnitModel(out1_unit, 1, [alu_cap], lock_info),
-                      proc_desc.in_ports)], [], [])
-        _chk_warn(["middle"], warn_mock.call_args)
-
-    def test_incompatible_edge_is_removed(self):
-        """Test an edge connecting two incompatible units.
-
-        `self` is this test case.
-
-        """
-        with patch("logging.warning") as warn_mock:
-            proc_desc = read_proc_file(
-                "optimization", "incompatibleEdgeProcessor.yaml")
-        # pylint: disable=not-an-iterable
-        name_input_map = {
-            in_port.name: in_port for in_port in proc_desc.in_ports}
-        # pylint: enable=not-an-iterable
-        alu_cap = ICaseString("ALU")
-        lock_info = LockInfo(False, False)
-        mem_cap = ICaseString("MEM")
-        out1_unit = ICaseString("output 1")
-        out2_unit = ICaseString("output 2")
-        assert proc_desc == ProcessorDesc(
-            map(lambda unit_params: UnitModel(*unit_params),
-                [[ICaseString("input 1"), 1, [alu_cap], lock_info],
-                 [ICaseString("input 2"), 1, [mem_cap], lock_info]]),
-            map(lambda unit_params: FuncUnit(*unit_params),
-                [[UnitModel(out1_unit, 1, [alu_cap], lock_info),
-                  [name_input_map[ICaseString("input 1")]]],
-                 [UnitModel(out2_unit, 1, [mem_cap], lock_info),
-                  [name_input_map[ICaseString("input 2")]]]]), [], [])
-        _chk_warn(["input 2", "output 1"], warn_mock.call_args)
-
-    def test_unit_with_empty_capabilities_is_removed(self):
-        """Test loading a unit with no capabilities.
-
-        `self` is this test case.
-
-        """
-        with patch("logging.warning") as warn_mock:
-            assert read_proc_file(
-                "optimization",
-                "unitWithNoCapabilities.yaml") == ProcessorDesc(
-                    [], [], [UnitModel(ICaseString("core 1"), 1, [
-                        ICaseString("ALU")], LockInfo(False, False))], [])
-        _chk_warn(["core 2"], warn_mock.call_args)
-
-
-class TestBlocking:
-
-    """Test case for detecting blocked inputs"""
-
-    # pylint: disable=invalid-name
-    @mark.parametrize(
-        "in_file, isolated_input", [("isolatedInputPort.yaml", "input 2"), (
-            "processorWithNoCapableOutputs.yaml", "input")])
-    def test_in_port_with_no_compatible_out_links_raises_DeadInputError(
-            self, in_file, isolated_input):
-        """Test an input port with only incompatible out links.
-
-        `self` is this test case.
-        `in_file` is the processor description file.
-        `isolated_input` is the input unit that gets isolated during
-                         optimization.
-        An incompatible link is a link connecting an input port to a
-        successor unit with no capabilities in common.
-
-        """
-        ex_chk = raises(
-            exception.DeadInputError, read_proc_file, "blocking", in_file)
-        chk_error([ValInStrCheck(
-            ex_chk.value.port, ICaseString(isolated_input))], ex_chk.value)
-    # pylint: enable=invalid-name
 
 
 class TestCaps:
@@ -187,7 +88,7 @@ class TestCaps:
                     [ICaseString("core 1"), 1, [ICaseString("ALU")],
                      LockInfo(False, False)], [ICaseString("core 2"), 1, [
                          ICaseString("ALU")], LockInfo(False, False)]]), [])
-        _chk_warn(["ALU", "core 1", "alu", "core 2"], warn_mock.call_args)
+        chk_warn(["ALU", "core 1", "alu", "core 2"], warn_mock.call_args)
         assert ICaseString.__name__ not in warn_mock.call_args[0][
             0] % warn_mock.call_args[0][1:]
 
@@ -206,7 +107,7 @@ class TestCaps:
         """
         with patch("logging.warning") as warn_mock:
             _chk_one_unit("capabilities", in_file)
-        _chk_warn(capabilities, warn_mock.call_args)
+        chk_warn(capabilities, warn_mock.call_args)
 
     # pylint: disable=invalid-name
     @mark.parametrize(
@@ -267,7 +168,7 @@ class TestEdges:
 
         """
         with patch("logging.warning") as warn_mock:
-            _chk_two_units(
+            chk_two_units(
                 "edges",
                 "3EdgesWithSameUnitNamesAndLowerThenUpperThenMixedCase.yaml")
         assert len(warn_mock.call_args_list) == 2
@@ -294,7 +195,7 @@ class TestEdges:
 
         """
         with patch("logging.warning") as warn_mock:
-            _chk_two_units("edges", in_file)
+            chk_two_units("edges", in_file)
         self._chk_edge_warn(edges, warn_mock.call_args)
 
     @staticmethod
@@ -307,26 +208,7 @@ class TestEdges:
         warning message.
 
         """
-        _chk_warn(map(str, edges), warn_call)
-
-
-class TestLoop:
-
-    """Test case for loading processors with loops"""
-
-    # pylint: disable=invalid-name
-    @mark.parametrize("in_file", [
-        "selfNodeProcessor.yaml", "bidirectionalEdgeProcessor.yaml",
-        "bigLoopProcessor.yaml"])
-    def test_loop_raises_NetworkXUnfeasible(self, in_file):
-        """Test loading a processor with a loop.
-
-        `self` is this test case.
-        `in_file` is the processor description file.
-
-        """
-        raises(networkx.NetworkXUnfeasible, read_proc_file, "loops", in_file)
-    # pylint: enable=invalid-name
+        chk_warn(map(str, edges), warn_call)
 
 
 class TestProcessors:
@@ -339,7 +221,7 @@ class TestProcessors:
         `self` is this test case.
 
         """
-        assert load_proc_desc(
+        assert processor_utils.load_proc_desc(
             {"units": [{"name": "fullSys", "width": 1, "capabilities": ["ALU"],
                         "readLock": True, "writeLock": True}],
              "dataPath": []}) == ProcessorDesc(
@@ -380,7 +262,7 @@ class TestProcessors:
         `in_file` is the processor description file.
 
         """
-        _chk_two_units("processors", in_file)
+        chk_two_units("processors", in_file)
 
     def test_single_functional_unit_processor(self):
         """Test loading a single function unit processor.
@@ -450,127 +332,6 @@ class TestUnits:
     # pylint: enable=invalid-name
 
 
-class WidthTest(TestCase):
-
-    """Test case for checking data path width"""
-
-    def test_output_more_capable_than_input(self):
-        """Test an output which has more capabilities than the input.
-
-        `self` is this test case.
-
-        """
-        in_file = "oneCapabilityInputAndTwoCapabilitiesOutput.yaml"
-        proc_desc = read_proc_file("optimization", in_file)
-        alu_cap = ICaseString("ALU")
-        lock_info = LockInfo(False, False)
-        out_unit = ICaseString("output")
-        assert proc_desc == ProcessorDesc(
-            [UnitModel(ICaseString("input"), 1, [alu_cap], lock_info)],
-            [FuncUnit(UnitModel(out_unit, 1, [alu_cap], lock_info),
-                      proc_desc.in_ports)], [], [])
-
-    # pylint: disable=invalid-name
-    def test_unconsumed_capabilitiy_raises_BlockedCapError(self):
-        """Test an input with a capability not consumed at all.
-
-        `self` is this test case.
-
-        """
-        ex_chk = raises(exception.BlockedCapError, read_proc_file, "widths",
-                        "inputPortWithUnconsumedCapability.yaml")
-        chk_error([ValInStrCheck(
-            "Capability " + ex_chk.value.capability, "Capability MEM"),
-                   ValInStrCheck("port " + ex_chk.value.port, "port input")],
-                  ex_chk.value)
-    # pylint: enable=invalid-name
-
-
-@attr.s(auto_attribs=True, frozen=True)
-class _IoProcessor:
-
-    """Single input, single output processor"""
-
-    in_unit: str
-
-    out_unit: str
-
-    capability: str
-
-
-@attr.s(auto_attribs=True, frozen=True)
-class _LockTestData:
-
-    """Lock test data"""
-
-    prop_name: str
-
-    lock_type: str
-
-
-class TestLocks:
-
-    """Test case for checking processors for path locks"""
-
-    def test_paths_with_multiple_locks_are_only_detected_per_capability(self):
-        """Test detecting multi-lock paths per capability.
-
-        `self` is this test case.
-        The method asserts that multiple locks across a path with different
-        capabilities don't raise an exception as long as single-capability
-        paths don't have multiple locks.
-
-        """
-        load_proc_desc({"units": [
-            {"name": "ALU input", "width": 1, "capabilities": ["ALU"],
-             "readLock": True},
-            {"name": "MEM input", "width": 1, "capabilities": ["MEM"]},
-            {"name": "center", "width": 1, "capabilities": ["ALU", "MEM"]},
-            {"name": "ALU output", "width": 1, "capabilities": ["ALU"]},
-            {"name": "MEM output", "width": 1, "capabilities": ["MEM"],
-             "readLock": True}], "dataPath": [
-                 ["ALU input", "center"], ["MEM input", "center"],
-                 ["center", "ALU output"], ["center", "MEM output"]]})
-
-    # pylint: disable=invalid-name
-    @mark.parametrize("proc_desc, lock_data", [
-        (_IoProcessor("input", "output", "ALU"),
-         _LockTestData("readLock", "read")),
-        (_IoProcessor("in_unit", "out_unit", "ALU"),
-         _LockTestData("readLock", "read")),
-        (_IoProcessor("input", "output", "ALU"),
-         _LockTestData("writeLock", "write")),
-        (_IoProcessor("input", "output", "MEM"),
-         _LockTestData("readLock", "read"))])
-    def test_path_with_multiple_locks_raises_MultilockError(
-            self, proc_desc, lock_data):
-        """Test loading a processor with multiple locks in paths.
-
-        `self` is this test case.
-        `proc_desc` is the processor description.
-        `lock_data` is the lock test data.
-
-        """
-        ex_info = raises(exception.MultilockError, load_proc_desc, {
-            "units": [
-                {"name": proc_desc.in_unit, "width": 1, "capabilities":
-                 [proc_desc.capability], lock_data.prop_name: True},
-                {"name": proc_desc.out_unit, "width": 1, "capabilities":
-                 [proc_desc.capability], lock_data.prop_name: True}],
-            "dataPath": [[proc_desc.in_unit, proc_desc.out_unit]]})
-        assert ex_info.value.segment == [ICaseString(unit) for unit in [
-            proc_desc.in_unit, proc_desc.out_unit]]
-        assert ex_info.value.lock_type == lock_data.lock_type
-        ex_str = str(ex_info.value)
-        lock_type_idx = ex_str.find(lock_data.lock_type)
-        assert lock_type_idx >= 0
-        cap_idx = ex_str.find(proc_desc.capability, lock_type_idx + 1)
-        assert cap_idx >= 0
-        assert ex_str.find(", ".join([proc_desc.in_unit, proc_desc.out_unit]),
-                           cap_idx + 1) >= 0
-    # pylint: enable=invalid-name
-
-
 def main():
     """entry point for running test in this module"""
     pytest.main([__file__])
@@ -586,38 +347,6 @@ def _chk_one_unit(proc_dir, proc_file):
     assert read_proc_file(proc_dir, proc_file) == ProcessorDesc([], [], [
         UnitModel(ICaseString("fullSys"), 1, [ICaseString("ALU")],
                   LockInfo(False, False))], [])
-
-
-def _chk_two_units(proc_dir, proc_file):
-    """Verify a two-unit processor.
-
-    `proc_dir` is the directory containing the processor description file.
-    `proc_file` is the processor description file.
-    The function asserts the order and descriptions of units and links
-    among them.
-
-    """
-    proc_desc = read_proc_file(proc_dir, proc_file)
-    alu_cap = ICaseString("ALU")
-    lock_info = LockInfo(False, False)
-    out_unit = ICaseString("output")
-    assert proc_desc == ProcessorDesc(
-        [UnitModel(ICaseString("input"), 1, [alu_cap], lock_info)],
-        [FuncUnit(UnitModel(out_unit, 1, [alu_cap], lock_info),
-                  proc_desc.in_ports)], [], [])
-
-
-def _chk_warn(tokens, warn_call):
-    """Verify tokens in a warning message.
-
-    `tokens` are the tokens to assess.
-    `warn_call` is the warning function mock call.
-    The method asserts that all tokens exist in the constructed warning
-    message.
-
-    """
-    assert warn_call
-    assert container_utils.contains(warn_call[0][0] % warn_call[0][1:], tokens)
 
 
 if __name__ == '__main__':
