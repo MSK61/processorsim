@@ -39,7 +39,7 @@
 #
 ############################################################
 
-import unittest
+from unittest import TestCase
 from unittest.mock import patch
 
 import attr
@@ -55,7 +55,7 @@ from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from str_utils import ICaseString
 
 
-class CleanTest(unittest.TestCase):
+class CleanTest(TestCase):
 
     """Test case for cleaning(optimizing) a processor"""
 
@@ -450,7 +450,7 @@ class TestUnits:
     # pylint: enable=invalid-name
 
 
-class TestWidth:
+class WidthTest(TestCase):
 
     """Test case for checking data path width"""
 
