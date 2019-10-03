@@ -22,7 +22,6 @@ networkx
 pytest-codestyle
 pytest-cov
 pytest-flakes
-six # to override virtualenv pre-installed six in travis
 pytest-pylint
 pytest-travis-fold
 python-coveralls
