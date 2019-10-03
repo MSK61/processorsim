@@ -42,6 +42,7 @@
 import unittest
 
 import test_env
+import container_utils
 from container_utils import BagValDict
 
 
@@ -65,6 +66,14 @@ class CoverageTest(unittest.TestCase):
 
         """
         repr(BagValDict())
+
+    def test_IndexedSet_repr(self):
+        """Test IndexedSet representation.
+
+        `self` is this test case.
+
+        """
+        repr(container_utils.IndexedSet(lambda elem: elem))
 
 
 def main():

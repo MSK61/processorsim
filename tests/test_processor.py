@@ -39,7 +39,7 @@
 #
 ############################################################
 
-from unittest import TestCase
+import unittest
 from unittest.mock import patch
 
 import attr
@@ -55,7 +55,7 @@ from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from str_utils import ICaseString
 
 
-class CleanTest(TestCase):
+class CleanTest(unittest.TestCase):
 
     """Test case for cleaning(optimizing) a processor"""
 
@@ -123,20 +123,6 @@ class CleanTest(TestCase):
                     [], [], [UnitModel(ICaseString("core 1"), 1, [
                         ICaseString("ALU")], LockInfo(False, False))], [])
         _chk_warn(["core 2"], warn_mock.call_args)
-
-
-class CoverageTest(TestCase):
-
-    """Test case for fulfilling complete code coverage"""
-    # pylint: disable=invalid-name
-
-    def test_IndexedSet_repr(self):
-        """Test IndexedSet representation.
-
-        `self` is this test case.
-
-        """
-        repr(container_utils.IndexedSet(lambda elem: elem))
 
 
 class TestBlocking:
