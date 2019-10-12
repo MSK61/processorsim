@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.39.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -108,12 +108,12 @@ class WidthTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        ex_chk = raises(exception.BlockedCapError, read_proc_file, "widths",
-                        "inputPortWithUnconsumedCapability.yaml")
+        with self.assertRaises(exception.BlockedCapError) as ex_chk:
+            read_proc_file("widths", "inputPortWithUnconsumedCapability.yaml")
         chk_error([ValInStrCheck(
-            "Capability " + ex_chk.value.capability, "Capability MEM"),
-                   ValInStrCheck("port " + ex_chk.value.port, "port input")],
-                  ex_chk.value)
+            "Capability " + ex_chk.exception.capability, "Capability MEM"),
+                   ValInStrCheck("port " + ex_chk.exception.port,
+                                 "port input")], ex_chk.exception)
     # pylint: enable=invalid-name
 
 
