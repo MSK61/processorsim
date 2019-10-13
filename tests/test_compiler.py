@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.39.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -40,7 +40,7 @@
 ############################################################
 
 import itertools
-from unittest.mock import patch
+from logging import WARNING
 
 import pytest
 from pytest import mark, raises
@@ -77,46 +77,46 @@ class TestProgLoad:
 
     @mark.parametrize("dup_reg", ["R2", "R3"])
     def test_same_operand_with_different_case_in_same_instruction_is_detected(
-            self, dup_reg):
+            self, caplog, dup_reg):
         """Test loading operands in different cases(same instruction).
 
         `self` is this test case.
+        `caplog` is the log capture fixture.
         `dup_reg` is the duplicate register.
 
         """
         lower_reg = dup_reg.lower()
         upper_reg = dup_reg.upper()
-        with patch("logging.warning") as warn_mock:
-            assert read_program([f"ADD R1, {upper_reg}, {lower_reg}"]) == [
-                ProgInstruction(
-                    [ICaseString(dup_reg)], ICaseString("R1"), "ADD", 1)]
-        assert warn_mock.call_args
-        warn_msg = warn_mock.call_args[0][0] % warn_mock.call_args[0][1:]
+        caplog.set_level(WARNING)
+        assert read_program([f"ADD R1, {upper_reg}, {lower_reg}"]) == [
+            ProgInstruction(
+                [ICaseString(dup_reg)], ICaseString("R1"), "ADD", 1)]
+        assert caplog.records
+        warn_msg = caplog.records[0].getMessage()
 
         for reg in [lower_reg, upper_reg]:
             assert reg in warn_msg
 
     @mark.parametrize("preamble", [0, 2])
     def test_same_operand_with_different_case_in_two_instructions_is_detected(
-            self, preamble):
+            self, caplog, preamble):
         """Test loading operands in different cases(two instructions).
 
         `self` is this test case.
+        `caplog` is the log capture fixture.
         `preamble` is the number of lines preceding the instructions
                    containing registers.
 
         """
-        with patch("logging.warning") as warn_mock:
-            assert read_program(
-                itertools.chain(itertools.repeat("", preamble), [
-                    "ADD R1, R2, R3", "ADD R4, r2, R5"])) == [
-                        ProgInstruction(*instr_params) for instr_params in [
-                            [map(ICaseString, ["R2", "R3"]), ICaseString("R1"),
-                             "ADD", preamble + 1],
-                            [map(ICaseString, ["r2", "R5"]), ICaseString("R4"),
-                             "ADD", preamble + 2]]]
-        assert warn_mock.call_args
-        warn_msg = warn_mock.call_args[0][0] % warn_mock.call_args[0][1:]
+        caplog.set_level(WARNING)
+        assert read_program(itertools.chain(itertools.repeat("", preamble), [
+            "ADD R1, R2, R3", "ADD R4, r2, R5"])) == [
+                ProgInstruction(*instr_params) for instr_params in [
+                    [map(ICaseString, ["R2", "R3"]), ICaseString("R1"), "ADD",
+                     preamble + 1], [map(ICaseString, ["r2", "R5"]),
+                                     ICaseString("R4"), "ADD", preamble + 2]]]
+        assert caplog.records
+        warn_msg = caplog.records[0].getMessage()
 
         for reg in ["r2", str(preamble + 2), "R2", str(preamble + 1)]:
             assert reg in warn_msg
@@ -207,17 +207,18 @@ class TestSyntax:
         "instructionWithOneTabAfterComma.asm",
         "instructionWithTwoSpacesBeforeOperands.asm",
         "instructionWithOneTabBeforeOperands.asm"])
-    def test_well_formed_instruction(self, prog_file):
+    def test_well_formed_instruction(self, caplog, prog_file):
         """Test loading a single-instruction program.
 
         `self` is this test case.
+        `caplog` is the log capture fixture.
         `prog_file` is the program file.
 
         """
-        with patch("logging.warning") as warn_mock:
-            self._test_program(prog_file, [ProgInstruction(map(
-                ICaseString, ["R11", "R15"]), ICaseString("R14"), "ADD", 1)])
-        assert not warn_mock.call_args
+        caplog.set_level(WARNING)
+        self._test_program(prog_file, [ProgInstruction(
+            map(ICaseString, ["R11", "R15"]), ICaseString("R14"), "ADD", 1)])
+        assert not caplog.records
 
     @staticmethod
     def _chk_syn_err(syn_err, line_num, instr):

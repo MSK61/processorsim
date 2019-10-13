@@ -32,16 +32,15 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.39.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+from logging import WARNING
 import unittest
-from unittest import TestCase
-from unittest.mock import patch
 
 import test_utils
 from test_utils import chk_warn, read_proc_file
@@ -50,23 +49,24 @@ from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from str_utils import ICaseString
 
 
-class CleanTest(TestCase):
+class TestClean:
 
     """Test case for cleaning(optimizing) a processor"""
 
-    def test_data_path_cut_before_output_is_removed(self):
+    def test_data_path_cut_before_output_is_removed(self, caplog):
         """Test a data path that ends before reaching an output.
 
         `self` is this test case.
+        `caplog` is the log capture fixture.
         Initially a data path never ends before reaching an output(since
         outputs in the first place are taken from where all paths end),
         however due to optimization operations a path may be cut before
         reaching its output so that a dead end may appear.
 
         """
-        with patch("logging.warning") as warn_mock:
-            proc_desc = read_proc_file(
-                "optimization", "pathThatGetsCutOffItsOutput.yaml")
+        caplog.set_level(WARNING)
+        proc_desc = read_proc_file(
+            "optimization", "pathThatGetsCutOffItsOutput.yaml")
         out1_unit = ICaseString("output 1")
         alu_cap = ICaseString("ALU")
         lock_info = LockInfo(False, False)
@@ -74,17 +74,18 @@ class CleanTest(TestCase):
             [UnitModel(ICaseString("input"), 1, [alu_cap], lock_info)],
             [FuncUnit(UnitModel(out1_unit, 1, [alu_cap], lock_info),
                       proc_desc.in_ports)], [], [])
-        chk_warn(["middle"], warn_mock.call_args)
+        chk_warn(["middle"], caplog.records)
 
-    def test_incompatible_edge_is_removed(self):
+    def test_incompatible_edge_is_removed(self, caplog):
         """Test an edge connecting two incompatible units.
 
         `self` is this test case.
+        `caplog` is the log capture fixture.
 
         """
-        with patch("logging.warning") as warn_mock:
-            proc_desc = read_proc_file(
-                "optimization", "incompatibleEdgeProcessor.yaml")
+        caplog.set_level(WARNING)
+        proc_desc = read_proc_file(
+            "optimization", "incompatibleEdgeProcessor.yaml")
         # pylint: disable=not-an-iterable
         name_input_map = {
             in_port.name: in_port for in_port in proc_desc.in_ports}
@@ -103,24 +104,24 @@ class CleanTest(TestCase):
                   [name_input_map[ICaseString("input 1")]]],
                  [UnitModel(out2_unit, 1, [mem_cap], lock_info),
                   [name_input_map[ICaseString("input 2")]]]]), [], [])
-        chk_warn(["input 2", "output 1"], warn_mock.call_args)
+        chk_warn(["input 2", "output 1"], caplog.records)
 
-    def test_unit_with_empty_capabilities_is_removed(self):
+    def test_unit_with_empty_capabilities_is_removed(self, caplog):
         """Test loading a unit with no capabilities.
 
         `self` is this test case.
+        `caplog` is the log capture fixture.
 
         """
-        with patch("logging.warning") as warn_mock:
-            assert read_proc_file(
-                "optimization",
-                "unitWithNoCapabilities.yaml") == ProcessorDesc(
-                    [], [], [UnitModel(ICaseString("core 1"), 1, [
-                        ICaseString("ALU")], LockInfo(False, False))], [])
-        chk_warn(["core 2"], warn_mock.call_args)
+        caplog.set_level(WARNING)
+        assert read_proc_file(
+            "optimization", "unitWithNoCapabilities.yaml") == ProcessorDesc(
+                [], [], [UnitModel(ICaseString("core 1"), 1, [
+                    ICaseString("ALU")], LockInfo(False, False))], [])
+        chk_warn(["core 2"], caplog.records)
 
 
-class WidthTest(TestCase):
+class WidthTest(unittest.TestCase):
 
     """Test case for checking data path width"""
 

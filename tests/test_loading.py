@@ -32,20 +32,21 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.39.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-from unittest.mock import patch
+from logging import WARNING
 
 import pytest
 from pytest import mark, raises
 
 from test_utils import chk_error, chk_two_units, chk_warn, read_proc_file, \
     ValInStrCheck
+import container_utils
 import errors
 import processor_utils
 from processor_utils import exception, ProcessorDesc
@@ -75,39 +76,40 @@ class TestCaps:
     # pylint: enable=invalid-name
 
     def test_same_capability_with_different_case_in_two_units_is_detected(
-            self):
+            self, caplog):
         """Test loading a capability with different cases in two units.
 
         `self` is this test case.
+        `caplog` is the log capture fixture.
 
         """
+        caplog.set_level(WARNING)
         in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits.yaml"
-        with patch("logging.warning") as warn_mock:
-            assert read_proc_file("capabilities", in_file) == ProcessorDesc(
-                [], [], map(lambda unit_params: UnitModel(*unit_params), [
-                    [ICaseString("core 1"), 1, [ICaseString("ALU")],
-                     LockInfo(False, False)], [ICaseString("core 2"), 1, [
-                         ICaseString("ALU")], LockInfo(False, False)]]), [])
-        chk_warn(["ALU", "core 1", "alu", "core 2"], warn_mock.call_args)
-        assert ICaseString.__name__ not in warn_mock.call_args[0][
-            0] % warn_mock.call_args[0][1:]
+        assert read_proc_file("capabilities", in_file) == ProcessorDesc(
+            [], [], map(lambda unit_params: UnitModel(*unit_params), [
+                [ICaseString("core 1"), 1, [ICaseString("ALU")],
+                 LockInfo(False, False)], [ICaseString("core 2"), 1, [
+                     ICaseString("ALU")], LockInfo(False, False)]]), [])
+        chk_warn(["ALU", "core 1", "alu", "core 2"], caplog.records)
+        assert ICaseString.__name__ not in caplog.records[0].getMessage()
 
     @mark.parametrize("in_file, capabilities", [
         ("twoCapabilitiesWithSameNameAndCaseInOneUnit.yaml", ["ALU"]),
         ("twoCapabilitiesWithSameNameAndDifferentCaseInOneUnit.yaml",
          ["ALU", "alu"])])
     def test_two_capabilities_with_same_name_in_one_unit_are_detected(
-            self, in_file, capabilities):
+            self, caplog, in_file, capabilities):
         """Test loading two capabilities with the same name in one unit.
 
         `self` is this test case.
+        `caplog` is the log capture fixture.
         `in_file` is the processor description file.
         `capabilities` are the identical capabilities.
 
         """
-        with patch("logging.warning") as warn_mock:
-            _chk_one_unit("capabilities", in_file)
-        chk_warn(capabilities, warn_mock.call_args)
+        caplog.set_level(WARNING)
+        _chk_one_unit("capabilities", in_file)
+        chk_warn(capabilities, caplog.records)
 
     # pylint: disable=invalid-name
     @mark.parametrize(
@@ -161,23 +163,24 @@ class TestEdges:
         chk_error([ValInStrCheck(ex_chk.value.edge, bad_edge)], ex_chk.value)
     # pylint: enable=invalid-name
 
-    def test_three_identical_edges_are_detected(self):
+    def test_three_identical_edges_are_detected(self, caplog):
         """Test loading three identical edges with the same units.
 
         `self` is this test case.
+        `caplog` is the log capture fixture.
 
         """
-        with patch("logging.warning") as warn_mock:
-            chk_two_units(
-                "edges",
-                "3EdgesWithSameUnitNamesAndLowerThenUpperThenMixedCase.yaml")
-        assert len(warn_mock.call_args_list) == 2
-        chk_entries = zip(warn_mock.call_args_list, [
-            [["input", "output"], ["INPUT", "OUTPUT"]],
-            [["input", "output"], ["Input", "Output"]]])
+        caplog.set_level(WARNING)
+        chk_two_units(
+            "edges",
+            "3EdgesWithSameUnitNamesAndLowerThenUpperThenMixedCase.yaml")
+        assert len(caplog.records) == 2
+        chk_entries = zip(
+            caplog.records, [[["input", "output"], ["INPUT", "OUTPUT"]],
+                             [["input", "output"], ["Input", "Output"]]])
 
-        for cur_call, edge_pair in chk_entries:
-            self._chk_edge_warn(edge_pair, cur_call)
+        for cur_rec, edge_pair in chk_entries:
+            self._chk_edge_warn(edge_pair, cur_rec)
 
     @mark.parametrize(
         "in_file, edges",
@@ -186,17 +189,19 @@ class TestEdges:
           [["input", "output"], ["INPUT", "OUTPUT"]]),
          ("twoEdgesWithSameUnitNamesAndUpperThenLowerCase.yaml",
           [["INPUT", "OUTPUT"], ["input", "output"]])])
-    def test_two_identical_edges_are_detected(self, in_file, edges):
+    def test_two_identical_edges_are_detected(self, caplog, in_file, edges):
         """Test loading two identical edges with the same units.
 
         `self` is this test case.
+        `caplog` is the log capture fixture.
         `in_file` is the processor description file.
         `edges` are the identical edges.
 
         """
-        with patch("logging.warning") as warn_mock:
-            chk_two_units("edges", in_file)
-        self._chk_edge_warn(edges, warn_mock.call_args)
+        caplog.set_level(WARNING)
+        chk_two_units("edges", in_file)
+        assert caplog.records
+        self._chk_edge_warn(edges, caplog.records[0])
 
     @staticmethod
     def _chk_edge_warn(edges, warn_call):
@@ -208,7 +213,8 @@ class TestEdges:
         warning message.
 
         """
-        chk_warn(map(str, edges), warn_call)
+        assert container_utils.contains(
+            warn_call.getMessage(), map(str, edges))
 
 
 class TestProcessors:

@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.39.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -39,7 +39,7 @@
 ############################################################
 
 import functools
-import logging
+from logging import warning
 from operator import itemgetter
 import os
 import sys
@@ -126,7 +126,7 @@ def _add_capability(unit, cap, cap_list, unit_cap_reg, global_cap_reg):
     old_cap = unit_cap_reg.get(cap)
 
     if old_cap:
-        logging.warning(
+        warning(
             "Capability %s previously added as %s for unit %s, ignoring...",
             cap, old_cap, unit)
     else:
@@ -156,8 +156,7 @@ def _add_edge(processor, edge, unit_registry, edge_registry):
     old_edge = edge_registry.get(edge)
 
     if old_edge:
-        logging.warning(
-            "Edge %s previously added as %s, ignoring...", edge, old_edge)
+        warning("Edge %s previously added as %s, ignoring...", edge, old_edge)
     else:
         edge_registry.add(edge)
 
@@ -191,9 +190,9 @@ def _add_new_cap(cap, cap_list, unit_cap_reg, global_cap_reg):
     std_cap = container_utils.get_from_set(global_cap_reg, cap)
 
     if std_cap.name.raw_str != cap.name.raw_str:
-        logging.warning("Capability %s in unit %s previously defined as %s in "
-                        "unit %s, using original definition...", cap.name,
-                        cap.unit, std_cap.name, std_cap.unit)
+        warning("Capability %s in unit %s previously defined as %s in unit %s,"
+                " using original definition...", cap.name, cap.unit,
+                std_cap.name, std_cap.unit)
 
     cap_list.append(std_cap.name)
     unit_cap_reg.add(cap.name)

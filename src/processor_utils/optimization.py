@@ -31,14 +31,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.39.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import logging
+from logging import warning
 
 import networkx
 
@@ -145,7 +145,7 @@ def _rm_dead_end(processor, dead_end, in_ports):
                              f"${DeadInputError.PORT_KEY} to any output ports",
                              dead_end)
 
-    logging.warning("Dead end detected at unit %s, removing...", dead_end)
+    warning("Dead end detected at unit %s, removing...", dead_end)
     processor.remove_node(dead_end)
 
 
@@ -156,8 +156,8 @@ def _rm_dummy_edge(processor, edge):
     `edge` is the edge to remove.
 
     """
-    logging.warning("Units %s and %s have no capabilities in common, "
-                    "removing connecting edge...", *edge)
+    warning("Units %s and %s have no capabilities in common, removing "
+            "connecting edge...", *edge)
     processor.remove_edge(*edge)
 
 
@@ -168,5 +168,5 @@ def _rm_empty_unit(processor, unit):
     `unit` is the unit to remove.
 
     """
-    logging.warning("No capabilities defined for unit %s, removing...", unit)
+    warning("No capabilities defined for unit %s, removing...", unit)
     processor.remove_node(unit)

@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.39.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -117,17 +117,17 @@ def chk_two_units(proc_dir, proc_file):
             out_unit, 1, [alu_cap], lock_info), proc_desc.in_ports)], [], [])
 
 
-def chk_warn(tokens, warn_call):
+def chk_warn(tokens, warn_calls):
     """Verify tokens in a warning message.
 
     `tokens` are the tokens to assess.
-    `warn_call` is the warning function mock call.
+    `warn_calls` are the warning function mock calls.
     The method asserts that all tokens exist in the constructed warning
     message.
 
     """
-    assert warn_call
-    assert container_utils.contains(warn_call[0][0] % warn_call[0][1:], tokens)
+    assert warn_calls
+    assert container_utils.contains(warn_calls[0].getMessage(), tokens)
 
 
 def compile_prog(prog_file, isa):
