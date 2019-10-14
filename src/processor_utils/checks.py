@@ -32,13 +32,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.39.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import dataclasses
 import operator
 import typing
 
@@ -56,7 +57,7 @@ from .units import UNIT_CAPS_KEY, UNIT_WIDTH_KEY
 _OLD_NODE_KEY = "old_node"
 
 
-@attr.s(auto_attribs=True)
+@dataclasses.dataclass
 class _PathLockInfo:
 
     """Path locking information"""
