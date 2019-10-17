@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.39.1, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -294,6 +294,7 @@ class MultilockError(RuntimeError):
             {self.CAP_KEY: capability, self.LOCK_TYPE_KEY: lock_type,
              self.SEG_KEY: self._format_path()}))
         self._lock_type = lock_type
+        self._capability = capability
 
     def _format_nodes(self):
         """Format the associated path nodes.
@@ -311,6 +312,15 @@ class MultilockError(RuntimeError):
 
         """
         return f"[{self._format_nodes()}]"
+
+    @property
+    def capability(self):
+        """capability of the path
+
+        `self` is this multi-lock error.
+
+        """
+        return self._capability
 
     @property
     def lock_type(self):

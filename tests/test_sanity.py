@@ -192,6 +192,7 @@ class TestLocks:
         assert ex_info.value.segment == [ICaseString(unit) for unit in [
             proc_desc.in_unit, proc_desc.out_unit]]
         assert ex_info.value.lock_type == lock_data.lock_type
+        assert ex_info.value.capability == ICaseString(proc_desc.capability)
         ex_str = str(ex_info.value)
         lock_type_idx = ex_str.find(lock_data.lock_type)
         assert lock_type_idx >= 0
