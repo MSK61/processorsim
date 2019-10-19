@@ -32,14 +32,13 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.39.1, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.39.2, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import dataclasses
 import operator
 import typing
 
@@ -48,7 +47,7 @@ import networkx
 from networkx import DiGraph
 
 import container_utils
-import str_utils
+from str_utils import ICaseString
 from . import exception
 from .exception import BlockedCapError, ComponentInfo, MultilockError
 from . import port_defs
@@ -57,24 +56,14 @@ from .units import UNIT_CAPS_KEY, UNIT_WIDTH_KEY
 _OLD_NODE_KEY = "old_node"
 
 
-@dataclasses.dataclass
-class _PathLockInfo:
-
-    """Path locking information"""
-
-    num_of_locks: int
-
-    next_node: str_utils.ICaseString
-
-
 @attr.s(auto_attribs=True, frozen=True)
 class _SatInfo:
 
     """Lock saturation information"""
 
-    read_path: _PathLockInfo
+    read_path: int
 
-    write_path: _PathLockInfo
+    write_path: int
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -82,9 +71,13 @@ class _PathDescriptor:
 
     """Path descriptor in multi-lock analysis"""
 
-    selector: typing.Callable[[_SatInfo], _PathLockInfo]
+    selector: typing.Callable[[_SatInfo], int]
 
     lock_type: str
+
+    capability: ICaseString
+
+    start: ICaseString
 
 
 def chk_caps(processor):
@@ -121,32 +114,6 @@ def chk_non_empty(processor, in_ports):
         next(filter(lambda port: port in processor, in_ports))
     except StopIteration:  # No ports exist.
         raise exception.EmptyProcError("No input ports found")
-
-
-def _accum_locks(path_locks, path_desc, capability, unit):
-    """Accumulate successor locks into the given unit.
-
-    `path_locks` are the map from a unit to the information of the path
-                 with maximum locks.
-    `path_desc` is the path descriptor.
-    `capability` is the capability of lock paths under consideration.
-    `unit` is the unit to accumulate the successor path to.
-    The function accumulates the locks in the successor unit to the path
-    starting at the given unit. It raises a MultilockError if any paths
-    originating from the given unit have multiple locks.
-
-    """
-    cur_node = path_desc.selector(path_locks[unit])
-    cur_node.num_of_locks += path_desc.selector(
-        path_locks[cur_node.next_node]).num_of_locks
-
-    if cur_node.num_of_locks > 1:
-        raise MultilockError(
-            f"Path segment with multiple ${MultilockError.LOCK_TYPE_KEY} locks"
-            f" for capability ${MultilockError.CAP_KEY} found, "
-            f"${MultilockError.SEG_KEY}",
-            _create_path(path_locks, path_desc.selector, unit),
-            path_desc.lock_type, capability)
 
 
 def _add_port_link(graph, old_port, new_port, link):
@@ -190,6 +157,34 @@ def _aug_terminals(graph, ports, edge_func):
     """
     return ports[0] if len(ports) == 1 else _unify_ports(
         graph, ports, edge_func)
+
+
+def _calc_path_lock(unit_lock, succ_lst, path_desc, path_locks):
+    """Initialize the path lock.
+
+    `unit_lock` is the lock status of the unit.
+    `succ_lst` is the list of successor units.
+    `path_desc` is the path descriptor.
+    `path_locks` are the map from a unit to its maximum lock.
+    The function raises a MultilockError if any path originating from
+    the start unit has multiple locks or differnt paths have different
+    locks.
+
+    """
+    path_lock = 1 if unit_lock else 0
+    tail_lock = _get_tail_lock(succ_lst, path_desc, path_locks)
+
+    if tail_lock >= 0:
+        path_lock += tail_lock
+
+    if path_lock > 1:
+        raise MultilockError(
+            f"Path segment originating from ${MultilockError.START_KEY} with "
+            f"multiple ${MultilockError.LOCK_TYPE_KEY} locks for capability "
+            f"${MultilockError.CAP_KEY} found", path_desc.start,
+            path_desc.lock_type, path_desc.capability)
+
+    return path_lock
 
 
 def _cap_in_edge(processor, capability, edge):
@@ -271,15 +266,13 @@ def _chk_path_locks(start, processor, path_locks, capability):
 
     """
     succ_lst = list(processor.successors(start))
-    path_locks[start] = _SatInfo(_init_path_lock(
-        processor.nodes[start][units.UNIT_RLOCK_KEY], succ_lst, _get_read_path,
-        path_locks), _init_path_lock(processor.nodes[start][
-            units.UNIT_WLOCK_KEY], succ_lst, _get_write_path, path_locks))
-
-    for path_desc in [_PathDescriptor(_get_read_path, "read"),
-                      _PathDescriptor(_get_write_path, "write")]:
-        if path_desc.selector(path_locks[start]).next_node:
-            _accum_locks(path_locks, path_desc, capability, start)
+    path_locks[start] = _SatInfo(
+        _calc_path_lock(
+            processor.nodes[start][units.UNIT_RLOCK_KEY], succ_lst,
+            _PathDescriptor(_get_read_path, "read", capability, start),
+            path_locks), _calc_path_lock(processor.nodes[start][
+                units.UNIT_WLOCK_KEY], succ_lst, _PathDescriptor(
+                    _get_write_path, "write", capability, start), path_locks))
 
 
 def _chk_unit_flow(min_width, capability_info, port_info):
@@ -299,25 +292,6 @@ def _chk_unit_flow(min_width, capability_info, port_info):
             f"${BlockedCapError.CAPABILITY_KEY} blocked from "
             f"${BlockedCapError.PORT_KEY}", exception.CapPortInfo(
                 capability_info, port_info))
-
-
-def _create_path(path_locks, path_sel, start):
-    """Construct the path containing multiple locks.
-
-    `path_locks` are the map from a unit to the information of the path
-                 with maximum locks.
-    `path_sel` is the path selection function.
-    `start` is the starting unit of paths to check.
-
-    """
-    multilock_path = []
-    cur_node = start
-
-    while cur_node:
-        cur_node = path_sel(
-            path_locks[_update_path(multilock_path, cur_node)]).next_node
-
-    return multilock_path
 
 
 def _coll_cap_edges(graph):
@@ -468,6 +442,27 @@ def _get_read_path(sat_info):
     return sat_info.read_path
 
 
+def _get_tail_lock(succ_lst, path_desc, path_locks):
+    """Get the common lock of tail paths.
+
+    `succ_lst` is the list of successor units.
+    `path_desc` is the path descriptor.
+    `path_locks` are the map from a unit to its maximum lock.
+    The function returns the lock of successor paths, which has to be
+    the same for all units. If the paths have different locks, the
+    function raises a MultilockError. If the given list of units is
+    empty, the function returns a negative value.
+
+    """
+    one_lock = -1
+
+    for cur_succ in succ_lst:
+        one_lock = _update_lock(
+            one_lock, path_desc.selector(path_locks[cur_succ]), path_desc)
+
+    return one_lock
+
+
 def _get_write_path(sat_info):
     """Retrieve the write path from the given saturation information.
 
@@ -475,21 +470,6 @@ def _get_write_path(sat_info):
 
     """
     return sat_info.write_path
-
-
-def _init_path_lock(unit_lock, succ_lst, path_sel, path_locks):
-    """Initialize the path lock information.
-
-    `unit_lock` is the lock status of the unit.
-    `succ_lst` is the list of successor units.
-    `path_sel` is the path selection function.
-    `path_locks` are the map from a unit to the information of the path
-                 with maximum locks.
-
-    """
-    return _PathLockInfo(
-        1 if unit_lock else 0, max(succ_lst, default=None, key=lambda succ:
-                                   path_sel(path_locks[succ]).num_of_locks))
 
 
 def _make_cap_graph(processor, capability):
@@ -631,13 +611,25 @@ def _update_graph(idx, unit, processor, width_graph, unit_idx_map):
     unit_idx_map[unit] = idx
 
 
-def _update_path(multilock_path, new_node):
-    """Update the path containing multiple locks.
+def _update_lock(old_lock, new_lock, path_desc):
+    """Update the lock based on the current and proposed values.
 
-    `multilock_path` is the multi-lock path to update.
-    `new_node` is the node to append to the path.
-    The function appends the given node and returns it.
+    `old_lock` is the lock value so far.
+    `new_lock` is the new proposed lock value.
+    `path_desc` is the descriptor of the path for which the lock is
+                updated.
+    The function initializes the current lock value if it hasn't already
+    been initialized, otherwise it makes sure the new value matches the
+    old one. If the new value is different from the current one, the
+    function raises a MultilockError. The function returns the updated
+    lock.
 
     """
-    multilock_path.append(new_node)
-    return new_node
+    if old_lock < 0 or new_lock == old_lock:
+        return new_lock
+
+    raise MultilockError(
+        f"Path segments originating from ${MultilockError.START_KEY} have "
+        f"different ${MultilockError.LOCK_TYPE_KEY} locks for capability "
+        f"${MultilockError.CAP_KEY}.", path_desc.start, path_desc.lock_type,
+        path_desc.capability)

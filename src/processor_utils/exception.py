@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.39.1, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.39.2, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -278,40 +278,23 @@ class MultilockError(RuntimeError):
 
     """Bad edge error"""
 
-    def __init__(self, msg_tmpl, segment, lock_type, capability):
+    def __init__(self, msg_tmpl, start, lock_type, capability):
         """Create a multi-lock error.
 
         `self` is this multi-lock error.
         `msg_tmpl` is the error message format taking the multi-lock
                    segment as a positional argument.
-        `segment` is the path segment containing multiple locks.
+        `start` is the path start unit.
         `lock_type` is the type of locks along the path.
         `capability` is the capability for which the path was computed.
 
         """
-        self._segment = segment
         RuntimeError.__init__(self, Template(msg_tmpl).substitute(
             {self.CAP_KEY: capability, self.LOCK_TYPE_KEY: lock_type,
-             self.SEG_KEY: self._format_path()}))
+             self.START_KEY: start}))
+        self._start = start
         self._lock_type = lock_type
         self._capability = capability
-
-    def _format_nodes(self):
-        """Format the associated path nodes.
-
-        `self` is this multi-lock error.
-
-        """
-        sep = ", "
-        return sep.join(map(str, self._segment))
-
-    def _format_path(self):
-        """Format the associated path.
-
-        `self` is this multi-lock error.
-
-        """
-        return f"[{self._format_nodes()}]"
 
     @property
     def capability(self):
@@ -332,17 +315,17 @@ class MultilockError(RuntimeError):
         return self._lock_type
 
     @property
-    def segment(self):
-        """path segment containing multiple locks
+    def start(self):
+        """path start point
 
         `self` is this multi-lock error.
 
         """
-        return self._segment
+        return self._start
 
     # parameter keys in message format
     CAP_KEY = "capability"
 
     LOCK_TYPE_KEY = "lock_type"
 
-    SEG_KEY = "segment"
+    START_KEY = "start"

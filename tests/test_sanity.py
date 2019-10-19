@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.39.1, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.39.2, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -47,7 +47,9 @@ import pytest
 from pytest import mark, raises
 
 from test_utils import chk_error, read_proc_file, ValInStrCheck
+import container_utils
 from processor_utils import exception, load_proc_desc
+from processor_utils.exception import MultilockError
 from str_utils import ICaseString
 
 
@@ -143,6 +145,22 @@ class TestLocks:
 
     """Test case for checking processors for path locks"""
 
+    # pylint: disable=invalid-name
+    def test_same_start_paths_with_different_lock_counts_raise_MultilockError(
+            self):
+        """Test paths with different locks starting at the same unit.
+
+        `self` is this test case.
+
+        """
+        raises(MultilockError, load_proc_desc, {"units": [
+            {"name": "input", "width": 1, "capabilities": ["ALU"], "writeLock":
+             True}, {"name": "output 1", "width": 1, "capabilities": ["ALU"]},
+            {"name": "output 2", "width": 1, "capabilities": ["ALU"],
+             "readLock": True}], "dataPath": [
+                 ["input", "output 1"], ["input", "output 2"]]})
+    # pylint: enable=invalid-name
+
     def test_paths_with_multiple_locks_are_only_detected_per_capability(self):
         """Test detecting multi-lock paths per capability.
 
@@ -182,24 +200,18 @@ class TestLocks:
         `lock_data` is the lock test data.
 
         """
-        ex_info = raises(exception.MultilockError, load_proc_desc, {
+        ex_info = raises(MultilockError, load_proc_desc, {
             "units": [
                 {"name": proc_desc.in_unit, "width": 1, "capabilities":
                  [proc_desc.capability], lock_data.prop_name: True},
                 {"name": proc_desc.out_unit, "width": 1, "capabilities":
                  [proc_desc.capability], lock_data.prop_name: True}],
             "dataPath": [[proc_desc.in_unit, proc_desc.out_unit]]})
-        assert ex_info.value.segment == [ICaseString(unit) for unit in [
-            proc_desc.in_unit, proc_desc.out_unit]]
+        assert ex_info.value.start == ICaseString(proc_desc.in_unit)
         assert ex_info.value.lock_type == lock_data.lock_type
         assert ex_info.value.capability == ICaseString(proc_desc.capability)
-        ex_str = str(ex_info.value)
-        lock_type_idx = ex_str.find(lock_data.lock_type)
-        assert lock_type_idx >= 0
-        cap_idx = ex_str.find(proc_desc.capability, lock_type_idx + 1)
-        assert cap_idx >= 0
-        assert ex_str.find(", ".join([proc_desc.in_unit, proc_desc.out_unit]),
-                           cap_idx + 1) >= 0
+        assert container_utils.contains(str(ex_info.value), [
+            lock_data.lock_type, proc_desc.capability, proc_desc.in_unit])
     # pylint: enable=invalid-name
 
 
