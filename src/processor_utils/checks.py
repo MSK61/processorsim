@@ -269,10 +269,12 @@ def _chk_path_locks(start, processor, path_locks, capability):
     path_locks[start] = _SatInfo(
         _calc_path_lock(
             processor.nodes[start][units.UNIT_RLOCK_KEY], succ_lst,
-            _PathDescriptor(_get_read_path, "read", capability, start),
-            path_locks), _calc_path_lock(processor.nodes[start][
-                units.UNIT_WLOCK_KEY], succ_lst, _PathDescriptor(
-                    _get_write_path, "write", capability, start), path_locks))
+            _PathDescriptor(lambda sat_info: sat_info.read_path, "read",
+                            capability, start), path_locks),
+        _calc_path_lock(
+            processor.nodes[start][units.UNIT_WLOCK_KEY], succ_lst,
+            _PathDescriptor(lambda sat_info: sat_info.write_path, "write",
+                            capability, start), path_locks))
 
 
 def _chk_unit_flow(min_width, capability_info, port_info):
@@ -433,15 +435,6 @@ def _get_one_edge(edges):
     return None
 
 
-def _get_read_path(sat_info):
-    """Retrieve the read path from the given saturation information.
-
-    `sat_info` is the saturation information.
-
-    """
-    return sat_info.read_path
-
-
 def _get_tail_lock(succ_lst, path_desc, path_locks):
     """Get the common lock of tail paths.
 
@@ -461,15 +454,6 @@ def _get_tail_lock(succ_lst, path_desc, path_locks):
             one_lock, path_desc.selector(path_locks[cur_succ]), path_desc)
 
     return one_lock
-
-
-def _get_write_path(sat_info):
-    """Retrieve the write path from the given saturation information.
-
-    `sat_info` is the saturation information.
-
-    """
-    return sat_info.write_path
 
 
 def _make_cap_graph(processor, capability):
