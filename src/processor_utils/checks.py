@@ -177,13 +177,7 @@ def _calc_path_lock(unit_lock, succ_lst, path_desc, path_locks):
     if tail_lock >= 0:
         path_lock += tail_lock
 
-    if path_lock > 1:
-        raise MultilockError(
-            f"Found a path passing through ${MultilockError.START_KEY} with "
-            f"multiple ${MultilockError.LOCK_TYPE_KEY} locks for capability "
-            f"${MultilockError.CAP_KEY}.", path_desc.start,
-            path_desc.lock_type, path_desc.capability)
-
+    _chk_seg_lock(path_lock, path_desc)
     return path_lock
 
 
@@ -275,6 +269,23 @@ def _chk_path_locks(start, processor, path_locks, capability):
             processor.nodes[start][units.UNIT_WLOCK_KEY], succ_lst,
             _PathDescriptor(lambda sat_info: sat_info.write_lock, "write",
                             capability, start), path_locks))
+
+
+def _chk_seg_lock(seg_lock, seg_desc):
+    """Check if the segment has exceeded the maximum allowed lock.
+
+    `seg_desc` is the segment descriptor.
+    `seg_lock` is the segment lock.
+    The function raises a MultilockError if the segment has multiple
+    locks.
+
+    """
+    if seg_lock > 1:
+        raise MultilockError(
+            f"Found a path passing through ${MultilockError.START_KEY} with "
+            f"multiple ${MultilockError.LOCK_TYPE_KEY} locks for capability "
+            f"${MultilockError.CAP_KEY}.", seg_desc.start,
+            seg_desc.lock_type, seg_desc.capability)
 
 
 def _chk_unit_flow(min_width, capability_info, port_info):
