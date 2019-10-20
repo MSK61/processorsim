@@ -61,9 +61,9 @@ class _SatInfo:
 
     """Lock saturation information"""
 
-    read_path: int
+    read_lock: int
 
-    write_path: int
+    write_lock: int
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -269,11 +269,11 @@ def _chk_path_locks(start, processor, path_locks, capability):
     path_locks[start] = _SatInfo(
         _calc_path_lock(
             processor.nodes[start][units.UNIT_RLOCK_KEY], succ_lst,
-            _PathDescriptor(lambda sat_info: sat_info.read_path, "read",
+            _PathDescriptor(lambda sat_info: sat_info.read_lock, "read",
                             capability, start), path_locks),
         _calc_path_lock(
             processor.nodes[start][units.UNIT_WLOCK_KEY], succ_lst,
-            _PathDescriptor(lambda sat_info: sat_info.write_path, "write",
+            _PathDescriptor(lambda sat_info: sat_info.write_lock, "write",
                             capability, start), path_locks))
 
 
