@@ -179,9 +179,9 @@ def _calc_path_lock(unit_lock, succ_lst, path_desc, path_locks):
 
     if path_lock > 1:
         raise MultilockError(
-            f"Path segment originating from ${MultilockError.START_KEY} with "
+            f"Found a path passing through ${MultilockError.START_KEY} with "
             f"multiple ${MultilockError.LOCK_TYPE_KEY} locks for capability "
-            f"${MultilockError.CAP_KEY} found", path_desc.start,
+            f"${MultilockError.CAP_KEY}.", path_desc.start,
             path_desc.lock_type, path_desc.capability)
 
     return path_lock
@@ -613,7 +613,7 @@ def _update_lock(old_lock, new_lock, path_desc):
         return new_lock
 
     raise MultilockError(
-        f"Path segments originating from ${MultilockError.START_KEY} have "
-        f"different ${MultilockError.LOCK_TYPE_KEY} locks for capability "
+        f"Paths passing through ${MultilockError.START_KEY} have different "
+        f"${MultilockError.LOCK_TYPE_KEY} locks for capability "
         f"${MultilockError.CAP_KEY}.", path_desc.start, path_desc.lock_type,
         path_desc.capability)
