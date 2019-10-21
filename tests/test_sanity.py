@@ -183,14 +183,9 @@ class TestLocks:
 
     # pylint: disable=invalid-name
     @mark.parametrize("proc_desc, lock_data", [
-        (_IoProcessor("input", "output", "ALU"),
-         _LockTestData("readLock", "read")),
-        (_IoProcessor("in_unit", "out_unit", "ALU"),
-         _LockTestData("readLock", "read")),
-        (_IoProcessor("input", "output", "ALU"),
-         _LockTestData("writeLock", "write")),
-        (_IoProcessor("input", "output", "MEM"),
-         _LockTestData("readLock", "read"))])
+        (_IoProcessor("input", "output", "ALU"), _LockTestData(
+            "readLock", "read")), (_IoProcessor("in_unit", "out_unit", "MEM"),
+                                   _LockTestData("writeLock", "write"))])
     def test_path_with_multiple_locks_raises_MultilockError(
             self, proc_desc, lock_data):
         """Test loading a processor with multiple locks in paths.
