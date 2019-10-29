@@ -4,10 +4,12 @@ microarch:
           width: 2
           capabilities:
             - ALU
+          readLock: True
         - name: output
           width: 1
           capabilities:
             - ALU
+          writeLock: True
     dataPath:
         - [input, output]
 ISA:

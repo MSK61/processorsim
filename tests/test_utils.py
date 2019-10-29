@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.39.1, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.39.2, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -45,7 +45,7 @@ import yaml
 import test_env
 import container_utils
 import processor_utils
-from processor_utils.units import UnitModel
+from processor_utils.units import LockInfo, UnitModel
 import program_utils
 from str_utils import ICaseString
 TEST_DATA_DIR = join(test_env.TEST_DIR, "data")
@@ -109,12 +109,12 @@ def chk_two_units(proc_dir, proc_file):
     """
     proc_desc = read_proc_file(proc_dir, proc_file)
     alu_cap = ICaseString("ALU")
-    lock_info = processor_utils.units.LockInfo(False, False)
     out_unit = ICaseString("output")
     assert proc_desc == processor_utils.ProcessorDesc(
-        [UnitModel(ICaseString("input"), 1, [alu_cap], lock_info)],
-        [processor_utils.units.FuncUnit(UnitModel(
-            out_unit, 1, [alu_cap], lock_info), proc_desc.in_ports)], [], [])
+        [UnitModel(ICaseString("input"), 1, [alu_cap], LockInfo(True, False))],
+        [processor_utils.units.FuncUnit(
+            UnitModel(out_unit, 1, [alu_cap], LockInfo(False, True)),
+            proc_desc.in_ports)], [], [])
 
 
 def chk_warn(tokens, warn_calls):

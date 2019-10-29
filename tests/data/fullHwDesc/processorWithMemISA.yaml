@@ -4,6 +4,8 @@ microarch:
           width: 1
           capabilities:
             - MEM
+          readLock: True
+          writeLock: True
     dataPath: []
 ISA:
     LW: MEM

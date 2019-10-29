@@ -3,10 +3,12 @@ units:
       width: 1
       capabilities:
         - ALU
+      readLock: True
     - name: output
       width: 1
       capabilities:
         - ALU
         - MEM
+      writeLock: True
 dataPath:
     - [input, output]

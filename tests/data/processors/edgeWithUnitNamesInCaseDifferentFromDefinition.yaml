@@ -3,9 +3,11 @@ units:
       width: 1
       capabilities:
         - ALU
+      readLock: True
     - name: output
       width: 1
       capabilities:
         - ALU
+      writeLock: True
 dataPath:
     - [INPUT, OUTPUT]

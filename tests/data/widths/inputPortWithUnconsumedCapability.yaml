@@ -4,6 +4,8 @@ units:
       capabilities:
         - ALU
         - MEM
+      readLock: True
+      writeLock: True
     - name: output
       width: 1
       capabilities:

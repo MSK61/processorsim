@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.39.1, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.39.2, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -88,8 +88,8 @@ class TestCaps:
         assert read_proc_file("capabilities", in_file) == ProcessorDesc(
             [], [], map(lambda unit_params: UnitModel(*unit_params), [
                 [ICaseString("core 1"), 1, [ICaseString("ALU")],
-                 LockInfo(False, False)], [ICaseString("core 2"), 1, [
-                     ICaseString("ALU")], LockInfo(False, False)]]), [])
+                 LockInfo(True, True)], [ICaseString("core 2"), 1, [
+                     ICaseString("ALU")], LockInfo(True, True)]]), [])
         chk_warn(["ALU", "core 1", "alu", "core 2"], caplog.records)
         assert ICaseString.__name__ not in caplog.records[0].getMessage()
 
@@ -244,19 +244,18 @@ class TestProcessors:
             "processors", "4ConnectedUnitsProcessor.yaml")
         assert not proc_desc.in_out_ports
         alu_cap = ICaseString("ALU")
-        lock_info = LockInfo(False, False)
         out_ports = tuple(FuncUnit(*unit_params) for unit_params in [
-            [UnitModel(ICaseString("output 1"), 1, [alu_cap], lock_info),
-             proc_desc.in_ports],
-            [UnitModel(ICaseString("output 2"), 1, [alu_cap], lock_info),
-             map(lambda unit: unit.model, proc_desc.internal_units)]])
+            [UnitModel(ICaseString("output 1"), 1, [alu_cap], LockInfo(
+                False, True)), proc_desc.in_ports], [UnitModel(ICaseString(
+                    "output 2"), 1, [alu_cap], LockInfo(False, True)), map(
+                        lambda unit: unit.model, proc_desc.internal_units)]])
         in_unit = ICaseString("input")
         internal_unit = UnitModel(
-            ICaseString("middle"), 1, [alu_cap], lock_info)
+            ICaseString("middle"), 1, [alu_cap], LockInfo(False, False))
         assert (proc_desc.in_ports, proc_desc.out_ports,
                 proc_desc.internal_units) == (
-                    (UnitModel(in_unit, 1, [alu_cap], lock_info),), out_ports,
-                    (FuncUnit(internal_unit, proc_desc.in_ports),))
+                    (UnitModel(in_unit, 1, [alu_cap], LockInfo(True, False)),),
+                    out_ports, (FuncUnit(internal_unit, proc_desc.in_ports),))
 
     @mark.parametrize(
         "in_file", ["twoConnectedUnitsProcessor.yaml",
@@ -350,9 +349,9 @@ def _chk_one_unit(proc_dir, proc_file):
     `proc_file` is the processor description file.
 
     """
-    assert read_proc_file(proc_dir, proc_file) == ProcessorDesc([], [], [
-        UnitModel(ICaseString("fullSys"), 1, [ICaseString("ALU")],
-                  LockInfo(False, False))], [])
+    assert read_proc_file(proc_dir, proc_file) == ProcessorDesc(
+        [], [], [UnitModel(ICaseString("fullSys"), 1, [ICaseString("ALU")],
+                           LockInfo(True, True))], [])
 
 
 if __name__ == '__main__':

@@ -48,6 +48,7 @@ from pytest import mark, raises
 
 from test_utils import chk_error, read_proc_file, ValInStrCheck
 import container_utils
+from container_utils import concat_dicts
 from processor_utils import exception, load_proc_desc
 from processor_utils.exception import MultilockError
 from str_utils import ICaseString
@@ -145,22 +146,6 @@ class TestLocks:
 
     """Test case for checking processors for path locks"""
 
-    # pylint: disable=invalid-name
-    def test_same_start_paths_with_different_lock_counts_raise_MultilockError(
-            self):
-        """Test paths with different locks starting at the same unit.
-
-        `self` is this test case.
-
-        """
-        raises(MultilockError, load_proc_desc, {"units": [
-            {"name": "input", "width": 1, "capabilities": ["ALU"], "writeLock":
-             True}, {"name": "output 1", "width": 1, "capabilities": ["ALU"]},
-            {"name": "output 2", "width": 1, "capabilities": ["ALU"],
-             "readLock": True}], "dataPath": [
-                 ["input", "output 1"], ["input", "output 2"]]})
-    # pylint: enable=invalid-name
-
     def test_paths_with_multiple_locks_are_only_detected_per_capability(self):
         """Test detecting multi-lock paths per capability.
 
@@ -170,16 +155,20 @@ class TestLocks:
         paths don't have multiple locks.
 
         """
-        load_proc_desc({"units": [
-            {"name": "ALU input", "width": 1, "capabilities": ["ALU"],
-             "readLock": True},
-            {"name": "MEM input", "width": 1, "capabilities": ["MEM"]},
-            {"name": "center", "width": 1, "capabilities": ["ALU", "MEM"]},
-            {"name": "ALU output", "width": 1, "capabilities": ["ALU"]},
-            {"name": "MEM output", "width": 1, "capabilities": ["MEM"],
-             "readLock": True}], "dataPath": [
-                 ["ALU input", "center"], ["MEM input", "center"],
-                 ["center", "ALU output"], ["center", "MEM output"]]})
+        both_locks = map(
+            lambda lock_prop: (lock_prop, True), ["readLock", "writeLock"])
+        load_proc_desc(
+            {"units":
+             [{"name": "ALU input", "width": 1, "capabilities": ["ALU"],
+               "readLock": True},
+              {"name": "MEM input", "width": 1, "capabilities": ["MEM"]},
+              {"name": "center", "width": 1, "capabilities": ["ALU", "MEM"]},
+              {"name": "ALU output", "width": 1, "capabilities": ["ALU"],
+               "writeLock": True},
+              concat_dicts({"name": "MEM output", "width": 1,
+                            "capabilities": ["MEM"]}, dict(both_locks))],
+             "dataPath": [["ALU input", "center"], ["MEM input", "center"], [
+                 "center", "ALU output"], ["center", "MEM output"]]})
 
     # pylint: disable=invalid-name
     @mark.parametrize("proc_desc, lock_data", [
@@ -195,18 +184,41 @@ class TestLocks:
         `lock_data` is the lock test data.
 
         """
-        ex_info = raises(MultilockError, load_proc_desc, {
-            "units": [
+        in_locks = map(lambda lock_prop: (lock_prop, True),
+                       ["readLock", lock_data.prop_name])
+        out_locks = map(lambda lock_prop: (lock_prop, True),
+                        ["writeLock", lock_data.prop_name])
+        ex_info = raises(
+            MultilockError, load_proc_desc,
+            {"units": [concat_dicts(
                 {"name": proc_desc.in_unit, "width": 1, "capabilities":
-                 [proc_desc.capability], lock_data.prop_name: True},
-                {"name": proc_desc.out_unit, "width": 1, "capabilities":
-                 [proc_desc.capability], lock_data.prop_name: True}],
-            "dataPath": [[proc_desc.in_unit, proc_desc.out_unit]]})
+                 [proc_desc.capability]}, dict(in_locks)), concat_dicts(
+                     {"name": proc_desc.out_unit, "width": 1, "capabilities": [
+                         proc_desc.capability]}, dict(out_locks))],
+             "dataPath": [[proc_desc.in_unit, proc_desc.out_unit]]})
         assert ex_info.value.start == ICaseString(proc_desc.in_unit)
         assert ex_info.value.lock_type == lock_data.lock_type
         assert ex_info.value.capability == ICaseString(proc_desc.capability)
         assert container_utils.contains(str(ex_info.value), [
             lock_data.lock_type, proc_desc.capability, proc_desc.in_unit])
+
+    @mark.parametrize("units, data_path", [
+        ([{"name": "input", "width": 1, "capabilities": ["ALU"], "writeLock":
+           True}, {"name": "output 1", "width": 1, "capabilities": ["ALU"]},
+          {"name": "output 2", "width": 1, "capabilities": ["ALU"],
+           "readLock": True}], [["input", "output 1"], ["input", "output 2"]]),
+        ([{"name": "fullSys", "width": 1, "capabilities": ["ALU"],
+           "writeLock": True}], [])])
+    def test_path_with_no_locks_raises_MultilockError(self, units, data_path):
+        """Test loading a processor with no locks in paths.
+
+        `self` is this test case.
+        `units` are the processor units.
+        `data_path` is the data path between units.
+
+        """
+        raises(MultilockError, load_proc_desc,
+               {"units": units, "dataPath": data_path})
     # pylint: enable=invalid-name
 
 

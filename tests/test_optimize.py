@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.39.1, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.39.2, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -69,11 +69,10 @@ class TestClean:
             "optimization", "pathThatGetsCutOffItsOutput.yaml")
         out1_unit = ICaseString("output 1")
         alu_cap = ICaseString("ALU")
-        lock_info = LockInfo(False, False)
-        assert proc_desc == ProcessorDesc(
-            [UnitModel(ICaseString("input"), 1, [alu_cap], lock_info)],
-            [FuncUnit(UnitModel(out1_unit, 1, [alu_cap], lock_info),
-                      proc_desc.in_ports)], [], [])
+        assert proc_desc == ProcessorDesc([UnitModel(
+            ICaseString("input"), 1, [alu_cap], LockInfo(True, False))], [
+                FuncUnit(UnitModel(out1_unit, 1, [alu_cap], LockInfo(
+                    False, True)), proc_desc.in_ports)], [], [])
         chk_warn(["middle"], caplog.records)
 
     def test_incompatible_edge_is_removed(self, caplog):
@@ -91,18 +90,18 @@ class TestClean:
             in_port.name: in_port for in_port in proc_desc.in_ports}
         # pylint: enable=not-an-iterable
         alu_cap = ICaseString("ALU")
-        lock_info = LockInfo(False, False)
         mem_cap = ICaseString("MEM")
         out1_unit = ICaseString("output 1")
         out2_unit = ICaseString("output 2")
         assert proc_desc == ProcessorDesc(
             map(lambda unit_params: UnitModel(*unit_params),
-                [[ICaseString("input 1"), 1, [alu_cap], lock_info],
-                 [ICaseString("input 2"), 1, [mem_cap], lock_info]]),
+                [[ICaseString("input 1"), 1, [alu_cap], LockInfo(True, False)],
+                 [ICaseString("input 2"), 1, [mem_cap],
+                  LockInfo(True, False)]]),
             map(lambda unit_params: FuncUnit(*unit_params),
-                [[UnitModel(out1_unit, 1, [alu_cap], lock_info),
+                [[UnitModel(out1_unit, 1, [alu_cap], LockInfo(False, True)),
                   [name_input_map[ICaseString("input 1")]]],
-                 [UnitModel(out2_unit, 1, [mem_cap], lock_info),
+                 [UnitModel(out2_unit, 1, [mem_cap], LockInfo(False, True)),
                   [name_input_map[ICaseString("input 2")]]]]), [], [])
         chk_warn(["input 2", "output 1"], caplog.records)
 
@@ -117,7 +116,7 @@ class TestClean:
         assert read_proc_file(
             "optimization", "unitWithNoCapabilities.yaml") == ProcessorDesc(
                 [], [], [UnitModel(ICaseString("core 1"), 1, [
-                    ICaseString("ALU")], LockInfo(False, False))], [])
+                    ICaseString("ALU")], LockInfo(True, True))], [])
         chk_warn(["core 2"], caplog.records)
 
 

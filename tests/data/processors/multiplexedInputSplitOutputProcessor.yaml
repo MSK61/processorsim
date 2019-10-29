@@ -4,14 +4,17 @@ units:
       capabilities:
         - ALU
         - MEM
+      readLock: True
     - name: ALU output
       width: 1
       capabilities:
         - ALU
+      writeLock: True
     - name: MEM output
       width: 1
       capabilities:
         - MEM
+      writeLock: True
 dataPath:
     - [input, ALU output]
     - [input, MEM output]

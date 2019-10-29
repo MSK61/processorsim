@@ -71,6 +71,28 @@ class _PathDescriptor:
 
     """Path descriptor in multi-lock analysis"""
 
+    @staticmethod
+    def make_read_desc(capability, start):
+        """Create a read lock path description.
+
+        `capability` is the path capability.
+        `start` is the path start unit.
+
+        """
+        return _PathDescriptor(
+            lambda sat_info: sat_info.read_lock, "read", capability, start)
+
+    @staticmethod
+    def make_write_desc(capability, start):
+        """Create a write lock path description.
+
+        `capability` is the path capability.
+        `start` is the path start unit.
+
+        """
+        return _PathDescriptor(
+            lambda sat_info: sat_info.write_lock, "write", capability, start)
+
     selector: typing.Callable[[_SatInfo], int]
 
     lock_type: str
@@ -86,8 +108,17 @@ def chk_caps(processor):
     `processor` is the processor to check whose capabilities.
 
     """
+    cap_checks = [lambda cap_graph, post_ord, cap, in_ports, out_ports:
+                  _chk_multilock(cap_graph, post_ord, cap, in_ports)]
+
     if processor.number_of_nodes() > 1:
-        _do_cap_checks(processor)
+        cap_checks.append(
+            lambda cap_graph, post_ord, cap, in_ports, out_ports:
+            _chk_cap_flow(_get_anal_graph(cap_graph),
+                          ComponentInfo(cap, "Capability " + cap), in_ports,
+                          out_ports, lambda port: "port " + port))
+
+    _do_cap_checks(processor, cap_checks)
 
 
 def chk_cycles(processor):
@@ -231,12 +262,48 @@ def _chk_cap_flow(
                        ComponentInfo(cur_port, port_name_func(cur_port)))
 
 
-def _chk_multilock(processor, post_ord, capability):
+def _chk_in_lock(in_lock_info, path_desc):
+    """Check if paths from the input port don't have exactly one lock.
+
+    `in_lock_info` is the input lock information.
+    `path_desc` is the path descriptor.
+    The function raises a MultilockError if any paths with multiple
+    locks exist at the given port.
+
+    """
+    if not path_desc.selector(in_lock_info):
+        raise MultilockError(
+            f"Found a path starting at input port ${MultilockError.START_KEY} "
+            f"with no ${MultilockError.LOCK_TYPE_KEY} locks for capability "
+            f"${MultilockError.CAP_KEY}.", path_desc.start,
+            path_desc.lock_type, path_desc.capability)
+
+
+def _chk_in_locks(in_ports, path_locks, capability):
+    """Check if paths from input ports don't have exactly one lock.
+
+    `in_ports` are the input ports to check whose locks.
+    `path_locks` are the map from a unit to the information of the path
+                 with maximum locks.
+    `capability` is the capability for which input paths are inspected.
+    The function raises a MultilockError if any paths with multiple
+    locks exist at any port.
+
+    """
+    for cur_port in in_ports:
+        for path_desc_fact in [_PathDescriptor.make_read_desc,
+                               _PathDescriptor.make_write_desc]:
+            _chk_in_lock(
+                path_locks[cur_port], path_desc_fact(capability, cur_port))
+
+
+def _chk_multilock(processor, post_ord, capability, in_ports):
     """Check if the processor has paths with multiple locks.
 
     `processor` is the processor to check for multi-lock paths.
     `post_ord` is the post-order of the processor functional units.
     `capability` is the capability of lock paths under consideration.
+    `in_ports` are the input ports supporting the given capability.
     The function raises a MultilockError if any paths with multiple
     locks exist.
 
@@ -245,6 +312,8 @@ def _chk_multilock(processor, post_ord, capability):
 
     for unit in post_ord:
         _chk_path_locks(unit, processor, path_locks, capability)
+
+    _chk_in_locks(in_ports, path_locks, capability)
 
 
 def _chk_path_locks(start, processor, path_locks, capability):
@@ -260,15 +329,12 @@ def _chk_path_locks(start, processor, path_locks, capability):
 
     """
     succ_lst = list(processor.successors(start))
-    path_locks[start] = _SatInfo(
-        _calc_path_lock(
-            processor.nodes[start][units.UNIT_RLOCK_KEY], succ_lst,
-            _PathDescriptor(lambda sat_info: sat_info.read_lock, "read",
-                            capability, start), path_locks),
-        _calc_path_lock(
-            processor.nodes[start][units.UNIT_WLOCK_KEY], succ_lst,
-            _PathDescriptor(lambda sat_info: sat_info.write_lock, "write",
-                            capability, start), path_locks))
+    path_locks[start] = _SatInfo(_calc_path_lock(processor.nodes[start][
+        units.UNIT_RLOCK_KEY], succ_lst, _PathDescriptor.make_read_desc(
+            capability, start), path_locks), _calc_path_lock(
+                processor.nodes[start][units.UNIT_WLOCK_KEY], succ_lst,
+                _PathDescriptor.make_write_desc(capability, start),
+                path_locks))
 
 
 def _chk_seg_lock(seg_lock, seg_desc):
@@ -334,27 +400,11 @@ def _dist_edge_caps(graph):
     _set_capacities(graph, _coll_cap_edges(graph))
 
 
-def _do_cap_check(cap_graph, post_ord, cap, in_ports, out_ports):
-    """Perform checks for the given capability.
-
-    `cap_graph` is the capability-focused processor.
-    `post_ord` is the post-order of the given processor functional
-               units.
-    `cap` is the capability to check.
-    `in_ports` are the input ports supporting the given capability.
-    `out_ports` are the output ports of the original processor.
-
-    """
-    _chk_cap_flow(
-        _get_anal_graph(cap_graph), ComponentInfo(cap, "Capability " + cap),
-        in_ports, out_ports, lambda port: "port " + port)
-    _chk_multilock(cap_graph, post_ord, cap)
-
-
-def _do_cap_checks(processor):
+def _do_cap_checks(processor, cap_checks):
     """Perform per-capability checks.
 
     `processor` is the processor to check.
+    `cap_checks` are the checks to perform.
 
     """
     cap_units = _get_cap_units(processor)
@@ -362,8 +412,9 @@ def _do_cap_checks(processor):
     post_ord = list(networkx.dfs_postorder_nodes(processor))
 
     for cap, in_ports in cap_units:
-        _do_cap_check(_make_cap_graph(processor, cap), _filter_by_cap(
-            post_ord, cap, processor), cap, in_ports, out_ports)
+        for cur_chk in cap_checks:
+            cur_chk(_make_cap_graph(processor, cap), _filter_by_cap(
+                post_ord, cap, processor), cap, in_ports, out_ports)
 
 
 def _filter_by_cap(post_ord, capability, processor):

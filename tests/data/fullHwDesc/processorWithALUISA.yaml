@@ -4,6 +4,8 @@ microarch:
           width: 1
           capabilities:
             - ALU
+          readLock: True
+          writeLock: True
     dataPath: []
 ISA:
     ADD: ALU

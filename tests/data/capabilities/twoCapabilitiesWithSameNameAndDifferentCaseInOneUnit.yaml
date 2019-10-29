@@ -4,4 +4,6 @@ units:
       capabilities:
         - ALU
         - alu
+      readLock: True
+      writeLock: True
 dataPath: []

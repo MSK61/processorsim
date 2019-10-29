@@ -3,6 +3,7 @@ units:
       width: 1
       capabilities:
         - ALU
+      readLock: True
     - name: middle
       width: 1
       capabilities:
@@ -11,6 +12,7 @@ units:
       width: 1
       capabilities:
         - ALU
+      writeLock: True
 dataPath:
     - [input, middle]
     - [middle, output]
