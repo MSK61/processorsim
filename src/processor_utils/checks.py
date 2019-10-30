@@ -122,7 +122,7 @@ class _PathLockCalc:
 
     _start_unit: Mapping[str, typing.Any]
 
-    _succ_lst: typing.List[ICaseString]
+    _succ_lst: typing.Collection[ICaseString]
 
     _capability: ICaseString
 
