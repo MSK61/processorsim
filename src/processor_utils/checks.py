@@ -41,6 +41,7 @@
 
 import operator
 import typing
+from typing import Mapping
 
 import attr
 import networkx
@@ -100,6 +101,34 @@ class _PathDescriptor:
     capability: ICaseString
 
     start: ICaseString
+
+
+@attr.s(auto_attribs=True, frozen=True)
+class _PathLockCalc:
+
+    """Path lock calculator"""
+
+    def calc_lock(self, lock_key, path_desc_fact):
+        """Calculate the path lock.
+
+        `self` is this path lock calculator.
+        `lock_key` is the lock key in the unit.
+        `path_desc_fact` is the path description factory function.
+
+        """
+        return _calc_path_lock(
+            self._start_unit[lock_key], self._succ_lst, path_desc_fact(
+                self._capability, self._start_name), self._path_locks)
+
+    _start_unit: Mapping[str, typing.Any]
+
+    _succ_lst: typing.List[ICaseString]
+
+    _capability: ICaseString
+
+    _start_name: ICaseString
+
+    _path_locks: Mapping[ICaseString, _SatInfo]
 
 
 def chk_caps(processor):
@@ -329,12 +358,12 @@ def _chk_path_locks(start, processor, path_locks, capability):
 
     """
     succ_lst = list(processor.successors(start))
-    path_locks[start] = _SatInfo(_calc_path_lock(processor.nodes[start][
-        units.UNIT_RLOCK_KEY], succ_lst, _PathDescriptor.make_read_desc(
-            capability, start), path_locks), _calc_path_lock(
-                processor.nodes[start][units.UNIT_WLOCK_KEY], succ_lst,
-                _PathDescriptor.make_write_desc(capability, start),
-                path_locks))
+    sat_params = map(lambda calc_params: _PathLockCalc(
+        processor.nodes[start], succ_lst, capability, start,
+        path_locks).calc_lock(*calc_params),
+                     [[units.UNIT_RLOCK_KEY, _PathDescriptor.make_read_desc],
+                      [units.UNIT_WLOCK_KEY, _PathDescriptor.make_write_desc]])
+    path_locks[start] = _SatInfo(*sat_params)
 
 
 def _chk_seg_lock(seg_lock, seg_desc):
