@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.39.2, python 3.7.4, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -78,8 +78,8 @@ class RegAccessQueue:
         `req_owner` is the request owner.
 
         """
-        return req_type == self.queue[
-            -1].access_type and req_owner in self.queue[-1].reqs
+        return req_type == self._queue[
+            -1].access_type and req_owner in self._queue[-1].reqs
 
     def dequeue(self, req_owner):
         """Remove a request from this queue.
@@ -88,17 +88,17 @@ class RegAccessQueue:
         `req_owner` is the request owner.
 
         """
-        self.queue[-1].reqs.remove(req_owner)
+        self._queue[-1].reqs.remove(req_owner)
 
-        if not self.queue[-1].reqs:
-            del self.queue[-1]  # pylint: disable=unsupported-delete-operation
+        if not self._queue[-1].reqs:
+            del self._queue[-1]  # pylint: disable=unsupported-delete-operation
 
     # Typically a queue pushes new elements at the back and removes old
     # elements from the front. Since this queue is going to support
     # removal only without addition, we reverse the given queue to make
     # the queue front at the list tail and make use of the fast access
     # to the list tail.
-    queue: typing.List[AccessGroup] = attr.ib(
+    _queue: typing.List[AccessGroup] = attr.ib(
         converter=lambda reqs: list(reversed(reqs)))
 
 

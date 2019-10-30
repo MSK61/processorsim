@@ -65,11 +65,11 @@ class _MockCheck:
         `self` is this mock check.
 
         """
-        self.mock_obj.assert_called_with(*self.params)
+        self._mock_obj.assert_called_with(*self._params)
 
-    mock_obj: unittest.mock.MagicMock
+    _mock_obj: unittest.mock.MagicMock
 
-    params: typing.Iterable
+    _params: typing.Iterable
 
 
 class TestHwDescLoad:
