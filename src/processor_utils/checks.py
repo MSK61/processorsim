@@ -191,7 +191,7 @@ def _aug_terminals(graph, ports, edge_func):
 
 
 def _calc_path_lock(unit_lock, succ_lst, path_desc, path_locks):
-    """Initialize the path lock.
+    """Calculate the path lock.
 
     `unit_lock` is the lock status of the unit.
     `succ_lst` is the list of successor units.
