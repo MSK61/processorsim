@@ -72,26 +72,28 @@ class _PathDescriptor:
 
     """Path descriptor in multi-lock analysis"""
 
-    @staticmethod
-    def make_read_desc(capability, start):
+    @classmethod
+    def make_read_desc(cls, capability, start):
         """Create a read lock path description.
 
+        `cls` is the created object class.
         `capability` is the path capability.
         `start` is the path start unit.
 
         """
-        return _PathDescriptor(
+        return cls(
             lambda sat_info: sat_info.read_lock, "read", capability, start)
 
-    @staticmethod
-    def make_write_desc(capability, start):
+    @classmethod
+    def make_write_desc(cls, capability, start):
         """Create a write lock path description.
 
+        `cls` is the created object class.
         `capability` is the path capability.
         `start` is the path start unit.
 
         """
-        return _PathDescriptor(
+        return cls(
             lambda sat_info: sat_info.write_lock, "write", capability, start)
 
     selector: typing.Callable[[_SatInfo], int]
