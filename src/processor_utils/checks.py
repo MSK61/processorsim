@@ -116,9 +116,88 @@ class _PathLockCalc:
         `path_desc_fact` is the path description factory function.
 
         """
-        return _calc_path_lock(
-            self._start_unit[lock_key], self._succ_lst, path_desc_fact(
-                self._capability, self._start_name), self._path_locks)
+        return self._calc_path_lock(self._start_unit[lock_key], path_desc_fact(
+            self._capability, self._start_name))
+
+    def _get_tail_lock(self, path_desc):
+        """Get the common lock of tail paths.
+
+        `self` is this path lock calculator.
+        `path_desc` is the path descriptor.
+        The method returns the lock of successor paths, which has to be
+        the same for all units. If the paths have different locks, the
+        method raises a MultilockError. If the given list of units is
+        empty, the method returns a negative value.
+
+        """
+        one_lock = -1
+
+        for cur_succ in self._succ_lst:
+            one_lock = self._update_lock(one_lock, path_desc.selector(
+                self._path_locks[cur_succ]), path_desc)
+
+        return one_lock
+
+    def _calc_path_lock(self, unit_lock, path_desc):
+        """Calculate the path lock.
+
+        `self` is this path lock calculator.
+        `unit_lock` is the lock status of the unit.
+        `path_desc` is the path descriptor.
+        The method raises a MultilockError if any path originating from
+        the start unit has multiple locks or differnt paths have
+        different locks.
+
+        """
+        path_lock = 1 if unit_lock else 0
+        tail_lock = self._get_tail_lock(path_desc)
+
+        if tail_lock >= 0:
+            path_lock += tail_lock
+
+        self._chk_seg_lock(path_lock, path_desc)
+        return path_lock
+
+    @staticmethod
+    def _chk_seg_lock(seg_lock, seg_desc):
+        """Check if the segment has exceeded the maximum allowed lock.
+
+        `seg_desc` is the segment descriptor.
+        `seg_lock` is the segment lock.
+        The method raises a MultilockError if the segment has multiple
+        locks.
+
+        """
+        if seg_lock > 1:
+            raise MultilockError(
+                f"Found a path passing through ${MultilockError.START_KEY} "
+                f"with multiple ${MultilockError.LOCK_TYPE_KEY} locks for "
+                f"capability ${MultilockError.CAP_KEY}.", seg_desc.start,
+                seg_desc.lock_type, seg_desc.capability)
+
+    @staticmethod
+    def _update_lock(old_lock, new_lock, path_desc):
+        """Update the lock based on the current and proposed values.
+
+        `old_lock` is the lock value so far.
+        `new_lock` is the new proposed lock value.
+        `path_desc` is the descriptor of the path for which the lock is
+                    updated.
+        The method initializes the current lock value if it hasn't
+        already been initialized, otherwise it makes sure the new value
+        matches the old one. If the new value is different from the
+        current one, the method raises a MultilockError. The method
+        returns the updated lock.
+
+        """
+        if old_lock < 0 or new_lock == old_lock:
+            return new_lock
+
+        raise MultilockError(
+            f"Paths passing through ${MultilockError.START_KEY} have different"
+            f" ${MultilockError.LOCK_TYPE_KEY} locks for capability "
+            f"${MultilockError.CAP_KEY}.", path_desc.start,
+            path_desc.lock_type, path_desc.capability)
 
     _start_unit: Mapping[str, typing.Any]
 
@@ -217,28 +296,6 @@ def _aug_terminals(graph, ports, edge_func):
     """
     return ports[0] if len(ports) == 1 else _unify_ports(
         graph, ports, edge_func)
-
-
-def _calc_path_lock(unit_lock, succ_lst, path_desc, path_locks):
-    """Calculate the path lock.
-
-    `unit_lock` is the lock status of the unit.
-    `succ_lst` is the list of successor units.
-    `path_desc` is the path descriptor.
-    `path_locks` are the map from a unit to its maximum lock.
-    The function raises a MultilockError if any path originating from
-    the start unit has multiple locks or differnt paths have different
-    locks.
-
-    """
-    path_lock = 1 if unit_lock else 0
-    tail_lock = _get_tail_lock(succ_lst, path_desc, path_locks)
-
-    if tail_lock >= 0:
-        path_lock += tail_lock
-
-    _chk_seg_lock(path_lock, path_desc)
-    return path_lock
 
 
 def _cap_in_edge(processor, capability, edge):
@@ -364,23 +421,6 @@ def _chk_path_locks(start, processor, path_locks, capability):
                      [[units.UNIT_RLOCK_KEY, _PathDescriptor.make_read_desc],
                       [units.UNIT_WLOCK_KEY, _PathDescriptor.make_write_desc]])
     path_locks[start] = _SatInfo(*sat_params)
-
-
-def _chk_seg_lock(seg_lock, seg_desc):
-    """Check if the segment has exceeded the maximum allowed lock.
-
-    `seg_desc` is the segment descriptor.
-    `seg_lock` is the segment lock.
-    The function raises a MultilockError if the segment has multiple
-    locks.
-
-    """
-    if seg_lock > 1:
-        raise MultilockError(
-            f"Found a path passing through ${MultilockError.START_KEY} with "
-            f"multiple ${MultilockError.LOCK_TYPE_KEY} locks for capability "
-            f"${MultilockError.CAP_KEY}.", seg_desc.start,
-            seg_desc.lock_type, seg_desc.capability)
 
 
 def _chk_unit_flow(min_width, capability_info, port_info):
@@ -526,27 +566,6 @@ def _get_one_edge(edges):
     return None
 
 
-def _get_tail_lock(succ_lst, path_desc, path_locks):
-    """Get the common lock of tail paths.
-
-    `succ_lst` is the list of successor units.
-    `path_desc` is the path descriptor.
-    `path_locks` are the map from a unit to its maximum lock.
-    The function returns the lock of successor paths, which has to be
-    the same for all units. If the paths have different locks, the
-    function raises a MultilockError. If the given list of units is
-    empty, the function returns a negative value.
-
-    """
-    one_lock = -1
-
-    for cur_succ in succ_lst:
-        one_lock = _update_lock(
-            one_lock, path_desc.selector(path_locks[cur_succ]), path_desc)
-
-    return one_lock
-
-
 def _make_cap_graph(processor, capability):
     """Create a graph condensed for the given capability.
 
@@ -684,27 +703,3 @@ def _update_graph(idx, unit, processor, width_graph, unit_idx_map):
     width_graph.add_node(idx, **container_utils.concat_dicts(
         processor.nodes[unit], {_OLD_NODE_KEY: unit}))
     unit_idx_map[unit] = idx
-
-
-def _update_lock(old_lock, new_lock, path_desc):
-    """Update the lock based on the current and proposed values.
-
-    `old_lock` is the lock value so far.
-    `new_lock` is the new proposed lock value.
-    `path_desc` is the descriptor of the path for which the lock is
-                updated.
-    The function initializes the current lock value if it hasn't already
-    been initialized, otherwise it makes sure the new value matches the
-    old one. If the new value is different from the current one, the
-    function raises a MultilockError. The function returns the updated
-    lock.
-
-    """
-    if old_lock < 0 or new_lock == old_lock:
-        return new_lock
-
-    raise MultilockError(
-        f"Paths passing through ${MultilockError.START_KEY} have different "
-        f"${MultilockError.LOCK_TYPE_KEY} locks for capability "
-        f"${MultilockError.CAP_KEY}.", path_desc.start, path_desc.lock_type,
-        path_desc.capability)
