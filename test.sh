@@ -27,12 +27,13 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.1, Fedora release 30 (Thirty)
+# environment:  Visual Studdio Code 1.39.2, Fedora release 31 (Thirty
+#               One)
 #
 # notes:        This is a private program.
 #
 ############################################################
 set -e
-python3 -m pytest --codestyle --cov src --flakes --pylint $*
+python -m pytest --codestyle --cov src --flakes --pylint $*
 cd src
-python3 -m pytest -m pylint --pylint $*
+python -m pytest -m pylint --pylint $*
