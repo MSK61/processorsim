@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
-#               30 (Thirty)
+# environment:  Visual Studdio Code 1.39.2, python 3.7.5, Fedora release
+#               31 (Thirty One)
 #
 # notes:        This is a private program.
 #
@@ -46,7 +46,7 @@ import attr
 
 
 @functools.total_ordering
-@attr.s(auto_attribs=True, cmp=False, frozen=True)
+@attr.s(cmp=False, frozen=True)
 class ICaseString:
 
     """Case-insensitive string"""
@@ -112,7 +112,7 @@ class ICaseString:
         """
         return map(self._canonical, [self.raw_str, other])
 
-    raw_str: str
+    raw_str: str = attr.ib()
 
     _canonical: typing.ClassVar[typing.Callable[[str], str]] = staticmethod(
         str.lower)
