@@ -57,7 +57,7 @@ class ICaseString:
         `item` is the substring to search for.
 
         """
-        return self._CANONICAL(item) in self._CANONICAL(self.raw_str)
+        return self._canonical(item) in self._canonical(self.raw_str)
 
     def __eq__(self, other):
         """Test if the two case-insensitive strings are identical.
@@ -74,7 +74,7 @@ class ICaseString:
         `self` is this case-insensitive string.
 
         """
-        return hash(self._CANONICAL(self.raw_str))
+        return hash(self._canonical(self.raw_str))
 
     def __lt__(self, other):
         """Test if this case-insensitive string is less than the other.
@@ -109,11 +109,11 @@ class ICaseString:
         `other` is the other string.
 
         """
-        return map(self._CANONICAL, [self.raw_str, other])
+        return map(self._canonical, [self.raw_str, other])
 
     raw_str: str = attr.ib()
 
-    _CANONICAL = staticmethod(str.lower)
+    _canonical = staticmethod(str.lower)
 
 
 def format_obj(cls_name, field_strings):
