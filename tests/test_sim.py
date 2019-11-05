@@ -84,6 +84,62 @@ class FlowTest(TestCase):
              {ICaseString("output"): [InstrState(1)]}])
 
 
+class HazardTest(TestCase):
+
+    """Test case for hazards"""
+
+    def test_data_hazards(self):
+        """Test detecting data hazards.
+
+        `self` is this test case.
+
+        """
+        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
+                            LockInfo(True, False))
+        out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, [
+            ICaseString("ALU")], LockInfo(False, True)), [in_unit])
+        assert simulate(
+            [HwInstruction(*instr_params) for instr_params in [
+                [[], ICaseString("R1"), ICaseString("ALU")],
+                [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")]]],
+            HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
+                BagValDict(cp_util) for cp_util in [
+                    {ICaseString("input"): [InstrState(0)]},
+                    {ICaseString("input"): [InstrState(1, StallState.DATA)],
+                     ICaseString("output"): [InstrState(0)]},
+                    {ICaseString("input"): [InstrState(1)]},
+                    {ICaseString("output"): [InstrState(1)]}]]
+
+    # pylint: disable=invalid-name
+    def test_RAW_with_RLock_in_unit_before_WLock(self):
+        """Test detecting RAW hazards where read locks in units earlier.
+
+        `self` is this test case.
+
+        """
+        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
+                            LockInfo(False, False))
+        mid = UnitModel(ICaseString("middle"), 1, [ICaseString("ALU")],
+                        LockInfo(True, False))
+        out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")],
+                             LockInfo(False, True))
+        proc_desc = ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
+                                  [FuncUnit(mid, [in_unit])])
+        assert simulate(
+            [HwInstruction(*instr_params) for instr_params in [
+                [[], ICaseString("R1"), ICaseString("ALU")],
+                [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")]]],
+            HwSpec(proc_desc)) == [BagValDict(cp_util) for cp_util in [
+                {ICaseString("input"): [InstrState(0)]},
+                {ICaseString("input"): [InstrState(1)],
+                 ICaseString("middle"): [InstrState(0)]},
+                {ICaseString("middle"): [InstrState(1, StallState.DATA)],
+                 ICaseString("output"): [InstrState(0)]},
+                {ICaseString("middle"): [InstrState(1)]},
+                {ICaseString("output"): [InstrState(1)]}]]
+    # pylint: enable=invalid-name
+
+
 class PipelineTest(TestCase):
 
     """Test case for instruction flow in the pipeline"""
@@ -135,28 +191,6 @@ class PipelineTest(TestCase):
 class StallTest(TestCase):
 
     """Test case for stalled instructions"""
-
-    def test_data_hazards(self):
-        """Test detecting data hazards.
-
-        `self` is this test case.
-
-        """
-        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
-                            LockInfo(True, False))
-        out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, [
-            ICaseString("ALU")], LockInfo(False, True)), [in_unit])
-        assert simulate(
-            [HwInstruction(*instr_params) for instr_params in [
-                [[], ICaseString("R1"), ICaseString("ALU")],
-                [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")]]],
-            HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
-                BagValDict(cp_util) for cp_util in [
-                    {ICaseString("input"): [InstrState(0)]},
-                    {ICaseString("input"): [InstrState(1, StallState.DATA)],
-                     ICaseString("output"): [InstrState(0)]},
-                    {ICaseString("input"): [InstrState(1)]},
-                    {ICaseString("output"): [InstrState(1)]}]]
 
     def test_internal_stall_is_detected(self):
         """Test detecting stalls in internal units.

@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
-#               30 (Thirty)
+# environment:  Visual Studdio Code 1.39.2, python 3.7.5, Fedora release
+#               31 (Thirty One)
 #
 # notes:        This is a private program.
 #
@@ -354,7 +354,7 @@ def _chk_hazards(old_util, new_util, name_unit_map, program, acc_queues):
     reqs_to_clear = {}
 
     for unit, new_unit_util in new_util:
-        _stall_unit(name_unit_map[unit].lock_info.wr_lock, _TransitionUtil(
+        _stall_unit(name_unit_map[unit].lock_info, _TransitionUtil(
             old_util[unit], new_unit_util), program, acc_queues, reqs_to_clear)
 
     reqs_to_clear = reqs_to_clear.items()
@@ -574,16 +574,17 @@ def _mov_flights(dst_units, program, util_info):
         _fill_unit(cur_dst, program, util_info)
 
 
-def _regs_accessed(instr, registers, acc_queues):
+def _regs_accessed(rd_lock, instr, registers, acc_queues):
     """Check if all needed registers can be accessed.
 
+    `rd_lock` is the unit read lock.
     `instr` is the index of the instruction to check whose access to
             registers.
     `registers` are the instruction registers.
     `acc_queues` are the planned access queues for registers.
 
     """
-    return all(map(lambda src: acc_queues[src].can_access(
+    return not rd_lock or all(map(lambda src: acc_queues[src].can_access(
         AccessType.READ, instr), registers))
 
 
@@ -618,10 +619,10 @@ def _space_avail(unit, util_info):
     return unit.width - len(util_info[unit.name])
 
 
-def _stall_unit(wr_lock, trans_util, program, acc_queues, reqs_to_clear):
+def _stall_unit(unit_locks, trans_util, program, acc_queues, reqs_to_clear):
     """Mark instructions in the given unit as stalled as needed.
 
-    `wr_lock` is the unit write lock.
+    `unit_locks` are the unit lock information.
     `trans_util` is the unit utilization transition information of the
                  current and previous clock pulses.
     `program` is the master instruction list.
@@ -632,10 +633,11 @@ def _stall_unit(wr_lock, trans_util, program, acc_queues, reqs_to_clear):
     """
     for instr in trans_util.new_util:
         instr.stalled = _clr_data_stall(
-            wr_lock, reqs_to_clear.setdefault(
+            unit_locks.wr_lock, reqs_to_clear.setdefault(
                 program[instr.instr].destination, []), instr.instr,
-            trans_util.old_util) if _regs_accessed(instr.instr, program[
-                instr.instr].sources, acc_queues) else StallState.DATA
+            trans_util.old_util) if _regs_accessed(
+                unit_locks.rd_lock, instr.instr, program[
+                    instr.instr].sources, acc_queues) else StallState.DATA
 
 
 def _update_clears(reg_clears, instr):
