@@ -19,5 +19,6 @@
 ############################################################
 .coverage
 __pycache__
+/.pytest_cache
 .vscode/.ropeproject/objectdb
 .vscode/tags
