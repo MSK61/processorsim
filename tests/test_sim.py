@@ -259,6 +259,11 @@ class TestOutputFlush:
         """Test data hazards at output ports.
 
         `self` is this test case.
+        `core2_width` is the width of the second core.
+        `extra_instr_lst` is the extra instructions to execute after the
+                          ones causing the hazard.
+        `cp0_core2_load` is the list of other instructions hosted in the
+                         second core in addition to the hazard ones.
 
         """
         cores = [
