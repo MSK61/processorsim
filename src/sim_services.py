@@ -75,11 +75,12 @@ class HwSpec:
 
         """
         # pylint: disable=no-member
-        return {unit.name: unit for unit in chain(
-            self.processor_desc.in_ports + self.processor_desc.in_out_ports,
-            map(lambda func_unit: func_unit.model,
-                self.processor_desc.out_ports +
-                self.processor_desc.internal_units))}
+        models = chain(self.processor_desc.in_ports +
+                       self.processor_desc.in_out_ports, map(
+                           lambda func_unit: func_unit.model,
+                           self.processor_desc.out_ports +
+                           self.processor_desc.internal_units))
+        return {unit.name: unit for unit in models}
 
 
 class StallError(RuntimeError):
