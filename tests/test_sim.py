@@ -252,33 +252,29 @@ class TestOutputFlush:
     """Test case for flushing instructions at output ports"""
 
     @mark.parametrize(
-        "core2_width, extra_instr_lst, cp0_core2_load", [(1, [], []), (2, [
-            [[], ICaseString("R3"), ICaseString("ALU")]], [InstrState(2)])])
-    def test_stalled_outputs_are_not_flushed(
-            self, core2_width, extra_instr_lst, cp0_core2_load):
+        "extra_instr_lst", [[], [[[], ICaseString("R3"), ICaseString("ALU")]]])
+    def test_stalled_outputs_are_not_flushed(self, extra_instr_lst):
         """Test data hazards at output ports.
 
         `self` is this test case.
-        `core2_width` is the width of the second core.
         `extra_instr_lst` is the extra instructions to execute after the
                           ones causing the hazard.
-        `cp0_core2_load` is the list of other instructions hosted in the
-                         second core in addition to the hazard ones.
 
         """
-        cores = [
-            UnitModel(ICaseString("core 1"), 1, [ICaseString("ALU")], LockInfo(
-                False, True)), UnitModel(ICaseString("core 2"), core2_width, [
-                    ICaseString("ALU")], LockInfo(True, False))]
+        extra_instr_len = len(extra_instr_lst)
+        cores = [UnitModel(ICaseString("core 1"), 1, [ICaseString("ALU")],
+                           LockInfo(False, True)),
+                 UnitModel(ICaseString("core 2"), 1 + extra_instr_len,
+                           [ICaseString("ALU")], LockInfo(True, False))]
         assert simulate(
             [HwInstruction(*instr_params) for instr_params in [
                 [[], ICaseString("R1"), ICaseString("ALU")],
                 [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")]] +
              extra_instr_lst], HwSpec(ProcessorDesc([], [], cores, []))) == [
                  BagValDict(cp_util) for cp_util in [
-                     {ICaseString("core 1"): [InstrState(0)],
-                      ICaseString("core 2"):
-                      [InstrState(1, StallState.DATA)] + cp0_core2_load},
+                     {ICaseString("core 1"): [InstrState(0)], ICaseString(
+                         "core 2"): [InstrState(1, StallState.DATA), *(
+                             map(InstrState, range(2, 2 + extra_instr_len)))]},
                      {ICaseString("core 2"): [InstrState(1)]}]]
 
 
