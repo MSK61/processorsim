@@ -96,7 +96,6 @@ class TestIsa:
         chk_error([ValInStrCheck(ex_chk.value.new_element, ICaseString("add")),
                    ValInStrCheck(ex_chk.value.old_element,
                                  ICaseString("ADD"))], ex_chk.value)
-    # pylint: enable=invalid-name
 
 
 def main():

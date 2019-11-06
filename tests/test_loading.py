@@ -128,7 +128,6 @@ class TestCaps:
             exception.BadWidthError, read_proc_file, "capabilities", in_file)
         chk_error([ValInStrCheck(ex_chk.value.unit, "fullSys"),
                    ValInStrCheck(ex_chk.value.width, bad_width)], ex_chk.value)
-    # pylint: enable=invalid-name
 
 
 class TestEdges:
@@ -334,7 +333,6 @@ class TestUnits:
             [ValInStrCheck(ex_chk.value.new_element, ICaseString(dup_unit)),
              ValInStrCheck(ex_chk.value.old_element, ICaseString("fullSys"))],
             ex_chk.value)
-    # pylint: enable=invalid-name
 
 
 def main():

@@ -78,7 +78,6 @@ class TestBlocking:
             exception.DeadInputError, read_proc_file, "blocking", in_file)
         chk_error([ValInStrCheck(
             ex_chk.value.port, ICaseString(isolated_input))], ex_chk.value)
-    # pylint: enable=invalid-name
 
 
 class TestLoop:
@@ -97,7 +96,6 @@ class TestLoop:
 
         """
         raises(networkx.NetworkXUnfeasible, read_proc_file, "loops", in_file)
-    # pylint: enable=invalid-name
 
 
 class WidthTest(unittest.TestCase):
@@ -117,7 +115,6 @@ class WidthTest(unittest.TestCase):
             "Capability " + ex_chk.exception.capability, "Capability MEM"),
                    ValInStrCheck("port " + ex_chk.exception.port,
                                  "port input")], ex_chk.exception)
-    # pylint: enable=invalid-name
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -219,7 +216,6 @@ class TestLocks:
         """
         raises(MultilockError, load_proc_desc,
                {"units": units, "dataPath": data_path})
-    # pylint: enable=invalid-name
 
 
 def main():

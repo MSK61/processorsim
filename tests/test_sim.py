@@ -138,7 +138,6 @@ class HazardTest(TestCase):
                  ICaseString("output"): [InstrState(0)]},
                 {ICaseString("middle"): [InstrState(1)]},
                 {ICaseString("output"): [InstrState(1)]}]]
-    # pylint: enable=invalid-name
 
 
 class PipelineTest(TestCase):

@@ -142,7 +142,6 @@ class TestProgLoad:
         assert ex_chk.value.element == instr
         assert container_utils.contains(
             str(ex_chk.value), [instr, str(line_num)])
-    # pylint: enable=invalid-name
 
 
 class TestSyntax:
