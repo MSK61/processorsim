@@ -39,6 +39,7 @@
 ############################################################
 
 import functools
+from itertools import chain
 from logging import warning
 from operator import itemgetter
 import os
@@ -81,7 +82,7 @@ def get_abilities(processor):
     """
     return functools.reduce(
         lambda old_caps, port: old_caps.union(port.capabilities),
-        processor.in_out_ports + processor.in_ports, frozenset())
+        chain(processor.in_out_ports, processor.in_ports), frozenset())
 
 
 def load_isa(raw_desc, capabilities):
@@ -370,10 +371,10 @@ def _get_unit_entry(name, attrs):
     The function returns the unit model.
 
     """
+    unit_attrs = itemgetter(UNIT_WIDTH_KEY, UNIT_CAPS_KEY)(attrs)
     lock_info = units.LockInfo(
         *(itemgetter(UNIT_RLOCK_KEY, UNIT_WLOCK_KEY)(attrs)))
-    return UnitModel(name, *(
-        itemgetter(UNIT_WIDTH_KEY, UNIT_CAPS_KEY)(attrs) + (lock_info,)))
+    return UnitModel(name, *(chain(unit_attrs, [lock_info])))
 
 
 def _get_unit_name(unit, unit_registry):

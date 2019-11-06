@@ -45,6 +45,7 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 ############################################################
 
+import itertools
 from itertools import chain
 import logging
 import operator
@@ -237,8 +238,8 @@ def _get_flight_row(flight):
     `flight` is the flight to convert.
 
     """
-    return [""] * flight.start_time + [
-        str(path_stop) for path_stop in flight.stops]
+    return [
+        *(itertools.repeat("", flight.start_time)), *(map(str, flight.stops))]
 
 
 def _get_last_tick(sim_res):

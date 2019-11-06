@@ -75,11 +75,11 @@ class HwSpec:
 
         """
         # pylint: disable=no-member
-        models = chain(self.processor_desc.in_ports +
-                       self.processor_desc.in_out_ports, map(
-                           lambda func_unit: func_unit.model,
-                           self.processor_desc.out_ports +
-                           self.processor_desc.internal_units))
+        models = chain(
+            self.processor_desc.in_ports, self.processor_desc.in_out_ports,
+            map(lambda func_unit: func_unit.model,
+                chain(self.processor_desc.out_ports,
+                      self.processor_desc.internal_units)))
         return {unit.name: unit for unit in models}
 
 
@@ -422,10 +422,11 @@ def _fill_cp_util(processor, program, util_info, issue_rec):
 
     """
     _flush_outputs(_get_out_ports(processor), util_info)
-    _mov_flights(
-        processor.out_ports + processor.internal_units, program, util_info)
-    _fill_inputs(_build_cap_map(processor.in_out_ports + processor.in_ports),
-                 program, util_info, issue_rec)
+    _mov_flights(chain(
+        processor.out_ports, processor.internal_units), program, util_info)
+    _fill_inputs(
+        _build_cap_map(chain(processor.in_out_ports, processor.in_ports)),
+        program, util_info, issue_rec)
 
 
 def _fill_inputs(cap_unit_map, program, util_info, issue_rec):
@@ -532,10 +533,12 @@ def _get_out_ports(processor):
     """Find all units at the processor output boundary.
 
     `processor` is the processor to find whose output ports.
+    The function returns an iterable over all ports at the output
+    boundary.
 
     """
-    return processor.in_out_ports + tuple(
-        map(lambda port: port.model, processor.out_ports))
+    return chain(processor.in_out_ports,
+                 map(lambda port: port.model, processor.out_ports))
 
 
 def _mov_candidate(candidate, unit, util_info):

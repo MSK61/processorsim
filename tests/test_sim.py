@@ -39,6 +39,7 @@
 #
 ############################################################
 
+import itertools
 from unittest import TestCase
 
 import pytest
@@ -261,21 +262,22 @@ class TestOutputFlush:
                           ones causing the hazard.
 
         """
+        program = map(lambda instr_params: HwInstruction(*instr_params),
+                      itertools.chain([[[], ICaseString("R1"), ICaseString(
+                          "ALU")], [[ICaseString("R1")], ICaseString("R2"),
+                                    ICaseString("ALU")]], extra_instr_lst))
         extra_instr_len = len(extra_instr_lst)
         cores = [UnitModel(ICaseString("core 1"), 1, [ICaseString("ALU")],
                            LockInfo(False, True)),
                  UnitModel(ICaseString("core 2"), 1 + extra_instr_len,
                            [ICaseString("ALU")], LockInfo(True, False))]
         assert simulate(
-            [HwInstruction(*instr_params) for instr_params in [
-                [[], ICaseString("R1"), ICaseString("ALU")],
-                [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")]] +
-             extra_instr_lst], HwSpec(ProcessorDesc([], [], cores, []))) == [
-                 BagValDict(cp_util) for cp_util in [
-                     {ICaseString("core 1"): [InstrState(0)], ICaseString(
-                         "core 2"): [InstrState(1, StallState.DATA), *(
-                             map(InstrState, range(2, 2 + extra_instr_len)))]},
-                     {ICaseString("core 2"): [InstrState(1)]}]]
+            tuple(program), HwSpec(ProcessorDesc([], [], cores, []))) == [
+                BagValDict(cp_util) for cp_util in
+                [{ICaseString("core 1"): [InstrState(0)],
+                  ICaseString("core 2"): [InstrState(1, StallState.DATA), *(
+                      map(InstrState, range(2, 2 + extra_instr_len)))]},
+                 {ICaseString("core 2"): [InstrState(1)]}]]
 
 
 class TestSim:
