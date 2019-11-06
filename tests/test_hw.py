@@ -65,7 +65,7 @@ class _MockCheck:
         `self` is this mock check.
 
         """
-        self._mock_obj.assert_called_with(*self._params)
+        self._mock_obj.assert_called_with(*(self._params))
 
     _mock_obj: unittest.mock.MagicMock
 

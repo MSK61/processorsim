@@ -66,7 +66,7 @@ class ICaseString:
         `other` is the other case-insensitive string.
 
         """
-        return operator.eq(*self._get_canonical(other.raw_str))
+        return operator.eq(*(self._get_canonical(other.raw_str)))
 
     def __hash__(self):
         """Get the has value of this case-insensitive string.
@@ -83,7 +83,7 @@ class ICaseString:
         `other` is the other case-insensitive string.
 
         """
-        return operator.lt(*self._get_canonical(other.raw_str))
+        return operator.lt(*(self._get_canonical(other.raw_str)))
 
     def __radd__(self, other):
         """Return the reflected concatenation result.

@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
-#               30 (Thirty)
+# environment:  Visual Studdio Code 1.39.2, python 3.7.5, Fedora release
+#               31 (Thirty One)
 #
 # notes:        This is a private program.
 #
@@ -72,7 +72,7 @@ class BagValDict:
         other_items = list(other.items())
         lst_pairs = map(
             lambda pair: map(sorted, [pair[1], self[pair[0]]]), other_items)
-        return eq(*map(len, [self, other_items])) and all(
+        return eq(*(map(len, [self, other_items]))) and all(
             map(lambda elem_lists: eq(*elem_lists), lst_pairs))
 
     def __getitem__(self, key):

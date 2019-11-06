@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.39.1, python 3.7.4, Fedora release
-#               30 (Thirty)
+# environment:  Visual Studdio Code 1.39.2, python 3.7.5, Fedora release
+#               31 (Thirty One)
 #
 # notes:        This is a private program.
 #
@@ -152,7 +152,7 @@ def _add_edge(processor, edge, unit_registry, edge_registry):
         raise BadEdgeError(f"Edge ${BadEdgeError.EDGE_KEY} doesn't connect "
                            "exactly 2 functional units.", edge)
 
-    processor.add_edge(*_get_std_edge(edge, unit_registry))
+    processor.add_edge(*(_get_std_edge(edge, unit_registry)))
     old_edge = edge_registry.get(edge)
 
     if old_edge:
@@ -267,7 +267,7 @@ def _chk_unit_width(unit):
     if unit[UNIT_WIDTH_KEY] <= 0:
         raise BadWidthError(f"Functional unit ${BadWidthError.UNIT_KEY} has a "
                             f"bad width ${BadWidthError.WIDTH_KEY}.",
-                            *itemgetter(UNIT_NAME_KEY, UNIT_WIDTH_KEY)(unit))
+                            *(itemgetter(UNIT_NAME_KEY, UNIT_WIDTH_KEY)(unit)))
 
 
 def _create_graph(hw_units, links):
@@ -371,7 +371,7 @@ def _get_unit_entry(name, attrs):
 
     """
     lock_info = units.LockInfo(
-        *itemgetter(UNIT_RLOCK_KEY, UNIT_WLOCK_KEY)(attrs))
+        *(itemgetter(UNIT_RLOCK_KEY, UNIT_WLOCK_KEY)(attrs)))
     return UnitModel(name, *(
         itemgetter(UNIT_WIDTH_KEY, UNIT_CAPS_KEY)(attrs) + (lock_info,)))
 
