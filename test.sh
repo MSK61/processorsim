@@ -34,6 +34,6 @@
 #
 ############################################################
 set -e
-python -m pytest --codestyle --cov src --flakes --pylint $*
+pytest --codestyle --cov src --flakes --pylint $*
 cd src
-python -m pytest -m pylint --pylint $*
+pytest -m pylint --pylint $*
