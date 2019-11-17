@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.39.2, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.40.1, python 3.7.5, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -41,7 +41,7 @@
 import collections
 from operator import eq, itemgetter
 
-import str_utils
+from str_utils import format_obj
 
 
 class BagValDict:
@@ -116,7 +116,7 @@ class BagValDict:
         `self` is this dictionary.
 
         """
-        return str_utils.format_obj(type(self).__name__, [self._format_dict()])
+        return format_obj(type(self).__name__, [self._format_dict()])
 
     def items(self):
         """Return the items of this dictionary.
@@ -189,8 +189,7 @@ class _IndexedSetBase:
         `self` is this indexed set.
 
         """
-        return str_utils.get_obj_repr(
-            type(self).__name__, [self._std_form_map])
+        return format_obj(type(self).__name__, map(repr, [self._std_form_map]))
 
     def get(self, elem):
         """Retrieve the elem in this set matching the given one.

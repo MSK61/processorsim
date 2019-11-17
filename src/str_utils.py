@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.39.2, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.40.1, python 3.7.5, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -125,13 +125,3 @@ def format_obj(cls_name, field_strings):
     """
     sep = ", "
     return f"{cls_name}({sep.join(field_strings)})"
-
-
-def get_obj_repr(cls_name, fields):
-    """Construct a string representation for the given object.
-
-    `cls_name` is the class name.
-    `fields` are the object fields.
-
-    """
-    return format_obj(cls_name, map(repr, fields))
