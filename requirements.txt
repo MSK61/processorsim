@@ -18,6 +18,9 @@
 #
 ############################################################
 attrs
+# to prevent travis from picking mypy 0.740 which causes problems with attr.s
+# constructor cmp keyword argument
+mypy==0.730
 networkx
 pytest-codestyle
 pytest-cov
