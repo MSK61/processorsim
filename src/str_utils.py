@@ -44,6 +44,17 @@ import operator
 import attr
 
 
+def format_obj(cls_name, field_strings):
+    """Construct a string representation for the given object.
+
+    `cls_name` is the class name.
+    `field_strings` are the string representations of the object fields.
+
+    """
+    sep = ", "
+    return f"{cls_name}({sep.join(field_strings)})"
+
+
 @functools.total_ordering
 @attr.s(cmp=False, frozen=True)
 class ICaseString:
@@ -114,14 +125,3 @@ class ICaseString:
     raw_str: str = attr.ib()
 
     _canonical = staticmethod(str.lower)
-
-
-def format_obj(cls_name, field_strings):
-    """Construct a string representation for the given object.
-
-    `cls_name` is the class name.
-    `field_strings` are the string representations of the object fields.
-
-    """
-    sep = ", "
-    return f"{cls_name}({sep.join(field_strings)})"

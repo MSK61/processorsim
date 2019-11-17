@@ -38,7 +38,7 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.39.2, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.40.1, python 3.7.5, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -65,35 +65,6 @@ _COL_SEP = '\t'
 # variable to receive the processor architecture file
 _PROC_OPT_VAR = "processor_file"
 _PROG_OPT_VAR = "prog_file"  # variable to receive the program file
-
-
-@attr.s(auto_attribs=True, frozen=True)
-class _InstrPosition:
-
-    """Instruction position"""
-
-    def __str__(self):
-        """Return the printable string of this instruction position.
-
-        `self` is this instruction position.
-
-        """
-        return "{}:{}".format({StallState.NO_STALL: 'U', StallState.STRUCTURAL:
-                               'S'}[self._stalled], self._unit)
-
-    _unit: str_utils.ICaseString
-
-    _stalled: StallState
-
-
-@attr.s(auto_attribs=True, frozen=True)
-class _InstrFlight:
-
-    """Instruction flight"""
-
-    start_time: int
-
-    stops: typing.Iterable[_InstrPosition]
 
 
 def get_in_files(argv):
@@ -178,6 +149,35 @@ def run(processor_file, program_file):
 
     """
     _print_sim_res(get_sim_res(processor_file, program_file))
+
+
+@attr.s(auto_attribs=True, frozen=True)
+class _InstrPosition:
+
+    """Instruction position"""
+
+    def __str__(self):
+        """Return the printable string of this instruction position.
+
+        `self` is this instruction position.
+
+        """
+        return "{}:{}".format({StallState.NO_STALL: 'U', StallState.STRUCTURAL:
+                               'S'}[self._stalled], self._unit)
+
+    _unit: str_utils.ICaseString
+
+    _stalled: StallState
+
+
+@attr.s(auto_attribs=True, frozen=True)
+class _InstrFlight:
+
+    """Instruction flight"""
+
+    start_time: int
+
+    stops: typing.Iterable[_InstrPosition]
 
 
 def _create_flight(instr_util):

@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.39.2, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.40.1, python 3.7.5, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -62,16 +62,6 @@ from .units import FuncUnit, sorted_models, UNIT_CAPS_KEY, UnitModel, \
     UNIT_NAME_KEY, UNIT_RLOCK_KEY, UNIT_WIDTH_KEY, UNIT_WLOCK_KEY
 __all__ = ["exception", "get_abilities", "load_isa", "load_proc_desc",
            "ProcessorDesc", "units"]
-
-
-@attr.s(auto_attribs=True, frozen=True)
-class _CapabilityInfo:
-
-    """Unit capability information"""
-
-    name: ICaseString
-
-    unit: str
 
 
 def get_abilities(processor):
@@ -110,6 +100,16 @@ def load_proc_desc(raw_desc):
     proc_desc = _create_graph(raw_desc["units"], raw_desc["dataPath"])
     _prep_proc_desc(proc_desc)
     return _make_processor(proc_desc)
+
+
+@attr.s(auto_attribs=True, frozen=True)
+class _CapabilityInfo:
+
+    """Unit capability information"""
+
+    name: ICaseString
+
+    unit: str
 
 
 def _add_capability(unit, cap, cap_list, unit_cap_reg, global_cap_reg):

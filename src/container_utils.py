@@ -44,6 +44,54 @@ from operator import eq, itemgetter
 from str_utils import format_obj
 
 
+def concat_dicts(dict1, dict2):
+    """Concatenate two dictionaries into a new one.
+
+    `dict1` is the first dictionary.
+    `dict2` is the second dictionary.
+
+    """
+    return dict(dict1, **dict2)
+
+
+def contains(container, elems):
+    """Test the membership of all elements within a container.
+
+    `container` is the container to check elements against.
+    `elems` are the elements to check.
+
+    """
+    return all(map(lambda cur_elem: cur_elem in container, elems))
+
+
+def count_if(pred, elems):
+    """Count the number of elements matching the given predicate.
+
+    `pred` is the matching predicate.
+    `elems` is the iterator over elements to count matching ones in.
+
+    """
+    return sum(1 if pred(elem) else 0 for elem in elems)
+
+
+def get_from_set(elem_set, elem):
+    """Get an element from the given set, after adding it if needed.
+
+    `elem_set` is the set.
+    `elem` is the element.
+    The function returns the element in this set if one exists, otherwise adds
+    it and returns the newly added element.
+
+    """
+    std_elem = elem_set.get(elem)
+
+    if std_elem:
+        return std_elem
+
+    elem_set.add(elem)
+    return elem
+
+
 class BagValDict:
 
     """Dictionary with(unsorted) lists as values"""
@@ -229,51 +277,3 @@ class SelfIndexSet(_IndexedSetBase):
 
         """
         _IndexedSetBase.__init__(self, lambda elem: elem)
-
-
-def concat_dicts(dict1, dict2):
-    """Concatenate two dictionaries into a new one.
-
-    `dict1` is the first dictionary.
-    `dict2` is the second dictionary.
-
-    """
-    return dict(dict1, **dict2)
-
-
-def contains(container, elems):
-    """Test the membership of all elements within a container.
-
-    `container` is the container to check elements against.
-    `elems` are the elements to check.
-
-    """
-    return all(map(lambda cur_elem: cur_elem in container, elems))
-
-
-def count_if(pred, elems):
-    """Count the number of elements matching the given predicate.
-
-    `pred` is the matching predicate.
-    `elems` is the iterator over elements to count matching ones in.
-
-    """
-    return sum(1 if pred(elem) else 0 for elem in elems)
-
-
-def get_from_set(elem_set, elem):
-    """Get an element from the given set, after adding it if needed.
-
-    `elem_set` is the set.
-    `elem` is the element.
-    The function returns the element in this set if one exists, otherwise adds
-    it and returns the newly added element.
-
-    """
-    std_elem = elem_set.get(elem)
-
-    if std_elem:
-        return std_elem
-
-    elem_set.add(elem)
-    return elem

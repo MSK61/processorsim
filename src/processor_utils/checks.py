@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.39.2, python 3.7.4, Fedora release
-#               30 (Thirty)
+# environment:  Visual Studdio Code 1.40.1, python 3.7.5, Fedora release
+#               31 (Thirty One)
 #
 # notes:        This is a private program.
 #
@@ -55,6 +55,51 @@ from . import port_defs
 from . import units
 from .units import UNIT_CAPS_KEY, UNIT_WIDTH_KEY
 _OLD_NODE_KEY = "old_node"
+
+
+def chk_caps(processor):
+    """Perform per-capability checks.
+
+    `processor` is the processor to check whose capabilities.
+
+    """
+    cap_checks = [lambda cap_graph, post_ord, cap, in_ports, out_ports:
+                  _chk_multilock(cap_graph, post_ord, cap, in_ports)]
+
+    if processor.number_of_nodes() > 1:
+        cap_checks.append(
+            lambda cap_graph, post_ord, cap, in_ports, out_ports:
+            _chk_cap_flow(_get_anal_graph(cap_graph),
+                          ComponentInfo(cap, "Capability " + cap), in_ports,
+                          out_ports, lambda port: "port " + port))
+
+    _do_cap_checks(processor, cap_checks)
+
+
+def chk_cycles(processor):
+    """Check the given processor for cycles.
+
+    `processor` is the processor to check.
+    The function raises a NetworkXUnfeasible if the processor isn't a
+    DAG.
+
+    """
+    if not networkx.is_directed_acyclic_graph(processor):
+        raise networkx.NetworkXUnfeasible()
+
+
+def chk_non_empty(processor, in_ports):
+    """Check if the processor still has input ports.
+
+    `processor` is the processor to check.
+    `in_ports` are the processor original input ports.
+    The function raises an EmptyProcError if no input ports still exist.
+
+    """
+    try:
+        next(filter(lambda port: port in processor, in_ports))
+    except StopIteration:  # No ports exist.
+        raise exception.EmptyProcError("No input ports found")
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -210,51 +255,6 @@ class _PathLockCalc:
     _start_name: ICaseString
 
     _path_locks: Mapping[ICaseString, _SatInfo]
-
-
-def chk_caps(processor):
-    """Perform per-capability checks.
-
-    `processor` is the processor to check whose capabilities.
-
-    """
-    cap_checks = [lambda cap_graph, post_ord, cap, in_ports, out_ports:
-                  _chk_multilock(cap_graph, post_ord, cap, in_ports)]
-
-    if processor.number_of_nodes() > 1:
-        cap_checks.append(
-            lambda cap_graph, post_ord, cap, in_ports, out_ports:
-            _chk_cap_flow(_get_anal_graph(cap_graph),
-                          ComponentInfo(cap, "Capability " + cap), in_ports,
-                          out_ports, lambda port: "port " + port))
-
-    _do_cap_checks(processor, cap_checks)
-
-
-def chk_cycles(processor):
-    """Check the given processor for cycles.
-
-    `processor` is the processor to check.
-    The function raises a NetworkXUnfeasible if the processor isn't a
-    DAG.
-
-    """
-    if not networkx.is_directed_acyclic_graph(processor):
-        raise networkx.NetworkXUnfeasible()
-
-
-def chk_non_empty(processor, in_ports):
-    """Check if the processor still has input ports.
-
-    `processor` is the processor to check.
-    `in_ports` are the processor original input ports.
-    The function raises an EmptyProcError if no input ports still exist.
-
-    """
-    try:
-        next(filter(lambda port: port in processor, in_ports))
-    except StopIteration:  # No ports exist.
-        raise exception.EmptyProcError("No input ports found")
 
 
 def _add_port_link(graph, old_port, new_port, link):

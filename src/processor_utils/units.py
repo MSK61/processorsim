@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
-#               30 (Thirty)
+# environment:  Visual Studdio Code 1.40.1, python 3.7.5, Fedora release
+#               31 (Thirty One)
 #
 # notes:        This is a private program.
 #
@@ -52,6 +52,15 @@ UNIT_NAME_KEY = "name"
 UNIT_RLOCK_KEY = "readLock"
 UNIT_WLOCK_KEY = "writeLock"
 UNIT_WIDTH_KEY = "width"
+
+
+def sorted_models(models):
+    """Create a sorted list of the given models.
+
+    `models` are the models to create a sorted list of.
+
+    """
+    return tuple(sorted(models, key=lambda model: model.name))
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -77,15 +86,6 @@ class UnitModel:
         converter=lambda capabilities: tuple(sorted(capabilities)))
 
     lock_info: LockInfo
-
-
-def sorted_models(models):
-    """Create a sorted list of the given models.
-
-    `models` are the models to create a sorted list of.
-
-    """
-    return tuple(sorted(models, key=lambda model: model.name))
 
 
 @attr.s(cmp=False, frozen=True)
