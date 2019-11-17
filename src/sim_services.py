@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.39.2, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.40.1, python 3.7.5, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -55,32 +55,6 @@ import processor_utils
 import reg_access
 from reg_access import AccessType
 from str_utils import ICaseString
-
-
-@attr.s(frozen=True)
-class HwSpec:
-
-    """Hardware specification"""
-
-    processor_desc: processor_utils.ProcessorDesc = attr.ib()
-
-    name_unit_map: typing.Mapping[
-        ICaseString, processor_utils.units.UnitModel] = attr.ib(init=False)
-
-    @name_unit_map.default
-    def _build_unit_map(self):
-        """Build the name-to-unit mapping.
-
-        `self` is this hardware specification.
-
-        """
-        # pylint: disable=no-member
-        models = chain(
-            self.processor_desc.in_ports, self.processor_desc.in_out_ports,
-            map(lambda func_unit: func_unit.model,
-                chain(self.processor_desc.out_ports,
-                      self.processor_desc.internal_units)))
-        return {unit.name: unit for unit in models}
 
 
 class StallError(RuntimeError):
@@ -110,6 +84,51 @@ class StallError(RuntimeError):
         return self._stalled_state
 
     STATE_KEY = "state"  # parameter key in message format
+
+
+def simulate(program, hw_info):
+    """Run the given program on the processor.
+
+    `program` is the program to run.
+    `hw_info` is the processor information.
+    The function returns the pipeline diagram.
+
+    """
+    util_tbl = []
+    acc_queues = _build_acc_plan(enumerate(program))
+    issue_rec = _IssueInfo()
+    prog_len = len(program)
+
+    while issue_rec.entered < prog_len or issue_rec.in_flight:
+        _run_cycle(program, acc_queues, hw_info, util_tbl, issue_rec)
+
+    return util_tbl
+
+
+@attr.s(frozen=True)
+class HwSpec:
+
+    """Hardware specification"""
+
+    processor_desc: processor_utils.ProcessorDesc = attr.ib()
+
+    name_unit_map: typing.Mapping[
+        ICaseString, processor_utils.units.UnitModel] = attr.ib(init=False)
+
+    @name_unit_map.default
+    def _build_unit_map(self):
+        """Build the name-to-unit mapping.
+
+        `self` is this hardware specification.
+
+        """
+        # pylint: disable=no-member
+        models = chain(
+            self.processor_desc.in_ports, self.processor_desc.in_out_ports,
+            map(lambda func_unit: func_unit.model,
+                chain(self.processor_desc.out_ports,
+                      self.processor_desc.internal_units)))
+        return {unit.name: unit for unit in models}
 
 
 class StallState(enum.Enum):
@@ -202,25 +221,6 @@ class _TransitionUtil:
     old_util: typing.Collection[InstrState]
 
     new_util: typing.Iterable[InstrState]
-
-
-def simulate(program, hw_info):
-    """Run the given program on the processor.
-
-    `program` is the program to run.
-    `hw_info` is the processor information.
-    The function returns the pipeline diagram.
-
-    """
-    util_tbl = []
-    acc_queues = _build_acc_plan(enumerate(program))
-    issue_rec = _IssueInfo()
-    prog_len = len(program)
-
-    while issue_rec.entered < prog_len or issue_rec.in_flight:
-        _run_cycle(program, acc_queues, hw_info, util_tbl, issue_rec)
-
-    return util_tbl
 
 
 def _accept_instr(instr, inputs, util_info):

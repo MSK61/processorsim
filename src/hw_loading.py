@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
+# environment:  Visual Studdio Code 1.40.1, python 3.7.5, Fedora release
 #               30 (Thirty)
 #
 # notes:        This is a private program.
@@ -45,16 +45,6 @@ import yaml
 
 import processor_utils
 import str_utils
-
-
-@attr.s(auto_attribs=True, frozen=True)
-class HwDesc:
-
-    """Hardware description"""
-
-    processor: processor_utils.ProcessorDesc
-
-    isa: typing.Mapping[str, str_utils.ICaseString]
 
 
 def read_processor(proc_file):
@@ -72,3 +62,13 @@ def read_processor(proc_file):
     isa_key = "ISA"
     return HwDesc(processor, processor_utils.load_isa(
         yaml_desc[isa_key], processor_utils.get_abilities(processor)))
+
+
+@attr.s(auto_attribs=True, frozen=True)
+class HwDesc:
+
+    """Hardware description"""
+
+    processor: processor_utils.ProcessorDesc
+
+    isa: typing.Mapping[str, str_utils.ICaseString]

@@ -31,12 +31,32 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
-#               30 (Thirty)
+# environment:  Visual Studdio Code 1.40.1, python 3.7.5, Fedora release
+#               31 (Thirty One)
 #
 # notes:        This is a private program.
 #
 ############################################################
+
+
+def get_in_ports(processor):
+    """Find the input ports.
+
+    `processor` is the processor to find whose input ports.
+    The function returns an iterator over the processor input ports.
+
+    """
+    return _get_ports(processor.in_degree())
+
+
+def get_out_ports(processor):
+    """Find the output ports.
+
+    `processor` is the processor to find whose output ports.
+    The function returns an iterator over the processor output ports.
+
+    """
+    return _get_ports(processor.out_degree())
 
 
 class PortGroup:
@@ -71,26 +91,6 @@ class PortGroup:
 
         """
         return self._out_ports
-
-
-def get_in_ports(processor):
-    """Find the input ports.
-
-    `processor` is the processor to find whose input ports.
-    The function returns an iterator over the processor input ports.
-
-    """
-    return _get_ports(processor.in_degree())
-
-
-def get_out_ports(processor):
-    """Find the output ports.
-
-    `processor` is the processor to find whose output ports.
-    The function returns an iterator over the processor output ports.
-
-    """
-    return _get_ports(processor.out_degree())
 
 
 def _get_ports(degrees):

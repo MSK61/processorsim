@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
-#               30 (Thirty)
+# environment:  Visual Studdio Code 1.40.1, python 3.7.5, Fedora release
+#               31 (Thirty One)
 #
 # notes:        This is a private program.
 #
@@ -94,26 +94,6 @@ class CodeError(RuntimeError):
     LINE_NUM_KEY = "line"
 
 
-@attr.s(auto_attribs=True, frozen=True)
-class _LineInfo:
-
-    """Source line information"""
-
-    instruction: str
-
-    operands: str
-
-
-@attr.s(auto_attribs=True, frozen=True)
-class _OperandInfo:
-
-    """Instruction operand information"""
-
-    name: ICaseString
-
-    line: int
-
-
 def compile_program(prog, isa):
     """Compile the program using the given instruction set.
 
@@ -141,6 +121,26 @@ def read_program(prog_file):
         operator.itemgetter(1), enumerate(map(str.strip, prog_file)))
     reg_registry = container_utils.IndexedSet(lambda reg: reg.name)
     return [_create_instr(instr, reg_registry) for instr in program]
+
+
+@attr.s(auto_attribs=True, frozen=True)
+class _LineInfo:
+
+    """Source line information"""
+
+    instruction: str
+
+    operands: str
+
+
+@attr.s(auto_attribs=True, frozen=True)
+class _OperandInfo:
+
+    """Instruction operand information"""
+
+    name: ICaseString
+
+    line: int
 
 
 def _create_instr(src_line_info, reg_registry):
