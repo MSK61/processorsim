@@ -24,10 +24,10 @@
     "files.exclude": {
         ".coverage": true,
         ".pytest_cache": true,
-        "src/.mypy_cache": true,
         ".vscode/.ropeproject/objectdb": true,
         ".vscode/tags": true,
         "**/__pycache__": true,
-        "**/.pytest_cache": true
+        "**/.pytest_cache": true,
+        "src/.mypy_cache": true
     }
 }
