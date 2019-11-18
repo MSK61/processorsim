@@ -27,5 +27,6 @@
         ".vscode/tags": true,
         "**/__pycache__": true,
         "**/.pytest_cache": true
-    }
+    },
+    "python.pythonPath": "~/.local/share/virtualenvs/processorsim-w233cvej/bin/python"
 }

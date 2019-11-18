@@ -88,7 +88,7 @@ class UnitModel:
     lock_info: LockInfo
 
 
-@attr.s(cmp=False, frozen=True)
+@attr.s(eq=False, frozen=True)
 class FuncUnit:
 
     """Processing functional unit"""
