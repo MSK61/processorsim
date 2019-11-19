@@ -58,7 +58,7 @@ def format_obj(cls_name: str, field_strings: Iterable[str]) -> str:
 
 
 @functools.total_ordering
-@attr.s(cmp=False, frozen=True)
+@attr.s(eq=False, frozen=True)
 class ICaseString:
 
     """Case-insensitive string"""

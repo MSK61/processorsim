@@ -6,7 +6,7 @@ simulator for program execution on pipelined processors
 
 Requirements
 ------------
-Please refer to [requirements.txt](requirements.txt) for the list of dependency packages.
+Please refer to [Pipfile](Pipfile) for the list of dependency packages.
 
 Running tests
 -------------

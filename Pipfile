@@ -17,17 +17,24 @@
 # along with processorSim.  If not, see <http://www.gnu.org/licenses/>.
 #
 ############################################################
-attrs
-# to prevent travis from picking mypy 0.740 which causes problems with attr.s
-# constructor cmp keyword argument
-mypy==0.730
-networkx
-pytest-codestyle
-pytest-cov
-pytest-flakes
-pytest-mypy
-pytest-pylint
-pytest-travis-fold
-python-coveralls
-PyYAML
-six==1.12 # to override virtualenv pre-installed six in travis
+
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pytest-codestyle = "*"
+pytest-cov = "*"
+pytest-flakes = "*"
+pytest-pylint = "*"
+pytest-travis-fold = "*"
+python-coveralls = "*"
+pytest-mypy = "*"
+
+[packages]
+networkx = "*"
+pyyaml = "*"
+
+[requires]
+python_version = "3.7"
