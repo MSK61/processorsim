@@ -61,27 +61,28 @@ class StallError(RuntimeError):
 
     """Stalled processor error"""
 
-    def __init__(self, msg_tmpl, stalled_state):
+    def __init__(self, msg_tmpl, fed_commands):
         """Create a stalled processor error.
 
         `self` is this stalled processor error.
         `msg_tmpl` is the error message format taking the stalled
                    processor state as a positional argument.
-        `stalled_state` is the stalled processor state.
+        `fed_commands` is the numer of instructions fed to the processor
+                       so far.
 
         """
         RuntimeError.__init__(self, string.Template(msg_tmpl).substitute(
-            {self.STATE_KEY: stalled_state}))
-        self._stalled_state = stalled_state
+            {self.STATE_KEY: fed_commands}))
+        self._fed_commands = fed_commands
 
     @property
-    def processor_state(self):
+    def fed_commands(self):
         """Stalled processor state
 
         `self` is this stalled processor error.
 
         """
-        return self._stalled_state
+        return self._fed_commands
 
     STATE_KEY = "state"  # parameter key in message format
 
