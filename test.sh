@@ -33,7 +33,6 @@
 # notes:        This is a private program.
 #
 ############################################################
-set -e
 pytest --pycodestyle --cov src --flakes --pylint $*
 cd src
 pytest -m pylint --pylint $*
