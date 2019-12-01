@@ -65,9 +65,7 @@ class AccessGroup:
     reqs: typing.MutableSet[int] = attr.ib(converter=set, factory=set)
 
 
-def _rev_list(
-        lst: typing.Union[typing.Reversible[AccessGroup],
-                          typing.Sequence[AccessGroup]]) -> List[AccessGroup]:
+def _rev_list(lst: typing.Reversible[AccessGroup]) -> List[AccessGroup]:
     """Return the reversed list of the given one.
 
     `lst` is the list to reverse.
