@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.39.2, python 3.7.4, Fedora release
-#               30 (Thirty)
+# environment:  Visual Studdio Code 1.40.1 python 3.7.5, Fedora release
+#               31 (Thirty One)
 #
 # notes:        This is a private program.
 #
@@ -41,6 +41,7 @@
 import enum
 from enum import auto
 import typing
+from typing import List
 
 import attr
 
@@ -64,13 +65,24 @@ class AccessGroup:
     reqs: typing.MutableSet[int] = attr.ib(converter=set, factory=set)
 
 
+def _rev_list(
+        lst: typing.Union[typing.Reversible[AccessGroup],
+                          typing.Sequence[AccessGroup]]) -> List[AccessGroup]:
+    """Return the reversed list of the given one.
+
+    `lst` is the list to reverse.
+
+    """
+    return list(reversed(lst))
+
+
 @attr.s(frozen=True)
 class RegAccessQueue:
 
     """Access request queue for a single register"""
     # pylint: disable=unsubscriptable-object
 
-    def can_access(self, req_type, req_owner):
+    def can_access(self, req_type: AccessType, req_owner: int) -> bool:
         """Request access to the register.
 
         `self` is this access request queue.
@@ -81,7 +93,7 @@ class RegAccessQueue:
         return req_type == self._queue[
             -1].access_type and req_owner in self._queue[-1].reqs
 
-    def dequeue(self, req_owner):
+    def dequeue(self, req_owner: int) -> None:
         """Remove a request from this queue.
 
         `self` is this access request queue.
@@ -98,23 +110,22 @@ class RegAccessQueue:
     # removal only without addition, we reverse the given queue to make
     # the queue front at the list tail and make use of the fast access
     # to the list tail.
-    _queue: typing.List[AccessGroup] = attr.ib(
-        converter=lambda reqs: list(reversed(reqs)))
+    _queue: List[AccessGroup] = attr.ib(converter=_rev_list)
 
 
 class RegAccQBuilder:
 
     """Access request queue builder"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Create an access queue builder.
 
         `self` is this access queue builder.
 
         """
-        self._queue = []
+        self._queue: List[AccessGroup] = []
 
-    def append(self, req_type, req_owner):
+    def append(self, req_type: AccessType, req_owner: int) -> None:
         """Append a new read request to the built queue.
 
         `self` is this access queue builder.
@@ -127,7 +138,7 @@ class RegAccQBuilder:
 
         self._queue[-1].reqs.add(req_owner)
 
-    def create(self):
+    def create(self) -> RegAccessQueue:
         """Create the request access queue.
 
         `self` is this access queue builder.
@@ -135,12 +146,12 @@ class RegAccQBuilder:
         """
         return RegAccessQueue(self._queue)
 
-    def _can_merge(self, req_type):
+    def _can_merge(self, req_type: AccessType) -> bool:
         """Test if the given request can be merged with the last one.
 
         `self` is this access queue builder.
         `req_type` is the request type.
 
         """
-        return req_type == AccessType.READ and self._queue and self._queue[
-            -1].access_type == AccessType.READ
+        return req_type == AccessType.READ and bool(
+            self._queue) and self._queue[-1].access_type == AccessType.READ
