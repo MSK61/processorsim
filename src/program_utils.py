@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.40.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.40.2, python 3.7.5, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -42,12 +42,14 @@ import logging
 import operator
 from re import split
 import string
+from typing import Iterable, List, Mapping, Tuple
 
 import attr
 
 import container_utils
+from container_utils import IndexedSet
 from errors import UndefElemError
-import program_defs
+from program_defs import HwInstruction, ProgInstruction
 from str_utils import ICaseString
 
 
@@ -55,7 +57,7 @@ class CodeError(RuntimeError):
 
     """Syntax error"""
 
-    def __init__(self, msg_tmpl, line, instr):
+    def __init__(self, msg_tmpl: str, line: int, instr: str) -> None:
         """Create a syntax error.
 
         `self` is this syntax error.
@@ -65,13 +67,15 @@ class CodeError(RuntimeError):
         `instr` is the instruction causing the error.
 
         """
+        # Casting dictionary values since the type hint in typeshed for
+        # Template.substitute unnecessarily stipulates this.
         RuntimeError.__init__(self, string.Template(msg_tmpl).substitute(
-            {self.INSTR_KEY: instr, self.LINE_NUM_KEY: line}))
+            {self.INSTR_KEY: instr, self.LINE_NUM_KEY: str(line)}))
         self._line = line
         self._instr = instr
 
     @property
-    def instr(self):
+    def instr(self) -> str:
         """Instruction where the error is encountered
 
         `self` is this syntax error.
@@ -80,7 +84,7 @@ class CodeError(RuntimeError):
         return self._instr
 
     @property
-    def line(self):
+    def line(self) -> int:
         """Number of the source line containing the error
 
         `self` is this syntax error.
@@ -94,7 +98,8 @@ class CodeError(RuntimeError):
     LINE_NUM_KEY = "line"
 
 
-def compile_program(prog, isa):
+def compile_program(prog: Iterable[ProgInstruction], isa: Mapping[
+        str, ICaseString]) -> List[HwInstruction]:
     """Compile the program using the given instruction set.
 
     `prog` is the program to compile.
@@ -105,12 +110,11 @@ def compile_program(prog, isa):
     UndefElemError if an unsupported instruction is encountered.
 
     """
-    return [program_defs.HwInstruction(
-        prog_instr.sources, prog_instr.destination,
-        _get_cap(isa, prog_instr)) for prog_instr in prog]
+    return [HwInstruction(prog_instr.sources, prog_instr.destination,
+                          _get_cap(isa, prog_instr)) for prog_instr in prog]
 
 
-def read_program(prog_file):
+def read_program(prog_file: Iterable[str]) -> List[ProgInstruction]:
     """Read the program stored in the given file.
 
     `prog_file` is the file containing the assembly program.
@@ -119,7 +123,7 @@ def read_program(prog_file):
     """
     program = filter(
         operator.itemgetter(1), enumerate(map(str.strip, prog_file)))
-    reg_registry = container_utils.IndexedSet(lambda reg: reg.name)
+    reg_registry = IndexedSet(lambda reg: reg.name)
     return [_create_instr(instr, reg_registry) for instr in program]
 
 
@@ -143,7 +147,8 @@ class _OperandInfo:
     line: int
 
 
-def _create_instr(src_line_info, reg_registry):
+def _create_instr(src_line_info: Tuple[int, str],
+                  reg_registry: IndexedSet) -> ProgInstruction:
     """Convert the source line to a program instruction.
 
     `src_line_info` is the program instruction line information.
@@ -153,13 +158,14 @@ def _create_instr(src_line_info, reg_registry):
 
     """
     line_num = src_line_info[0] + 1
-    src_line_info = _get_line_parts(src_line_info)
-    operands = _get_operands(src_line_info, line_num, reg_registry)
-    return program_defs.ProgInstruction(
-        operands[1:], operands[0], src_line_info.instruction, line_num)
+    line_parts = _get_line_parts(src_line_info)
+    operands = _get_operands(line_parts, line_num, reg_registry)
+    return ProgInstruction(
+        operands[1:], operands[0], line_parts.instruction, line_num)
 
 
-def _get_cap(isa, instr):
+def _get_cap(
+        isa: Mapping[str, ICaseString], instr: ProgInstruction) -> ICaseString:
     """Get the ISA capability of the given instruction.
 
     `isa` is the instruction set containing upper-case instructions.
@@ -176,7 +182,7 @@ def _get_cap(isa, instr):
             f"{instr.line}", instr.name)
 
 
-def _get_line_parts(src_line_info):
+def _get_line_parts(src_line_info: Tuple[int, str]) -> _LineInfo:
     """Extract the source line components.
 
     `src_line_info` is the source line information.
@@ -197,7 +203,8 @@ def _get_line_parts(src_line_info):
     return _LineInfo(*line_parts)
 
 
-def _get_operands(src_line_info, line_num, reg_registry):
+def _get_operands(src_line_info: _LineInfo, line_num: int,
+                  reg_registry: IndexedSet) -> List[ICaseString]:
     """Extract operands from the given line.
 
     `src_line_info` is the source line information.
@@ -220,7 +227,8 @@ def _get_operands(src_line_info, line_num, reg_registry):
     return valid_ops
 
 
-def _get_reg_name(op_name, op_idx, line_num, instr, reg_registry):
+def _get_reg_name(op_name: str, op_idx: int, line_num: int, instr: str,
+                  reg_registry: IndexedSet) -> ICaseString:
     """Extract the registry name.
 
     `op_name` is the operand name.
