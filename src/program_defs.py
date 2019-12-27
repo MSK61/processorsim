@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.1, python 3.7.4, Fedora release
-#               30 (Thirty)
+# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+#               31 (Thirty One)
 #
 # notes:        This is a private program.
 #
@@ -51,7 +51,7 @@ class _Instruction:
     """Instruction"""
 
     sources: typing.Tuple[ICaseString] = attr.ib(
-        converter=lambda sources: tuple(_sorted_uniq(sources)))
+        converter=lambda src_regs: tuple(_sorted_uniq(src_regs)))
 
     destination: ICaseString = attr.ib()
 
