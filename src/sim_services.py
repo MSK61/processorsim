@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.40.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -67,8 +67,8 @@ class StallError(RuntimeError):
         `self` is this stalled processor error.
         `msg_tmpl` is the error message format taking the stalled
                    processor state as a positional argument.
-        `fed_commands` is the numer of instructions fed to the processor
-                       so far.
+        `fed_commands` is the number of instructions fed to the
+                       processor so far.
 
         """
         RuntimeError.__init__(self, string.Template(msg_tmpl).substitute(
