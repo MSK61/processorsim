@@ -39,10 +39,21 @@
 ############################################################
 
 import typing
+from typing import Tuple
 
 import attr
 
 from str_utils import ICaseString
+
+
+def _sorted_uniq(elems: typing.Iterable[ICaseString]) -> Tuple[
+        ICaseString, ...]:
+    """Sort the elements after filtering out duplicates.
+
+    `elems` are the elements to filter and sort.
+
+    """
+    return tuple(sorted(frozenset(elems)))
 
 
 @attr.s(frozen=True, repr=False)
@@ -50,8 +61,7 @@ class _Instruction:
 
     """Instruction"""
 
-    sources: typing.Tuple[ICaseString, ...] = attr.ib(
-        converter=lambda src_regs: tuple(_sorted_uniq(src_regs)))
+    sources: Tuple[ICaseString, ...] = attr.ib(converter=_sorted_uniq)
 
     destination: ICaseString = attr.ib()
 
@@ -73,12 +83,3 @@ class ProgInstruction(_Instruction):
     name: str
 
     line: int
-
-
-def _sorted_uniq(elems):
-    """Sort the elements after filtering out duplicates.
-
-    `elems` are the elements to filter and sort.
-
-    """
-    return sorted(frozenset(elems))
