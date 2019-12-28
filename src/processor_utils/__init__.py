@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.40.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -506,13 +506,13 @@ class ProcessorDesc:
 
     """Processor description"""
 
-    in_ports: Tuple[UnitModel] = attr.ib(converter=sorted_models)
+    in_ports: Tuple[UnitModel, ...] = attr.ib(converter=sorted_models)
 
-    out_ports: Tuple[FuncUnit] = attr.ib(converter=_sorted_units)
+    out_ports: Tuple[FuncUnit, ...] = attr.ib(converter=_sorted_units)
 
-    in_out_ports: Tuple[UnitModel] = attr.ib(converter=sorted_models)
+    in_out_ports: Tuple[UnitModel, ...] = attr.ib(converter=sorted_models)
 
-    internal_units: Tuple[FuncUnit] = attr.ib(converter=tuple)
+    internal_units: Tuple[FuncUnit, ...] = attr.ib(converter=tuple)
 
 
 _add_src_path()

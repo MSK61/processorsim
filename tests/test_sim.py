@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.39.2, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.40.1, python 3.7.5, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -338,7 +338,7 @@ class TestSim:
             valid_prog + [HwInstruction([], "R14", ICaseString("MEM"))],
             HwSpec(read_proc_file("processors", "singleALUProcessor.yaml")))
         test_utils.chk_error([test_utils.ValInStrCheck(
-            ex_chk.value.processor_state, len(valid_prog))], ex_chk.value)
+            ex_chk.value.fed_commands, len(valid_prog))], ex_chk.value)
 
 
 def main():

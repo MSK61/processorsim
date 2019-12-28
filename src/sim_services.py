@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.40.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -66,29 +66,30 @@ class StallError(RuntimeError):
 
     """Stalled processor error"""
 
-    def __init__(self, msg_tmpl: str, stalled_state: int) -> None:
+    def __init__(self, msg_tmpl: str, fed_commands: int) -> None:
         """Create a stalled processor error.
 
         `self` is this stalled processor error.
         `msg_tmpl` is the error message format taking the stalled
                    processor state as a positional argument.
-        `stalled_state` is the stalled processor state.
+        `fed_commands` is the number of instructions fed to the
+                       processor so far.
 
         """
         # Casting dictionary values since the type hint in typeshed for
         # Template.substitute unnecessarily stipulates this.
         RuntimeError.__init__(self, string.Template(msg_tmpl).substitute(
-            {self.STATE_KEY: str(stalled_state)}))
-        self._stalled_state = stalled_state
+            {self.STATE_KEY: str(fed_commands)}))
+        self._fed_commands = fed_commands
 
     @property
-    def processor_state(self) -> int:
+    def fed_commands(self) -> int:
         """Stalled processor state
 
         `self` is this stalled processor error.
 
         """
-        return self._stalled_state
+        return self._fed_commands
 
     STATE_KEY = "state"  # parameter key in message format
 
