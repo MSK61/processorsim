@@ -50,7 +50,7 @@ class _Instruction:
 
     """Instruction"""
 
-    sources: typing.Tuple[ICaseString] = attr.ib(
+    sources: typing.Tuple[ICaseString, ...] = attr.ib(
         converter=lambda src_regs: tuple(_sorted_uniq(src_regs)))
 
     destination: ICaseString = attr.ib()
