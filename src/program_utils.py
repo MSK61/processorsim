@@ -120,8 +120,8 @@ def read_program(prog_file):
     program = filter(
         operator.itemgetter(1), enumerate(map(str.strip, prog_file)))
     reg_registry = container_utils.IndexedSet(lambda reg: reg.name)
-    return [_create_instr(instr[0] + 1, instr[1], reg_registry) for instr in
-            program]
+    return [_create_instr(line_idx + 1, line_txt, reg_registry) for
+            line_idx, line_txt in program]
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -213,9 +213,9 @@ def _get_operands(src_line_info, line_num, reg_registry):
     operands = enumerate(split(sep_pat, src_line_info.operands))
     valid_ops = []
 
-    for op_entry in operands:
+    for op_idx, op_name in operands:
         valid_ops.append(
-            _get_reg_name(op_entry[1], op_entry[0] + 1, line_num,
+            _get_reg_name(op_name, op_idx + 1, line_num,
                           src_line_info.instruction, reg_registry))
 
     return valid_ops

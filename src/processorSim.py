@@ -38,7 +38,7 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.40.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -282,15 +282,14 @@ def _icu_to_flights(ixcxu):
     return map(_create_flight, ixcxu)
 
 
-def _print_res_row(row_index, res_row):
+def _print_res_row(instr, res_row):
     """Print the given simulation row.
 
-    `row_index` is the index of the simulation row.
+    `instr` is the row instruction.
     `res_row` is the simulation row.
 
     """
-    row_index = str(row_index + 1)
-    print(_COL_SEP.join(chain(['I' + row_index], res_row)))
+    print(_COL_SEP.join(chain([instr], res_row)))
 
 
 def _print_sim_res(sim_res):
@@ -309,8 +308,8 @@ def _print_tbl_data(sim_res):
     `sim_res` is the simulation result.
 
     """
-    for res_row in sim_res:
-        _print_res_row(*res_row)
+    for row_idx, fields in sim_res:
+        _print_res_row('I' + str(row_idx + 1), fields)
 
 
 def _print_tbl_hdr(sim_res):
