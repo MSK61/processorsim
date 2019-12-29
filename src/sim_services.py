@@ -558,7 +558,7 @@ def _get_new_guests(src_unit: ICaseString,
     return map(lambda instr: _HostedInstr(src_unit, instr), instructions)
 
 
-def _get_out_ports(processor: ProcessorDesc) -> Iterator[UnitModel]:
+def _get_out_ports(processor: ProcessorDesc) -> "chain[UnitModel]":
     """Find all units at the processor output boundary.
 
     `processor` is the processor to find whose output ports.
