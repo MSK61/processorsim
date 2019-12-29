@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.40.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -51,7 +51,7 @@ def concat_dicts(dict1, dict2):
     `dict2` is the second dictionary.
 
     """
-    return dict(dict1, **dict2)
+    return {**dict1, **dict2}
 
 
 def contains(container, elems):
