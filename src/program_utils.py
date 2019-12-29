@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.40.2, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -42,6 +42,7 @@ import logging
 import operator
 from re import split
 import string
+import typing
 from typing import Iterable, List, Mapping, Tuple
 
 import attr
@@ -68,9 +69,9 @@ class CodeError(RuntimeError):
 
         """
         # Casting dictionary values since the type hint in typeshed for
-        # Template.substitute unnecessarily stipulates this.
-        RuntimeError.__init__(self, string.Template(msg_tmpl).substitute(
-            {self.INSTR_KEY: instr, self.LINE_NUM_KEY: str(line)}))
+        # Template.substitute unnecessarily stipulates string values.
+        RuntimeError.__init__(self, string.Template(msg_tmpl).substitute({
+            self.INSTR_KEY: instr, self.LINE_NUM_KEY: typing.cast(str, line)}))
         self._line = line
         self._instr = instr
 

@@ -77,9 +77,9 @@ class StallError(RuntimeError):
 
         """
         # Casting dictionary values since the type hint in typeshed for
-        # Template.substitute unnecessarily stipulates this.
+        # Template.substitute unnecessarily stipulates string values.
         RuntimeError.__init__(self, string.Template(msg_tmpl).substitute(
-            {self.STATE_KEY: str(fed_commands)}))
+            {self.STATE_KEY: typing.cast(str, fed_commands)}))
         self._fed_commands = fed_commands
 
     @property
