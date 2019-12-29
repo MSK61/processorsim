@@ -47,8 +47,8 @@ from itertools import chain
 import operator
 import string
 import typing
-from typing import Dict, Iterable, List, Mapping, MutableSequence, Sequence, \
-    Tuple
+from typing import Dict, Iterable, Iterator, List, Mapping, MutableSequence, \
+    Sequence, Tuple
 
 import attr
 
@@ -516,7 +516,7 @@ def _flush_outputs(
 
 def _get_accepted(
         instructions: Iterable[InstrState], program: Sequence[HwInstruction],
-        capabilities: typing.Container[ICaseString]) -> Iterable[int]:
+        capabilities: typing.Container[ICaseString]) -> Iterator[int]:
     """Generate an iterator over compatible instructions.
 
     `instructions` are the instructions to filter.
@@ -548,7 +548,7 @@ def _get_candidates(unit: FuncUnit, program: Sequence[HwInstruction],
 
 
 def _get_new_guests(src_unit: ICaseString,
-                    instructions: Iterable[int]) -> Iterable[_HostedInstr]:
+                    instructions: Iterable[int]) -> Iterator[_HostedInstr]:
     """Prepare new hosted instructions.
 
     `src_unit` is the old host of instructions.
@@ -558,7 +558,7 @@ def _get_new_guests(src_unit: ICaseString,
     return map(lambda instr: _HostedInstr(src_unit, instr), instructions)
 
 
-def _get_out_ports(processor: ProcessorDesc) -> Iterable[UnitModel]:
+def _get_out_ports(processor: ProcessorDesc) -> Iterator[UnitModel]:
     """Find all units at the processor output boundary.
 
     `processor` is the processor to find whose output ports.

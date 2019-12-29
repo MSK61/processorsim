@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.40.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -41,12 +41,11 @@
 import functools
 import operator
 import typing
-from typing import Iterable
 
 import attr
 
 
-def format_obj(cls_name: str, field_strings: Iterable[str]) -> str:
+def format_obj(cls_name: str, field_strings: typing.Iterable[str]) -> str:
     """Construct a string representation for the given object.
 
     `cls_name` is the class name.
@@ -117,7 +116,7 @@ class ICaseString:
         """
         return self.raw_str
 
-    def _get_canonical(self, other: str) -> Iterable[str]:
+    def _get_canonical(self, other: str) -> typing.Iterator[str]:
         """Return the canonical forms of this and the other strings.
 
         `self` is this case-insensitive string.
