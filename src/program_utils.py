@@ -120,7 +120,8 @@ def read_program(prog_file):
     program = filter(
         operator.itemgetter(1), enumerate(map(str.strip, prog_file)))
     reg_registry = container_utils.IndexedSet(lambda reg: reg.name)
-    return [_create_instr(instr, reg_registry) for instr in program]
+    return [_create_instr(instr[0] + 1, instr[1], reg_registry) for instr in
+            program]
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -143,17 +144,17 @@ class _OperandInfo:
     line: int
 
 
-def _create_instr(src_line_info, reg_registry):
+def _create_instr(line_num, line_txt, reg_registry):
     """Convert the source line to a program instruction.
 
-    `src_line_info` is the program instruction line information.
+    `line_num` is the line number in the original input.
+    `line_txt` is the line text.
     `reg_registry` is the register name registry.
     The function returns the created program instruction. It raises a
     CodeError if the instruction is malformed.
 
     """
-    line_num = src_line_info[0] + 1
-    src_line_info = _get_line_parts(src_line_info)
+    src_line_info = _get_line_parts(line_num, line_txt)
     dst, *sources = _get_operands(src_line_info, line_num, reg_registry)
     return program_defs.ProgInstruction(
         sources, dst, src_line_info.instruction, line_num)
@@ -176,23 +177,23 @@ def _get_cap(isa, instr):
             f"{instr.line}", instr.name)
 
 
-def _get_line_parts(src_line_info):
+def _get_line_parts(line_num, line_txt):
     """Extract the source line components.
 
-    `src_line_info` is the source line information.
+    `line_num` is the line number in the original input.
+    `line_txt` is the line text.
     The function returns the structured line information. It raises a
     CodeError if there's a problem extracting components from the line.
 
     """
     sep_pat = "\\s+"
-    line_parts = split(sep_pat, src_line_info[1], 1)
+    line_parts = split(sep_pat, line_txt, 1)
     assert line_parts
 
     if len(line_parts) == 1:
         raise CodeError(
             f"No operands provided for instruction ${CodeError.INSTR_KEY} at "
-            f"line ${CodeError.LINE_NUM_KEY}", src_line_info[0] + 1,
-            line_parts[0])
+            f"line ${CodeError.LINE_NUM_KEY}", line_num, line_parts[0])
 
     return _LineInfo(*line_parts)
 
