@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.40.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -154,9 +154,9 @@ def _create_instr(src_line_info, reg_registry):
     """
     line_num = src_line_info[0] + 1
     src_line_info = _get_line_parts(src_line_info)
-    operands = _get_operands(src_line_info, line_num, reg_registry)
+    dst, *sources = _get_operands(src_line_info, line_num, reg_registry)
     return program_defs.ProgInstruction(
-        operands[1:], operands[0], src_line_info.instruction, line_num)
+        sources, dst, src_line_info.instruction, line_num)
 
 
 def _get_cap(isa, instr):
