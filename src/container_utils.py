@@ -189,9 +189,9 @@ class BagValDict:
 
     @staticmethod
     def _count(elems):
-        """Count the number of elements in the given iterator.
+        """Count the number of elements in the given iterable.
 
-        `elems` is the iterator over elements to count.
+        `elems` is the iterable of elements to count.
 
         """
         return count_if(lambda elem: True, elems)
