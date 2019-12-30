@@ -31,21 +31,22 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Komodo IDE, version 11.1.1 build 91089, python 3.7.3,
-#               Fedora release 30 (Thirty)
+# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+#               31 (Thirty One)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
 import string
+import typing
 
 
 class UndefElemError(RuntimeError):
 
     """Unknown set element error"""
 
-    def __init__(self, msg_tmpl, elem):
+    def __init__(self, msg_tmpl: str, elem: object) -> None:
         """Create an unknown element error.
 
         `self` is this unknown element error.
@@ -54,12 +55,14 @@ class UndefElemError(RuntimeError):
         `elem` is the unknown element.
 
         """
-        RuntimeError.__init__(
-            self, string.Template(msg_tmpl).substitute({self.ELEM_KEY: elem}))
+        # Casting dictionary values since the type hint in typeshed for
+        # Template.substitute unnecessarily stipulates string values.
+        RuntimeError.__init__(self, string.Template(msg_tmpl).substitute(
+            {self.ELEM_KEY: typing.cast(str, elem)}))
         self._elem = elem
 
     @property
-    def element(self):
+    def element(self) -> object:
         """Unknown element
 
         `self` is this unknown element error.
