@@ -142,15 +142,6 @@ class BagValDict:
         """
         return self._dict[key]
 
-    def __len__(self):
-        """Retrieve the number of keys in this dictionary.
-
-        `self` is this dictionary.
-        The method only considers keys with non-empty lists.
-
-        """
-        return self._count(self.items())
-
     def __ne__(self, other):
         """Test if the two dictionaries are different.
 
@@ -168,16 +159,6 @@ class BagValDict:
         """
         return format_obj(type(self).__name__, [self._format_dict()])
 
-    def items(self):
-        """Return the items of this dictionary.
-
-        `self` is this dictionary.
-        The method returns an iterator over dictionary items with
-        non-empty lists.
-
-        """
-        return filter(itemgetter(1), self._dict.items())
-
     def _add_items(self, elems):
         """Add items to this dictionary.
 
@@ -189,14 +170,13 @@ class BagValDict:
             for elem in elem_lst:
                 self[key].append(elem)
 
-    @staticmethod
-    def _count(elems):
-        """Count the number of elements in the given iterable.
+    def _count(self):
+        """Count the number of elements in this dictionary.
 
-        `elems` is the iterable of elements to count.
+        `self` is this dictionary.
 
         """
-        return count_if(lambda elem: True, elems)
+        return count_if(lambda elem: True, self.items())
 
     def _format_dict(self):
         """Format this dictionary.
@@ -217,6 +197,20 @@ class BagValDict:
                            sorted(elems, key=itemgetter(0)))
         sep = ", "
         return sep.join(item_strings)
+
+    def _useful_items(self):
+        """Filter out items with empty value lists.
+
+        `self` is this dictionary.
+        The method returns an iterator over dictionary items with
+        non-empty lists.
+
+        """
+        return filter(itemgetter(1), self._dict.items())
+
+    items = _useful_items
+
+    __len__ = _count
 
 
 class _IndexedSetBase:
