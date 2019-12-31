@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.40.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -51,7 +51,7 @@ def concat_dicts(dict1, dict2):
     `dict2` is the second dictionary.
 
     """
-    return dict(dict1, **dict2)
+    return {**dict1, **dict2}
 
 
 def contains(container, elems):
@@ -109,6 +109,16 @@ class BagValDict:
         if initial_dict:
             self._add_items(initial_dict.items())
 
+    def __contains__(self, item):
+        """Check if the given key exists.
+
+        `self` is this dictionary.
+        `key` is the key to check whose existence.
+        The method only considers existing keys with non-empty lists.
+
+        """
+        return item in self._dict and self[item]
+
     def __eq__(self, other):
         """Test if the two dictionaries are identical.
 
@@ -132,19 +142,11 @@ class BagValDict:
         """
         return self._dict[key]
 
-    def __iter__(self):
-        """Retrieve an iterator over this dictionary.
-
-         `self` is this dictionary.
-
-         """
-        return iter(self._dict)
-
     def __len__(self):
         """Retrieve the number of keys in this dictionary.
 
         `self` is this dictionary.
-        The function only considers keys with non-empty lists.
+        The method only considers keys with non-empty lists.
 
         """
         return self._count(self.items())
@@ -170,7 +172,7 @@ class BagValDict:
         """Return the items of this dictionary.
 
         `self` is this dictionary.
-        The function returns an iterator over dictionary items with
+        The method returns an iterator over dictionary items with
         non-empty lists.
 
         """
@@ -189,9 +191,9 @@ class BagValDict:
 
     @staticmethod
     def _count(elems):
-        """Count the number of elements in the given iterator.
+        """Count the number of elements in the given iterable.
 
-        `elems` is the iterator over elements to count.
+        `elems` is the iterable of elements to count.
 
         """
         return count_if(lambda elem: True, elems)

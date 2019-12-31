@@ -43,7 +43,7 @@ import operator
 from re import split
 import string
 import typing
-from typing import Iterable, List, Mapping, Tuple
+from typing import Iterable, List, Mapping
 
 import attr
 
@@ -125,7 +125,8 @@ def read_program(prog_file: Iterable[str]) -> List[ProgInstruction]:
     program = filter(
         operator.itemgetter(1), enumerate(map(str.strip, prog_file)))
     reg_registry = IndexedSet(lambda reg: reg.name)
-    return [_create_instr(instr, reg_registry) for instr in program]
+    return [_create_instr(line_idx + 1, line_txt, reg_registry) for
+            line_idx, line_txt in program]
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -148,21 +149,20 @@ class _OperandInfo:
     line: int
 
 
-def _create_instr(src_line_info: Tuple[int, str],
+def _create_instr(line_num: int, line_txt: str,
                   reg_registry: IndexedSet) -> ProgInstruction:
     """Convert the source line to a program instruction.
 
-    `src_line_info` is the program instruction line information.
+    `line_num` is the line number in the original input.
+    `line_txt` is the line text.
     `reg_registry` is the register name registry.
     The function returns the created program instruction. It raises a
     CodeError if the instruction is malformed.
 
     """
-    line_num = src_line_info[0] + 1
-    line_parts = _get_line_parts(src_line_info)
-    operands = _get_operands(line_parts, line_num, reg_registry)
-    return ProgInstruction(
-        operands[1:], operands[0], line_parts.instruction, line_num)
+    src_line_info = _get_line_parts(line_num, line_txt)
+    dst, *sources = _get_operands(src_line_info, line_num, reg_registry)
+    return ProgInstruction(sources, dst, src_line_info.instruction, line_num)
 
 
 def _get_cap(
@@ -183,23 +183,23 @@ def _get_cap(
             f"{instr.line}", instr.name)
 
 
-def _get_line_parts(src_line_info: Tuple[int, str]) -> _LineInfo:
+def _get_line_parts(line_num: int, line_txt: str) -> _LineInfo:
     """Extract the source line components.
 
-    `src_line_info` is the source line information.
+    `line_num` is the line number in the original input.
+    `line_txt` is the line text.
     The function returns the structured line information. It raises a
     CodeError if there's a problem extracting components from the line.
 
     """
     sep_pat = "\\s+"
-    line_parts = split(sep_pat, src_line_info[1], 1)
+    line_parts = split(sep_pat, line_txt, 1)
     assert line_parts
 
     if len(line_parts) == 1:
         raise CodeError(
             f"No operands provided for instruction ${CodeError.INSTR_KEY} at "
-            f"line ${CodeError.LINE_NUM_KEY}", src_line_info[0] + 1,
-            line_parts[0])
+            f"line ${CodeError.LINE_NUM_KEY}", line_num, line_parts[0])
 
     return _LineInfo(*line_parts)
 
@@ -220,9 +220,9 @@ def _get_operands(src_line_info: _LineInfo, line_num: int,
     operands = enumerate(split(sep_pat, src_line_info.operands))
     valid_ops = []
 
-    for op_entry in operands:
+    for op_idx, op_name in operands:
         valid_ops.append(
-            _get_reg_name(op_entry[1], op_entry[0] + 1, line_num,
+            _get_reg_name(op_name, op_idx + 1, line_num,
                           src_line_info.instruction, reg_registry))
 
     return valid_ops

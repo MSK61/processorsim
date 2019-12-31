@@ -293,15 +293,14 @@ def _icu_to_flights(ixcxu: Iterable[Mapping[int, _InstrPosition]]) -> Iterator[
     return map(_create_flight, ixcxu)
 
 
-def _print_res_row(row_index: int, res_row: Iterable[str]) -> None:
+def _print_res_row(instr: str, res_row: Iterable[str]) -> None:
     """Print the given simulation row.
 
-    `row_index` is the index of the simulation row.
+    `instr` is the row instruction.
     `res_row` is the simulation row.
 
     """
-    instr_idx = str(row_index + 1)
-    print(_COL_SEP.join(chain(['I' + instr_idx], res_row)))
+    print(_COL_SEP.join(chain([instr], res_row)))
 
 
 def _print_sim_res(sim_res: Collection[Collection[str]]) -> None:
@@ -320,8 +319,8 @@ def _print_tbl_data(sim_res: Iterable[Tuple[int, Iterable[str]]]) -> None:
     `sim_res` is the simulation result.
 
     """
-    for res_row in sim_res:
-        _print_res_row(*res_row)
+    for row_idx, fields in sim_res:
+        _print_res_row('I' + str(row_idx + 1), fields)
 
 
 def _print_tbl_hdr(sim_res: Iterable[Sized]) -> None:
