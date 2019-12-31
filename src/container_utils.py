@@ -144,7 +144,7 @@ class BagValDict:
         """Retrieve the number of keys in this dictionary.
 
         `self` is this dictionary.
-        The function only considers keys with non-empty lists.
+        The method only considers keys with non-empty lists.
 
         """
         return self._count(self.items())
@@ -170,7 +170,7 @@ class BagValDict:
         """Return the items of this dictionary.
 
         `self` is this dictionary.
-        The function returns an iterator over dictionary items with
+        The method returns an iterator over dictionary items with
         non-empty lists.
 
         """
