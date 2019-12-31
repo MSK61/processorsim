@@ -109,6 +109,16 @@ class BagValDict:
         if initial_dict:
             self._add_items(initial_dict.items())
 
+    def __contains__(self, item):
+        """Check if the given key exists.
+
+        `self` is this dictionary.
+        `key` is the key to check whose existence.
+        The method only considers existing keys with non-empty lists.
+
+        """
+        return item in self._dict and self[item]
+
     def __eq__(self, other):
         """Test if the two dictionaries are identical.
 
@@ -131,14 +141,6 @@ class BagValDict:
 
         """
         return self._dict[key]
-
-    def __iter__(self):
-        """Retrieve an iterator over this dictionary.
-
-         `self` is this dictionary.
-
-         """
-        return iter(self._dict)
 
     def __len__(self):
         """Retrieve the number of keys in this dictionary.
