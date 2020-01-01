@@ -4,7 +4,7 @@
 
 ############################################################
 #
-# Copyright 2017, 2019 Mohammed El-Afifi
+# Copyright 2017, 2019, 2020 Mohammed El-Afifi
 # This file is part of processorSim.
 #
 # processorSim is free software: you can redistribute it and/or modify
@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.38.0, python 3.7.4, Fedora release
-#               30 (Thirty)
+# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+#               31 (Thirty One)
 #
 # notes:        This is a private program.
 #
@@ -148,6 +148,6 @@ def set_prefs(prefs):
         'rope.base.oi.type_hinting.factory.default_type_hinting_factory')
 
 
-def project_opened(project):
+def project_opened(project):  # pylint: disable=unused-argument
     """This function is called after opening the project"""
     # Do whatever you like here!
