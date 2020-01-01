@@ -39,7 +39,8 @@
 ############################################################
 
 import operator
-from typing import Collection
+import typing
+from typing import Collection, Iterable, Tuple
 
 import attr
 
@@ -54,15 +55,6 @@ UNIT_WLOCK_KEY = "writeLock"
 UNIT_WIDTH_KEY = "width"
 
 
-def sorted_models(models):
-    """Create a sorted list of the given models.
-
-    `models` are the models to create a sorted list of.
-
-    """
-    return tuple(sorted(models, key=lambda model: model.name))
-
-
 @attr.s(auto_attribs=True, frozen=True)
 class LockInfo:
 
@@ -71,6 +63,15 @@ class LockInfo:
     rd_lock: bool
 
     wr_lock: bool
+
+
+def _sorted(elems: Iterable[object]) -> Tuple[object, ...]:
+    """Sort the elements.
+
+    `elems` are the elements to sort.
+
+    """
+    return tuple(sorted(elems))
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -82,10 +83,18 @@ class UnitModel:
 
     width: int
 
-    capabilities: Collection[ICaseString] = attr.ib(
-        converter=lambda capabilities: tuple(sorted(capabilities)))
+    capabilities: Collection[ICaseString] = attr.ib(converter=_sorted)
 
     lock_info: LockInfo
+
+
+def sorted_models(models: Iterable[UnitModel]) -> Tuple[UnitModel, ...]:
+    """Create a sorted list of the given models.
+
+    `models` are the models to create a sorted list of.
+
+    """
+    return tuple(sorted(models, key=lambda model: model.name))
 
 
 @attr.s(eq=False, frozen=True)
@@ -93,7 +102,7 @@ class FuncUnit:
 
     """Processing functional unit"""
 
-    def __eq__(self, other):
+    def __eq__(self, other: typing.Any) -> bool:
         """Test if the two functional units are identical.
 
         `self` is this functional unit.
