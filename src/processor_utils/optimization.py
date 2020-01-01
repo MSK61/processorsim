@@ -39,15 +39,20 @@
 ############################################################
 
 from logging import warning
+import typing
+from typing import FrozenSet
 
 import networkx
+from networkx import DiGraph, Graph
 
+from str_utils import ICaseString
 from .exception import DeadInputError
 from . import port_defs
 from .units import UNIT_CAPS_KEY
 
 
-def chk_terminals(processor, orig_port_info):
+def chk_terminals(
+        processor: DiGraph, orig_port_info: port_defs.PortGroup) -> None:
     """Check if new terminals have appeared after optimization.
 
     `processor` is the processor to check.
@@ -64,7 +69,7 @@ def chk_terminals(processor, orig_port_info):
         _rm_dead_end(processor, out_port, orig_port_info.in_ports)
 
 
-def clean_struct(processor):
+def clean_struct(processor: DiGraph) -> None:
     """Clean the given processor structure.
 
     `processor` is the processor to clean whose structure.
@@ -80,7 +85,7 @@ def clean_struct(processor):
             _clean_unit(processor, unit)
 
 
-def rm_empty_units(processor):
+def rm_empty_units(processor: Graph) -> None:
     """Remove empty units from the given processor.
 
     `processor` is the processor to clean.
@@ -94,7 +99,8 @@ def rm_empty_units(processor):
             _rm_empty_unit(processor, unit)
 
 
-def _chk_edge(processor, edge):
+def _chk_edge(processor: Graph,
+              edge: typing.Tuple[object, object]) -> FrozenSet[ICaseString]:
     """Check if the edge is useful.
 
     `processor` is the processor containing the edge.
@@ -112,7 +118,7 @@ def _chk_edge(processor, edge):
     return common_caps
 
 
-def _clean_unit(processor, unit):
+def _clean_unit(processor: Graph, unit: object) -> None:
     """Clean the given unit properties.
 
     `processor` is the processor containing the unit.
@@ -127,10 +133,12 @@ def _clean_unit(processor, unit):
         processor.nodes[unit][UNIT_CAPS_KEY])
     pred_caps = map(lambda edge: _chk_edge(processor, edge),
                     list(processor.in_edges(unit)))
-    processor.nodes[unit][UNIT_CAPS_KEY] = frozenset().union(*pred_caps)
+    processor.nodes[unit][UNIT_CAPS_KEY] = typing.cast(
+        FrozenSet[ICaseString], frozenset()).union(*pred_caps)
 
 
-def _rm_dead_end(processor, dead_end, in_ports):
+def _rm_dead_end(processor: Graph, dead_end: object,
+                 in_ports: typing.Container[object]) -> None:
     """Remove a dead end from the given processor.
 
     `processor` is the processor to remove the dead end from.
@@ -149,7 +157,7 @@ def _rm_dead_end(processor, dead_end, in_ports):
     processor.remove_node(dead_end)
 
 
-def _rm_dummy_edge(processor, edge):
+def _rm_dummy_edge(processor: Graph, edge: typing.Collection[object]) -> None:
     """Remove an edge from the given processor.
 
     `processor` is the processor to remove the edge from.
@@ -161,7 +169,7 @@ def _rm_dummy_edge(processor, edge):
     processor.remove_edge(*edge)
 
 
-def _rm_empty_unit(processor, unit):
+def _rm_empty_unit(processor: Graph, unit: object) -> None:
     """Remove a unit from the given processor.
 
     `processor` is the processor to remove the unit from.
