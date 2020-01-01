@@ -40,7 +40,7 @@
 
 import operator
 import typing
-from typing import Collection, Iterable, Tuple
+from typing import Iterable, Tuple
 
 import attr
 
@@ -65,7 +65,7 @@ class LockInfo:
     wr_lock: bool
 
 
-def _sorted(elems: Iterable[object]) -> Tuple[object, ...]:
+def _sorted(elems: Iterable[ICaseString]) -> Tuple[ICaseString, ...]:
     """Sort the elements.
 
     `elems` are the elements to sort.
@@ -83,7 +83,7 @@ class UnitModel:
 
     width: int
 
-    capabilities: Collection[ICaseString] = attr.ib(converter=_sorted)
+    capabilities: Tuple[ICaseString, ...] = attr.ib(converter=_sorted)
 
     lock_info: LockInfo
 
@@ -117,4 +117,4 @@ class FuncUnit:
     model: UnitModel = attr.ib(
         validator=attr.validators.instance_of(UnitModel))
 
-    predecessors: Collection[UnitModel] = attr.ib(converter=sorted_models)
+    predecessors: Tuple[UnitModel, ...] = attr.ib(converter=sorted_models)
