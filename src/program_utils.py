@@ -124,7 +124,7 @@ def read_program(prog_file: Iterable[str]) -> List[ProgInstruction]:
     """
     program = filter(
         operator.itemgetter(1), enumerate(map(str.strip, prog_file)))
-    reg_registry = IndexedSet(lambda reg: reg.name)
+    reg_registry = IndexedSet[_OperandInfo](lambda reg: reg.name)
     return [_create_instr(line_idx + 1, line_txt, reg_registry) for
             line_idx, line_txt in program]
 
@@ -150,7 +150,7 @@ class _OperandInfo:
 
 
 def _create_instr(line_num: int, line_txt: str,
-                  reg_registry: IndexedSet) -> ProgInstruction:
+                  reg_registry: IndexedSet[_OperandInfo]) -> ProgInstruction:
     """Convert the source line to a program instruction.
 
     `line_num` is the line number in the original input.
@@ -205,7 +205,7 @@ def _get_line_parts(line_num: int, line_txt: str) -> _LineInfo:
 
 
 def _get_operands(src_line_info: _LineInfo, line_num: int,
-                  reg_registry: IndexedSet) -> List[ICaseString]:
+                  reg_registry: IndexedSet[_OperandInfo]) -> List[ICaseString]:
     """Extract operands from the given line.
 
     `src_line_info` is the source line information.
@@ -229,7 +229,7 @@ def _get_operands(src_line_info: _LineInfo, line_num: int,
 
 
 def _get_reg_name(op_name: str, op_idx: int, line_num: int, instr: str,
-                  reg_registry: IndexedSet) -> ICaseString:
+                  reg_registry: IndexedSet[_OperandInfo]) -> ICaseString:
     """Extract the registry name.
 
     `op_name` is the operand name.

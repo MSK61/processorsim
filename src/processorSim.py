@@ -61,7 +61,7 @@ from container_utils import BagValDict
 import hw_loading
 import program_utils
 import sim_services
-from sim_services import StallState
+from sim_services import InstrState, StallState
 from str_utils import ICaseString
 _COL_SEP = '\t'
 # command-line option variables
@@ -197,8 +197,9 @@ def _create_flight(instr_util: Mapping[int, _InstrPosition]) -> _InstrFlight:
         clock_pulse], range(start_time, start_time + time_span)))
 
 
-def _cui_to_flights(cxuxi: Iterable[Tuple[int, BagValDict]],
-                    instructions: int) -> Iterator[_InstrFlight]:
+def _cui_to_flights(
+        cxuxi: Iterable[Tuple[int, BagValDict[ICaseString, InstrState]]],
+        instructions: int) -> Iterator[_InstrFlight]:
     """Convert a CxUxI utilization map to instruction flights.
 
     `cxuxi` is the ClockxUnitxInstruction utilization map to convert.
@@ -208,8 +209,9 @@ def _cui_to_flights(cxuxi: Iterable[Tuple[int, BagValDict]],
     return _icu_to_flights(_cui_to_icu(cxuxi, instructions))
 
 
-def _cui_to_icu(cxuxi: Iterable[Tuple[int, BagValDict]],
-                instructions: int) -> List[Dict[int, _InstrPosition]]:
+def _cui_to_icu(
+        cxuxi: Iterable[Tuple[int, BagValDict[ICaseString, InstrState]]],
+        instructions: int) -> List[Dict[int, _InstrPosition]]:
     """Convert a CxUxI utilization map to IxCxU format.
 
     `cxuxi` is the ClockxUnitxInstruction utilization map to convert.
@@ -225,8 +227,8 @@ def _cui_to_icu(cxuxi: Iterable[Tuple[int, BagValDict]],
     return ixcxu
 
 
-def _fill_cp_util(clock_pulse: int, cp_util: Iterable[Tuple[
-        ICaseString, Iterable[sim_services.InstrState]]], ixcxu: Sequence[
+def _fill_cp_util(clock_pulse: int, cp_util: Iterable[
+        Tuple[ICaseString, Iterable[InstrState]]], ixcxu: Sequence[
             typing.MutableMapping[int, _InstrPosition]]) -> None:
     """Fill the given clock utilization into the IxCxU map.
 
@@ -260,8 +262,9 @@ def _get_last_tick(sim_res: Iterable[Sized]) -> int:
     return max(chain([0], map(len, sim_res)))
 
 
-def _get_sim_rows(sim_res: Iterable[Tuple[int, BagValDict]],
-                  instructions: int) -> List[List[str]]:
+def _get_sim_rows(
+        sim_res: Iterable[Tuple[int, BagValDict[ICaseString, InstrState]]],
+        instructions: int) -> List[List[str]]:
     """Calculate the simulation rows.
 
     `sim_res` is the simulation result.

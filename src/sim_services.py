@@ -119,26 +119,6 @@ class HwSpec:
         return {unit.name: unit for unit in models}
 
 
-def simulate(program: Sequence[HwInstruction], hw_info: HwSpec) -> List[
-        BagValDict]:
-    """Run the given program on the processor.
-
-    `program` is the program to run.
-    `hw_info` is the processor information.
-    The function returns the pipeline diagram.
-
-    """
-    util_tbl: List[BagValDict] = []
-    acc_queues = _build_acc_plan(enumerate(program))
-    issue_rec = _IssueInfo()
-    prog_len = len(program)
-
-    while issue_rec.entered < prog_len or issue_rec.in_flight:
-        _run_cycle(program, acc_queues, hw_info, util_tbl, issue_rec)
-
-    return util_tbl
-
-
 class StallState(enum.Enum):
 
     """Instruction stalling state"""
@@ -160,6 +140,26 @@ class InstrState:
     stalled: StallState = attr.ib(
         default=StallState.NO_STALL,
         validator=attr.validators.instance_of(StallState))
+
+
+def simulate(program: Sequence[HwInstruction], hw_info: HwSpec) -> List[
+        BagValDict[ICaseString, InstrState]]:
+    """Run the given program on the processor.
+
+    `program` is the program to run.
+    `hw_info` is the processor information.
+    The function returns the pipeline diagram.
+
+    """
+    util_tbl: List[BagValDict[ICaseString, InstrState]] = []
+    acc_queues = _build_acc_plan(enumerate(program))
+    issue_rec = _IssueInfo()
+    prog_len = len(program)
+
+    while issue_rec.entered < prog_len or issue_rec.in_flight:
+        _run_cycle(program, acc_queues, hw_info, util_tbl, issue_rec)
+
+    return util_tbl
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -232,7 +232,7 @@ class _TransitionUtil:
 
 
 def _accept_instr(instr: int, inputs: Iterable[UnitModel],
-                  util_info: BagValDict) -> bool:
+                  util_info: BagValDict[ICaseString, InstrState]) -> bool:
     """Try to accept the given instruction to the unit.
 
     `instr` is the index of the instruction to try to accept.
@@ -335,8 +335,7 @@ def _calc_unstalled(instructions: Iterable[InstrState]) -> int:
         lambda instr: instr.stalled == StallState.NO_STALL, instructions)
 
 
-def _chk_full_stall(
-        old_util: BagValDict, new_util: BagValDict, consumed: int) -> None:
+def _chk_full_stall(old_util: object, new_util: object, consumed: int) -> None:
     """Check if the whole processor has stalled.
 
     `old_util` is the utilization information of the previous clock
@@ -353,10 +352,11 @@ def _chk_full_stall(
                          f"${StallError.STATE_KEY} instructions", consumed)
 
 
-def _chk_hazards(old_util: BagValDict, new_util: Iterable[
-        Tuple[ICaseString, Iterable[InstrState]]], name_unit_map: Mapping[
-            ICaseString, UnitModel], program: Sequence[HwInstruction],
-                 acc_queues: Mapping[ICaseString, RegAccessQueue]) -> None:
+def _chk_hazards(
+        old_util: BagValDict[ICaseString, InstrState], new_util:
+        Iterable[Tuple[ICaseString, Iterable[InstrState]]], name_unit_map:
+        Mapping[ICaseString, UnitModel], program: Sequence[HwInstruction],
+        acc_queues: Mapping[ICaseString, RegAccessQueue]) -> None:
     """Check different types of hazards.
 
     `old_util` is the utilization information of the previous clock
@@ -404,8 +404,8 @@ def _clr_data_stall(wr_lock: bool, reg_clears: MutableSequence[int], instr:
         StallState.DATA, old_unit_util), None) else StallState.NO_STALL
 
 
-def _clr_src_units(
-        instructions: Iterable[_HostedInstr], util_info: BagValDict) -> None:
+def _clr_src_units(instructions: Iterable[_HostedInstr],
+                   util_info: BagValDict[ICaseString, InstrState]) -> None:
     """Clear the utilization of units releasing instructions.
 
     `instructions` is the information of instructions being moved from
@@ -420,7 +420,8 @@ def _clr_src_units(
         del util_info[cur_instr.host][cur_instr.index_in_host]
 
 
-def _count_outputs(outputs: Iterable[UnitModel], util_info: BagValDict) -> int:
+def _count_outputs(outputs: Iterable[UnitModel],
+                   util_info: BagValDict[ICaseString, InstrState]) -> int:
     """Count the number of unstalled outputs.
 
     `outputs` are all the output units.
@@ -431,8 +432,9 @@ def _count_outputs(outputs: Iterable[UnitModel], util_info: BagValDict) -> int:
         lambda out_port: _calc_unstalled(util_info[out_port.name]), outputs))
 
 
-def _fill_cp_util(processor: ProcessorDesc, program: Sequence[HwInstruction],
-                  util_info: BagValDict, issue_rec: _IssueInfo) -> None:
+def _fill_cp_util(
+        processor: ProcessorDesc, program: Sequence[HwInstruction], util_info:
+        BagValDict[ICaseString, InstrState], issue_rec: _IssueInfo) -> None:
     """Calculate the utilization of a new clock pulse.
 
     `processor` is the processor to fill the utilization of whose units
@@ -451,8 +453,8 @@ def _fill_cp_util(processor: ProcessorDesc, program: Sequence[HwInstruction],
 
 
 def _fill_inputs(cap_unit_map: Mapping[ICaseString, Iterable[UnitModel]],
-                 program: Sequence[HwInstruction], util_info: BagValDict,
-                 issue_rec: _IssueInfo) -> None:
+                 program: Sequence[HwInstruction], util_info: BagValDict[
+                     ICaseString, InstrState], issue_rec: _IssueInfo) -> None:
     """Fetch new program instructions into the pipeline.
 
     `cap_unit_map` is the mapping between capabilities and units.
@@ -471,7 +473,7 @@ def _fill_inputs(cap_unit_map: Mapping[ICaseString, Iterable[UnitModel]],
 
 
 def _fill_unit(unit: FuncUnit, program: Sequence[HwInstruction],
-               util_info: BagValDict) -> None:
+               util_info: BagValDict[ICaseString, InstrState]) -> None:
     """Fill an output with instructions from its predecessors.
 
     `unit` is the destination unit to fill.
@@ -488,7 +490,8 @@ def _fill_unit(unit: FuncUnit, program: Sequence[HwInstruction],
                           reverse=True), util_info)
 
 
-def _flush_output(out_unit: ICaseString, util_info: BagValDict) -> None:
+def _flush_output(out_unit: ICaseString,
+                  util_info: BagValDict[ICaseString, InstrState]) -> None:
     """Flush the output unit in preparation for a new cycle.
 
     `out_unit` is the output processing unit.
@@ -502,8 +505,8 @@ def _flush_output(out_unit: ICaseString, util_info: BagValDict) -> None:
             del util_info[out_unit][instr_index]
 
 
-def _flush_outputs(
-        out_units: Iterable[UnitModel], util_info: BagValDict) -> None:
+def _flush_outputs(out_units: Iterable[UnitModel],
+                   util_info: BagValDict[ICaseString, InstrState]) -> None:
     """Flush output units in preparation for a new cycle.
 
     `out_units` are the output processing units.
@@ -530,8 +533,9 @@ def _get_accepted(
             instr[1].instr].categ in capabilities, enumerate(instructions)))
 
 
-def _get_candidates(unit: FuncUnit, program: Sequence[HwInstruction],
-                    util_info: BagValDict) -> List[_HostedInstr]:
+def _get_candidates(
+        unit: FuncUnit, program: Sequence[HwInstruction],
+        util_info: BagValDict[ICaseString, InstrState]) -> List[_HostedInstr]:
     """Find candidate instructions in the predecessors of a unit.
 
     `unit` is the unit to match instructions from predecessors against.
@@ -571,7 +575,7 @@ def _get_out_ports(processor: ProcessorDesc) -> "chain[UnitModel]":
 
 
 def _mov_candidate(candidate: InstrState, unit: ICaseString,
-                   util_info: BagValDict) -> None:
+                   util_info: BagValDict[ICaseString, InstrState]) -> None:
     """Move a candidate instruction between units.
 
     `candidate` is the candidate instruction to move.
@@ -584,7 +588,7 @@ def _mov_candidate(candidate: InstrState, unit: ICaseString,
 
 
 def _mov_candidates(candidates: Iterable[_HostedInstr], unit: ICaseString,
-                    util_info: BagValDict) -> None:
+                    util_info: BagValDict[ICaseString, InstrState]) -> None:
     """Move candidate instructions between units.
 
     `candidates` are the candidate instructions to move.
@@ -597,8 +601,9 @@ def _mov_candidates(candidates: Iterable[_HostedInstr], unit: ICaseString,
                        unit, util_info)
 
 
-def _mov_flights(dst_units: Iterable[FuncUnit], program:
-                 Sequence[HwInstruction], util_info: BagValDict) -> None:
+def _mov_flights(
+        dst_units: Iterable[FuncUnit], program: Sequence[HwInstruction],
+        util_info: BagValDict[ICaseString, InstrState]) -> None:
     """Move the instructions inside the pipeline.
 
     `dst_units` are the destination processing units.
@@ -625,9 +630,10 @@ def _regs_accessed(rd_lock: bool, instr: int, registers: Iterable[ICaseString],
         AccessType.READ, instr), registers))
 
 
-def _run_cycle(program: Sequence[HwInstruction], acc_queues:
-               Mapping[ICaseString, RegAccessQueue], hw_info: HwSpec, util_tbl:
-               MutableSequence[BagValDict], issue_rec: _IssueInfo) -> None:
+def _run_cycle(program: Sequence[HwInstruction],
+               acc_queues: Mapping[ICaseString, RegAccessQueue],
+               hw_info: HwSpec, util_tbl: MutableSequence[BagValDict[
+                   ICaseString, InstrState]], issue_rec: _IssueInfo) -> None:
     """Run a single clock cycle.
 
     `program` is the program to run whose instructions.
@@ -648,7 +654,8 @@ def _run_cycle(program: Sequence[HwInstruction], acc_queues:
     util_tbl.append(cp_util)
 
 
-def _space_avail(unit: UnitModel, util_info: BagValDict) -> int:
+def _space_avail(unit: UnitModel,
+                 util_info: BagValDict[ICaseString, InstrState]) -> int:
     """Calculate the free space for receiving instructions in the unit.
 
     `unit` is the unit to test whose free space.
