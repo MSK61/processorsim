@@ -4,7 +4,7 @@
 
 ############################################################
 #
-# Copyright 2017, 2019 Mohammed El-Afifi
+# Copyright 2017, 2019, 2020 Mohammed El-Afifi
 # This file is part of processorSim.
 #
 # processorSim is free software: you can redistribute it and/or modify
@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.40.1 python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -151,5 +151,6 @@ class RegAccQBuilder:
         `req_type` is the request type.
 
         """
-        return req_type == AccessType.READ and bool(
-            self._queue) and self._queue[-1].access_type == AccessType.READ
+        return req_type == AccessType.READ and typing.cast(
+            bool, self._queue) and self._queue[
+                -1].access_type == AccessType.READ

@@ -9,7 +9,7 @@ Usage: test.py
 
 ############################################################
 #
-# Copyright 2017, 2019 Mohammed El-Afifi
+# Copyright 2017, 2019, 2020 Mohammed El-Afifi
 # This file is part of processorSim.
 #
 # processorSim is free software: you can redistribute it and/or modify
@@ -36,7 +36,7 @@ Usage: test.py
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.40.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
