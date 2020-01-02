@@ -40,17 +40,18 @@
 ############################################################
 
 from string import Template
+from typing import cast
 
 import attr
 
-import str_utils
+from str_utils import ICaseString
 
 
 class BadEdgeError(RuntimeError):
 
     """Bad edge error"""
 
-    def __init__(self, msg_tmpl, edge):
+    def __init__(self, msg_tmpl: str, edge: object) -> None:
         """Create a bad edge error.
 
         `self` is this bad edge error.
@@ -59,12 +60,14 @@ class BadEdgeError(RuntimeError):
         `edge` is the bad edge.
 
         """
-        RuntimeError.__init__(
-            self, Template(msg_tmpl).substitute({self.EDGE_KEY: edge}))
+        # Casting dictionary values since the type hint in typeshed for
+        # Template.substitute unnecessarily stipulates string values.
+        RuntimeError.__init__(self, Template(msg_tmpl).substitute(
+            {self.EDGE_KEY: cast(str, edge)}))
         self._edge = edge
 
     @property
-    def edge(self):
+    def edge(self) -> object:
         """Bad edge
 
         `self` is this bad edge error.
@@ -83,7 +86,7 @@ class BadWidthError(RuntimeError):
 
     """
 
-    def __init__(self, msg_tmpl, unit, width):
+    def __init__(self, msg_tmpl: str, unit: object, width: object) -> None:
         """Create a bad width error.
 
         `self` is this bad width error.
@@ -93,13 +96,15 @@ class BadWidthError(RuntimeError):
         `width` is the bad width.
 
         """
-        RuntimeError.__init__(self, Template(msg_tmpl).substitute(
-            {self.UNIT_KEY: unit, self.WIDTH_KEY: width}))
+        # Casting dictionary values since the type hint in typeshed for
+        # Template.substitute unnecessarily stipulates string values.
+        RuntimeError.__init__(self, Template(msg_tmpl).substitute({
+            self.UNIT_KEY: cast(str, unit), self.WIDTH_KEY: cast(str, width)}))
         self._unit = unit
         self._width = width
 
     @property
-    def unit(self):
+    def unit(self) -> object:
         """Unit having the bad width
 
         `self` is this bad width error.
@@ -108,7 +113,7 @@ class BadWidthError(RuntimeError):
         return self._unit
 
     @property
-    def width(self):
+    def width(self) -> object:
         """Bad width
 
         `self` is this bad width error.
@@ -122,6 +127,26 @@ class BadWidthError(RuntimeError):
     WIDTH_KEY = "width"
 
 
+@attr.s(auto_attribs=True, frozen=True)
+class ComponentInfo:
+
+    """Component information"""
+
+    std_name: ICaseString
+
+    reporting_name: str
+
+
+@attr.s(auto_attribs=True, frozen=True)
+class CapPortInfo:
+
+    """Capability-port combination information"""
+
+    capability_info: ComponentInfo
+
+    port_info: ComponentInfo
+
+
 class BlockedCapError(RuntimeError):
 
     """Blocked Input capability error
@@ -132,7 +157,7 @@ class BlockedCapError(RuntimeError):
 
     """
 
-    def __init__(self, msg_tmpl, blocking_info):
+    def __init__(self, msg_tmpl: str, blocking_info: CapPortInfo) -> None:
         """Create a blocked input capability error.
 
         `self` is this blocked input capability error.
@@ -149,7 +174,7 @@ class BlockedCapError(RuntimeError):
         self._port = blocking_info.port_info.std_name
 
     @property
-    def capability(self):
+    def capability(self) -> ICaseString:
         """Blocked capability
 
         `self` is this blocked input capability error.
@@ -158,7 +183,7 @@ class BlockedCapError(RuntimeError):
         return self._capability
 
     @property
-    def port(self):
+    def port(self) -> ICaseString:
         """Port the capability is block at
 
         `self` is this blocked input capability error.
@@ -172,26 +197,6 @@ class BlockedCapError(RuntimeError):
     PORT_KEY = "port"
 
 
-@attr.s(auto_attribs=True, frozen=True)
-class ComponentInfo:
-
-    """Component information"""
-
-    std_name: str_utils.ICaseString
-
-    reporting_name: str
-
-
-@attr.s(auto_attribs=True, frozen=True)
-class CapPortInfo:
-
-    """Capability-port combination information"""
-
-    capability_info: ComponentInfo
-
-    port_info: ComponentInfo
-
-
 class DeadInputError(RuntimeError):
 
     """Dead input port error
@@ -201,7 +206,7 @@ class DeadInputError(RuntimeError):
 
     """
 
-    def __init__(self, msg_tmpl, port):
+    def __init__(self, msg_tmpl: str, port: object) -> None:
         """Create a dead input error.
 
         `self` is this dead input error.
@@ -210,12 +215,14 @@ class DeadInputError(RuntimeError):
         `port` is the blocked input port.
 
         """
-        RuntimeError.__init__(
-            self, Template(msg_tmpl).substitute({self.PORT_KEY: port}))
+        # Casting dictionary values since the type hint in typeshed for
+        # Template.substitute unnecessarily stipulates string values.
+        RuntimeError.__init__(self, Template(msg_tmpl).substitute(
+            {self.PORT_KEY: cast(str, port)}))
         self._port = port
 
     @property
-    def port(self):
+    def port(self) -> object:
         """Blocked input port
 
         `self` is this dead input error.
@@ -230,7 +237,8 @@ class DupElemError(RuntimeError):
 
     """Duplicate set element error"""
 
-    def __init__(self, msg_tmpl, old_elem, new_elem):
+    def __init__(
+            self, msg_tmpl: str, old_elem: object, new_elem: object) -> None:
         """Create a duplicate element error.
 
         `self` is this duplicate element error.
@@ -240,13 +248,16 @@ class DupElemError(RuntimeError):
         `new_elem` is the element just discovered.
 
         """
-        RuntimeError.__init__(self, Template(msg_tmpl).substitute(
-            {self.OLD_ELEM_KEY: old_elem, self.NEW_ELEM_KEY: new_elem}))
+        # Casting dictionary values since the type hint in typeshed for
+        # Template.substitute unnecessarily stipulates string values.
+        RuntimeError.__init__(
+            self, Template(msg_tmpl).substitute({self.OLD_ELEM_KEY: cast(
+                str, old_elem), self.NEW_ELEM_KEY: cast(str, new_elem)}))
         self._old_elem = old_elem
         self._new_elem = new_elem
 
     @property
-    def new_element(self):
+    def new_element(self) -> object:
         """Duplicate element just discovered
 
         `self` is this duplicate element error.
@@ -255,7 +266,7 @@ class DupElemError(RuntimeError):
         return self._new_elem
 
     @property
-    def old_element(self):
+    def old_element(self) -> object:
         """Element added before
 
         `self` is this duplicate element error.
@@ -278,7 +289,8 @@ class MultilockError(RuntimeError):
 
     """Bad edge error"""
 
-    def __init__(self, msg_tmpl, start, lock_type, capability):
+    def __init__(self, msg_tmpl: str, start: object, lock_type: object,
+                 capability: object) -> None:
         """Create a multi-lock error.
 
         `self` is this multi-lock error.
@@ -289,15 +301,17 @@ class MultilockError(RuntimeError):
         `capability` is the capability for which the path was computed.
 
         """
+        # Casting dictionary values since the type hint in typeshed for
+        # Template.substitute unnecessarily stipulates string values.
         RuntimeError.__init__(self, Template(msg_tmpl).substitute(
-            {self.CAP_KEY: capability, self.LOCK_TYPE_KEY: lock_type,
-             self.START_KEY: start}))
+            {self.CAP_KEY: cast(str, capability), self.LOCK_TYPE_KEY:
+             cast(str, lock_type), self.START_KEY: cast(str, start)}))
         self._start = start
         self._lock_type = lock_type
         self._capability = capability
 
     @property
-    def capability(self):
+    def capability(self) -> object:
         """capability of the path
 
         `self` is this multi-lock error.
@@ -306,7 +320,7 @@ class MultilockError(RuntimeError):
         return self._capability
 
     @property
-    def lock_type(self):
+    def lock_type(self) -> object:
         """type of locks along the path
 
         `self` is this multi-lock error.
@@ -315,7 +329,7 @@ class MultilockError(RuntimeError):
         return self._lock_type
 
     @property
-    def start(self):
+    def start(self) -> object:
         """path start point
 
         `self` is this multi-lock error.
