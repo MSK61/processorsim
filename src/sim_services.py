@@ -66,7 +66,7 @@ class StallError(RuntimeError):
 
     """Stalled processor error"""
 
-    def __init__(self, msg_tmpl: str, fed_commands: int) -> None:
+    def __init__(self, msg_tmpl: str, fed_commands: object) -> None:
         """Create a stalled processor error.
 
         `self` is this stalled processor error.
@@ -83,7 +83,7 @@ class StallError(RuntimeError):
         self._fed_commands = fed_commands
 
     @property
-    def fed_commands(self) -> int:
+    def fed_commands(self) -> object:
         """Stalled processor state
 
         `self` is this stalled processor error.

@@ -42,8 +42,7 @@ import logging
 import operator
 from re import split
 import string
-import typing
-from typing import Iterable, List, Mapping
+from typing import cast, Iterable, List, Mapping
 
 import attr
 
@@ -58,7 +57,7 @@ class CodeError(RuntimeError):
 
     """Syntax error"""
 
-    def __init__(self, msg_tmpl: str, line: int, instr: str) -> None:
+    def __init__(self, msg_tmpl: str, line: object, instr: object) -> None:
         """Create a syntax error.
 
         `self` is this syntax error.
@@ -70,13 +69,14 @@ class CodeError(RuntimeError):
         """
         # Casting dictionary values since the type hint in typeshed for
         # Template.substitute unnecessarily stipulates string values.
-        RuntimeError.__init__(self, string.Template(msg_tmpl).substitute({
-            self.INSTR_KEY: instr, self.LINE_NUM_KEY: typing.cast(str, line)}))
+        RuntimeError.__init__(
+            self, string.Template(msg_tmpl).substitute({self.INSTR_KEY: cast(
+                str, instr), self.LINE_NUM_KEY: cast(str, line)}))
         self._line = line
         self._instr = instr
 
     @property
-    def instr(self) -> str:
+    def instr(self) -> object:
         """Instruction where the error is encountered
 
         `self` is this syntax error.
@@ -85,7 +85,7 @@ class CodeError(RuntimeError):
         return self._instr
 
     @property
-    def line(self) -> int:
+    def line(self) -> object:
         """Number of the source line containing the error
 
         `self` is this syntax error.
