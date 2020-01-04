@@ -280,24 +280,19 @@ def _aug_out_ports(processor, out_ports):
     and returns that single port.
 
     """
-    return _aug_terminals(processor, out_ports, lambda *outputs: outputs)
+    return _aug_terminals(processor, out_ports)
 
 
-def _aug_terminals(graph, ports, edge_func):
+def _aug_terminals(graph, ports):
     """Unify terminals indicated by degrees in the graph.
 
     `graph` is the graph containing terminals.
     `ports` are the terminals to unify.
-    `edge_func` is the creation function for edges connecting old
-                terminals to the new one. It takes as parameters the old
-                and the new terminals in order and returns a tuple
-                representing the directed edge between the two.
     The function tries to connect several terminals into a single new
     terminal. The function returns the newly added port.
 
     """
-    return ports[0] if len(ports) == 1 else _unify_ports(
-        graph, ports, edge_func)
+    return ports[0] if len(ports) == 1 else _unify_ports(graph, ports)
 
 
 def _cap_in_edge(processor, capability, edge):
@@ -670,15 +665,11 @@ def _split_nodes(graph):
             twin or out_degrees[unit]) else unit for unit, twin in in_degrees}
 
 
-def _unify_ports(graph, ports, edge_func):
+def _unify_ports(graph, ports):
     """Unify ports in the graph.
 
     `graph` is the graph containing terminals.
     `ports` are the ports to unify.
-    `edge_func` is the creation function for edges connecting old
-                terminals to the new one. It takes as parameters the old
-                and the new terminals in order and returns a tuple
-                representing the directed edge between the two.
     The function returns the new port.
 
     """
@@ -686,8 +677,7 @@ def _unify_ports(graph, ports, edge_func):
     graph.add_node(unified_port, **{UNIT_WIDTH_KEY: 0})
 
     for cur_port in ports:
-        _add_port_link(
-            graph, cur_port, unified_port, edge_func(cur_port, unified_port))
+        _add_port_link(graph, cur_port, unified_port, [cur_port, unified_port])
 
     return unified_port
 
