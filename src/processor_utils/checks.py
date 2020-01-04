@@ -25,7 +25,7 @@
 #
 # file:         checks.py
 #
-# function:     chk_cycles
+# function:     chk_caps, chk_cycles and chk_non_empty
 #
 # description:  contains processor structure analysis and checking
 #               routines
