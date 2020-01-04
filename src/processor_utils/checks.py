@@ -257,18 +257,17 @@ class _PathLockCalc:
     _path_locks: Mapping[ICaseString, _SatInfo]
 
 
-def _add_port_link(graph, old_port, new_port, link):
+def _add_port_link(graph, old_port, new_port):
     """Add a link between old and new ports.
 
     `graph` is the graph containing ports.
     `old_port` is the old port.
     `new_port` is the new port.
-    `link` is the link connecting the two ports.
 
     """
     graph.nodes[new_port][UNIT_WIDTH_KEY] += graph.nodes[old_port][
         UNIT_WIDTH_KEY]
-    graph.add_edge(*link)
+    graph.add_edge(old_port, new_port)
 
 
 def _aug_out_ports(processor, out_ports):
@@ -677,7 +676,7 @@ def _unify_ports(graph, ports):
     graph.add_node(unified_port, **{UNIT_WIDTH_KEY: 0})
 
     for cur_port in ports:
-        _add_port_link(graph, cur_port, unified_port, [cur_port, unified_port])
+        _add_port_link(graph, cur_port, unified_port)
 
     return unified_port
 
