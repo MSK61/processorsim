@@ -42,13 +42,10 @@ import collections
 from operator import eq, itemgetter
 import typing
 from typing import Callable, Dict, Generic, Iterable, List, Mapping, \
-    Optional, Tuple, TypeVar
+    Optional, Tuple
 
 from str_utils import format_obj
-# associative container element types
-_KT = TypeVar("_KT")
-_ValBagElemT = TypeVar("_ValBagElemT")
-_T = TypeVar("_T")
+_T = typing.TypeVar("_T")
 
 
 def concat_dicts(dict1: Mapping[object, object],
@@ -82,12 +79,12 @@ def count_if(pred: Callable[[_T], bool], elems: Iterable[_T]) -> int:
     return sum(1 if pred(elem) else 0 for elem in elems)
 
 
-class BagValDict(Generic[_KT, _ValBagElemT]):
+class BagValDict(Generic[_T]):
 
     """Dictionary with(unsorted) lists as values"""
 
-    def __init__(self, initial_dict: Optional[
-            Mapping[_KT, Iterable[_ValBagElemT]]] = None) -> None:
+    def __init__(self, initial_dict:
+                 Optional[Mapping[object, Iterable[_T]]] = None) -> None:
         """Create an empty dictionary.
 
         `self` is this dictionary.
@@ -96,12 +93,12 @@ class BagValDict(Generic[_KT, _ValBagElemT]):
 
         """
         self._dict: typing.DefaultDict[
-            _KT, List[_ValBagElemT]] = collections.defaultdict(list)
+            object, List[_T]] = collections.defaultdict(list)
 
         if initial_dict:
             self._add_items(initial_dict.items())
 
-    def __contains__(self, item: _KT) -> bool:
+    def __contains__(self, item: object) -> bool:
         """Check if the given key exists.
 
         `self` is this dictionary.
@@ -126,7 +123,7 @@ class BagValDict(Generic[_KT, _ValBagElemT]):
         return eq(*(map(len, item_lst_pair))) and all(
             map(lambda elem_lists: eq(*elem_lists), lst_pairs))
 
-    def __getitem__(self, key: _KT) -> List[_ValBagElemT]:
+    def __getitem__(self, key: object) -> List[_T]:
         """Retrieve the list of the given key.
 
         `self` is this dictionary.
@@ -161,7 +158,7 @@ class BagValDict(Generic[_KT, _ValBagElemT]):
         """
         return format_obj(type(self).__name__, [self._format_dict()])
 
-    def items(self) -> typing.Iterator[Tuple[_KT, List[_ValBagElemT]]]:
+    def items(self) -> typing.Iterator[Tuple[object, List[_T]]]:
         """Return the items of this dictionary.
 
         `self` is this dictionary.
@@ -171,8 +168,7 @@ class BagValDict(Generic[_KT, _ValBagElemT]):
         """
         return filter(itemgetter(1), self._dict.items())
 
-    def _add_items(
-            self, elems: Iterable[Tuple[_KT, Iterable[_ValBagElemT]]]) -> None:
+    def _add_items(self, elems: Iterable[Tuple[object, Iterable[_T]]]) -> None:
         """Add items to this dictionary.
 
         `self` is this dictionary.

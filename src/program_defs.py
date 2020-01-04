@@ -46,8 +46,7 @@ import attr
 from str_utils import ICaseString
 
 
-def _sorted_uniq(elems: typing.Iterable[ICaseString]) -> Tuple[
-        ICaseString, ...]:
+def _sorted_uniq(elems: typing.Iterable[object]) -> Tuple[object, ...]:
     """Sort the elements after filtering out duplicates.
 
     `elems` are the elements to filter and sort.
@@ -71,8 +70,7 @@ class HwInstruction(_Instruction):
 
     """Hardware instruction"""
 
-    categ: ICaseString = attr.ib(
-        validator=attr.validators.instance_of(ICaseString))
+    categ: object = attr.ib()
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -82,4 +80,4 @@ class ProgInstruction(_Instruction):
 
     name: str
 
-    line: int
+    line: object

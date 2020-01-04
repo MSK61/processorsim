@@ -45,7 +45,7 @@ import typing
 import attr
 
 
-def format_obj(cls_name: str, field_strings: typing.Iterable[str]) -> str:
+def format_obj(cls_name: object, field_strings: typing.Iterable[str]) -> str:
     """Construct a string representation for the given object.
 
     `cls_name` is the class name.

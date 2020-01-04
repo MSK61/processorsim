@@ -60,12 +60,12 @@ class AccessGroup:
 
     """Access group"""
 
-    access_type: AccessType = attr.ib()
+    access_type: object = attr.ib()
 
-    reqs: typing.MutableSet[int] = attr.ib(converter=set, factory=set)
+    reqs: typing.MutableSet[object] = attr.ib(converter=set, factory=set)
 
 
-def _rev_list(lst: typing.Reversible[AccessGroup]) -> List[AccessGroup]:
+def _rev_list(lst: typing.Reversible[object]) -> List[object]:
     """Return the reversed list of the given one.
 
     `lst` is the list to reverse.
@@ -80,7 +80,7 @@ class RegAccessQueue:
     """Access request queue for a single register"""
     # pylint: disable=unsubscriptable-object
 
-    def can_access(self, req_type: AccessType, req_owner: int) -> bool:
+    def can_access(self, req_type: object, req_owner: object) -> bool:
         """Request access to the register.
 
         `self` is this access request queue.
@@ -91,7 +91,7 @@ class RegAccessQueue:
         return req_type == self._queue[
             -1].access_type and req_owner in self._queue[-1].reqs
 
-    def dequeue(self, req_owner: int) -> None:
+    def dequeue(self, req_owner: object) -> None:
         """Remove a request from this queue.
 
         `self` is this access request queue.
@@ -144,7 +144,7 @@ class RegAccQBuilder:
         """
         return RegAccessQueue(self._queue)
 
-    def _can_merge(self, req_type: AccessType) -> bool:
+    def _can_merge(self, req_type: object) -> bool:
         """Test if the given request can be merged with the last one.
 
         `self` is this access queue builder.

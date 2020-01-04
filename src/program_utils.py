@@ -99,8 +99,8 @@ class CodeError(RuntimeError):
     LINE_NUM_KEY = "line"
 
 
-def compile_program(prog: Iterable[ProgInstruction], isa: Mapping[
-        str, ICaseString]) -> List[HwInstruction]:
+def compile_program(prog: Iterable[ProgInstruction],
+                    isa: Mapping[object, object]) -> List[HwInstruction]:
     """Compile the program using the given instruction set.
 
     `prog` is the program to compile.
@@ -146,10 +146,10 @@ class _OperandInfo:
 
     name: ICaseString
 
-    line: int
+    line: object
 
 
-def _create_instr(line_num: int, line_txt: str,
+def _create_instr(line_num: object, line_txt: str,
                   reg_registry: IndexedSet[_OperandInfo]) -> ProgInstruction:
     """Convert the source line to a program instruction.
 
@@ -165,8 +165,7 @@ def _create_instr(line_num: int, line_txt: str,
     return ProgInstruction(sources, dst, src_line_info.instruction, line_num)
 
 
-def _get_cap(
-        isa: Mapping[str, ICaseString], instr: ProgInstruction) -> ICaseString:
+def _get_cap(isa: Mapping[object, object], instr: ProgInstruction) -> object:
     """Get the ISA capability of the given instruction.
 
     `isa` is the instruction set containing upper-case instructions.
@@ -183,7 +182,7 @@ def _get_cap(
             f"{instr.line}", instr.name)
 
 
-def _get_line_parts(line_num: int, line_txt: str) -> _LineInfo:
+def _get_line_parts(line_num: object, line_txt: str) -> _LineInfo:
     """Extract the source line components.
 
     `line_num` is the line number in the original input.
@@ -204,7 +203,7 @@ def _get_line_parts(line_num: int, line_txt: str) -> _LineInfo:
     return _LineInfo(*line_parts)
 
 
-def _get_operands(src_line_info: _LineInfo, line_num: int,
+def _get_operands(src_line_info: _LineInfo, line_num: object,
                   reg_registry: IndexedSet[_OperandInfo]) -> List[ICaseString]:
     """Extract operands from the given line.
 
@@ -228,8 +227,9 @@ def _get_operands(src_line_info: _LineInfo, line_num: int,
     return valid_ops
 
 
-def _get_reg_name(op_name: str, op_idx: int, line_num: int, instr: str,
-                  reg_registry: IndexedSet[_OperandInfo]) -> ICaseString:
+def _get_reg_name(
+        op_name: str, op_idx: object, line_num: object, instr: object,
+        reg_registry: IndexedSet[_OperandInfo]) -> ICaseString:
     """Extract the registry name.
 
     `op_name` is the operand name.

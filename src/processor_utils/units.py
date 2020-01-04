@@ -65,7 +65,7 @@ class LockInfo:
     wr_lock: bool
 
 
-def _sorted(elems: Iterable[ICaseString]) -> Tuple[ICaseString, ...]:
+def _sorted(elems: Iterable[object]) -> Tuple[object, ...]:
     """Sort the elements.
 
     `elems` are the elements to sort.

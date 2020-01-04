@@ -44,7 +44,6 @@ import attr
 import yaml
 
 import processor_utils
-import str_utils
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -54,7 +53,7 @@ class HwDesc:
 
     processor: processor_utils.ProcessorDesc
 
-    isa: typing.Mapping[str, str_utils.ICaseString]
+    isa: typing.Mapping[object, object]
 
 
 def read_processor(proc_file: typing.IO[str]) -> HwDesc:
