@@ -134,7 +134,7 @@ class ComponentInfo:
 
     std_name: ICaseString
 
-    reporting_name: str
+    reporting_name: object
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -167,9 +167,12 @@ class BlockedCapError(RuntimeError):
         `blocking_info` is the blocking information.
 
         """
-        RuntimeError.__init__(self, Template(msg_tmpl).substitute(
-            {self.CAPABILITY_KEY: blocking_info.capability_info.reporting_name,
-             self.PORT_KEY: blocking_info.port_info.reporting_name}))
+        # Casting dictionary values since the type hint in typeshed for
+        # Template.substitute unnecessarily stipulates string values.
+        RuntimeError.__init__(self, Template(msg_tmpl).substitute({
+            self.CAPABILITY_KEY:
+            cast(str, blocking_info.capability_info.reporting_name),
+            self.PORT_KEY: cast(str, blocking_info.port_info.reporting_name)}))
         self._capability = blocking_info.capability_info.std_name
         self._port = blocking_info.port_info.std_name
 
