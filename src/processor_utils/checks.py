@@ -545,23 +545,6 @@ def _get_cap_units(processor):
     return cap_unit_map.items()
 
 
-def _get_one_edge(edges):
-    """Select the one and only edge.
-
-    `edges` are an iterator over non-empty edges.
-    The function returns the only edge in the given edges, or None if
-    more than one exists. If no edges exist at all, it raises a
-    StopIteration exception.
-
-    """
-    only_edge = next(edges)
-    try:
-        next(edges)
-    except StopIteration:  # only one edge
-        return only_edge
-    return None
-
-
 def _make_cap_graph(processor, capability):
     """Create a graph condensed for the given capability.
 
@@ -624,10 +607,8 @@ def _single_edge(edges):
     the edges don't contain exactly a single edge.
 
     """
-    try:
-        return _get_one_edge(edges)
-    except StopIteration:  # Input edges are empty.
-        return None
+    only_edge = next(edges, None)
+    return only_edge and (None if next(edges, None) else only_edge)
 
 
 def _split_node(graph, old_node, new_node):

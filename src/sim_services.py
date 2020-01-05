@@ -237,11 +237,12 @@ def _accept_instr(instr, inputs, util_info):
     returns False.
 
     """
-    try:
-        acceptor = next(
-            filter(lambda unit: _space_avail(unit, util_info), inputs))
-    except StopIteration:  # No unit accepted the instruction.
+    acceptor = next(
+        filter(lambda unit: _space_avail(unit, util_info), inputs), None)
+
+    if not acceptor:
         return False
+
     util_info[acceptor.name].append(InstrState(instr))
     return True
 
