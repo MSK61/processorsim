@@ -38,7 +38,7 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -299,7 +299,7 @@ def _print_sim_res(sim_res):
 
     """
     _print_tbl_hdr(sim_res)
-    _print_tbl_data(enumerate(sim_res))
+    _print_tbl_data(enumerate(sim_res, 1))
 
 
 def _print_tbl_data(sim_res):
@@ -309,7 +309,7 @@ def _print_tbl_data(sim_res):
 
     """
     for row_idx, fields in sim_res:
-        _print_res_row('I' + str(row_idx + 1), fields)
+        _print_res_row('I' + str(row_idx), fields)
 
 
 def _print_tbl_hdr(sim_res):

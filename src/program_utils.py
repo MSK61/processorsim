@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -118,10 +118,9 @@ def read_program(prog_file):
 
     """
     program = filter(
-        operator.itemgetter(1), enumerate(map(str.strip, prog_file)))
+        operator.itemgetter(1), enumerate(map(str.strip, prog_file), 1))
     reg_registry = container_utils.IndexedSet(lambda reg: reg.name)
-    return [_create_instr(line_idx + 1, line_txt, reg_registry) for
-            line_idx, line_txt in program]
+    return [_create_instr(*line, reg_registry) for line in program]
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -210,22 +209,21 @@ def _get_operands(src_line_info, line_num, reg_registry):
 
     """
     sep_pat = r"\s*,\s*"
-    operands = enumerate(split(sep_pat, src_line_info.operands))
+    operands = enumerate(split(sep_pat, src_line_info.operands), 1)
     valid_ops = []
 
-    for op_idx, op_name in operands:
-        valid_ops.append(
-            _get_reg_name(op_name, op_idx + 1, line_num,
-                          src_line_info.instruction, reg_registry))
+    for cur_op in operands:
+        valid_ops.append(_get_reg_name(
+            *cur_op, line_num, src_line_info.instruction, reg_registry))
 
     return valid_ops
 
 
-def _get_reg_name(op_name, op_idx, line_num, instr, reg_registry):
+def _get_reg_name(op_idx, op_name, line_num, instr, reg_registry):
     """Extract the registry name.
 
-    `op_name` is the operand name.
     `op_idx` is the one-based operand index.
+    `op_name` is the operand name.
     `line_num` is the line number of the enclosing instruction.
     `instr` is the enclosing instruction.
     `reg_registry` is the register name registry.
