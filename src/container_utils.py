@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -132,15 +132,6 @@ class BagValDict(Generic[_T]):
         """
         return self._dict[key]
 
-    def __len__(self) -> int:
-        """Retrieve the number of keys in this dictionary.
-
-        `self` is this dictionary.
-        The method only considers keys with non-empty lists.
-
-        """
-        return self._count(self.items())
-
     def __ne__(self, other: object) -> bool:
         """Test if the two dictionaries are different.
 
@@ -158,16 +149,6 @@ class BagValDict(Generic[_T]):
         """
         return format_obj(type(self).__name__, [self._format_dict()])
 
-    def items(self) -> typing.Iterator[Tuple[object, List[_T]]]:
-        """Return the items of this dictionary.
-
-        `self` is this dictionary.
-        The method returns an iterator over dictionary items with
-        non-empty lists.
-
-        """
-        return filter(itemgetter(1), self._dict.items())
-
     def _add_items(self, elems: Iterable[Tuple[object, Iterable[_T]]]) -> None:
         """Add items to this dictionary.
 
@@ -179,14 +160,13 @@ class BagValDict(Generic[_T]):
             for elem in elem_lst:
                 self[key].append(elem)
 
-    @staticmethod
-    def _count(elems: Iterable[object]) -> int:
-        """Count the number of elements in the given iterable.
+    def _count(self) -> int:
+        """Count the number of elements in this dictionary.
 
-        `elems` is the iterable of elements to count.
+        `self` is this dictionary.
 
         """
-        return count_if(lambda elem: True, elems)
+        return count_if(lambda elem: True, self.items())
 
     def _format_dict(self) -> str:
         """Format this dictionary.
@@ -207,6 +187,20 @@ class BagValDict(Generic[_T]):
                            sorted(elems, key=itemgetter(0)))
         sep = ", "
         return sep.join(item_strings)
+
+    def _useful_items(self) -> typing.Iterator[Tuple[object, List[_T]]]:
+        """Filter out items with empty value lists.
+
+        `self` is this dictionary.
+        The method returns an iterator over dictionary items with
+        non-empty lists.
+
+        """
+        return filter(itemgetter(1), self._dict.items())
+
+    items = _useful_items
+
+    __len__ = _count
 
 
 class _IndexedSetBase(Generic[_T]):

@@ -245,11 +245,12 @@ def _accept_instr(instr: int, inputs: Iterable[UnitModel],
     returns False.
 
     """
-    try:
-        acceptor = next(
-            filter(lambda unit: _space_avail(unit, util_info), inputs))
-    except StopIteration:  # No unit accepted the instruction.
+    acceptor = next(
+        filter(lambda unit: _space_avail(unit, util_info), inputs), None)
+
+    if not acceptor:
         return False
+
     util_info[acceptor.name].append(InstrState(instr))
     return True
 
@@ -542,8 +543,8 @@ def _get_candidates(unit: FuncUnit, program: Sequence[HwInstruction],
 
     """
     candidates = (_get_new_guests(pred.name, _get_accepted(
-        util_info[pred.name], program, unit.model.capabilities)) for pred in
-                  unit.predecessors if pred.name in util_info)
+        util_info[pred.name], program, unit.model.capabilities)) for
+                  pred in unit.predecessors if pred.name in util_info)
     return heapq.nsmallest(_space_avail(unit.model, util_info), chain(
         *candidates), key=lambda instr_info: util_info[instr_info.host][
             instr_info.index_in_host].instr)

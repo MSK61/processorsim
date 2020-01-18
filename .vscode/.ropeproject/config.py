@@ -148,6 +148,6 @@ def set_prefs(prefs):
         'rope.base.oi.type_hinting.factory.default_type_hinting_factory')
 
 
-def project_opened(project):
+def project_opened(project):  # pylint: disable=unused-argument
     """This function is called after opening the project"""
     # Do whatever you like here!

@@ -25,14 +25,14 @@
 #
 # file:         checks.py
 #
-# function:     chk_cycles
+# function:     chk_caps, chk_cycles and chk_non_empty
 #
 # description:  contains processor structure analysis and checking
 #               routines
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -264,19 +264,17 @@ class _PathLockCalc:
     _path_locks: Mapping[object, _SatInfo]
 
 
-def _add_port_link(graph: Graph, old_port: object, new_port: object,
-                   link: Tuple[object, object]) -> None:
+def _add_port_link(graph: Graph, old_port: object, new_port: object) -> None:
     """Add a link between old and new ports.
 
     `graph` is the graph containing ports.
     `old_port` is the old port.
     `new_port` is the new port.
-    `link` is the link connecting the two ports.
 
     """
     graph.nodes[new_port][UNIT_WIDTH_KEY] += graph.nodes[old_port][
         UNIT_WIDTH_KEY]
-    graph.add_edge(*link)
+    graph.add_edge(old_port, new_port)
 
 
 def _aug_out_ports(processor: Graph, out_ports: Sequence[object]) -> object:
@@ -288,26 +286,19 @@ def _aug_out_ports(processor: Graph, out_ports: Sequence[object]) -> object:
     and returns that single port.
 
     """
-    return _aug_terminals(processor, out_ports, lambda *outputs:
-                          typing.cast(Tuple[int, int], outputs))
+    return _aug_terminals(processor, out_ports)
 
 
-def _aug_terminals(graph: Graph, ports: Sequence[object], edge_func: Callable[
-        [object, object], Tuple[object, object]]) -> object:
+def _aug_terminals(graph: Graph, ports: Sequence[object]) -> object:
     """Unify terminals indicated by degrees in the graph.
 
     `graph` is the graph containing terminals.
     `ports` are the terminals to unify.
-    `edge_func` is the creation function for edges connecting old
-                terminals to the new one. It takes as parameters the old
-                and the new terminals in order and returns a tuple
-                representing the directed edge between the two.
     The function tries to connect several terminals into a single new
     terminal. The function returns the newly added port.
 
     """
-    return ports[0] if len(ports) == 1 else _unify_ports(
-        graph, ports, edge_func)
+    return ports[0] if len(ports) == 1 else _unify_ports(graph, ports)
 
 
 def _cap_in_edge(processor: Graph, capability: object,
@@ -573,24 +564,6 @@ def _get_cap_units(processor: DiGraph) -> typing.AbstractSet[
     return cap_unit_map.items()
 
 
-def _get_one_edge(edges: Iterator[Tuple[object, object]]) -> Optional[
-        Tuple[object, object]]:
-    """Select the one and only edge.
-
-    `edges` are an iterator over non-empty edges.
-    The function returns the only edge in the given edges, or None if
-    more than one exists. If no edges exist at all, it raises a
-    StopIteration exception.
-
-    """
-    only_edge = next(edges)
-    try:
-        next(edges)
-    except StopIteration:  # only one edge
-        return only_edge
-    return None
-
-
 def _make_cap_graph(processor: Graph, capability: object) -> DiGraph:
     """Create a graph condensed for the given capability.
 
@@ -657,10 +630,8 @@ def _single_edge(edges: Iterator[Tuple[object, object]]) -> Optional[
     the edges don't contain exactly a single edge.
 
     """
-    try:
-        return _get_one_edge(edges)
-    except StopIteration:  # Input edges are empty.
-        return None
+    only_edge = next(edges, None)
+    return only_edge and (None if next(edges, None) else only_edge)
 
 
 def _split_node(graph: DiGraph, old_node: object, new_node: object) -> object:
@@ -697,16 +668,11 @@ def _split_nodes(graph: DiGraph) -> Dict[object, object]:
             twin or out_degrees[unit]) else unit for unit, twin in in_degrees}
 
 
-def _unify_ports(graph: Graph, ports: Iterable[object], edge_func:
-                 Callable[[object, object], Tuple[object, object]]) -> int:
+def _unify_ports(graph: Graph, ports: Iterable[object]) -> int:
     """Unify ports in the graph.
 
     `graph` is the graph containing terminals.
     `ports` are the ports to unify.
-    `edge_func` is the creation function for edges connecting old
-                terminals to the new one. It takes as parameters the old
-                and the new terminals in order and returns a tuple
-                representing the directed edge between the two.
     The function returns the new port.
 
     """
@@ -714,8 +680,7 @@ def _unify_ports(graph: Graph, ports: Iterable[object], edge_func:
     graph.add_node(unified_port, **{UNIT_WIDTH_KEY: 0})
 
     for cur_port in ports:
-        _add_port_link(
-            graph, cur_port, unified_port, edge_func(cur_port, unified_port))
+        _add_port_link(graph, cur_port, unified_port)
 
     return unified_port
 
