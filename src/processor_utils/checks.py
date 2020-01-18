@@ -480,7 +480,7 @@ def _dist_edge_caps(graph: DiGraph) -> None:
 
 
 def _do_cap_checks(processor: DiGraph, cap_checks: Iterable[
-        Callable[[DiGraph, Iterator[object], ICaseString,
+        Callable[[DiGraph, Iterable[object], ICaseString,
                   Iterable[ICaseString], Iterable[object]], None]]) -> None:
     """Perform per-capability checks.
 
