@@ -42,7 +42,7 @@
 import operator
 import typing
 from typing import Callable, Dict, Iterable, Iterator, List, Mapping, \
-    MutableMapping, Optional, Sequence, Tuple
+    MutableMapping, Sequence, Tuple
 
 import attr
 import networkx
@@ -621,7 +621,7 @@ def _set_capacities(
             map(lambda unit: graph.nodes[unit][UNIT_WIDTH_KEY], cur_edge))
 
 
-def _single_edge(edges: Iterator[Tuple[object, object]]) -> Optional[
+def _single_edge(edges: Iterator[Tuple[object, object]]) -> typing.Optional[
         Tuple[object, object]]:
     """Select the one and only edge.
 
