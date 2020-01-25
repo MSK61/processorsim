@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -404,7 +404,7 @@ def _init_cap_reg(capabilities):
     unique capabilities.
 
     """
-    cap_registry = IndexedSet(lambda cap: cap)
+    cap_registry = SelfIndexSet()
 
     for cap in capabilities:
         cap_registry.add(cap)
