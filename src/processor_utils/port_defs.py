@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -42,11 +42,10 @@ import typing
 from typing import Generator, Tuple
 
 from networkx import DiGraph
+_T = typing.TypeVar("_T")
 
-from str_utils import ICaseString
 
-
-def get_in_ports(processor: DiGraph) -> Generator[ICaseString, None, None]:
+def get_in_ports(processor: DiGraph) -> Generator[_T, None, None]:
     """Find the input ports.
 
     `processor` is the processor to find whose input ports.
@@ -56,7 +55,7 @@ def get_in_ports(processor: DiGraph) -> Generator[ICaseString, None, None]:
     return _get_ports(processor.in_degree())
 
 
-def get_out_ports(processor: DiGraph) -> Generator[ICaseString, None, None]:
+def get_out_ports(processor: DiGraph) -> Generator[object, None, None]:
     """Find the output ports.
 
     `processor` is the processor to find whose output ports.
@@ -82,7 +81,7 @@ class PortGroup:
             port_getter(processor)), [get_in_ports, get_out_ports])
 
     @property
-    def in_ports(self) -> Tuple[ICaseString, ...]:
+    def in_ports(self) -> Tuple[object, ...]:
         """Input ports
 
         `self` is this port group.
@@ -91,7 +90,7 @@ class PortGroup:
         return self._in_ports
 
     @property
-    def out_ports(self) -> Tuple[ICaseString, ...]:
+    def out_ports(self) -> Tuple[object, ...]:
         """Output ports
 
         `self` is this port group.
@@ -100,8 +99,8 @@ class PortGroup:
         return self._out_ports
 
 
-def _get_ports(degrees: typing.Iterable[
-        Tuple[ICaseString, bool]]) -> Generator[ICaseString, None, None]:
+def _get_ports(degrees: typing.Iterable[Tuple[_T, bool]]) -> Generator[
+        _T, None, None]:
     """Find the ports with respect to the given degrees.
 
     `degrees` are the degrees of all units.

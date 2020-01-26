@@ -67,6 +67,7 @@ _COL_SEP = '\t'
 # variable to receive the processor architecture file
 _PROC_OPT_VAR = "processor_file"
 _PROG_OPT_VAR = "prog_file"  # variable to receive the program file
+_T = typing.TypeVar("_T")
 
 
 def get_in_files(argv: Optional[Sequence[str]]) -> Tuple[TextIO, TextIO]:
@@ -196,7 +197,7 @@ def _create_flight(instr_util: Mapping[int, _InstrPosition]) -> _InstrFlight:
         clock_pulse], range(start_time, start_time + time_span)))
 
 
-def _cui_to_flights(cxuxi: Iterable[Tuple[int, BagValDict[InstrState]]],
+def _cui_to_flights(cxuxi: Iterable[Tuple[int, BagValDict[_T, InstrState]]],
                     instructions: int) -> Iterator[_InstrFlight]:
     """Convert a CxUxI utilization map to instruction flights.
 
@@ -207,7 +208,7 @@ def _cui_to_flights(cxuxi: Iterable[Tuple[int, BagValDict[InstrState]]],
     return _icu_to_flights(_cui_to_icu(cxuxi, instructions))
 
 
-def _cui_to_icu(cxuxi: Iterable[Tuple[int, BagValDict[InstrState]]],
+def _cui_to_icu(cxuxi: Iterable[Tuple[int, BagValDict[_T, InstrState]]],
                 instructions: int) -> List[Dict[int, _InstrPosition]]:
     """Convert a CxUxI utilization map to IxCxU format.
 
@@ -259,7 +260,7 @@ def _get_last_tick(sim_res: Iterable[Sized]) -> int:
     return max(chain([0], map(len, sim_res)))
 
 
-def _get_sim_rows(sim_res: Iterable[Tuple[int, BagValDict[InstrState]]],
+def _get_sim_rows(sim_res: Iterable[Tuple[int, BagValDict[_T, InstrState]]],
                   instructions: int) -> List[List[str]]:
     """Calculate the simulation rows.
 

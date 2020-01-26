@@ -41,8 +41,8 @@
 
 import operator
 import typing
-from typing import Callable, Dict, Iterable, Iterator, List, Mapping, \
-    MutableMapping, Sequence, Tuple
+from typing import AbstractSet, Callable, Dict, Iterable, Iterator, List, \
+    Mapping, MutableMapping, Sequence, Tuple
 
 import attr
 import networkx
@@ -56,6 +56,7 @@ from . import port_defs
 from . import units
 from .units import UNIT_CAPS_KEY, UNIT_WIDTH_KEY
 _OLD_NODE_KEY = "old_node"
+_T = typing.TypeVar("_T")
 
 
 def chk_caps(processor: DiGraph) -> None:
@@ -452,7 +453,7 @@ def _chk_unit_flow(min_width: bool, capability_info: ComponentInfo,
                 capability_info, port_info))
 
 
-def _coll_cap_edges(graph: DiGraph) -> typing.FrozenSet[Tuple[object, object]]:
+def _coll_cap_edges(graph: DiGraph) -> typing.FrozenSet[_T]:
     """Collect capping edges from the given graph.
 
     `graph` is the graph to collect edges from.
@@ -488,7 +489,8 @@ def _do_cap_checks(processor: DiGraph, cap_checks: Iterable[
     `cap_checks` are the checks to perform.
 
     """
-    cap_units = _get_cap_units(processor)
+    cap_units: AbstractSet[
+        Tuple[ICaseString, List[ICaseString]]] = _get_cap_units(processor)
     out_ports = list(port_defs.get_out_ports(processor))
     post_ord = list(networkx.dfs_postorder_nodes(processor))
 
@@ -531,8 +533,7 @@ def _get_anal_graph(processor: Graph) -> DiGraph:
     return width_graph
 
 
-def _get_cap_edge(in_edges: Iterable[Tuple[object, object]], out_edges:
-                  Iterable[Tuple[object, object]]) -> Tuple[object, object]:
+def _get_cap_edge(in_edges: Iterable[_T], out_edges: Iterable[_T]) -> _T:
     """Select the capping edge.
 
     `in_edges` is an iterator over input edges.
@@ -545,8 +546,8 @@ def _get_cap_edge(in_edges: Iterable[Tuple[object, object]], out_edges:
     return _single_edge(iter(in_edges)) or next(iter(out_edges))
 
 
-def _get_cap_units(processor: DiGraph) -> typing.AbstractSet[
-        Tuple[ICaseString, List[ICaseString]]]:
+def _get_cap_units(processor: DiGraph) -> AbstractSet[
+        Tuple[ICaseString, List[_T]]]:
     """Create a mapping between capabilities and supporting input ports.
 
     `processor` is the processor to create a capability-port map for.
@@ -554,8 +555,9 @@ def _get_cap_units(processor: DiGraph) -> typing.AbstractSet[
     capability and its supporting units.
 
     """
-    cap_unit_map: Dict[ICaseString, List[ICaseString]] = {}
-    in_ports = port_defs.get_in_ports(processor)
+    cap_unit_map: Dict[ICaseString, List[_T]] = {}
+    in_ports: typing.Generator[_T, None, None] = port_defs.get_in_ports(
+        processor)
 
     for cur_port in in_ports:
         for cur_cap in processor.nodes[cur_port][UNIT_CAPS_KEY]:
@@ -621,8 +623,7 @@ def _set_capacities(
             map(lambda unit: graph.nodes[unit][UNIT_WIDTH_KEY], cur_edge))
 
 
-def _single_edge(edges: Iterator[Tuple[object, object]]) -> typing.Optional[
-        Tuple[object, object]]:
+def _single_edge(edges: Iterator[_T]) -> typing.Optional[_T]:
     """Select the one and only edge.
 
     `edges` are an iterator over edges.

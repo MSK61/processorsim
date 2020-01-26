@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -44,7 +44,7 @@ from typing import Iterable, Tuple
 
 import attr
 
-from str_utils import ICaseString
+import str_utils
 __all__ = ["LockInfo", "FuncUnit", "UnitModel"]
 # unit attributes
 UNIT_CAPS_KEY = "capabilities"
@@ -79,11 +79,11 @@ class UnitModel:
 
     """Functional unit model"""
 
-    name: ICaseString
+    name: str_utils.ICaseString
 
     width: int
 
-    capabilities: Tuple[ICaseString, ...] = attr.ib(converter=_sorted)
+    capabilities: Tuple[object, ...] = attr.ib(converter=_sorted)
 
     lock_info: LockInfo
 
