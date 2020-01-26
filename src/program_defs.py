@@ -43,6 +43,7 @@ from typing import Tuple
 
 import attr
 
+import container_utils
 import str_utils
 
 
@@ -52,7 +53,7 @@ def _sorted_uniq(elems: typing.Iterable[object]) -> Tuple[object, ...]:
     `elems` are the elements to filter and sort.
 
     """
-    return tuple(sorted(frozenset(elems)))
+    return container_utils.sorted_tuple(frozenset(elems))
 
 
 @attr.s(frozen=True, repr=False)

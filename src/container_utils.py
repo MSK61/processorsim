@@ -82,6 +82,15 @@ def count_if(pred: Callable[[_T], bool], elems: Iterable[_T]) -> int:
     return sum(1 if pred(elem) else 0 for elem in elems)
 
 
+def sorted_tuple(elems: Iterable[object]) -> Tuple[object, ...]:
+    """Sort the elements.
+
+    `elems` are the elements to sort.
+
+    """
+    return tuple(sorted(elems))
+
+
 class BagValDict(Generic[_KT, _VT]):
 
     """Dictionary with(unsorted) lists as values"""

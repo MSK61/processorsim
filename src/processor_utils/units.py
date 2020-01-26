@@ -44,6 +44,7 @@ from typing import Iterable, Tuple
 
 import attr
 
+import container_utils
 import str_utils
 __all__ = ["LockInfo", "FuncUnit", "UnitModel"]
 # unit attributes
@@ -65,15 +66,6 @@ class LockInfo:
     wr_lock: bool
 
 
-def _sorted(elems: Iterable[object]) -> Tuple[object, ...]:
-    """Sort the elements.
-
-    `elems` are the elements to sort.
-
-    """
-    return tuple(sorted(elems))
-
-
 @attr.s(auto_attribs=True, frozen=True)
 class UnitModel:
 
@@ -83,7 +75,8 @@ class UnitModel:
 
     width: int
 
-    capabilities: Tuple[object, ...] = attr.ib(converter=_sorted)
+    capabilities: Tuple[object, ...] = attr.ib(
+        converter=container_utils.sorted_tuple)
 
     lock_info: LockInfo
 
