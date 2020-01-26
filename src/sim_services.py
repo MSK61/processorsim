@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -466,18 +466,17 @@ def _fill_unit(unit, program, util_info):
                           reverse=True), util_info)
 
 
-def _flush_output(out_unit, util_info):
+def _flush_output(out_instr_lst):
     """Flush the output unit in preparation for a new cycle.
 
-    `out_unit` is the output processing unit.
-    `util_info` is the unit utilization information.
+    `out_instr_lst` is the list of instructions in the output unit.
 
     """
-    instr_indices = reversed(range(len(util_info[out_unit])))
+    instr_indices = reversed(range(len(out_instr_lst)))
 
     for instr_index in instr_indices:
-        if util_info[out_unit][instr_index].stalled == StallState.NO_STALL:
-            del util_info[out_unit][instr_index]
+        if out_instr_lst[instr_index].stalled == StallState.NO_STALL:
+            del out_instr_lst[instr_index]
 
 
 def _flush_outputs(out_units, util_info):
@@ -488,7 +487,7 @@ def _flush_outputs(out_units, util_info):
 
     """
     for cur_out in out_units:
-        _flush_output(cur_out.name, util_info)
+        _flush_output(util_info[cur_out.name])
 
 
 def _get_accepted(instructions, program, capabilities):
@@ -543,16 +542,15 @@ def _get_out_ports(processor):
                  map(lambda port: port.model, processor.out_ports))
 
 
-def _mov_candidate(candidate, unit, util_info):
+def _mov_candidate(candidate, unit_util):
     """Move a candidate instruction between units.
 
     `candidate` is the candidate instruction to move.
-    `unit` is the destination unit.
-    `util_info` is the unit utilization information.
+    `unit_util` is the unit utilization information.
 
     """
     candidate.stalled = StallState.NO_STALL
-    util_info[unit].append(candidate)
+    unit_util.append(candidate)
 
 
 def _mov_candidates(candidates, unit, util_info):
@@ -565,7 +563,7 @@ def _mov_candidates(candidates, unit, util_info):
     """
     for cur_candid in candidates:
         _mov_candidate(util_info[cur_candid.host][cur_candid.index_in_host],
-                       unit, util_info)
+                       util_info[unit])
 
 
 def _mov_flights(dst_units, program, util_info):
