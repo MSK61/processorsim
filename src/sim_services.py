@@ -515,9 +515,10 @@ def _get_candidates(unit, program, util_info):
     candidates = (_get_new_guests(pred.name, _get_accepted(
         util_info[pred.name], program, unit.model.capabilities)) for
                   pred in unit.predecessors if pred.name in util_info)
-    return heapq.nsmallest(_space_avail(unit.model, util_info), chain(
-        *candidates), key=lambda instr_info: util_info[instr_info.host][
-            instr_info.index_in_host].instr)
+    return heapq.nsmallest(
+        _space_avail(unit.model, util_info), chain.from_iterable(candidates),
+        key=lambda instr_info:
+        util_info[instr_info.host][instr_info.index_in_host].instr)
 
 
 def _get_new_guests(src_unit, instructions):
