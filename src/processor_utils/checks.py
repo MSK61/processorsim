@@ -32,13 +32,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import itertools
 import operator
 import typing
 from typing import Mapping
@@ -411,11 +412,11 @@ def _chk_path_locks(start, processor, path_locks, capability):
 
     """
     succ_lst = list(processor.successors(start))
-    sat_params = map(lambda calc_params: _PathLockCalc(
-        processor.nodes[start], succ_lst, capability, start,
-        path_locks).calc_lock(*calc_params),
-                     [[units.UNIT_RLOCK_KEY, _PathDescriptor.make_read_desc],
-                      [units.UNIT_WLOCK_KEY, _PathDescriptor.make_write_desc]])
+    sat_params = itertools.starmap(
+        _PathLockCalc(processor.nodes[start], succ_lst, capability, start,
+                      path_locks).calc_lock,
+        [[units.UNIT_RLOCK_KEY, _PathDescriptor.make_read_desc],
+         [units.UNIT_WLOCK_KEY, _PathDescriptor.make_write_desc]])
     path_locks[start] = _SatInfo(*sat_params)
 
 

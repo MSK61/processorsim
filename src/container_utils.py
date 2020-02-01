@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -39,6 +39,7 @@
 ############################################################
 
 import collections
+import itertools
 from operator import eq, itemgetter
 
 from str_utils import format_obj
@@ -131,7 +132,7 @@ class BagValDict:
         lst_pairs = map(
             lambda pair: map(sorted, [pair[1], self[pair[0]]]), other_items)
         return eq(*(map(len, [self, other_items]))) and all(
-            map(lambda elem_lists: eq(*elem_lists), lst_pairs))
+            itertools.starmap(eq, lst_pairs))
 
     def __getitem__(self, key):
         """Retrieve the list of the given key.

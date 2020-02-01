@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -40,6 +40,7 @@
 ############################################################
 
 import itertools
+from itertools import starmap
 from unittest import TestCase
 
 import pytest
@@ -183,8 +184,7 @@ class PipelineTest(TestCase):
                  ICaseString("middle 2"): [InstrState(5)]},
                 {ICaseString("output"): map(InstrState, [2, 3]),
                  ICaseString("middle 2"):
-                 map(lambda state_params: InstrState(*state_params),
-                     [[5, StallState.STRUCTURAL], [4]])},
+                 starmap(InstrState, [[5, StallState.STRUCTURAL], [4]])},
                 {ICaseString("output"): map(InstrState, [4, 5])}]]
 
 
@@ -261,10 +261,9 @@ class TestOutputFlush:
                           ones causing the hazard.
 
         """
-        program = map(lambda instr_params: HwInstruction(*instr_params),
-                      itertools.chain([[[], ICaseString("R1"), ICaseString(
-                          "ALU")], [[ICaseString("R1")], ICaseString("R2"),
-                                    ICaseString("ALU")]], extra_instr_lst))
+        program = starmap(HwInstruction, itertools.chain([[[], ICaseString(
+            "R1"), ICaseString("ALU")], [[ICaseString("R1")], ICaseString(
+                "R2"), ICaseString("ALU")]], extra_instr_lst))
         extra_instr_len = len(extra_instr_lst)
         cores = [UnitModel(ICaseString("core 1"), 1, [ICaseString("ALU")],
                            LockInfo(False, True)),

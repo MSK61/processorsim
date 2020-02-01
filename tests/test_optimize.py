@@ -32,13 +32,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+from itertools import starmap
 from logging import WARNING
 import unittest
 
@@ -93,16 +94,15 @@ class TestClean:
         mem_cap = ICaseString("MEM")
         out1_unit = ICaseString("output 1")
         out2_unit = ICaseString("output 2")
-        assert proc_desc == ProcessorDesc(
-            map(lambda unit_params: UnitModel(*unit_params),
-                [[ICaseString("input 1"), 1, [alu_cap], LockInfo(True, False)],
-                 [ICaseString("input 2"), 1, [mem_cap],
-                  LockInfo(True, False)]]),
-            map(lambda unit_params: FuncUnit(*unit_params),
-                [[UnitModel(out1_unit, 1, [alu_cap], LockInfo(False, True)),
-                  [name_input_map[ICaseString("input 1")]]],
-                 [UnitModel(out2_unit, 1, [mem_cap], LockInfo(False, True)),
-                  [name_input_map[ICaseString("input 2")]]]]), [], [])
+        assert proc_desc == ProcessorDesc(starmap(UnitModel, [[ICaseString(
+            "input 1"), 1, [alu_cap], LockInfo(True, False)], [ICaseString(
+                "input 2"), 1, [mem_cap], LockInfo(True, False)]]), starmap(
+                    FuncUnit, [[UnitModel(out1_unit, 1, [alu_cap], LockInfo(
+                        False, True)), [name_input_map[ICaseString(
+                            "input 1")]]],
+                               [UnitModel(out2_unit, 1, [mem_cap], LockInfo(
+                                   False, True)), [name_input_map[
+                                       ICaseString("input 2")]]]]), [], [])
         chk_warn(["input 2", "output 1"], caplog.records)
 
     def test_unit_with_empty_capabilities_is_removed(self, caplog):

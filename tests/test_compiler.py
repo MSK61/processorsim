@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -229,9 +229,8 @@ class TestSyntax:
         `instr` is the instruction with the syntax error.
 
         """
-        test_utils.chk_error(
-            map(lambda err_params: test_utils.ValInStrCheck(*err_params),
-                [[syn_err.instr, instr], [syn_err.line, line_num]]), syn_err)
+        test_utils.chk_error(itertools.starmap(test_utils.ValInStrCheck, [
+            [syn_err.instr, instr], [syn_err.line, line_num]]), syn_err)
 
     @staticmethod
     def _test_program(prog_file, loaded_prog):
