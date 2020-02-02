@@ -492,18 +492,17 @@ def _fill_unit(unit: FuncUnit, program: Sequence[HwInstruction],
                           reverse=True), util_info)
 
 
-def _flush_output(out_unit: _T, util_info: BagValDict[_T, InstrState]) -> None:
+def _flush_output(out_instr_lst: MutableSequence[InstrState]) -> None:
     """Flush the output unit in preparation for a new cycle.
 
-    `out_unit` is the output processing unit.
-    `util_info` is the unit utilization information.
+    `out_instr_lst` is the list of instructions in the output unit.
 
     """
-    instr_indices = reversed(range(len(util_info[out_unit])))
+    instr_indices = reversed(range(len(out_instr_lst)))
 
     for instr_index in instr_indices:
-        if util_info[out_unit][instr_index].stalled == StallState.NO_STALL:
-            del util_info[out_unit][instr_index]
+        if out_instr_lst[instr_index].stalled == StallState.NO_STALL:
+            del out_instr_lst[instr_index]
 
 
 def _flush_outputs(out_units: Iterable[UnitModel],
@@ -515,7 +514,7 @@ def _flush_outputs(out_units: Iterable[UnitModel],
 
     """
     for cur_out in out_units:
-        _flush_output(cur_out.name, util_info)
+        _flush_output(util_info[cur_out.name])
 
 
 def _get_accepted(
@@ -547,9 +546,10 @@ def _get_candidates(
     candidates = (_get_new_guests(pred.name, _get_accepted(
         util_info[pred.name], program, unit.model.capabilities)) for
                   pred in unit.predecessors if pred.name in util_info)
-    return heapq.nsmallest(_space_avail(unit.model, util_info), chain(
-        *candidates), key=lambda instr_info: util_info[instr_info.host][
-            instr_info.index_in_host].instr)
+    return heapq.nsmallest(
+        _space_avail(unit.model, util_info), chain.from_iterable(candidates),
+        key=lambda instr_info:
+        util_info[instr_info.host][instr_info.index_in_host].instr)
 
 
 def _get_new_guests(src_unit: ICaseString,
@@ -575,17 +575,16 @@ def _get_out_ports(processor: ProcessorDesc) -> "chain[UnitModel]":
                  map(lambda port: port.model, processor.out_ports))
 
 
-def _mov_candidate(candidate: InstrState, unit: _T,
-                   util_info: BagValDict[_T, InstrState]) -> None:
+def _mov_candidate(
+        candidate: InstrState, unit_util: MutableSequence[InstrState]) -> None:
     """Move a candidate instruction between units.
 
     `candidate` is the candidate instruction to move.
-    `unit` is the destination unit.
-    `util_info` is the unit utilization information.
+    `unit_util` is the unit utilization information.
 
     """
     candidate.stalled = StallState.NO_STALL
-    util_info[unit].append(candidate)
+    unit_util.append(candidate)
 
 
 def _mov_candidates(candidates: Iterable[_HostedInstr], unit: ICaseString,
@@ -599,7 +598,7 @@ def _mov_candidates(candidates: Iterable[_HostedInstr], unit: ICaseString,
     """
     for cur_candid in candidates:
         _mov_candidate(util_info[cur_candid.host][cur_candid.index_in_host],
-                       unit, util_info)
+                       util_info[unit])
 
 
 def _mov_flights(

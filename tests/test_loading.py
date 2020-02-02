@@ -32,13 +32,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import itertools
 from logging import WARNING
 
 import pytest
@@ -86,7 +87,7 @@ class TestCaps:
         caplog.set_level(WARNING)
         in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits.yaml"
         assert read_proc_file("capabilities", in_file) == ProcessorDesc(
-            [], [], map(lambda unit_params: UnitModel(*unit_params), [
+            [], [], itertools.starmap(UnitModel, [
                 [ICaseString("core 1"), 1, [ICaseString("ALU")],
                  LockInfo(True, True)], [ICaseString("core 2"), 1, [
                      ICaseString("ALU")], LockInfo(True, True)]]), [])

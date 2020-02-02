@@ -39,6 +39,7 @@
 ############################################################
 
 import collections
+import itertools
 from operator import eq, itemgetter
 import typing
 from typing import Callable, Dict, Generic, Iterable, List, Mapping, \
@@ -133,7 +134,7 @@ class BagValDict(Generic[_KT, _VT]):
             lambda pair: map(sorted, [pair[1], self[pair[0]]]), other_items)
         item_lst_pair: List[typing.Sized] = [self, other_items]
         return eq(*(map(len, item_lst_pair))) and all(
-            map(lambda elem_lists: eq(*elem_lists), lst_pairs))
+            itertools.starmap(eq, lst_pairs))
 
     def __getitem__(self, key: _KT) -> List[_VT]:
         """Retrieve the list of the given key.
