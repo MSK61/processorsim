@@ -83,13 +83,15 @@ def count_if(pred: Callable[[_T], bool], elems: Iterable[_T]) -> int:
     return sum(1 if pred(elem) else 0 for elem in elems)
 
 
-def sorted_tuple(elems: Iterable[object]) -> Tuple[object, ...]:
+def sorted_tuple(elems: Iterable[_T],
+                 key: Callable[[_T], object] = None) -> Tuple[_T, ...]:
     """Sort the elements.
 
     `elems` are the elements to sort.
+    `key` is the key function used for sorting, defaulting to None.
 
     """
-    return tuple(sorted(elems))
+    return tuple(sorted(elems, key=key))
 
 
 class BagValDict(Generic[_KT, _VT]):

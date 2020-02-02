@@ -498,7 +498,8 @@ def _sorted_units(hw_units):
     `hw_units` are the units to create a sorted list of.
 
     """
-    return tuple(sorted(hw_units, key=lambda unit: unit.model.name))
+    return container_utils.sorted_tuple(
+        hw_units, key=lambda unit: unit.model.name)
 
 
 @attr.s(frozen=True)
