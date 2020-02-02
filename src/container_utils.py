@@ -55,16 +55,6 @@ def concat_dicts(dict1, dict2):
     return {**dict1, **dict2}
 
 
-def contains(container, elems):
-    """Test the membership of all elements within a container.
-
-    `container` is the container to check elements against.
-    `elems` are the elements to check.
-
-    """
-    return all(map(lambda cur_elem: cur_elem in container, elems))
-
-
 def count_if(pred, elems):
     """Count the number of elements matching the given predicate.
 
