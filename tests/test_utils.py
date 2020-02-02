@@ -149,7 +149,7 @@ def read_isa_file(file_name, capabilities):
     """
     test_dir = "ISA"
     return processor_utils.load_isa(
-        _load_yaml(test_dir, file_name), capabilities)
+        _load_yaml(test_dir, file_name).items(), capabilities)
 
 
 def read_proc_file(proc_dir, file_name):
