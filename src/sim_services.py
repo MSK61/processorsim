@@ -105,7 +105,7 @@ class HwSpec:
     name_unit_map: Dict[ICaseString, UnitModel] = attr.ib(init=False)
 
     @name_unit_map.default
-    def _build_unit_map(self) -> Dict[ICaseString, UnitModel]:
+    def _(self) -> Dict[ICaseString, UnitModel]:
         """Build the name-to-unit mapping.
 
         `self` is this hardware specification.
