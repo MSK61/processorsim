@@ -151,6 +151,5 @@ class RegAccQBuilder:
         `req_type` is the request type.
 
         """
-        return req_type == AccessType.READ and typing.cast(
-            bool, self._queue) and self._queue[
-                -1].access_type == AccessType.READ
+        return self._queue[-1].access_type == AccessType.READ if \
+            req_type == AccessType.READ and self._queue else False
