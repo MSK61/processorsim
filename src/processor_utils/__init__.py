@@ -150,7 +150,7 @@ def _add_edge(processor, edge, unit_registry, edge_registry):
 
     if len(edge) != good_edge_len:
         raise BadEdgeError(f"Edge ${BadEdgeError.EDGE_KEY} doesn't connect "
-                           "exactly 2 functional units.", edge)
+                           f"exactly {good_edge_len} functional units.", edge)
 
     processor.add_edge(*(_get_std_edge(edge, unit_registry)))
     old_edge = edge_registry.get(edge)
