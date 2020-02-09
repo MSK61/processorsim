@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.42.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -196,9 +196,10 @@ class TestLocks:
         assert ex_info.value.lock_type == lock_data.lock_type
         assert ex_info.value.capability == ICaseString(proc_desc.capability)
         ex_info = str(ex_info.value)
-        assert lock_data.lock_type in ex_info
-        assert proc_desc.capability in ex_info
-        assert proc_desc.in_unit in ex_info
+
+        for part in [
+                lock_data.lock_type, proc_desc.capability, proc_desc.in_unit]:
+            assert part in ex_info
 
     @mark.parametrize("units, data_path", [
         ([{"name": "input", "width": 1, "capabilities": ["ALU"], "writeLock":

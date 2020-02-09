@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.42.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -140,8 +140,10 @@ class TestProgLoad:
                         read_prog_file(prog_file), {"ADD": ICaseString("ALU")})
         assert ex_chk.value.element == instr
         ex_chk = str(ex_chk.value)
-        assert instr in ex_chk
-        assert str(line_num) in ex_chk
+        err_contents = [instr, str(line_num)]
+
+        for part in err_contents:
+            assert part in ex_chk
 
 
 class TestSyntax:
