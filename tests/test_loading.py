@@ -47,7 +47,6 @@ from pytest import mark, raises
 
 from test_utils import chk_error, chk_two_units, chk_warn, read_proc_file, \
     ValInStrCheck
-import container_utils
 import errors
 import processor_utils
 from processor_utils import exception, ProcessorDesc
@@ -213,8 +212,8 @@ class TestEdges:
         warning message.
 
         """
-        assert container_utils.contains(
-            warn_call.getMessage(), map(str, edges))
+        assert all(
+            map(lambda edge: str(edge) in warn_call.getMessage(), edges))
 
 
 class TestProcessors:

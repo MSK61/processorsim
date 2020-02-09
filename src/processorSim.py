@@ -217,7 +217,7 @@ def _cui_to_icu(cxuxi: Iterable[Tuple[int, BagValDict[_T, InstrState]]],
 
     """
     ixcxu: List[Dict[int, _InstrPosition]] = list(
-        map(lambda instr: {}, range(instructions)))
+        map(lambda _: {}, range(instructions)))
 
     for cur_cp, uxi_util in cxuxi:
         _fill_cp_util(cur_cp, uxi_util.items(), ixcxu)

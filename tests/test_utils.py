@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -43,7 +43,6 @@ from os.path import join
 import yaml
 
 import test_env
-import container_utils
 import processor_utils
 from processor_utils.units import LockInfo, UnitModel
 import program_utils
@@ -127,7 +126,7 @@ def chk_warn(tokens, warn_calls):
 
     """
     assert warn_calls
-    assert container_utils.contains(warn_calls[0].getMessage(), tokens)
+    assert all(map(lambda token: token in warn_calls[0].getMessage(), tokens))
 
 
 def compile_prog(prog_file, isa):
@@ -150,7 +149,7 @@ def read_isa_file(file_name, capabilities):
     """
     test_dir = "ISA"
     return processor_utils.load_isa(
-        _load_yaml(test_dir, file_name), capabilities)
+        _load_yaml(test_dir, file_name).items(), capabilities)
 
 
 def read_proc_file(proc_dir, file_name):

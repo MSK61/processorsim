@@ -75,17 +75,16 @@ def get_abilities(processor):
         chain(processor.in_out_ports, processor.in_ports), frozenset())
 
 
-def load_isa(raw_desc, capabilities):
+def load_isa(raw_isa, capabilities):
     """Transform the given raw description into an instruction set.
 
-    `raw_desc` is the raw description to extract an instruction set
-               from.
+    `raw_isa` is the raw description to extract an instruction set from.
     `capabilities` are the supported unique capabilities.
     The function returns a mapping between upper-case supported
     instructions and their capabilities.
 
     """
-    return _create_isa(raw_desc, _init_cap_reg(capabilities))
+    return _create_isa(raw_isa, _init_cap_reg(capabilities))
 
 
 def load_proc_desc(raw_desc):
@@ -151,7 +150,7 @@ def _add_edge(processor, edge, unit_registry, edge_registry):
 
     if len(edge) != good_edge_len:
         raise BadEdgeError(f"Edge ${BadEdgeError.EDGE_KEY} doesn't connect "
-                           "exactly 2 functional units.", edge)
+                           f"exactly {good_edge_len} functional units.", edge)
 
     processor.add_edge(*(_get_std_edge(edge, unit_registry)))
     old_edge = edge_registry.get(edge)
@@ -295,17 +294,16 @@ def _create_graph(hw_units, links):
     return flow_graph
 
 
-def _create_isa(isa_dict, cap_registry):
-    """Create an instruction set in the given ISA dictionary.
+def _create_isa(isa_spec, cap_registry):
+    """Create an instruction set of the given ISA dictionary.
 
-    `isa_dict` is the ISA dictionary to normalize.
+    `isa_spec` is the ISA specification to normalize.
     `cap_registry` is the store of supported capabilities.
     The function returns the ISA dictionary with upper-case instructions
     and standard capability names.
 
     """
     instr_registry = SelfIndexSet()
-    isa_spec = isa_dict.items()
     return {instr.upper(): _add_instr(instr_registry, cap_registry, *(
         map(ICaseString, [instr, cap]))) for instr, cap in isa_spec}
 

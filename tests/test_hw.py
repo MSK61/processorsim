@@ -32,20 +32,17 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.42.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import itertools
 import os.path
-import typing
 import unittest.mock
 from unittest.mock import patch
 
-import attr
 import pytest
 
 import test_utils
@@ -53,24 +50,6 @@ import hw_loading
 import processor_utils
 from processor_utils import units
 from str_utils import ICaseString
-
-
-@attr.s(auto_attribs=True, frozen=True)
-class _MockCheck:
-
-    """Test case for checking mock calls"""
-
-    def assert_call(self):
-        """Verify the mock call parameters.
-
-        `self` is this mock check.
-
-        """
-        self._mock_obj.assert_called_with(*(self._params))
-
-    _mock_obj: unittest.mock.MagicMock
-
-    _params: typing.Iterable
 
 
 class TestHwDescLoad:
@@ -111,14 +90,15 @@ class TestHwDescLoad:
                                         instr: icase_cap}) as isa_mock:
             assert hw_loading.read_processor(hw_src) == hw_loading.HwDesc(
                 proc_mock.return_value, isa_mock.return_value)
-        mock_checks = itertools.starmap(_MockCheck, [[proc_mock, [
-            {"units": [{"name": "fullSys", "width": 1, "capabilities":
-                        [capability], "readLock": True, "writeLock": True}],
-             "dataPath": []}]], [ability_mock, [proc_mock.return_value]], [
-                 isa_mock, [{instr: capability}, ability_mock.return_value]]])
+        isa_mock.assert_called()
+        assert list(isa_mock.call_args[0][0]) == [(instr, capability)]
+        assert isa_mock.call_args[0][1] == ability_mock.return_value
 
-        for mock_chk in mock_checks:
-            mock_chk.assert_call()
+        for mock_chk in [[proc_mock, {
+                "units": [{"name": "fullSys", "width": 1, "capabilities":
+                           [capability], "readLock": True, "writeLock": True}],
+                "dataPath": []}], [ability_mock, proc_mock.return_value]]:
+            unittest.mock.MagicMock.assert_called_with(*mock_chk)
 
 
 def main():

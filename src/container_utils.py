@@ -62,17 +62,6 @@ def concat_dicts(dict1: Mapping[object, object],
     return {**dict1, **dict2}
 
 
-def contains(
-        container: typing.Container[object], elems: Iterable[object]) -> bool:
-    """Test the membership of all elements within a container.
-
-    `container` is the container to check elements against.
-    `elems` are the elements to check.
-
-    """
-    return all(map(lambda cur_elem: cur_elem in container, elems))
-
-
 def count_if(pred: Callable[[_T], bool], elems: Iterable[_T]) -> int:
     """Count the number of elements matching the given predicate.
 

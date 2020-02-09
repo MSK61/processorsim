@@ -47,7 +47,6 @@ from pytest import mark, raises
 
 import test_utils
 from test_utils import read_prog_file
-import container_utils
 import errors
 import program_defs
 from program_defs import ProgInstruction
@@ -140,8 +139,9 @@ class TestProgLoad:
         ex_chk = raises(errors.UndefElemError, program_utils.compile_program,
                         read_prog_file(prog_file), {"ADD": ICaseString("ALU")})
         assert ex_chk.value.element == instr
-        assert container_utils.contains(
-            str(ex_chk.value), [instr, str(line_num)])
+        ex_chk = str(ex_chk.value)
+        assert instr in ex_chk
+        assert str(line_num) in ex_chk
 
 
 class TestSyntax:
