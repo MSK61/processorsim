@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.42.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -138,9 +138,7 @@ class InstrState:
 
     instr: int = attr.ib()
 
-    stalled: StallState = attr.ib(
-        default=StallState.NO_STALL,
-        validator=attr.validators.instance_of(StallState))
+    stalled: StallState = attr.ib(default=StallState.NO_STALL)
 
 
 def simulate(program: Sequence[HwInstruction], hw_info: HwSpec) -> List[

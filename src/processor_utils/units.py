@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.42.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -106,7 +106,6 @@ class FuncUnit:
         return operator.eq(*criteria) and all(
             map(operator.is_, self.predecessors, other.predecessors))
 
-    model: UnitModel = attr.ib(
-        validator=attr.validators.instance_of(UnitModel))
+    model: UnitModel = attr.ib()
 
     predecessors: Tuple[UnitModel, ...] = attr.ib(converter=sorted_models)
