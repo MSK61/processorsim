@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.42.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -39,11 +39,13 @@
 ############################################################
 
 import operator
-from typing import Collection
+import typing
+from typing import Iterable, Tuple
 
 import attr
 
-from str_utils import ICaseString
+from container_utils import sorted_tuple
+import str_utils
 __all__ = ["LockInfo", "FuncUnit", "UnitModel"]
 # unit attributes
 UNIT_CAPS_KEY = "capabilities"
@@ -52,15 +54,6 @@ UNIT_NAME_KEY = "name"
 UNIT_RLOCK_KEY = "readLock"
 UNIT_WLOCK_KEY = "writeLock"
 UNIT_WIDTH_KEY = "width"
-
-
-def sorted_models(models):
-    """Create a sorted list of the given models.
-
-    `models` are the models to create a sorted list of.
-
-    """
-    return tuple(sorted(models, key=lambda model: model.name))
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -78,14 +71,22 @@ class UnitModel:
 
     """Functional unit model"""
 
-    name: ICaseString
+    name: str_utils.ICaseString
 
     width: int
 
-    capabilities: Collection[ICaseString] = attr.ib(
-        converter=lambda capabilities: tuple(sorted(capabilities)))
+    capabilities: Tuple[object, ...] = attr.ib(converter=sorted_tuple)
 
     lock_info: LockInfo
+
+
+def sorted_models(models: Iterable[UnitModel]) -> Tuple[UnitModel, ...]:
+    """Create a sorted list of the given models.
+
+    `models` are the models to create a sorted list of.
+
+    """
+    return sorted_tuple(models, key=lambda model: model.name)
 
 
 @attr.s(eq=False, frozen=True)
@@ -93,7 +94,7 @@ class FuncUnit:
 
     """Processing functional unit"""
 
-    def __eq__(self, other):
+    def __eq__(self, other: typing.Any) -> bool:
         """Test if the two functional units are identical.
 
         `self` is this functional unit.
@@ -105,7 +106,6 @@ class FuncUnit:
         return operator.eq(*criteria) and all(
             map(operator.is_, self.predecessors, other.predecessors))
 
-    model: UnitModel = attr.ib(
-        validator=attr.validators.instance_of(UnitModel))
+    model: UnitModel = attr.ib()
 
-    predecessors: Collection[UnitModel] = attr.ib(converter=sorted_models)
+    predecessors: Tuple[UnitModel, ...] = attr.ib(converter=sorted_models)

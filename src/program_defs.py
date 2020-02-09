@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -39,10 +39,21 @@
 ############################################################
 
 import typing
+from typing import Tuple
 
 import attr
 
-from str_utils import ICaseString
+import container_utils
+import str_utils
+
+
+def _sorted_uniq(elems: typing.Iterable[object]) -> Tuple[object, ...]:
+    """Sort the elements after filtering out duplicates.
+
+    `elems` are the elements to filter and sort.
+
+    """
+    return container_utils.sorted_tuple(frozenset(elems))
 
 
 @attr.s(frozen=True, repr=False)
@@ -50,10 +61,9 @@ class _Instruction:
 
     """Instruction"""
 
-    sources: typing.Tuple[ICaseString, ...] = attr.ib(
-        converter=lambda src_regs: tuple(_sorted_uniq(src_regs)))
+    sources: Tuple[object, ...] = attr.ib(converter=_sorted_uniq)
 
-    destination: ICaseString = attr.ib()
+    destination: str_utils.ICaseString = attr.ib()
 
 
 @attr.s(frozen=True)
@@ -61,8 +71,7 @@ class HwInstruction(_Instruction):
 
     """Hardware instruction"""
 
-    categ: ICaseString = attr.ib(
-        validator=attr.validators.instance_of(ICaseString))
+    categ: object = attr.ib()
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -72,13 +81,4 @@ class ProgInstruction(_Instruction):
 
     name: str
 
-    line: int
-
-
-def _sorted_uniq(elems):
-    """Sort the elements after filtering out duplicates.
-
-    `elems` are the elements to filter and sort.
-
-    """
-    return sorted(frozenset(elems))
+    line: object

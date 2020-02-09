@@ -26,7 +26,8 @@
         ".vscode/.ropeproject/objectdb": true,
         ".vscode/tags": true,
         "**/__pycache__": true,
-        "**/.pytest_cache": true
+        "**/.pytest_cache": true,
+        "src/.mypy_cache": true
     },
     "python.pythonPath": "~/.local/share/virtualenvs/processorsim-w233cvej/bin/python"
 }

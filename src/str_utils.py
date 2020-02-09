@@ -40,11 +40,12 @@
 
 import functools
 import operator
+import typing
 
 import attr
 
 
-def format_obj(cls_name, field_strings):
+def format_obj(cls_name: object, field_strings: typing.Iterable[str]) -> str:
     """Construct a string representation for the given object.
 
     `cls_name` is the class name.
@@ -61,7 +62,7 @@ class ICaseString:
 
     """Case-insensitive string"""
 
-    def __contains__(self, item):
+    def __contains__(self, item: str) -> bool:
         """Check if the item is a substring.
 
         `self` is this case-insensitive string.
@@ -70,16 +71,18 @@ class ICaseString:
         """
         return self._canonical(item) in self._canonical(self.raw_str)
 
-    def __eq__(self, other):
+    def __eq__(self, other: typing.Any) -> bool:
         """Test if the two case-insensitive strings are identical.
 
         `self` is this case-insensitive string.
         `other` is the other case-insensitive string.
 
         """
-        return operator.eq(*(self._get_canonical(other.raw_str)))
+        return operator.eq(
+            *(self._get_canonical(other.raw_str))) if isinstance(
+                other, ICaseString) else NotImplemented
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         """Get the has value of this case-insensitive string.
 
         `self` is this case-insensitive string.
@@ -87,7 +90,7 @@ class ICaseString:
         """
         return hash(self._canonical(self.raw_str))
 
-    def __lt__(self, other):
+    def __lt__(self, other: "ICaseString") -> bool:
         """Test if this case-insensitive string is less than the other.
 
         `self` is this case-insensitive string.
@@ -96,7 +99,7 @@ class ICaseString:
         """
         return operator.lt(*(self._get_canonical(other.raw_str)))
 
-    def __radd__(self, other):
+    def __radd__(self, other: str) -> str:
         """Return the reflected concatenation result.
 
         `self` is this case-insensitive string.
@@ -105,7 +108,7 @@ class ICaseString:
         """
         return other + self.raw_str
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return the printable string of this case-insensitive string.
 
         `self` is this case-insensitive string.
@@ -113,7 +116,7 @@ class ICaseString:
         """
         return self.raw_str
 
-    def _get_canonical(self, other):
+    def _get_canonical(self, other: str) -> typing.Iterator[str]:
         """Return the canonical forms of this and the other strings.
 
         `self` is this case-insensitive string.

@@ -10,6 +10,7 @@ pytest-flakes = "*"
 pytest-pylint = "*"
 pytest-travis-fold = "*"
 python-coveralls = "*"
+pytest-mypy = "*"
 
 [packages]
 networkx = "*"

@@ -41,11 +41,18 @@
 import collections
 import itertools
 from operator import eq, itemgetter
+import typing
+from typing import Callable, Dict, Generic, Iterable, List, Mapping, \
+    Optional, Tuple, TypeVar
 
 from str_utils import format_obj
+_KT = TypeVar("_KT")
+_T = TypeVar("_T")
+_VT = TypeVar("_VT")
 
 
-def concat_dicts(dict1, dict2):
+def concat_dicts(dict1: Mapping[object, object],
+                 dict2: Mapping[object, object]) -> Dict[object, object]:
     """Concatenate two dictionaries into a new one.
 
     `dict1` is the first dictionary.
@@ -55,7 +62,7 @@ def concat_dicts(dict1, dict2):
     return {**dict1, **dict2}
 
 
-def count_if(pred, elems):
+def count_if(pred: Callable[[_T], bool], elems: Iterable[_T]) -> int:
     """Count the number of elements matching the given predicate.
 
     `pred` is the matching predicate.
@@ -65,7 +72,191 @@ def count_if(pred, elems):
     return sum(1 if pred(elem) else 0 for elem in elems)
 
 
-def get_from_set(elem_set, elem):
+def sorted_tuple(elems: Iterable[_T],
+                 key: Callable[[_T], object] = None) -> Tuple[_T, ...]:
+    """Sort the elements.
+
+    `elems` are the elements to sort.
+    `key` is the key function used for sorting, defaulting to None.
+
+    """
+    return tuple(sorted(elems, key=key))
+
+
+class BagValDict(Generic[_KT, _VT]):
+
+    """Dictionary with(unsorted) lists as values"""
+
+    def __init__(self, initial_dict: Optional[Mapping[_KT, Iterable[_VT]]] =
+                 None) -> None:
+        """Create an empty dictionary.
+
+        `self` is this dictionary.
+        `initial_dict` is the initial dictionary contents, defaulting to
+                       an empty dictionary.
+
+        """
+        self._dict: typing.DefaultDict[
+            _KT, List[_VT]] = collections.defaultdict(list)
+
+        if initial_dict:
+            self._add_items(initial_dict.items())
+
+    def __contains__(self, item: _KT) -> bool:
+        """Check if the given key exists.
+
+        `self` is this dictionary.
+        `key` is the key to check whose existence.
+        The method only considers existing keys with non-empty lists.
+
+        """
+        return item in self._dict and typing.cast(bool, self[item])
+
+    def __eq__(self, other: typing.Any) -> bool:
+        """Test if the two dictionaries are identical.
+
+        `self` is this dictionary.
+        `other` is the other dictionary.
+
+        """
+        assert type(other) is type(self)
+        other_items = list(other.items())
+        lst_pairs = map(
+            lambda pair: map(sorted, [pair[1], self[pair[0]]]), other_items)
+        item_lst_pair: List[typing.Sized] = [self, other_items]
+        return eq(*(map(len, item_lst_pair))) and all(
+            itertools.starmap(eq, lst_pairs))
+
+    def __getitem__(self, key: _KT) -> List[_VT]:
+        """Retrieve the list of the given key.
+
+        `self` is this dictionary.
+        `key` is the key to retrieve whose list.
+
+        """
+        return self._dict[key]
+
+    def __ne__(self, other: object) -> bool:
+        """Test if the two dictionaries are different.
+
+        `self` is this dictionary.
+        `other` is the other dictionary.
+
+        """
+        return not self == other
+
+    def __repr__(self) -> str:
+        """Return the official string of this dictionary.
+
+        `self` is this dictionary.
+
+        """
+        return format_obj(type(self).__name__, [self._format_dict()])
+
+    def _add_items(self, elems: Iterable[Tuple[_KT, Iterable[_VT]]]) -> None:
+        """Add items to this dictionary.
+
+        `self` is this dictionary.
+        `elems` are the items to add.
+
+        """
+        for key, elem_lst in elems:
+            for elem in elem_lst:
+                self[key].append(elem)
+
+    def _count(self) -> int:
+        """Count the number of elements in this dictionary.
+
+        `self` is this dictionary.
+
+        """
+        return count_if(lambda elem: True, self.items())
+
+    def _format_dict(self) -> str:
+        """Format this dictionary.
+
+        `self` is this dictionary.
+
+        """
+        return f"{{{self._format_elems()}}}"
+
+    def _format_elems(self) -> str:
+        """Format the elements of this dictionary.
+
+        `self` is this dictionary.
+
+        """
+        elems = map(lambda item: (item[0], sorted(item[1])), self.items())
+        item_strings = map(lambda item: f"{item[0]!r}: {item[1]}",
+                           sorted(elems, key=itemgetter(0)))
+        sep = ", "
+        return sep.join(item_strings)
+
+    def _useful_items(self) -> typing.Iterator[Tuple[_KT, List[_VT]]]:
+        """Filter out items with empty value lists.
+
+        `self` is this dictionary.
+        The method returns an iterator over dictionary items with
+        non-empty lists.
+
+        """
+        return filter(itemgetter(1), self._dict.items())
+
+    items = _useful_items
+
+    __len__ = _count
+
+
+class _IndexedSetBase(Generic[_T]):
+
+    """Indexed set base class"""
+
+    def __init__(self, index_func: Callable[[_T], object]) -> None:
+        """Create an indexed set.
+
+        `self` is this set.
+        `index_func` is the index calculation function.
+
+        """
+        self._index_func = index_func
+        self._std_form_map: Dict[object, _T] = {}
+
+    def __repr__(self) -> str:
+        """Return the official string of this indexed set.
+
+        `self` is this indexed set.
+
+        """
+        return format_obj(type(self).__name__, map(repr, [self._std_form_map]))
+
+    def get(self, elem: _T) -> Optional[_T]:
+        """Retrieve the elem in this set matching the given one.
+
+        `self` is this set.
+        `elem` is the element to look up in this set.
+        The method returns the element in this set that matches the
+        given one, or None if none exists.
+
+        """
+        return self._std_form_map.get(self._index_func(elem))
+
+    def add(self, elem: _T) -> None:
+        """Add the given element to this set.
+
+        `self` is this set.
+        `elem` is the element to add.
+        If the element already exists, it'll be overwritten.
+
+        """
+        self._std_form_map[self._index_func(elem)] = elem
+
+
+class IndexedSet(_IndexedSetBase[_T]):
+
+    """Indexed set"""
+
+
+def get_from_set(elem_set: IndexedSet[_T], elem: _T) -> _T:
     """Get an element from the given set, after adding it if needed.
 
     `elem_set` is the set.
@@ -83,181 +274,11 @@ def get_from_set(elem_set, elem):
     return elem
 
 
-class BagValDict:
-
-    """Dictionary with(unsorted) lists as values"""
-
-    def __init__(self, initial_dict=None):
-        """Create an empty dictionary.
-
-        `self` is this dictionary.
-        `initial_dict` is the initial dictionary contents, defaulting to
-                       an empty dictionary.
-
-        """
-        self._dict = collections.defaultdict(list)
-
-        if initial_dict:
-            self._add_items(initial_dict.items())
-
-    def __contains__(self, item):
-        """Check if the given key exists.
-
-        `self` is this dictionary.
-        `key` is the key to check whose existence.
-        The method only considers existing keys with non-empty lists.
-
-        """
-        return item in self._dict and self[item]
-
-    def __eq__(self, other):
-        """Test if the two dictionaries are identical.
-
-        `self` is this dictionary.
-        `other` is the other dictionary.
-
-        """
-        assert type(other) is type(self)
-        other_items = list(other.items())
-        lst_pairs = map(
-            lambda pair: map(sorted, [pair[1], self[pair[0]]]), other_items)
-        return eq(*(map(len, [self, other_items]))) and all(
-            itertools.starmap(eq, lst_pairs))
-
-    def __getitem__(self, key):
-        """Retrieve the list of the given key.
-
-        `self` is this dictionary.
-        `key` is the key to retrieve whose list.
-
-        """
-        return self._dict[key]
-
-    def __ne__(self, other):
-        """Test if the two dictionaries are different.
-
-        `self` is this dictionary.
-        `other` is the other dictionary.
-
-        """
-        return not self == other
-
-    def __repr__(self):
-        """Return the official string of this dictionary.
-
-        `self` is this dictionary.
-
-        """
-        return format_obj(type(self).__name__, [self._format_dict()])
-
-    def _add_items(self, elems):
-        """Add items to this dictionary.
-
-        `self` is this dictionary.
-        `elems` are the items to add.
-
-        """
-        for key, elem_lst in elems:
-            for elem in elem_lst:
-                self[key].append(elem)
-
-    def _count(self):
-        """Count the number of elements in this dictionary.
-
-        `self` is this dictionary.
-
-        """
-        return count_if(lambda elem: True, self.items())
-
-    def _format_dict(self):
-        """Format this dictionary.
-
-        `self` is this dictionary.
-
-        """
-        return f"{{{self._format_elems()}}}"
-
-    def _format_elems(self):
-        """Format the elements of this dictionary.
-
-        `self` is this dictionary.
-
-        """
-        elems = map(lambda item: (item[0], sorted(item[1])), self.items())
-        item_strings = map(lambda item: f"{item[0]!r}: {item[1]}",
-                           sorted(elems, key=itemgetter(0)))
-        sep = ", "
-        return sep.join(item_strings)
-
-    def _useful_items(self):
-        """Filter out items with empty value lists.
-
-        `self` is this dictionary.
-        The method returns an iterator over dictionary items with
-        non-empty lists.
-
-        """
-        return filter(itemgetter(1), self._dict.items())
-
-    items = _useful_items
-
-    __len__ = _count
-
-
-class _IndexedSetBase:
-
-    """Indexed set base class"""
-
-    def __init__(self, index_func):
-        """Create an indexed set.
-
-        `self` is this set.
-        `index_func` is the index calculation function.
-
-        """
-        self._index_func = index_func
-        self._std_form_map = {}
-
-    def __repr__(self):
-        """Return the official string of this indexed set.
-
-        `self` is this indexed set.
-
-        """
-        return format_obj(type(self).__name__, map(repr, [self._std_form_map]))
-
-    def get(self, elem):
-        """Retrieve the elem in this set matching the given one.
-
-        `self` is this set.
-        `elem` is the element to look up in this set.
-        The method returns the element in this set that matches the
-        given one, or None if none exists.
-
-        """
-        return self._std_form_map.get(self._index_func(elem))
-
-    def add(self, elem):
-        """Add the given element to this set.
-
-        `self` is this set.
-        `elem` is the element to add.
-        If the element already exists, it'll be overwritten.
-
-        """
-        self._std_form_map[self._index_func(elem)] = elem
-
-
-class IndexedSet(_IndexedSetBase):
-
-    """Indexed set"""
-
-
-class SelfIndexSet(_IndexedSetBase):
+class SelfIndexSet(_IndexedSetBase[_T]):
 
     """Self-indexed string set"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Create a set with an identity conversion function.
 
         `self` is this set.
