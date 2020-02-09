@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.42.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -100,7 +100,7 @@ class CodeError(RuntimeError):
 
 
 def compile_program(prog: Iterable[ProgInstruction],
-                    isa: Mapping[object, object]) -> List[HwInstruction]:
+                    isa: Mapping[str, object]) -> List[HwInstruction]:
     """Compile the program using the given instruction set.
 
     `prog` is the program to compile.
@@ -164,7 +164,7 @@ def _create_instr(line_num: object, line_txt: str,
     return ProgInstruction(sources, dst, src_line_info.instruction, line_num)
 
 
-def _get_cap(isa: Mapping[object, object], instr: ProgInstruction) -> object:
+def _get_cap(isa: Mapping[str, object], instr: ProgInstruction) -> object:
     """Get the ISA capability of the given instruction.
 
     `isa` is the instruction set containing upper-case instructions.

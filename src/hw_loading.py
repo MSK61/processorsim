@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.42.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -53,7 +53,7 @@ class HwDesc:
 
     processor: processor_utils.ProcessorDesc
 
-    isa: typing.Mapping[object, object]
+    isa: typing.Mapping[str, object]
 
 
 def read_processor(proc_file: typing.IO[str]) -> HwDesc:
