@@ -52,6 +52,7 @@ from typing import Dict, Iterable, Iterator, List, Mapping, MutableSequence, \
 
 import attr
 import more_itertools
+from more_itertools import first_true
 
 from container_utils import BagValDict
 from processor_utils import ProcessorDesc
@@ -244,8 +245,8 @@ def _accept_instr(instr: int, inputs: Iterable[UnitModel],
     returns False.
 
     """
-    acceptor = next(
-        filter(lambda unit: _space_avail(unit, util_info), inputs), None)
+    acceptor = first_true(
+        inputs, pred=lambda unit: _space_avail(unit, util_info))
 
     if not acceptor:
         return False
@@ -399,9 +400,9 @@ def _clr_data_stall(wr_lock: bool, reg_clears: MutableSequence[object], instr:
     if wr_lock:
         _update_clears(reg_clears, instr)
 
-    return StallState.STRUCTURAL if next(filter(
-        lambda old_instr: old_instr.instr == instr and old_instr.stalled !=
-        StallState.DATA, old_unit_util), None) else StallState.NO_STALL
+    return StallState.STRUCTURAL if first_true(
+        old_unit_util, pred=lambda old_instr: old_instr.instr == instr and
+        old_instr.stalled != StallState.DATA) else StallState.NO_STALL
 
 
 def _clr_src_units(instructions: Iterable[_HostedInstr],

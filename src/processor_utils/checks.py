@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.42.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -46,6 +46,7 @@ from typing import AbstractSet, Callable, Dict, Iterable, Iterator, List, \
     Mapping, MutableMapping, Sequence, Tuple
 
 import attr
+import more_itertools
 import networkx
 from networkx import DiGraph, Graph
 
@@ -100,9 +101,8 @@ def chk_non_empty(processor: typing.Container[object],
     The function raises an EmptyProcError if no input ports still exist.
 
     """
-    try:
-        next(filter(lambda port: port in processor, in_ports))
-    except StopIteration:  # No ports exist.
+    if not more_itertools.first_true(
+            in_ports, pred=lambda port: port in processor):
         raise exception.EmptyProcError("No input ports found")
 
 
@@ -544,7 +544,7 @@ def _get_cap_edge(in_edges: Iterable[_T], out_edges: Iterable[_T]) -> _T:
     or the output edges must contain exactly one edge.
 
     """
-    return _single_edge(iter(in_edges)) or next(iter(out_edges))
+    return _single_edge(iter(in_edges)) or more_itertools.first(out_edges)
 
 
 def _get_cap_units(processor: DiGraph) -> AbstractSet[
