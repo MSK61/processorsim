@@ -38,7 +38,7 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.42.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -46,7 +46,6 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 ############################################################
 
 import itertools
-from itertools import chain
 import logging
 import operator
 import sys
@@ -56,6 +55,7 @@ from typing import Collection, Dict, IO, Iterable, Iterator, List, Mapping, \
     Optional, Sequence, Sized, TextIO, Tuple
 
 import attr
+from more_itertools import prepend
 
 from container_utils import BagValDict
 import hw_loading
@@ -257,7 +257,7 @@ def _get_last_tick(sim_res: Iterable[Sized]) -> int:
     `sim_res` is the simulation result.
 
     """
-    return max(chain([0], map(len, sim_res)))
+    return max(prepend(0, map(len, sim_res)))
 
 
 def _get_sim_rows(sim_res: Iterable[Tuple[int, BagValDict[_T, InstrState]]],
@@ -300,7 +300,7 @@ def _print_res_row(instr: str, res_row: Iterable[str]) -> None:
     `res_row` is the simulation row.
 
     """
-    print(_COL_SEP.join(chain([instr], res_row)))
+    print(_COL_SEP.join(prepend(instr, res_row)))
 
 
 def _print_sim_res(sim_res: Collection[Collection[str]]) -> None:
@@ -330,7 +330,7 @@ def _print_tbl_hdr(sim_res: Iterable[Sized]) -> None:
 
     """
     ticks = _get_ticks(sim_res)
-    print(_COL_SEP.join(chain([""], ticks)))
+    print(_COL_SEP.join(prepend("", ticks)))
 
 
 if __name__ == '__main__':
