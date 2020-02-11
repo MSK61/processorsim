@@ -544,7 +544,10 @@ def _get_cap_edge(in_edges: Iterable[_T], out_edges: Iterable[_T]) -> _T:
     or the output edges must contain exactly one edge.
 
     """
-    return _single_edge(iter(in_edges)) or more_itertools.first(out_edges)
+    try:
+        return more_itertools.one(in_edges)
+    except ValueError:
+        return more_itertools.first(out_edges)
 
 
 def _get_cap_units(processor: DiGraph) -> AbstractSet[
@@ -622,18 +625,6 @@ def _set_capacities(
     for cur_edge in cap_edges:
         graph[cur_edge[0]][cur_edge[1]]["capacity"] = min(
             map(lambda unit: graph.nodes[unit][UNIT_WIDTH_KEY], cur_edge))
-
-
-def _single_edge(edges: Iterator[_T]) -> typing.Optional[_T]:
-    """Select the one and only edge.
-
-    `edges` are an iterator over edges.
-    The function returns the only edge in the given edges, or None if
-    the edges don't contain exactly a single edge.
-
-    """
-    only_edge = next(edges, None)
-    return only_edge and (None if next(edges, None) else only_edge)
 
 
 def _split_node(graph: DiGraph, old_node: object, new_node: object) -> object:
