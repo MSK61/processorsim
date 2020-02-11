@@ -44,7 +44,6 @@ import enum
 from enum import auto
 import heapq
 from itertools import chain
-import operator
 import string
 import typing
 from typing import Dict, Iterable, Iterator, List, Mapping, MutableSequence, \
@@ -527,9 +526,9 @@ def _get_accepted(
     The function returns an iterator over the instruction indices.
 
     """
-    return map(operator.itemgetter(0), filter(
-        lambda instr: instr[1].stalled != StallState.DATA and program[
-            instr[1].instr].categ in capabilities, enumerate(instructions)))
+    return more_itertools.locate(
+        instructions, lambda instr: instr.stalled != StallState.DATA and
+        program[instr.instr].categ in capabilities)
 
 
 def _get_candidates(
