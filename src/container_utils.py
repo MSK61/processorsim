@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.42.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -44,6 +44,8 @@ from operator import eq, itemgetter
 import typing
 from typing import Callable, Dict, Generic, Iterable, List, Mapping, \
     Optional, Tuple, TypeVar
+
+import more_itertools
 
 from str_utils import format_obj
 _KT = TypeVar("_KT")
@@ -60,16 +62,6 @@ def concat_dicts(dict1: Mapping[object, object],
 
     """
     return {**dict1, **dict2}
-
-
-def count_if(pred: Callable[[_T], bool], elems: Iterable[_T]) -> int:
-    """Count the number of elements matching the given predicate.
-
-    `pred` is the matching predicate.
-    `elems` is the iterator over elements to count matching ones in.
-
-    """
-    return sum(1 if pred(elem) else 0 for elem in elems)
 
 
 def sorted_tuple(elems: Iterable[_T],
@@ -170,7 +162,7 @@ class BagValDict(Generic[_KT, _VT]):
         `self` is this dictionary.
 
         """
-        return count_if(lambda elem: True, self.items())
+        return more_itertools.ilen(self.items())
 
     def _format_dict(self) -> str:
         """Format this dictionary.

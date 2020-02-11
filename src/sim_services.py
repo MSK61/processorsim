@@ -51,8 +51,8 @@ from typing import Dict, Iterable, Iterator, List, Mapping, MutableSequence, \
     Sequence, Tuple
 
 import attr
+import more_itertools
 
-import container_utils
 from container_utils import BagValDict
 from processor_utils import ProcessorDesc
 import processor_utils.units
@@ -331,8 +331,8 @@ def _calc_unstalled(instructions: Iterable[InstrState]) -> int:
                    in.
 
     """
-    return container_utils.count_if(
-        lambda instr: instr.stalled == StallState.NO_STALL, instructions)
+    return more_itertools.quantify(
+        instructions, lambda instr: instr.stalled == StallState.NO_STALL)
 
 
 def _chk_full_stall(
