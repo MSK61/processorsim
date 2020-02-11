@@ -128,6 +128,14 @@ class BagValDict(Generic[_KT, _VT]):
         """
         return self._dict[key]
 
+    def __len__(self) -> int:
+        """Count the number of elements in this dictionary.
+
+        `self` is this dictionary.
+
+        """
+        return more_itertools.ilen(self.items())
+
     def __ne__(self, other: object) -> bool:
         """Test if the two dictionaries are different.
 
@@ -155,14 +163,6 @@ class BagValDict(Generic[_KT, _VT]):
         for key, elem_lst in elems:
             for elem in elem_lst:
                 self[key].append(elem)
-
-    def _count(self) -> int:
-        """Count the number of elements in this dictionary.
-
-        `self` is this dictionary.
-
-        """
-        return more_itertools.ilen(self.items())
 
     def _format_dict(self) -> str:
         """Format this dictionary.
@@ -195,8 +195,6 @@ class BagValDict(Generic[_KT, _VT]):
         return filter(itemgetter(1), self._dict.items())
 
     items = _useful_items
-
-    __len__ = _count
 
 
 class _IndexedSetBase(Generic[_T]):
