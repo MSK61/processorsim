@@ -496,7 +496,7 @@ def _flush_output(out_instr_lst: MutableSequence[InstrState]) -> None:
     `out_instr_lst` is the list of instructions in the output unit.
 
     """
-    instr_indices = reversed(range(len(out_instr_lst)))
+    instr_indices = more_itertools.rlocate(out_instr_lst, lambda _: True)
 
     for instr_index in instr_indices:
         if out_instr_lst[instr_index].stalled == StallState.NO_STALL:
