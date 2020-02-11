@@ -29,5 +29,5 @@
         "**/.pytest_cache": true,
         "src/.mypy_cache": true
     },
-    "python.pythonPath": "~/.local/share/virtualenvs/processorsim-w233cvej/bin/python"
+    "python.pythonPath": ".venv/bin/python"
 }

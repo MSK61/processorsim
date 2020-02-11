@@ -21,5 +21,6 @@
 __pycache__
 /.pytest_cache
 src/.mypy_cache
+/.venv
 .vscode/.ropeproject/objectdb
 .vscode/tags
