@@ -257,7 +257,7 @@ def _get_last_tick(sim_res: Iterable[Sized]) -> int:
     `sim_res` is the simulation result.
 
     """
-    return max(prepend(0, map(len, sim_res)))
+    return max(map(len, sim_res), default=0)
 
 
 def _get_sim_rows(sim_res: Iterable[Tuple[int, BagValDict[_T, InstrState]]],
