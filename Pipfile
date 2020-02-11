@@ -9,8 +9,8 @@ pytest-cov = "*"
 pytest-flakes = "*"
 pytest-pylint = "*"
 pytest-travis-fold = "*"
-python-coveralls = "*"
 pytest-mypy = "*"
+coveralls = "*"
 
 [packages]
 networkx = "*"
