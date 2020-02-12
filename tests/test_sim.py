@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.42.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -114,7 +114,7 @@ class HazardTest(TestCase):
 
     # pylint: disable=invalid-name
     def test_RAW_with_RLock_in_unit_before_WLock(self):
-        """Test detecting RAW hazards where read locks in units earlier.
+        """Test detecting RAW hazards with read locks in earlier units.
 
         `self` is this test case.
 
