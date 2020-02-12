@@ -93,7 +93,7 @@ def chk_cycles(processor: Graph) -> None:
 
 
 def chk_non_empty(processor: typing.Container[object],
-                  in_ports: Tuple[object, ...]) -> None:
+                  in_ports: Iterable[object]) -> None:
     """Check if the processor still has input ports.
 
     `processor` is the processor to check.
@@ -303,8 +303,8 @@ def _aug_terminals(graph: Graph, ports: Sequence[object]) -> object:
     return ports[0] if len(ports) == 1 else _unify_ports(graph, ports)
 
 
-def _cap_in_edge(processor: Graph, capability: object,
-                 edge: Tuple[object, object]) -> bool:
+def _cap_in_edge(
+        processor: Graph, capability: object, edge: Iterable[object]) -> bool:
     """Check if the given capability is supported by the edge.
 
     `processor` is the processor containing the edge.
