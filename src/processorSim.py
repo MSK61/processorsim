@@ -55,6 +55,7 @@ from typing import Collection, Dict, IO, Iterable, Iterator, List, Mapping, \
     Optional, Sequence, Sized, TextIO, Tuple
 
 import attr
+import more_itertools
 from more_itertools import prepend
 
 from container_utils import BagValDict
@@ -217,7 +218,7 @@ def _cui_to_icu(cxuxi: Iterable[Tuple[int, BagValDict[_T, InstrState]]],
 
     """
     ixcxu: List[Dict[int, _InstrPosition]] = list(
-        map(lambda _: {}, range(instructions)))
+        more_itertools.repeatfunc(dict, instructions))
 
     for cur_cp, uxi_util in cxuxi:
         _fill_cp_util(cur_cp, uxi_util.items(), ixcxu)
