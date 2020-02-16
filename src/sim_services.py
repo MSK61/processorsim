@@ -47,7 +47,7 @@ from itertools import chain
 import string
 import typing
 from typing import Dict, Iterable, Iterator, List, Mapping, MutableSequence, \
-    Sequence, Tuple, TypeVar
+    Sequence, Tuple
 
 import attr
 import more_itertools
@@ -60,8 +60,7 @@ from processor_utils.units import FuncUnit, UnitModel
 from program_defs import HwInstruction
 from reg_access import AccessType, RegAccessQueue, RegAccQBuilder
 from str_utils import ICaseString
-_KT = TypeVar("_KT")
-_VT = TypeVar("_VT")
+_T = typing.TypeVar("_T")
 
 
 class StallError(RuntimeError):
@@ -336,25 +335,27 @@ def _calc_unstalled(instructions: Iterable[InstrState]) -> int:
 
 
 def _chk_full_stall(
-        util_tbl: Sequence[BagValDict[_KT, _VT]], new_util: object) -> None:
+        old_util: object, new_util: object, util_tbl: object) -> None:
     """Check if the whole processor has stalled.
 
-    `util_tbl` is the utilization table.
+    `old_util` is the utilization information of the previous clock
+               pulse.
     `new_util` is the utilization information of the current clock
                pulse.
-    The function analyzes the most recent utilization information and
-    the new one and throws a StallError if a full stall is detected.
+    `util_tbl` is the utilization table.
+    The function analyzes old and new utilization information and throws
+    a StallError if a full stall is detected.
 
     """
-    if new_util == _get_last_util(util_tbl):
+    if new_util == old_util:
         raise StallError(
             f"Processor stalled with utilization ${StallError.STATE_KEY}",
             util_tbl)
 
 
-def _chk_hazards(old_util: BagValDict[_KT, InstrState], new_util:
-                 Iterable[Tuple[_KT, Iterable[InstrState]]], name_unit_map:
-                 Mapping[_KT, UnitModel], program: Sequence[HwInstruction],
+def _chk_hazards(old_util: BagValDict[_T, InstrState], new_util:
+                 Iterable[Tuple[_T, Iterable[InstrState]]], name_unit_map:
+                 Mapping[_T, UnitModel], program: Sequence[HwInstruction],
                  acc_queues: Mapping[object, RegAccessQueue]) -> None:
     """Check different types of hazards.
 
@@ -404,7 +405,7 @@ def _clr_data_stall(wr_lock: bool, reg_clears: MutableSequence[object], instr:
 
 
 def _clr_src_units(instructions: Iterable[_HostedInstr],
-                   util_info: BagValDict[ICaseString, _VT]) -> None:
+                   util_info: BagValDict[ICaseString, _T]) -> None:
     """Clear the utilization of units releasing instructions.
 
     `instructions` is the information of instructions being moved from
@@ -560,16 +561,6 @@ def _get_new_guests(src_unit: ICaseString,
     return map(lambda instr: _HostedInstr(src_unit, instr), instructions)
 
 
-def _get_last_util(util_tbl: Sequence[BagValDict[_KT, _VT]]) -> BagValDict[
-        _KT, _VT]:
-    """Retrieve the most recent unit utilization information.
-
-    `util_tbl` is the utilization table.
-
-    """
-    return util_tbl[-1] if util_tbl else BagValDict()
-
-
 def _get_out_ports(processor: ProcessorDesc) -> "chain[UnitModel]":
     """Find all units at the processor output boundary.
 
@@ -650,19 +641,19 @@ def _run_cycle(program: Sequence[HwInstruction],
     `issue_rec` is the issue record.
 
     """
-    old_util = _get_last_util(util_tbl)
+    old_util = util_tbl[-1] if util_tbl else BagValDict()
     cp_util = copy.deepcopy(old_util)
     _fill_cp_util(hw_info.processor_desc, program, cp_util, issue_rec)
     _chk_hazards(
         old_util, cp_util.items(), hw_info.name_unit_map, program, acc_queues)
-    _chk_full_stall(util_tbl, cp_util)
+    _chk_full_stall(old_util, cp_util, util_tbl)
     issue_rec.pump_outputs(
         _count_outputs(_get_out_ports(hw_info.processor_desc), cp_util))
     util_tbl.append(cp_util)
 
 
 def _space_avail(
-        unit: UnitModel, util_info: BagValDict[ICaseString, _VT]) -> int:
+        unit: UnitModel, util_info: BagValDict[ICaseString, _T]) -> int:
     """Calculate the free space for receiving instructions in the unit.
 
     `unit` is the unit to test whose free space.
