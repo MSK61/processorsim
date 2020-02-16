@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.42.0, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.42.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -44,7 +44,7 @@ from itertools import starmap
 from unittest import TestCase
 
 import pytest
-from pytest import mark
+from pytest import mark, raises
 
 import test_utils
 from test_utils import read_proc_file
@@ -53,8 +53,7 @@ import processor_utils
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from program_defs import HwInstruction
-import sim_services
-from sim_services import HwSpec, InstrState, simulate, StallState
+from sim_services import HwSpec, InstrState, simulate, StallError, StallState
 from str_utils import ICaseString
 
 
@@ -218,6 +217,37 @@ class StallTest(TestCase):
                          ICaseString("output"): [InstrState(0)]},
                         {ICaseString("output"): [InstrState(1)]}]]
 
+    # pylint: disable=invalid-name
+    def test_util_tbl_exists_in_StallError(self):
+        """Test dumping the utilizaiton table in stall errors.
+
+        `self` is this test case.
+
+        """
+        long_input = UnitModel(ICaseString("long input"), 1,
+                               [ICaseString("ALU")], LockInfo(False, False))
+        mid = UnitModel(ICaseString("middle"), 1, [ICaseString("ALU")],
+                        LockInfo(False, False))
+        short_input = UnitModel(ICaseString("short input"), 1,
+                                [ICaseString("ALU")], LockInfo(False, False))
+        out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")],
+                             LockInfo(True, True))
+        proc_desc = ProcessorDesc([long_input, short_input], [FuncUnit(
+            out_unit, [mid, short_input])], [], [FuncUnit(mid, [long_input])])
+        assert raises(StallError, simulate, [
+            HwInstruction(*instr_params) for instr_params in
+            [[[], "R1", ICaseString("ALU")], [["R1"], "R2", ICaseString(
+                "ALU")]]], HwSpec(proc_desc)).value.processor_state == [
+                    BagValDict(cp_util) for cp_util in
+                    [{ICaseString("long input"): [InstrState(0)],
+                      ICaseString("short input"): [InstrState(1)]},
+                     {ICaseString("middle"): [InstrState(0)],
+                      ICaseString("output"): [InstrState(1, StallState.DATA)]},
+                     {
+                         ICaseString("middle"):
+                         [InstrState(0, StallState.STRUCTURAL)], ICaseString(
+                             "output"): [InstrState(1, StallState.DATA)]}]]
+
 
 class TestBasic:
 
@@ -323,21 +353,24 @@ class TestSim:
             test_utils.compile_prog(prog_file, test_utils.read_isa_file(
                 "singleInstructionISA.yaml", capabilities)), cpu, util_info)
 
-    @mark.parametrize("valid_prog", [
-        [], [HwInstruction(["R11", "R15"], "R14", ICaseString("ALU"))]])
-    def test_unsupported_instruction_stalls_pipeline(self, valid_prog):
+    @mark.parametrize("valid_prog, util_tbl", [
+        ([], []), ([HwInstruction(["R11", "R15"], "R14", ICaseString("ALU"))],
+                   [{ICaseString("fullSys"): [InstrState(0)]}, {}])])
+    def test_unsupported_instruction_stalls_pipeline(
+            self, valid_prog, util_tbl):
         """Test executing an invalid instruction after a valid program.
 
         `self` is this test case.
         `valid_prog` is a sequence of valid instructions.
+        `util_tbl` is the utilization table.
 
         """
-        ex_chk = pytest.raises(
-            sim_services.StallError, simulate,
-            valid_prog + [HwInstruction([], "R14", ICaseString("MEM"))],
-            HwSpec(read_proc_file("processors", "singleALUProcessor.yaml")))
-        test_utils.chk_error([test_utils.ValInStrCheck(
-            ex_chk.value.fed_commands, len(valid_prog))], ex_chk.value)
+        ex_chk = raises(StallError, simulate, valid_prog + [
+            HwInstruction([], "R14", ICaseString("MEM"))], HwSpec(
+                read_proc_file("processors", "singleALUProcessor.yaml")))
+        test_utils.chk_error(
+            [test_utils.ValInStrCheck(ex_chk.value.processor_state, [
+                BagValDict(cp_util) for cp_util in util_tbl])], ex_chk.value)
 
 
 def main():

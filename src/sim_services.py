@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.42.0, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.42.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -47,7 +47,7 @@ from itertools import chain
 import string
 import typing
 from typing import Dict, Iterable, Iterator, List, Mapping, MutableSequence, \
-    Sequence, Tuple
+    Sequence, Tuple, TypeVar
 
 import attr
 import more_itertools
@@ -60,37 +60,37 @@ from processor_utils.units import FuncUnit, UnitModel
 from program_defs import HwInstruction
 from reg_access import AccessType, RegAccessQueue, RegAccQBuilder
 from str_utils import ICaseString
-_T = typing.TypeVar("_T")
+_KT = TypeVar("_KT")
+_VT = TypeVar("_VT")
 
 
 class StallError(RuntimeError):
 
     """Stalled processor error"""
 
-    def __init__(self, msg_tmpl: str, fed_commands: object) -> None:
+    def __init__(self, msg_tmpl: str, stalled_state: object) -> None:
         """Create a stalled processor error.
 
         `self` is this stalled processor error.
         `msg_tmpl` is the error message format taking the stalled
                    processor state as a positional argument.
-        `fed_commands` is the number of instructions fed to the
-                       processor so far.
+        `stalled_state` is the stalled processor state.
 
         """
         # Casting dictionary values since the type hint in typeshed for
         # Template.substitute unnecessarily stipulates string values.
         RuntimeError.__init__(self, string.Template(msg_tmpl).substitute(
-            {self.STATE_KEY: typing.cast(str, fed_commands)}))
-        self._fed_commands = fed_commands
+            {self.STATE_KEY: typing.cast(str, stalled_state)}))
+        self._stalled_state = stalled_state
 
     @property
-    def fed_commands(self) -> object:
+    def processor_state(self) -> object:
         """Stalled processor state
 
         `self` is this stalled processor error.
 
         """
-        return self._fed_commands
+        return self._stalled_state
 
     STATE_KEY = "state"  # parameter key in message format
 
@@ -336,26 +336,24 @@ def _calc_unstalled(instructions: Iterable[InstrState]) -> int:
 
 
 def _chk_full_stall(
-        old_util: object, new_util: object, consumed: object) -> None:
+        util_tbl: Sequence[BagValDict[_KT, _VT]], new_util: object) -> None:
     """Check if the whole processor has stalled.
 
-    `old_util` is the utilization information of the previous clock
-               pulse.
+    `util_tbl` is the utilization table.
     `new_util` is the utilization information of the current clock
                pulse.
-    `consumed` is the number of instructions fed to the pipeline so far.
-    The function analyzes old and new utilization information and throws
-    a StallError if a full stall is detected.
+    The function analyzes the most recent utilization information and
+    the new one and throws a StallError if a full stall is detected.
 
     """
-    if new_util == old_util:
+    if new_util == _get_last_util(util_tbl):
         raise StallError("Processor stalled after being fed "
-                         f"${StallError.STATE_KEY} instructions", consumed)
+                         f"${StallError.STATE_KEY} instructions", util_tbl)
 
 
-def _chk_hazards(old_util: BagValDict[_T, InstrState], new_util:
-                 Iterable[Tuple[_T, Iterable[InstrState]]], name_unit_map:
-                 Mapping[_T, UnitModel], program: Sequence[HwInstruction],
+def _chk_hazards(old_util: BagValDict[_KT, InstrState], new_util:
+                 Iterable[Tuple[_KT, Iterable[InstrState]]], name_unit_map:
+                 Mapping[_KT, UnitModel], program: Sequence[HwInstruction],
                  acc_queues: Mapping[object, RegAccessQueue]) -> None:
     """Check different types of hazards.
 
@@ -405,7 +403,7 @@ def _clr_data_stall(wr_lock: bool, reg_clears: MutableSequence[object], instr:
 
 
 def _clr_src_units(instructions: Iterable[_HostedInstr],
-                   util_info: BagValDict[ICaseString, _T]) -> None:
+                   util_info: BagValDict[ICaseString, _VT]) -> None:
     """Clear the utilization of units releasing instructions.
 
     `instructions` is the information of instructions being moved from
@@ -561,6 +559,16 @@ def _get_new_guests(src_unit: ICaseString,
     return map(lambda instr: _HostedInstr(src_unit, instr), instructions)
 
 
+def _get_last_util(util_tbl: Sequence[BagValDict[_KT, _VT]]) -> BagValDict[
+        _KT, _VT]:
+    """Retrieve the most recent unit utilization information.
+
+    `util_tbl` is the utilization table.
+
+    """
+    return util_tbl[-1] if util_tbl else BagValDict()
+
+
 def _get_out_ports(processor: ProcessorDesc) -> "chain[UnitModel]":
     """Find all units at the processor output boundary.
 
@@ -641,19 +649,19 @@ def _run_cycle(program: Sequence[HwInstruction],
     `issue_rec` is the issue record.
 
     """
-    old_util = util_tbl[-1] if util_tbl else BagValDict()
+    old_util = _get_last_util(util_tbl)
     cp_util = copy.deepcopy(old_util)
     _fill_cp_util(hw_info.processor_desc, program, cp_util, issue_rec)
     _chk_hazards(
         old_util, cp_util.items(), hw_info.name_unit_map, program, acc_queues)
-    _chk_full_stall(old_util, cp_util, issue_rec.entered)
+    _chk_full_stall(util_tbl, cp_util)
     issue_rec.pump_outputs(
         _count_outputs(_get_out_ports(hw_info.processor_desc), cp_util))
     util_tbl.append(cp_util)
 
 
 def _space_avail(
-        unit: UnitModel, util_info: BagValDict[ICaseString, _T]) -> int:
+        unit: UnitModel, util_info: BagValDict[ICaseString, _VT]) -> int:
     """Calculate the free space for receiving instructions in the unit.
 
     `unit` is the unit to test whose free space.
