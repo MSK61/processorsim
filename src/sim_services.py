@@ -347,8 +347,9 @@ def _chk_full_stall(
 
     """
     if new_util == _get_last_util(util_tbl):
-        raise StallError("Processor stalled after being fed "
-                         f"${StallError.STATE_KEY} instructions", util_tbl)
+        raise StallError(
+            f"Processor stalled with utilization ${StallError.STATE_KEY}",
+            util_tbl)
 
 
 def _chk_hazards(old_util: BagValDict[_KT, InstrState], new_util:
