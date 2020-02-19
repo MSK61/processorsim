@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.42.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -300,7 +300,7 @@ class TestUnits:
 
         """
         in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
-                            LockInfo(False, False))
+                            LockInfo(True, False))
         in_units = [in_unit]
         mid1 = UnitModel(ICaseString("middle 1"), 1, [ICaseString("ALU")],
                          LockInfo(False, False))
@@ -309,7 +309,7 @@ class TestUnits:
                          LockInfo(False, False))
         mid2_unit = FuncUnit(mid2, [mid1])
         out_units = [FuncUnit(UnitModel(ICaseString("output"), 1, [
-            ICaseString("ALU")], LockInfo(False, False)), [mid2])]
+            ICaseString("ALU")], LockInfo(False, True)), [mid2])]
         assert ProcessorDesc(
             in_units, out_units, [], [mid2_unit, mid1_unit]) != ProcessorDesc(
                 in_units, out_units, [], [mid1_unit, mid2_unit])

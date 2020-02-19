@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.42.0, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.42.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -73,7 +73,7 @@ class TestHwDescLoad:
         """
         full_sys_unit = ICaseString("fullSys")
         icase_cap = ICaseString(capability)
-        lock_info = units.LockInfo(False, False)
+        lock_info = units.LockInfo(True, True)
         with open(os.path.join(
                 test_utils.TEST_DATA_DIR, "fullHwDesc",
                 hw_file)) as hw_src, patch(

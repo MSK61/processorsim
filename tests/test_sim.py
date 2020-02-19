@@ -69,10 +69,10 @@ class FlowTest(TestCase):
         """
         inputs = [UnitModel(*unit_params) for unit_params in [
             [ICaseString("ALU input"), 1, [ICaseString("ALU")],
-             LockInfo(False, False)], [ICaseString("MEM input"), 1, [
-                 ICaseString("MEM")], LockInfo(False, False)]]]
+             LockInfo(True, False)], [ICaseString("MEM input"), 1, [
+                 ICaseString("MEM")], LockInfo(True, False)]]]
         output = FuncUnit(UnitModel(ICaseString("output"), 1, [ICaseString(
-            "ALU"), ICaseString("MEM")], LockInfo(False, False)), inputs)
+            "ALU"), ICaseString("MEM")], LockInfo(False, True)), inputs)
         TestBasic().test_sim(
             [HwInstruction(*instr_params) for instr_params in [
                 [[], "R12", ICaseString("MEM")],
@@ -151,17 +151,17 @@ class PipelineTest(TestCase):
 
         """
         big_input = UnitModel(ICaseString("big input"), 4,
-                              [ICaseString("ALU")], LockInfo(False, False))
+                              [ICaseString("ALU")], LockInfo(True, False))
         small_input1 = UnitModel(ICaseString("small input 1"), 1,
-                                 [ICaseString("ALU")], LockInfo(False, False))
+                                 [ICaseString("ALU")], LockInfo(True, False))
         mid1 = UnitModel(ICaseString("middle 1"), 1, [ICaseString("ALU")],
                          LockInfo(False, False))
         small_input2 = UnitModel(ICaseString("small input 2"), 1,
-                                 [ICaseString("ALU")], LockInfo(False, False))
+                                 [ICaseString("ALU")], LockInfo(True, False))
         mid2 = UnitModel(ICaseString("middle 2"), 2, [ICaseString("ALU")],
                          LockInfo(False, False))
         out_unit = UnitModel(ICaseString("output"), 2, [ICaseString("ALU")],
-                             LockInfo(False, False))
+                             LockInfo(False, True))
         proc_desc = ProcessorDesc([big_input, small_input1, small_input2], [
             FuncUnit(out_unit, [big_input, mid2])], [], [
                 FuncUnit(*unit_params) for unit_params in [
@@ -198,11 +198,11 @@ class StallTest(TestCase):
 
         """
         in_unit = UnitModel(ICaseString("input"), 2, [ICaseString("ALU")],
-                            LockInfo(False, False))
+                            LockInfo(True, False))
         mid = UnitModel(ICaseString("middle"), 2, [ICaseString("ALU")],
                         LockInfo(False, False))
         out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")],
-                             LockInfo(False, False))
+                             LockInfo(False, True))
         proc_desc = ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
                                   [FuncUnit(mid, [in_unit])])
         assert simulate(
@@ -296,9 +296,9 @@ class TestOutputFlush:
                 "R2"), ICaseString("ALU")]], extra_instr_lst))
         extra_instr_len = len(extra_instr_lst)
         cores = [UnitModel(ICaseString("core 1"), 1, [ICaseString("ALU")],
-                           LockInfo(False, True)),
+                           LockInfo(True, True)),
                  UnitModel(ICaseString("core 2"), 1 + extra_instr_len,
-                           [ICaseString("ALU")], LockInfo(True, False))]
+                           [ICaseString("ALU")], LockInfo(True, True))]
         assert simulate(
             tuple(program), HwSpec(ProcessorDesc([], [], cores, []))) == [
                 BagValDict(cp_util) for cp_util in
