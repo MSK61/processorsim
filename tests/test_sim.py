@@ -163,9 +163,8 @@ class PipelineTest(TestCase):
         out_unit = UnitModel(ICaseString("output"), 2, [ICaseString("ALU")],
                              LockInfo(False, True))
         proc_desc = ProcessorDesc([big_input, small_input1, small_input2], [
-            FuncUnit(out_unit, [big_input, mid2])], [], [
-                FuncUnit(*unit_params) for unit_params in [
-                    [mid2, [mid1, small_input2]], [mid1, [small_input1]]]])
+            FuncUnit(out_unit, [big_input, mid2])], [], starmap(FuncUnit, [
+                [mid2, [mid1, small_input2]], [mid1, [small_input1]]]))
         assert simulate(
             [HwInstruction(*instr_params) for instr_params in [
                 [[], "R1", ICaseString("ALU")], [[], "R2", ICaseString("ALU")],
