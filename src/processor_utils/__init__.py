@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.42.0, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.42.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -541,7 +541,7 @@ def _make_processor(proc_graph: DiGraph) -> ProcessorDesc:
             out_ports.append(unit)
         elif out_degrees[unit.model.name]:
             in_ports.append(unit.model)
-        elif not in_degrees[unit.model.name]:
+        else:
             in_out_ports.append(unit.model)
 
     return ProcessorDesc(in_ports, out_ports, in_out_ports, internal_units)
