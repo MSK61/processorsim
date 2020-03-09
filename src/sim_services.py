@@ -691,8 +691,7 @@ def _stall_unit(
 def _update_clears(reg_clears: MutableSequence[object], instr: object) -> None:
     """Update the list of register accesses to be cleared.
 
-    `reqs_to_clear` are the requests to be cleared from the access
-                    queues.
+    `reg_clears` are the requests to be cleared from the access queues.
     `instr` is the index of the instruction to unstall.
 
     """
