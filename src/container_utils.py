@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.42.0, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.42.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -161,8 +161,7 @@ class BagValDict(Generic[_KT, _VT]):
 
         """
         for key, elem_lst in elems:
-            for elem in elem_lst:
-                self[key].append(elem)
+            self[key].extend(elem_lst)
 
     def _format_dict(self) -> str:
         """Format this dictionary.
