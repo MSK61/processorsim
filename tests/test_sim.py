@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.42.1, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.43.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -85,61 +85,6 @@ class FlowTest(TestCase):
              {ICaseString("output"): [InstrState(1)]}])
 
 
-class HazardTest(TestCase):
-
-    """Test case for hazards"""
-
-    def test_data_hazards(self):
-        """Test detecting data hazards.
-
-        `self` is this test case.
-
-        """
-        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
-                            LockInfo(True, False))
-        out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, [
-            ICaseString("ALU")], LockInfo(False, True)), [in_unit])
-        assert simulate(
-            [HwInstruction(*instr_params) for instr_params in [
-                [[], ICaseString("R1"), ICaseString("ALU")],
-                [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")]]],
-            HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
-                BagValDict(cp_util) for cp_util in [
-                    {ICaseString("input"): [InstrState(0)]},
-                    {ICaseString("input"): [InstrState(1, StallState.DATA)],
-                     ICaseString("output"): [InstrState(0)]},
-                    {ICaseString("input"): [InstrState(1)]},
-                    {ICaseString("output"): [InstrState(1)]}]]
-
-    # pylint: disable=invalid-name
-    def test_RAW_with_RLock_in_unit_before_WLock(self):
-        """Test detecting RAW hazards with read locks in earlier units.
-
-        `self` is this test case.
-
-        """
-        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
-                            LockInfo(False, False))
-        mid = UnitModel(ICaseString("middle"), 1, [ICaseString("ALU")],
-                        LockInfo(True, False))
-        out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")],
-                             LockInfo(False, True))
-        proc_desc = ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
-                                  [FuncUnit(mid, [in_unit])])
-        assert simulate(
-            [HwInstruction(*instr_params) for instr_params in [
-                [[], ICaseString("R1"), ICaseString("ALU")],
-                [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")]]],
-            HwSpec(proc_desc)) == [BagValDict(cp_util) for cp_util in [
-                {ICaseString("input"): [InstrState(0)]},
-                {ICaseString("input"): [InstrState(1)],
-                 ICaseString("middle"): [InstrState(0)]},
-                {ICaseString("middle"): [InstrState(1, StallState.DATA)],
-                 ICaseString("output"): [InstrState(0)]},
-                {ICaseString("middle"): [InstrState(1)]},
-                {ICaseString("output"): [InstrState(1)]}]]
-
-
 class PipelineTest(TestCase):
 
     """Test case for instruction flow in the pipeline"""
@@ -184,6 +129,61 @@ class PipelineTest(TestCase):
                  ICaseString("middle 2"):
                  starmap(InstrState, [[5, StallState.STRUCTURAL], [4]])},
                 {ICaseString("output"): map(InstrState, [4, 5])}]]
+
+
+class RawTest(TestCase):
+
+    """Test case for RAW hazards"""
+
+    def test_hazard(self):
+        """Test detecting RAW hazards.
+
+        `self` is this test case.
+
+        """
+        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
+                            LockInfo(True, False))
+        out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, [
+            ICaseString("ALU")], LockInfo(False, True)), [in_unit])
+        assert simulate(
+            [HwInstruction(*instr_params) for instr_params in [
+                [[], ICaseString("R1"), ICaseString("ALU")],
+                [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")]]],
+            HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
+                BagValDict(cp_util) for cp_util in [
+                    {ICaseString("input"): [InstrState(0)]},
+                    {ICaseString("input"): [InstrState(1, StallState.DATA)],
+                     ICaseString("output"): [InstrState(0)]},
+                    {ICaseString("input"): [InstrState(1)]},
+                    {ICaseString("output"): [InstrState(1)]}]]
+
+    # pylint: disable=invalid-name
+    def test_RLock_in_unit_before_WLock(self):
+        """Test detecting RAW hazards with read locks in earlier units.
+
+        `self` is this test case.
+
+        """
+        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
+                            LockInfo(False, False))
+        mid = UnitModel(ICaseString("middle"), 1, [ICaseString("ALU")],
+                        LockInfo(True, False))
+        out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")],
+                             LockInfo(False, True))
+        proc_desc = ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
+                                  [FuncUnit(mid, [in_unit])])
+        assert simulate(
+            [HwInstruction(*instr_params) for instr_params in [
+                [[], ICaseString("R1"), ICaseString("ALU")],
+                [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")]]],
+            HwSpec(proc_desc)) == [BagValDict(cp_util) for cp_util in [
+                {ICaseString("input"): [InstrState(0)]},
+                {ICaseString("input"): [InstrState(1)],
+                 ICaseString("middle"): [InstrState(0)]},
+                {ICaseString("middle"): [InstrState(1, StallState.DATA)],
+                 ICaseString("output"): [InstrState(0)]},
+                {ICaseString("middle"): [InstrState(1)]},
+                {ICaseString("output"): [InstrState(1)]}]]
 
 
 class StallTest(TestCase):
@@ -370,6 +370,29 @@ class TestSim:
         test_utils.chk_error(
             [test_utils.ValInStrCheck(ex_chk.value.processor_state, [
                 BagValDict(cp_util) for cp_util in util_tbl])], ex_chk.value)
+
+
+class WarTest(TestCase):
+
+    """Test case for WAR hazards"""
+
+    def test_hazard(self):
+        """Test detecting WAR hazards.
+
+        `self` is this test case.
+
+        """
+        cores = starmap(UnitModel, [[ICaseString("core 1"), 1, [ICaseString(
+            "ALU")], LockInfo(True, True)], [ICaseString("core 2"), 1, [
+                ICaseString("ALU")], LockInfo(True, True)]])
+        assert simulate([HwInstruction(*instr_params) for instr_params in [
+            [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")],
+            [[], ICaseString("R1"), ICaseString("ALU")]]], HwSpec(
+                ProcessorDesc([], [], cores, []))) == [
+                    BagValDict(cp_util) for cp_util in
+                    [{ICaseString("core 1"): [InstrState(0)],
+                      ICaseString("core 2"): [InstrState(1, StallState.DATA)]},
+                     {ICaseString("core 2"): [InstrState(1)]}]]
 
 
 def main():

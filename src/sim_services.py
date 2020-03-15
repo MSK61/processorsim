@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.42.1, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.43.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -46,8 +46,8 @@ import heapq
 from itertools import chain
 import string
 import typing
-from typing import Dict, Iterable, Iterator, List, Mapping, MutableSequence, \
-    Sequence, Tuple
+from typing import cast, Dict, Iterable, Iterator, List, Mapping, \
+    MutableMapping, MutableSequence, Sequence, Tuple
 
 import attr
 import more_itertools
@@ -55,8 +55,7 @@ from more_itertools import first_true
 
 from container_utils import BagValDict
 from processor_utils import ProcessorDesc
-import processor_utils.units
-from processor_utils.units import FuncUnit, UnitModel
+from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from program_defs import HwInstruction
 from reg_access import AccessType, RegAccessQueue, RegAccQBuilder
 from str_utils import ICaseString
@@ -79,7 +78,7 @@ class StallError(RuntimeError):
         # Casting dictionary values since the type hint in typeshed for
         # Template.substitute unnecessarily stipulates string values.
         RuntimeError.__init__(self, string.Template(msg_tmpl).substitute(
-            {self.STATE_KEY: typing.cast(str, stalled_state)}))
+            {self.STATE_KEY: cast(str, stalled_state)}))
         self._stalled_state = stalled_state
 
     @property
@@ -220,6 +219,16 @@ class _IssueInfo:
 
 
 @attr.s(auto_attribs=True, frozen=True)
+class _RegAvailState:
+
+    """Registers availability state"""
+
+    avail: bool
+
+    regs: Iterable[ICaseString]
+
+
+@attr.s(auto_attribs=True, frozen=True)
 class _TransitionUtil:
 
     """Utilization transition of a single unit between two pulses"""
@@ -265,6 +274,20 @@ def _add_access(instr: HwInstruction, instr_index: int,
     """
     _add_rd_access(instr_index, builders, instr.sources)
     _add_wr_access(instr_index, builders[instr.destination])
+
+
+def _add_avail_regs(avail_regs: MutableSequence[Sequence[ICaseString]],
+                    lock: bool, new_regs: Sequence[ICaseString]) -> None:
+    """Update the list of available registers.
+
+    `avail_regs` are the list of available registers.
+    `lock` is the locking flag.
+    `new_regs` are the registers to be added to the available registers
+               list.
+
+    """
+    if lock:
+        avail_regs.append(new_regs)
 
 
 def _add_rd_access(instr: int, builders: Mapping[object, RegAccQBuilder],
@@ -334,6 +357,30 @@ def _calc_unstalled(instructions: Iterable[InstrState]) -> int:
         instructions, lambda instr: instr.stalled == StallState.NO_STALL)
 
 
+def _chk_data_stall(
+        unit_locks: LockInfo, instr_index: object, instr: HwInstruction,
+        acc_queues: Mapping[object, RegAccessQueue], reqs_to_clear:
+        MutableMapping[ICaseString, MutableSequence[object]]) -> StallState:
+    """Check if the instruction should have a data stall.
+
+    `unit_locks` are the unit lock information.
+    `instr_index` is the index of the instruction to check whose data
+                  stall status.
+    `instr` is the instruction to check whose data stall status.
+    `acc_queues` are the planned access queues for registers.
+    `reqs_to_clear` are the requests to be cleared from the access
+                    queues.
+
+    """
+    avail_state = _regs_avail(unit_locks, instr_index, instr, acc_queues)
+
+    if not avail_state.avail:
+        return StallState.DATA
+
+    _update_clears(reqs_to_clear, avail_state.regs, instr_index)
+    return StallState.NO_STALL
+
+
 def _chk_full_stall(
         old_util: object, new_util: object, util_tbl: object) -> None:
     """Check if the whole processor has stalled.
@@ -381,27 +428,6 @@ def _chk_hazards(old_util: BagValDict[_T, InstrState], new_util:
     for reg, req_lst in items_to_clear:
         for cur_req in req_lst:
             acc_queues[reg].dequeue(cur_req)
-
-
-def _clr_data_stall(wr_lock: bool, reg_clears: MutableSequence[object], instr:
-                    object, old_unit_util: Iterable[InstrState]) -> StallState:
-    """Clear the data stall condition for this instruction.
-
-    `wr_lock` is the current unit write lock flag.
-    `reg_clears` are the requests to be cleared from the register access
-                 queue.
-    `instr` is the index of the instruction to clear whose data stall
-            condition.
-    `old_unit_util` is the unit utilization information of the previous
-                    clock pulse.
-
-    """
-    if wr_lock:
-        _update_clears(reg_clears, instr)
-
-    return StallState.STRUCTURAL if first_true(
-        old_unit_util, pred=lambda old_instr: old_instr.instr == instr and
-        old_instr.stalled != StallState.DATA) else StallState.NO_STALL
 
 
 def _clr_src_units(instructions: Iterable[_HostedInstr],
@@ -613,19 +639,46 @@ def _mov_flights(
         _fill_unit(cur_dst, program, util_info)
 
 
-def _regs_accessed(rd_lock: bool, instr: object, registers: Iterable[object],
-                   acc_queues: Mapping[object, RegAccessQueue]) -> bool:
+def _regs_avail(
+        unit_locks: LockInfo, instr_index: object, instr: HwInstruction,
+        acc_queues: Mapping[object, RegAccessQueue]) -> _RegAvailState:
     """Check if all needed registers can be accessed.
 
-    `rd_lock` is the unit read lock.
-    `instr` is the index of the instruction to check whose access to
-            registers.
-    `registers` are the instruction registers.
+    `unit_locks` are the unit lock information.
+    `instr_index` is the index of the instruction to check whose access
+                  to registers.
+    `instr` is the instruction to check whose access to registers.
     `acc_queues` are the planned access queues for registers.
+    The function returns the registers availability state.
 
     """
-    return not rd_lock or all(map(lambda src: acc_queues[src].can_access(
-        AccessType.READ, instr), registers))
+    if not acc_queues[instr.destination].can_access(
+            AccessType.WRITE, instr_index):
+        return _RegAvailState(False, [])
+
+    avail_reg_lists: List[Sequence[ICaseString]] = []
+    _add_avail_regs(avail_reg_lists, unit_locks.wr_lock, [instr.destination])
+
+    if unit_locks.rd_lock and not all(map(lambda src: acc_queues[
+            src].can_access(AccessType.READ, instr_index), instr.sources)):
+        return _RegAvailState(False, [])
+
+    _add_avail_regs(avail_reg_lists, unit_locks.rd_lock, instr.sources)
+    return _RegAvailState(True, chain.from_iterable(avail_reg_lists))
+
+
+def _regs_loaded(old_unit_util: Iterable[InstrState], instr: object) -> bool:
+    """Check if the registers were previously loaded.
+
+    `old_unit_util` is the unit utilization information of the previous
+                    clock pulse.
+    `instr` is the index of the instruction whose registers are to be
+            checked for being previously loaded.
+
+    """
+    return cast(bool, first_true(
+        old_unit_util, pred=lambda old_instr:
+        old_instr.instr == instr and old_instr.stalled != StallState.DATA))
 
 
 def _run_cycle(program: Sequence[HwInstruction],
@@ -663,11 +716,10 @@ def _space_avail(
     return unit.width - len(util_info[unit.name])
 
 
-def _stall_unit(
-        unit_locks: processor_utils.units.LockInfo,
-        trans_util: _TransitionUtil, program: Sequence[HwInstruction],
-        acc_queues: Mapping[object, RegAccessQueue], reqs_to_clear:
-        typing.MutableMapping[ICaseString, MutableSequence[object]]) -> None:
+def _stall_unit(unit_locks: LockInfo, trans_util: _TransitionUtil,
+                program: Sequence[HwInstruction],
+                acc_queues: Mapping[object, RegAccessQueue], reqs_to_clear:
+                MutableMapping[ICaseString, MutableSequence[object]]) -> None:
     """Mark instructions in the given unit as stalled as needed.
 
     `unit_locks` are the unit lock information.
@@ -680,19 +732,21 @@ def _stall_unit(
 
     """
     for instr in trans_util.new_util:
-        instr.stalled = _clr_data_stall(
-            unit_locks.wr_lock, reqs_to_clear.setdefault(
-                program[instr.instr].destination, []), instr.instr,
-            trans_util.old_util) if _regs_accessed(
-                unit_locks.rd_lock, instr.instr, program[
-                    instr.instr].sources, acc_queues) else StallState.DATA
+        instr.stalled = StallState.STRUCTURAL if _regs_loaded(
+            trans_util.old_util, instr.instr) else _chk_data_stall(
+                unit_locks, instr.instr, program[instr.instr], acc_queues,
+                reqs_to_clear)
 
 
-def _update_clears(reg_clears: MutableSequence[object], instr: object) -> None:
+def _update_clears(reqs_to_clear: MutableMapping[ICaseString, MutableSequence[
+        object]], regs: Iterable[ICaseString], instr: object) -> None:
     """Update the list of register accesses to be cleared.
 
-    `reg_clears` are the requests to be cleared from the access queues.
+    `reqs_to_clear` are the requests to be cleared from the access
+                    queues.
+    `regs` are the register whose access queues will be updated.
     `instr` is the index of the instruction to unstall.
 
     """
-    reg_clears.append(instr)
+    for clr_reg in regs:
+        reqs_to_clear.setdefault(clr_reg, []).append(instr)
