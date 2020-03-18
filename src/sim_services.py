@@ -276,20 +276,6 @@ def _add_access(instr: HwInstruction, instr_index: int,
     _add_wr_access(instr_index, builders[instr.destination])
 
 
-def _add_avail_regs(avail_regs: MutableSequence[Sequence[ICaseString]],
-                    lock: bool, new_regs: Sequence[ICaseString]) -> None:
-    """Update the list of available registers.
-
-    `avail_regs` are the list of available registers.
-    `lock` is the locking flag.
-    `new_regs` are the registers to be added to the available registers
-               list.
-
-    """
-    if lock:
-        avail_regs.append(new_regs)
-
-
 def _add_rd_access(instr: int, builders: Mapping[object, RegAccQBuilder],
                    registers: Iterable[object]) -> None:
     """Register the read access of the given registers.
@@ -428,6 +414,31 @@ def _chk_hazards(old_util: BagValDict[_T, InstrState], new_util:
     for reg, req_lst in items_to_clear:
         for cur_req in req_lst:
             acc_queues[reg].dequeue(cur_req)
+
+
+def _chk_avail_regs(
+        avail_regs: MutableSequence[Sequence[ICaseString]],
+        acc_queues: Mapping[object, RegAccessQueue], lock: bool,
+        new_regs: Sequence[ICaseString], req_params: Iterable[object]) -> bool:
+    """Check if the given registers can be accessed.
+
+    `avail_regs` are the list of available registers.
+    `lock` is the locking flag.
+    `new_regs` are the potential registers to be added to the available
+               registers list.
+    `acc_queues` are the planned access queues for registers.
+    `req_params` are the request parameters.
+
+    """
+    if not lock:
+        return True
+
+    if not all(map(
+            lambda reg: acc_queues[reg].can_access(*req_params), new_regs)):
+        return False
+
+    avail_regs.append(new_regs)
+    return True
 
 
 def _clr_src_units(instructions: Iterable[_HostedInstr],
@@ -652,19 +663,15 @@ def _regs_avail(
     The function returns the registers availability state.
 
     """
-    if not acc_queues[instr.destination].can_access(
-            AccessType.WRITE, instr_index):
-        return _RegAvailState(False, [])
-
     avail_reg_lists: List[Sequence[ICaseString]] = []
-    _add_avail_regs(avail_reg_lists, unit_locks.wr_lock, [instr.destination])
-
-    if unit_locks.rd_lock and not all(map(lambda src: acc_queues[
-            src].can_access(AccessType.READ, instr_index), instr.sources)):
-        return _RegAvailState(False, [])
-
-    _add_avail_regs(avail_reg_lists, unit_locks.rd_lock, instr.sources)
-    return _RegAvailState(True, chain.from_iterable(avail_reg_lists))
+    return _RegAvailState(True, chain.from_iterable(avail_reg_lists)) if all(
+        map(lambda chk_params:
+            _chk_avail_regs(avail_reg_lists, acc_queues, *chk_params),
+            [(unit_locks.rd_lock, instr.sources,
+              [AccessType.READ, instr_index]),
+             (unit_locks.wr_lock, [instr.destination],
+              [AccessType.WRITE, instr_index])])) else _RegAvailState(
+                  False, [])
 
 
 def _regs_loaded(old_unit_util: Iterable[InstrState], instr: object) -> bool:

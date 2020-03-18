@@ -394,6 +394,26 @@ class WarTest(TestCase):
                       ICaseString("core 2"): [InstrState(1, StallState.DATA)]},
                      {ICaseString("core 2"): [InstrState(1)]}]]
 
+    def test_write_registers_are_not_checked_in_units_without_write_lock(self):
+        """Test opportune write register access check.
+
+        `self` is this test case.
+
+        """
+        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
+                            LockInfo(False, False))
+        out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, [
+            ICaseString("ALU")], LockInfo(True, True)), [in_unit])
+        assert simulate(
+            [HwInstruction(*instr_params) for instr_params in
+             [[[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")], [
+                 [], ICaseString("R1"), ICaseString("ALU")]]],
+            HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
+                BagValDict(cp_util) for cp_util in
+                [{ICaseString("input"): [InstrState(0)]},
+                 {ICaseString("input"): [InstrState(1)], ICaseString("output"):
+                  [InstrState(0)]}, {ICaseString("output"): [InstrState(1)]}]]
+
 
 def main():
     """entry point for running test in this module"""
