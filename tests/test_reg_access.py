@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.43.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -54,8 +54,8 @@ class TestAccessPlan:
     @mark.parametrize("queue, result", [
         ([AccessGroup(AccessType.READ, [0])], True),
         ([AccessGroup(AccessType.WRITE, [0])], False),
-        ([AccessGroup(*gr_params) for gr_params in [
-            [AccessType.WRITE, [1]], [AccessType.READ, [0]]]], False),
+        ([AccessGroup(*gr_params) for gr_params in
+          [[AccessType.WRITE, [1]], [AccessType.READ, [0]]]], False),
         ([AccessGroup(AccessType.READ, [1])], False)])
     def test_access(self, queue, result):
         """Test requesting access.
@@ -72,14 +72,14 @@ class TestAccessPlan:
          [AccessGroup(AccessType.READ, [len(TEST_DIR)])]),
         ([[AccessType.WRITE, 0]], [AccessGroup(AccessType.WRITE, [0])]),
         ([[AccessType.READ, 0], [AccessType.WRITE, 1]],
-         [AccessGroup(*gr_params) for gr_params in [
-             [AccessType.READ, [0]], [AccessType.WRITE, [1]]]]),
+         [AccessGroup(*gr_params) for gr_params in
+          [[AccessType.READ, [0]], [AccessType.WRITE, [1]]]]),
         ([[AccessType.WRITE, 0], [AccessType.WRITE, 1]],
-         [AccessGroup(*gr_params) for gr_params in [
-             [AccessType.WRITE, [0]], [AccessType.WRITE, [1]]]]),
+         [AccessGroup(*gr_params) for gr_params in
+          [[AccessType.WRITE, [0]], [AccessType.WRITE, [1]]]]),
         ([[AccessType.WRITE, 0], [AccessType.READ, 1]],
-         [AccessGroup(*gr_params) for gr_params in [
-             [AccessType.WRITE, [0]], [AccessType.READ, [1]]]]),
+         [AccessGroup(*gr_params) for gr_params in
+          [[AccessType.WRITE, [0]], [AccessType.READ, [1]]]]),
         ([[AccessType.READ, 0], [AccessType.READ, 1]],
          [AccessGroup(AccessType.READ, [0, 1])])])
     def test_adding_requests(self, reqs, result_queue):

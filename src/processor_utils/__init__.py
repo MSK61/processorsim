@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.42.1, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.43.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -207,8 +207,8 @@ def _add_unit(processor: Graph, unit: Mapping[object, Any],
     processor.add_node(
         unit_name, **container_utils.concat_dicts({UNIT_WIDTH_KEY: unit[
             UNIT_WIDTH_KEY], UNIT_CAPS_KEY: _load_caps(unit, cap_registry)}, {
-                cur_attr: unit.get(cur_attr, False) for cur_attr in [
-                    UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}))
+                cur_attr: unit.get(cur_attr, False) for cur_attr in
+                [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}))
     unit_registry.add(unit_name)
 
 

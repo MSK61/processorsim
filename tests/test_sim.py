@@ -74,9 +74,9 @@ class FlowTest(TestCase):
         output = FuncUnit(UnitModel(ICaseString("output"), 1, [ICaseString(
             "ALU"), ICaseString("MEM")], LockInfo(False, True)), inputs)
         TestBasic().test_sim(
-            [HwInstruction(*instr_params) for instr_params in [
-                [[], "R12", ICaseString("MEM")],
-                [["R11", "R15"], "R14", ICaseString("ALU")]]],
+            [HwInstruction(*instr_params) for instr_params in
+             [[[], "R12", ICaseString("MEM")],
+              [["R11", "R15"], "R14", ICaseString("ALU")]]],
             ProcessorDesc(inputs, [output], [], []),
             [{ICaseString("MEM input"): [InstrState(0)],
               ICaseString("ALU input"): [InstrState(1)]},
@@ -111,11 +111,10 @@ class PipelineTest(TestCase):
             FuncUnit(out_unit, [big_input, mid2])], [], starmap(FuncUnit, [
                 [mid2, [mid1, small_input2]], [mid1, [small_input1]]]))
         assert simulate(
-            [HwInstruction(*instr_params) for instr_params in [
-                [[], "R1", ICaseString("ALU")], [[], "R2", ICaseString("ALU")],
-                [[], "R3", ICaseString("ALU")], [[], "R4", ICaseString("ALU")],
-                [[], "R5", ICaseString("ALU")],
-                [[], "R6", ICaseString("ALU")]]],
+            [HwInstruction(*instr_params) for instr_params in
+             [[[], "R1", ICaseString("ALU")], [[], "R2", ICaseString("ALU")],
+              [[], "R3", ICaseString("ALU")], [[], "R4", ICaseString("ALU")],
+              [[], "R5", ICaseString("ALU")], [[], "R6", ICaseString("ALU")]]],
             HwSpec(proc_desc)) == [BagValDict(cp_util) for cp_util in [
                 {ICaseString("big input"): map(InstrState, [0, 1, 2, 3]),
                  ICaseString("small input 1"): [InstrState(4)],
@@ -146,16 +145,16 @@ class RawTest(TestCase):
         out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, [
             ICaseString("ALU")], LockInfo(False, True)), [in_unit])
         assert simulate(
-            [HwInstruction(*instr_params) for instr_params in [
-                [[], ICaseString("R1"), ICaseString("ALU")],
-                [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")]]],
+            [HwInstruction(*instr_params) for instr_params in
+             [[[], ICaseString("R1"), ICaseString("ALU")],
+              [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")]]],
             HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
-                BagValDict(cp_util) for cp_util in [
-                    {ICaseString("input"): [InstrState(0)]},
-                    {ICaseString("input"): [InstrState(1, StallState.DATA)],
-                     ICaseString("output"): [InstrState(0)]},
-                    {ICaseString("input"): [InstrState(1)]},
-                    {ICaseString("output"): [InstrState(1)]}]]
+                BagValDict(cp_util) for cp_util in
+                [{ICaseString("input"): [InstrState(0)]},
+                 {ICaseString("input"): [InstrState(1, StallState.DATA)],
+                  ICaseString("output"): [InstrState(0)]},
+                 {ICaseString("input"): [InstrState(1)]},
+                 {ICaseString("output"): [InstrState(1)]}]]
 
     # pylint: disable=invalid-name
     def test_RLock_in_unit_before_WLock(self):
@@ -173,9 +172,9 @@ class RawTest(TestCase):
         proc_desc = ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
                                   [FuncUnit(mid, [in_unit])])
         assert simulate(
-            [HwInstruction(*instr_params) for instr_params in [
-                [[], ICaseString("R1"), ICaseString("ALU")],
-                [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")]]],
+            [HwInstruction(*instr_params) for instr_params in
+             [[[], ICaseString("R1"), ICaseString("ALU")],
+              [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")]]],
             HwSpec(proc_desc)) == [BagValDict(cp_util) for cp_util in [
                 {ICaseString("input"): [InstrState(0)]},
                 {ICaseString("input"): [InstrState(1)],
@@ -205,16 +204,14 @@ class StallTest(TestCase):
         proc_desc = ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
                                   [FuncUnit(mid, [in_unit])])
         assert simulate(
-            [HwInstruction(*instr_params) for instr_params in [
-                [[], "R1", ICaseString("ALU")],
-                [[], "R2", ICaseString("ALU")]]], HwSpec(proc_desc)) == [
-                    BagValDict(cp_util) for cp_util in [
-                        {ICaseString("input"): map(InstrState, [0, 1])},
-                        {ICaseString("middle"): map(InstrState, [0, 1])},
-                        {ICaseString("middle"):
-                         [InstrState(1, StallState.STRUCTURAL)],
-                         ICaseString("output"): [InstrState(0)]},
-                        {ICaseString("output"): [InstrState(1)]}]]
+            [HwInstruction(*instr_params) for instr_params in
+             [[[], "R1", ICaseString("ALU")], [[], "R2", ICaseString("ALU")]]],
+            HwSpec(proc_desc)) == [BagValDict(cp_util) for cp_util in [
+                {ICaseString("input"): map(InstrState, [0, 1])},
+                {ICaseString("middle"): map(InstrState, [0, 1])},
+                {ICaseString("middle"): [InstrState(1, StallState.STRUCTURAL)],
+                 ICaseString("output"): [InstrState(0)]},
+                {ICaseString("output"): [InstrState(1)]}]]
 
     # pylint: disable=invalid-name
     def test_util_tbl_exists_in_StallError(self):
@@ -256,10 +253,10 @@ class TestBasic:
         ([HwInstruction(["R11", "R15"], "R14", ICaseString("alu"))],
          read_proc_file("processors", "singleALUProcessor.yaml"),
          [{ICaseString("fullSys"): [InstrState(0)]}]),
-        ([HwInstruction(*instr_params) for instr_params in [
-            [[], "R12", ICaseString("MEM")],
-            [["R11", "R15"], "R14", ICaseString("ALU")]]], read_proc_file(
-                "processors", "multiplexedInputSplitOutputProcessor.yaml"),
+        ([HwInstruction(*instr_params) for instr_params in
+          [[[], "R12", ICaseString("MEM")],
+           [["R11", "R15"], "R14", ICaseString("ALU")]]], read_proc_file(
+               "processors", "multiplexedInputSplitOutputProcessor.yaml"),
          [{ICaseString("input"): map(InstrState, [1, 0])},
           {ICaseString("ALU output"): [InstrState(1)],
            ICaseString("MEM output"): [InstrState(0)]}])])
