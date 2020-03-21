@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.43.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -57,8 +57,8 @@ class TestWhole:
          [["U:fullSys"]]),
         ("processorWithALUISA.yaml", "2InstructionProgram.asm",
          [["U:fullSys"], ["", "U:fullSys"]]),
-        ("2WideInput1WideOutputProcessor.yaml", "2InstructionProgram.asm", [[
-            "U:input", "U:output"], ["U:input", "S:input", "U:output"]])])
+        ("2WideInput1WideOutputProcessor.yaml", "2InstructionProgram.asm",
+         [["U:input", "U:output"], ["U:input", "S:input", "U:output"]])])
     def test_sim(self, proc_file_name, prog_file_name, sim_res):
         """Test executing a program.
 
