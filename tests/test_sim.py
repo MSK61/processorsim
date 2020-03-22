@@ -130,6 +130,27 @@ class PipelineTest(TestCase):
                 {ICaseString("output"): map(InstrState, [4, 5])}]]
 
 
+class RarTest(TestCase):
+
+    """Test case for RAR hazards"""
+
+    def test_hazard(self):
+        """Test detecting RAR hazards.
+
+        `self` is this test case.
+
+        """
+        full_sys_unit = UnitModel(ICaseString("fullSys"), 2,
+                                  [ICaseString("ALU")], LockInfo(True, True))
+        assert simulate(
+            [HwInstruction(*instr_params) for instr_params in
+             [[[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")],
+              [[ICaseString("R1")], ICaseString("R3"), ICaseString("ALU")]]],
+            HwSpec(ProcessorDesc([], [], [full_sys_unit], []))) == [
+                BagValDict(cp_util) for cp_util in [{ICaseString("fullSys"): [
+                    InstrState(instr) for instr in [0, 1]]}]]
+
+
 class RawTest(TestCase):
 
     """Test case for RAW hazards"""
