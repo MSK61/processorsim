@@ -1,0 +1,16 @@
+microarch:
+    units:
+        - name: input
+          width: 1
+          capabilities:
+            - ALU
+          readLock: True
+        - name: output
+          width: 1
+          capabilities:
+            - ALU
+          writeLock: True
+    dataPath:
+        - [input, output]
+ISA:
+    ADD: ALU
