@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.43.0, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.43.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -379,17 +379,15 @@ class WarTest(TestCase):
         `self` is this test case.
 
         """
-        cores = starmap(UnitModel, [[ICaseString("core 1"), 1, [ICaseString(
-            "ALU")], LockInfo(True, True)], [ICaseString("core 2"), 1, [
-                ICaseString("ALU")], LockInfo(True, True)]])
+        full_sys_unit = UnitModel(ICaseString("fullSys"), 2,
+                                  [ICaseString("ALU")], LockInfo(True, True))
         assert simulate([HwInstruction(*instr_params) for instr_params in [
             [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")],
             [[], ICaseString("R1"), ICaseString("ALU")]]], HwSpec(
-                ProcessorDesc([], [], cores, []))) == [
-                    BagValDict(cp_util) for cp_util in
-                    [{ICaseString("core 1"): [InstrState(0)],
-                      ICaseString("core 2"): [InstrState(1, StallState.DATA)]},
-                     {ICaseString("core 2"): [InstrState(1)]}]]
+                ProcessorDesc([], [], [full_sys_unit], []))) == [BagValDict(
+                    cp_util) for cp_util in [{ICaseString("fullSys"): [
+                        InstrState(0), InstrState(1, StallState.DATA)]}, {
+                            ICaseString("fullSys"): [InstrState(1)]}]]
 
     def test_write_registers_are_not_checked_in_units_without_write_lock(self):
         """Test opportune write register access check.
