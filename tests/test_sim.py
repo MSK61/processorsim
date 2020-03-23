@@ -278,7 +278,8 @@ class TestDataHazards:
 
     @mark.parametrize("instr_regs", [
         [[[ICaseString("R1")], ICaseString("R2")], [[], ICaseString("R1")]],
-        [[[], ICaseString("R1")], [[ICaseString("R1")], ICaseString("R2")]]])
+        [[[], ICaseString("R1")], [[ICaseString("R1")], ICaseString("R2")]],
+        [[[], ICaseString("R1")], [[], ICaseString("R1")]]])
     def test_hazard(self, instr_regs):
         """Test detecting data hazards.
 
