@@ -1,0 +1,11 @@
+microarch:
+    units:
+        - name: fullSys
+          width: 2
+          capabilities:
+            - ALU
+          readLock: True
+          writeLock: True
+    dataPath: []
+ISA:
+    ADD: ALU

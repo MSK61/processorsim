@@ -59,8 +59,8 @@ class TestWhole:
          [["U:fullSys"], ["", "U:fullSys"]]),
         ("2WideInput1WideOutputProcessor.yaml", "2InstructionProgram.asm",
          [["U:input", "U:output"], ["U:input", "S:input", "U:output"]]),
-        ("twoConnectedUnitsProcessor.yaml", "RAW.asm",
-         [["U:input", "U:output"], ["", "D:input", "U:input", "U:output"]])])
+        ("2WideALUProcessor.yaml", "RAW.asm",
+         [["U:fullSys"], ["D:fullSys", "U:fullSys"]])])
     def test_sim(self, proc_file_name, prog_file_name, sim_res):
         """Test executing a program.
 
