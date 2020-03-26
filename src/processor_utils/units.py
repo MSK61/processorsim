@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.42.0, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.43.1, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -66,18 +66,18 @@ class LockInfo:
     wr_lock: bool
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@attr.s(frozen=True)
 class UnitModel:
 
     """Functional unit model"""
 
-    name: str_utils.ICaseString
+    name: str_utils.ICaseString = attr.ib()
 
-    width: int
+    width: int = attr.ib()
 
     capabilities: Tuple[object, ...] = attr.ib(converter=sorted_tuple)
 
-    lock_info: LockInfo
+    lock_info: LockInfo = attr.ib()
 
 
 def sorted_models(models: Iterable[UnitModel]) -> Tuple[UnitModel, ...]:
