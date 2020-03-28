@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.43.2, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -110,10 +110,10 @@ def chk_two_units(proc_dir, proc_file):
     alu_cap = ICaseString("ALU")
     out_unit = ICaseString("output")
     assert proc_desc == processor_utils.ProcessorDesc(
-        [UnitModel(ICaseString("input"), 1, [alu_cap], LockInfo(True, False))],
-        [processor_utils.units.FuncUnit(
-            UnitModel(out_unit, 1, [alu_cap], LockInfo(False, True)),
-            proc_desc.in_ports)], [], [])
+        [UnitModel(ICaseString("input"), 1, [alu_cap], LockInfo(True, False),
+                   False)], [processor_utils.units.FuncUnit(
+                       UnitModel(out_unit, 1, [alu_cap], LockInfo(
+                           False, True), False), proc_desc.in_ports)], [], [])
 
 
 def chk_warn(tokens, warn_calls):

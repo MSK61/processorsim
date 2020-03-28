@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.42.1, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.43.2, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -88,8 +88,8 @@ class TestCaps:
         assert read_proc_file("capabilities", in_file) == ProcessorDesc(
             [], [], itertools.starmap(UnitModel, [
                 [ICaseString("core 1"), 1, [ICaseString("ALU")],
-                 LockInfo(True, True)], [ICaseString("core 2"), 1, [
-                     ICaseString("ALU")], LockInfo(True, True)]]), [])
+                 LockInfo(True, True), False], [ICaseString("core 2"), 1, [
+                     ICaseString("ALU")], LockInfo(True, True), False]]), [])
         chk_warn(["ALU", "core 1", "alu", "core 2"], caplog.records)
         assert ICaseString.__name__ not in caplog.records[0].getMessage()
 
@@ -231,7 +231,7 @@ class TestProcessors:
                         "readLock": True, "writeLock": True}],
              "dataPath": []}) == ProcessorDesc(
                  [], [], [UnitModel(ICaseString("fullSys"), 1, [
-                     ICaseString("ALU")], LockInfo(True, True))], [])
+                     ICaseString("ALU")], LockInfo(True, True), False)], [])
 
     def test_processor_with_four_connected_functional_units(self):
         """Test loading a processor with four functional units.
@@ -243,18 +243,20 @@ class TestProcessors:
             "processors", "4ConnectedUnitsProcessor.yaml")
         assert not proc_desc.in_out_ports
         alu_cap = ICaseString("ALU")
-        out_ports = tuple(FuncUnit(*unit_params) for unit_params in [
-            [UnitModel(ICaseString("output 1"), 1, [alu_cap], LockInfo(
-                False, True)), proc_desc.in_ports], [UnitModel(ICaseString(
-                    "output 2"), 1, [alu_cap], LockInfo(False, True)), map(
-                        lambda unit: unit.model, proc_desc.internal_units)]])
+        out_ports = tuple(
+            FuncUnit(*unit_params) for unit_params in
+            [[UnitModel(ICaseString("output 1"), 1, [alu_cap],
+                        LockInfo(False, True), False), proc_desc.in_ports],
+             [UnitModel(ICaseString("output 2"), 1, [alu_cap],
+                        LockInfo(False, True), False),
+              map(lambda unit: unit.model, proc_desc.internal_units)]])
         in_unit = ICaseString("input")
         internal_unit = UnitModel(
-            ICaseString("middle"), 1, [alu_cap], LockInfo(False, False))
+            ICaseString("middle"), 1, [alu_cap], LockInfo(False, False), False)
         assert (proc_desc.in_ports, proc_desc.out_ports,
-                proc_desc.internal_units) == (
-                    (UnitModel(in_unit, 1, [alu_cap], LockInfo(True, False)),),
-                    out_ports, (FuncUnit(internal_unit, proc_desc.in_ports),))
+                proc_desc.internal_units) == ((UnitModel(in_unit, 1, [
+                    alu_cap], LockInfo(True, False), False),), out_ports, (
+                        FuncUnit(internal_unit, proc_desc.in_ports),))
 
     @mark.parametrize(
         "in_file", ["twoConnectedUnitsProcessor.yaml",
@@ -300,16 +302,16 @@ class TestUnits:
 
         """
         in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
-                            LockInfo(True, False))
+                            LockInfo(True, False), False)
         in_units = [in_unit]
         mid1 = UnitModel(ICaseString("middle 1"), 1, [ICaseString("ALU")],
-                         LockInfo(False, False))
+                         LockInfo(False, False), False)
         mid1_unit = FuncUnit(mid1, [in_unit])
         mid2 = UnitModel(ICaseString("middle 2"), 1, [ICaseString("ALU")],
-                         LockInfo(False, False))
+                         LockInfo(False, False), False)
         mid2_unit = FuncUnit(mid2, [mid1])
         out_units = [FuncUnit(UnitModel(ICaseString("output"), 1, [
-            ICaseString("ALU")], LockInfo(False, True)), [mid2])]
+            ICaseString("ALU")], LockInfo(False, True), False), [mid2])]
         assert ProcessorDesc(
             in_units, out_units, [], [mid2_unit, mid1_unit]) != ProcessorDesc(
                 in_units, out_units, [], [mid1_unit, mid2_unit])
@@ -349,7 +351,7 @@ def _chk_one_unit(proc_dir, proc_file):
     """
     assert read_proc_file(proc_dir, proc_file) == ProcessorDesc(
         [], [], [UnitModel(ICaseString("fullSys"), 1, [ICaseString("ALU")],
-                           LockInfo(True, True))], [])
+                           LockInfo(True, True), False)], [])
 
 
 if __name__ == '__main__':

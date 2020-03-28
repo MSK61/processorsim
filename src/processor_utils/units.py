@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.43.1, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.43.2, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -78,6 +78,8 @@ class UnitModel:
     capabilities: Tuple[object, ...] = attr.ib(converter=sorted_tuple)
 
     lock_info: LockInfo = attr.ib()
+
+    mem_access: bool = attr.ib()
 
 
 def sorted_models(models: Iterable[UnitModel]) -> Tuple[UnitModel, ...]:

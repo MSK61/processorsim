@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.42.1, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.43.2, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -80,7 +80,7 @@ class TestHwDescLoad:
                     "processor_utils.load_proc_desc",
                     return_value=processor_utils.ProcessorDesc(
                         [], [], [units.UnitModel(
-                            full_sys_unit, 1, [icase_cap], lock_info)],
+                            full_sys_unit, 1, [icase_cap], lock_info, False)],
                         [])) as proc_mock, patch(
                             "processor_utils.get_abilities",
                             return_value=frozenset(
