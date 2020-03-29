@@ -39,7 +39,7 @@
 ############################################################
 
 import functools
-from itertools import chain
+import itertools
 from logging import warning
 from operator import itemgetter
 import os
@@ -375,11 +375,9 @@ def _get_unit_entry(
     The function returns the unit model.
 
     """
-    unit_attrs = itemgetter(UNIT_WIDTH_KEY, UNIT_CAPS_KEY)(attrs)
-    lock_info = units.LockInfo(
-        *(itemgetter(UNIT_RLOCK_KEY, UNIT_WLOCK_KEY)(attrs)))
-    return UnitModel(
-        name, *(chain(unit_attrs, [lock_info, attrs[UNIT_MEM_KEY]])))
+    lock_attrs = itemgetter(UNIT_RLOCK_KEY, UNIT_WLOCK_KEY)(attrs)
+    return UnitModel(name, *(itemgetter(UNIT_WIDTH_KEY, UNIT_CAPS_KEY)(attrs)),
+                     units.LockInfo(*lock_attrs), attrs[UNIT_MEM_KEY])
 
 
 def _get_unit_name(
@@ -502,9 +500,9 @@ def get_abilities(processor: ProcessorDesc) -> typing.FrozenSet[object]:
     `processor` is the processor to retrieve whose capabilities.
 
     """
-    return functools.reduce(
-        lambda old_caps, port: old_caps.union(port.capabilities),
-        chain(processor.in_out_ports, processor.in_ports), frozenset())
+    return functools.reduce(lambda old_caps, port: old_caps.union(
+        port.capabilities), itertools.chain(
+            processor.in_out_ports, processor.in_ports), frozenset())
 
 
 def load_proc_desc(raw_desc: Mapping[object, Any]) -> ProcessorDesc:
