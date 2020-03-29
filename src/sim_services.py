@@ -534,7 +534,7 @@ def _flush_output(out_instr_lst: MutableSequence[InstrState]) -> None:
 
     """
     instr_indices = more_itertools.rlocate(
-        out_instr_lst, lambda instr: instr.stalled != StallState.DATA)
+        out_instr_lst, lambda instr: instr.stalled == StallState.NO_STALL)
 
     for instr_index in instr_indices:
         del out_instr_lst[instr_index]
