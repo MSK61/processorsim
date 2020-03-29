@@ -61,8 +61,8 @@ from .exception import BadEdgeError, BadWidthError, DupElemError
 from . import optimization
 from . import port_defs
 from . import units
-from .units import FuncUnit, sorted_models, UNIT_CAPS_KEY, UnitModel, \
-    UNIT_NAME_KEY, UNIT_RLOCK_KEY, UNIT_WIDTH_KEY, UNIT_WLOCK_KEY
+from .units import FuncUnit, sorted_models, UNIT_CAPS_KEY, UNIT_MEM_KEY, \
+    UnitModel, UNIT_NAME_KEY, UNIT_RLOCK_KEY, UNIT_WIDTH_KEY, UNIT_WLOCK_KEY
 __all__ = ["exception", "get_abilities", "load_isa", "load_proc_desc",
            "ProcessorDesc", "units"]
 _T = typing.TypeVar("_T")
@@ -208,7 +208,7 @@ def _add_unit(processor: Graph, unit: Mapping[object, Any],
         unit_name, **container_utils.concat_dicts({UNIT_WIDTH_KEY: unit[
             UNIT_WIDTH_KEY], UNIT_CAPS_KEY: _load_caps(unit, cap_registry)}, {
                 cur_attr: unit.get(cur_attr, False) for cur_attr in
-                [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}))
+                [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY, UNIT_MEM_KEY]}))
     unit_registry.add(unit_name)
 
 
@@ -378,7 +378,8 @@ def _get_unit_entry(
     unit_attrs = itemgetter(UNIT_WIDTH_KEY, UNIT_CAPS_KEY)(attrs)
     lock_info = units.LockInfo(
         *(itemgetter(UNIT_RLOCK_KEY, UNIT_WLOCK_KEY)(attrs)))
-    return UnitModel(name, *(chain(unit_attrs, [lock_info, False])))
+    return UnitModel(
+        name, *(chain(unit_attrs, [lock_info, attrs[UNIT_MEM_KEY]])))
 
 
 def _get_unit_name(

@@ -49,6 +49,7 @@ import str_utils
 __all__ = ["LockInfo", "FuncUnit", "UnitModel"]
 # unit attributes
 UNIT_CAPS_KEY = "capabilities"
+UNIT_MEM_KEY = "memoryAccess"
 UNIT_NAME_KEY = "name"
 # unit lock attributes
 UNIT_RLOCK_KEY = "readLock"

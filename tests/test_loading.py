@@ -220,18 +220,18 @@ class TestProcessors:
 
     """Test case for loading valid processors"""
 
-    def test_processor_with_explicit_unit_locks(self):
-        """Test loading a processor with explicitly defined unit locks.
+    def test_processor_with_explicit_attributes(self):
+        """Test loading a processor with explicitly defined attributes.
 
         `self` is this test case.
 
         """
         assert processor_utils.load_proc_desc(
             {"units": [{"name": "fullSys", "width": 1, "capabilities": ["ALU"],
-                        "readLock": True, "writeLock": True}],
-             "dataPath": []}) == ProcessorDesc(
-                 [], [], [UnitModel(ICaseString("fullSys"), 1, [
-                     ICaseString("ALU")], LockInfo(True, True), False)], [])
+                        "readLock": True, "writeLock": True, "memoryAccess":
+                        True}], "dataPath": []}) == ProcessorDesc([], [], [
+                            UnitModel(ICaseString("fullSys"), 1, [ICaseString(
+                                "ALU")], LockInfo(True, True), True)], [])
 
     def test_processor_with_four_connected_functional_units(self):
         """Test loading a processor with four functional units.
