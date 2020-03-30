@@ -130,60 +130,6 @@ class PipelineTest(TestCase):
                 {ICaseString("output"): map(InstrState, [4, 5])}]]
 
 
-class RarTest(TestCase):
-
-    """Test case for RAR hazards"""
-
-    def test_hazard(self):
-        """Test detecting RAR hazards.
-
-        `self` is this test case.
-
-        """
-        full_sys_unit = UnitModel(ICaseString("fullSys"), 2, [
-            ICaseString("ALU")], LockInfo(True, True), False)
-        assert simulate(
-            [HwInstruction(*instr_params) for instr_params in
-             [[[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")],
-              [[ICaseString("R1")], ICaseString("R3"), ICaseString("ALU")]]],
-            HwSpec(ProcessorDesc([], [], [full_sys_unit], []))) == [
-                BagValDict(cp_util) for cp_util in [{ICaseString("fullSys"): [
-                    InstrState(instr) for instr in [0, 1]]}]]
-
-
-class RawTest(TestCase):
-
-    """Test case for RAW hazards"""
-
-    # pylint: disable=invalid-name
-    def test_RLock_in_unit_before_WLock(self):
-        """Test detecting RAW hazards with read locks in earlier units.
-
-        `self` is this test case.
-
-        """
-        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
-                            LockInfo(False, False), False)
-        mid = UnitModel(ICaseString("middle"), 1, [ICaseString("ALU")],
-                        LockInfo(True, False), False)
-        out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")],
-                             LockInfo(False, True), False)
-        proc_desc = ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
-                                  [FuncUnit(mid, [in_unit])])
-        assert simulate(
-            [HwInstruction(*instr_params) for instr_params in
-             [[[], ICaseString("R1"), ICaseString("ALU")],
-              [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")]]],
-            HwSpec(proc_desc)) == [BagValDict(cp_util) for cp_util in [
-                {ICaseString("input"): [InstrState(0)]},
-                {ICaseString("input"): [InstrState(1)],
-                 ICaseString("middle"): [InstrState(0)]},
-                {ICaseString("middle"): [InstrState(1, StallState.DATA)],
-                 ICaseString("output"): [InstrState(0)]},
-                {ICaseString("middle"): [InstrState(1)]},
-                {ICaseString("output"): [InstrState(1)]}]]
-
-
 class StallTest(TestCase):
 
     """Test case for stalled instructions"""
@@ -270,32 +216,6 @@ class TestBasic:
         """
         assert simulate(prog, HwSpec(cpu)) == [
             BagValDict(inst_util) for inst_util in util_tbl]
-
-
-class TestDataHazards:
-
-    """Test case for data hazards"""
-
-    @mark.parametrize("instr_regs", [
-        [[[ICaseString("R1")], ICaseString("R2")], [[], ICaseString("R1")]],
-        [[[], ICaseString("R1")], [[ICaseString("R1")], ICaseString("R2")]],
-        [[[], ICaseString("R1")], [[], ICaseString("R1")]]])
-    def test_hazard(self, instr_regs):
-        """Test detecting data hazards.
-
-        `self` is this test case.
-        `instr_regs` are the registers accessed by each instruction.
-
-        """
-        full_sys_unit = UnitModel(ICaseString("fullSys"), 2, [
-            ICaseString("ALU")], LockInfo(True, True), False)
-        assert simulate(
-            [HwInstruction(*reg_lst, ICaseString("ALU")) for reg_lst in
-             instr_regs],
-            HwSpec(ProcessorDesc([], [], [full_sys_unit], []))) == [
-                BagValDict(cp_util) for cp_util in [{ICaseString("fullSys"): [
-                    InstrState(0), InstrState(1, StallState.DATA)]}, {
-                        ICaseString("fullSys"): [InstrState(1)]}]]
 
 
 class TestOutputFlush:
@@ -392,31 +312,6 @@ class TestSim:
         test_utils.chk_error(
             [test_utils.ValInStrCheck(ex_chk.value.processor_state, [
                 BagValDict(cp_util) for cp_util in util_tbl])], ex_chk.value)
-
-
-class WarTest(TestCase):
-
-    """Test case for WAR hazards"""
-
-    def test_write_registers_are_not_checked_in_units_without_write_lock(self):
-        """Test opportune write register access check.
-
-        `self` is this test case.
-
-        """
-        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
-                            LockInfo(False, False), False)
-        out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, [
-            ICaseString("ALU")], LockInfo(True, True), False), [in_unit])
-        assert simulate(
-            [HwInstruction(*instr_params) for instr_params in
-             [[[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")], [
-                 [], ICaseString("R1"), ICaseString("ALU")]]],
-            HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
-                BagValDict(cp_util) for cp_util in
-                [{ICaseString("input"): [InstrState(0)]},
-                 {ICaseString("input"): [InstrState(1)], ICaseString("output"):
-                  [InstrState(0)]}, {ICaseString("output"): [InstrState(1)]}]]
 
 
 def main():
