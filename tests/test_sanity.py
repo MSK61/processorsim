@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.42.0, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.43.2, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -50,6 +50,8 @@ from test_utils import chk_error, read_proc_file, ValInStrCheck
 from container_utils import concat_dicts
 from processor_utils import exception, load_proc_desc
 from processor_utils.exception import MultilockError
+from processor_utils.units import UNIT_CAPS_KEY, UNIT_NAME_KEY, \
+    UNIT_RLOCK_KEY, UNIT_WIDTH_KEY, UNIT_WLOCK_KEY
 from str_utils import ICaseString
 
 
@@ -97,6 +99,32 @@ class TestLoop:
         raises(networkx.NetworkXUnfeasible, read_proc_file, "loops", in_file)
 
 
+class TestNoLock:
+
+    """Test case for checking paths without locks"""
+    # pylint: disable=invalid-name
+
+    @mark.parametrize("units, data_path", [
+        ([{UNIT_NAME_KEY: "input", UNIT_WIDTH_KEY: 1, UNIT_CAPS_KEY: ["ALU"],
+           UNIT_WLOCK_KEY: True},
+          {UNIT_NAME_KEY: "output 1", UNIT_WIDTH_KEY: 1, UNIT_CAPS_KEY:
+           ["ALU"]}, {UNIT_NAME_KEY: "output 2", UNIT_WIDTH_KEY: 1,
+                      UNIT_CAPS_KEY: ["ALU"], UNIT_RLOCK_KEY: True}],
+         [["input", "output 1"], ["input", "output 2"]]),
+        ([{UNIT_NAME_KEY: "fullSys", UNIT_WIDTH_KEY: 1, UNIT_CAPS_KEY: ["ALU"],
+           UNIT_WLOCK_KEY: True}], [])])
+    def test_path_with_no_locks_raises_MultilockError(self, units, data_path):
+        """Test loading a processor with no locks in paths.
+
+        `self` is this test case.
+        `units` are the processor units.
+        `data_path` is the data path between units.
+
+        """
+        raises(MultilockError, load_proc_desc,
+               {"units": units, "dataPath": data_path})
+
+
 class WidthTest(unittest.TestCase):
 
     """Test case for checking data path width"""
@@ -138,9 +166,9 @@ class _LockTestData:
     lock_type: str
 
 
-class TestLocks:
+class TestMultiLock:
 
-    """Test case for checking processors for path locks"""
+    """Test case for checking multiple locks along a path"""
 
     def test_paths_with_multiple_locks_are_only_detected_per_capability(self):
         """Test detecting multi-lock paths per capability.
@@ -151,26 +179,28 @@ class TestLocks:
         paths don't have multiple locks.
 
         """
-        both_locks = map(
-            lambda lock_prop: (lock_prop, True), ["readLock", "writeLock"])
+        both_locks = map(lambda lock_prop: (lock_prop, True),
+                         [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY])
         load_proc_desc(
             {"units":
-             [{"name": "ALU input", "width": 1, "capabilities": ["ALU"],
-               "readLock": True},
-              {"name": "MEM input", "width": 1, "capabilities": ["MEM"]},
-              {"name": "center", "width": 1, "capabilities": ["ALU", "MEM"]},
-              {"name": "ALU output", "width": 1, "capabilities": ["ALU"],
-               "writeLock": True},
-              concat_dicts({"name": "MEM output", "width": 1,
-                            "capabilities": ["MEM"]}, dict(both_locks))],
-             "dataPath": [["ALU input", "center"], ["MEM input", "center"], [
-                 "center", "ALU output"], ["center", "MEM output"]]})
+             [{UNIT_NAME_KEY: "ALU input", UNIT_WIDTH_KEY: 1,
+               UNIT_CAPS_KEY: ["ALU"], UNIT_RLOCK_KEY: True},
+              {UNIT_NAME_KEY: "MEM input", UNIT_WIDTH_KEY: 1, UNIT_CAPS_KEY:
+               ["MEM"]}, {UNIT_NAME_KEY: "center", UNIT_WIDTH_KEY: 1,
+                          UNIT_CAPS_KEY: ["ALU", "MEM"]},
+              {UNIT_NAME_KEY: "ALU output", UNIT_WIDTH_KEY: 1,
+               UNIT_CAPS_KEY: ["ALU"], UNIT_WLOCK_KEY: True},
+              concat_dicts({UNIT_NAME_KEY: "MEM output", UNIT_WIDTH_KEY: 1,
+                            UNIT_CAPS_KEY: ["MEM"]}, dict(both_locks))],
+             "dataPath": [["ALU input", "center"], ["MEM input", "center"],
+                          ["center", "ALU output"], ["center", "MEM output"]]})
 
     # pylint: disable=invalid-name
-    @mark.parametrize("proc_desc, lock_data", [
-        (_IoProcessor("input", "output", "ALU"), _LockTestData(
-            "readLock", "read")), (_IoProcessor("in_unit", "out_unit", "MEM"),
-                                   _LockTestData("writeLock", "write"))])
+    @mark.parametrize(
+        "proc_desc, lock_data", [(_IoProcessor("input", "output", "ALU"),
+                                  _LockTestData(UNIT_RLOCK_KEY, "read")),
+                                 (_IoProcessor("in_unit", "out_unit", "MEM"),
+                                  _LockTestData(UNIT_WLOCK_KEY, "write"))])
     def test_path_with_multiple_locks_raises_MultilockError(
             self, proc_desc, lock_data):
         """Test loading a processor with multiple locks in paths.
@@ -181,17 +211,17 @@ class TestLocks:
 
         """
         in_locks = map(lambda lock_prop: (lock_prop, True),
-                       ["readLock", lock_data.prop_name])
+                       [UNIT_RLOCK_KEY, lock_data.prop_name])
         out_locks = map(lambda lock_prop: (lock_prop, True),
-                        ["writeLock", lock_data.prop_name])
-        ex_info = raises(
-            MultilockError, load_proc_desc,
-            {"units": [concat_dicts(
-                {"name": proc_desc.in_unit, "width": 1, "capabilities":
-                 [proc_desc.capability]}, dict(in_locks)), concat_dicts(
-                     {"name": proc_desc.out_unit, "width": 1, "capabilities": [
-                         proc_desc.capability]}, dict(out_locks))],
-             "dataPath": [[proc_desc.in_unit, proc_desc.out_unit]]})
+                        [UNIT_WLOCK_KEY, lock_data.prop_name])
+        ex_info = raises(MultilockError, load_proc_desc, {
+            "units": [concat_dicts(
+                {UNIT_NAME_KEY: proc_desc.in_unit, UNIT_WIDTH_KEY: 1,
+                 UNIT_CAPS_KEY: [proc_desc.capability]}, dict(in_locks)),
+                      concat_dicts({UNIT_NAME_KEY: proc_desc.out_unit,
+                                    UNIT_WIDTH_KEY: 1, UNIT_CAPS_KEY:
+                                    [proc_desc.capability]}, dict(out_locks))],
+            "dataPath": [[proc_desc.in_unit, proc_desc.out_unit]]})
         assert ex_info.value.start == ICaseString(proc_desc.in_unit)
         assert ex_info.value.lock_type == lock_data.lock_type
         assert ex_info.value.capability == ICaseString(proc_desc.capability)
@@ -200,24 +230,6 @@ class TestLocks:
         for part in [
                 lock_data.lock_type, proc_desc.capability, proc_desc.in_unit]:
             assert part in ex_info
-
-    @mark.parametrize("units, data_path", [
-        ([{"name": "input", "width": 1, "capabilities": ["ALU"], "writeLock":
-           True}, {"name": "output 1", "width": 1, "capabilities": ["ALU"]},
-          {"name": "output 2", "width": 1, "capabilities": ["ALU"],
-           "readLock": True}], [["input", "output 1"], ["input", "output 2"]]),
-        ([{"name": "fullSys", "width": 1, "capabilities": ["ALU"],
-           "writeLock": True}], [])])
-    def test_path_with_no_locks_raises_MultilockError(self, units, data_path):
-        """Test loading a processor with no locks in paths.
-
-        `self` is this test case.
-        `units` are the processor units.
-        `data_path` is the data path between units.
-
-        """
-        raises(MultilockError, load_proc_desc,
-               {"units": units, "dataPath": data_path})
 
 
 def main():

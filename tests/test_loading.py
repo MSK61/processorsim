@@ -49,7 +49,7 @@ from test_utils import chk_error, chk_two_units, chk_warn, read_proc_file, \
     ValInStrCheck
 import errors
 import processor_utils
-from processor_utils import exception, ProcessorDesc
+from processor_utils import exception, ProcessorDesc, units
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from str_utils import ICaseString
 
@@ -226,12 +226,13 @@ class TestProcessors:
         `self` is this test case.
 
         """
-        assert processor_utils.load_proc_desc(
-            {"units": [{"name": "fullSys", "width": 1, "capabilities": ["ALU"],
-                        "readLock": True, "writeLock": True, "memoryAccess":
-                        True}], "dataPath": []}) == ProcessorDesc([], [], [
-                            UnitModel(ICaseString("fullSys"), 1, [ICaseString(
-                                "ALU")], LockInfo(True, True), True)], [])
+        assert processor_utils.load_proc_desc({
+            "units": [{units.UNIT_NAME_KEY: "fullSys", units.UNIT_WIDTH_KEY: 1,
+                       units.UNIT_CAPS_KEY: ["ALU"], units.UNIT_RLOCK_KEY:
+                       True, units.UNIT_WLOCK_KEY: True, units.UNIT_MEM_KEY:
+                       True}], "dataPath": []}) == ProcessorDesc([], [], [
+                           UnitModel(ICaseString("fullSys"), 1, [ICaseString(
+                               "ALU")], LockInfo(True, True), True)], [])
 
     def test_processor_with_four_connected_functional_units(self):
         """Test loading a processor with four functional units.

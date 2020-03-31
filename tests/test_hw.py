@@ -94,10 +94,13 @@ class TestHwDescLoad:
         assert list(isa_mock.call_args[0][0]) == [(instr, capability)]
         assert isa_mock.call_args[0][1] == ability_mock.return_value
 
-        for mock_chk in [[proc_mock, {
-                "units": [{"name": "fullSys", "width": 1, "capabilities":
-                           [capability], "readLock": True, "writeLock": True}],
-                "dataPath": []}], [ability_mock, proc_mock.return_value]]:
+        for mock_chk in [
+                [proc_mock,
+                 {"units":
+                  [{units.UNIT_NAME_KEY: "fullSys", units.UNIT_WIDTH_KEY: 1,
+                    units.UNIT_CAPS_KEY: [capability],
+                    units.UNIT_RLOCK_KEY: True, units.UNIT_WLOCK_KEY: True}],
+                  "dataPath": []}], [ability_mock, proc_mock.return_value]]:
             unittest.mock.MagicMock.assert_called_with(*mock_chk)
 
 
