@@ -216,7 +216,7 @@ class _IndexedSetBase(Generic[_T]):
         `self` is this indexed set.
 
         """
-        return format_obj(type(self).__name__, map(repr, [self._std_form_map]))
+        return format_obj(type(self).__name__, [repr(self._std_form_map)])
 
     def get(self, elem: _T) -> Optional[_T]:
         """Retrieve the elem in this set matching the given one.
