@@ -577,9 +577,8 @@ def _make_cap_graph(processor: Graph, capability: object) -> DiGraph:
     capability in common.
 
     """
-    cap_graph = DiGraph(
-        filter(lambda edge: _cap_in_edge(processor, capability, edge),
-               processor.edges))
+    cap_graph = DiGraph(edge for edge in processor.edges if
+                        _cap_in_edge(processor, capability, edge))
     cap_graph.add_nodes_from(processor.nodes(True))
     return cap_graph
 
