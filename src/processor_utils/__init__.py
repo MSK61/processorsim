@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.43.2, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.44.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -295,8 +295,9 @@ def _create_isa(isa_spec: Iterable[Tuple[str, str]],
 
     """
     instr_registry = SelfIndexSet[object]()
-    return {instr.upper(): _add_instr(instr_registry, cap_registry, *(
-        map(ICaseString, [instr, cap]))) for instr, cap in isa_spec}
+    return {
+        instr.upper(): _add_instr(instr_registry, cap_registry, *(ICaseString(
+            prop) for prop in [instr, cap])) for instr, cap in isa_spec}
 
 
 def _get_cap_name(

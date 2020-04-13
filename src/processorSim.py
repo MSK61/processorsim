@@ -38,7 +38,7 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.43.1, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.44.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -249,8 +249,8 @@ def _get_flight_row(flight: _InstrFlight) -> List[str]:
     `flight` is the flight to convert.
 
     """
-    return [
-        *(itertools.repeat("", flight.start_time)), *(map(str, flight.stops))]
+    return [*(itertools.repeat("", flight.start_time)),
+            *(str(stop) for stop in flight.stops)]
 
 
 def _get_last_tick(sim_res: Iterable[Sized]) -> int:

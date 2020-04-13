@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.43.2, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.44.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -433,8 +433,7 @@ def _chk_avail_regs(
     if not lock:
         return True
 
-    if not all(map(
-            lambda reg: acc_queues[reg].can_access(*req_params), new_regs)):
+    if not all(acc_queues[reg].can_access(*req_params) for reg in new_regs):
         return False
 
     avail_regs.append(new_regs)
@@ -465,8 +464,8 @@ def _count_outputs(outputs: Iterable[UnitModel],
     `util_info` is the unit utilization information.
 
     """
-    return sum(map(
-        lambda out_port: _calc_unstalled(util_info[out_port.name]), outputs))
+    return sum(
+        _calc_unstalled(util_info[out_port.name]) for out_port in outputs)
 
 
 def _fill_cp_util(
@@ -650,13 +649,11 @@ def _regs_avail(
     """
     avail_reg_lists: List[Sequence[ICaseString]] = []
     return _RegAvailState(True, chain.from_iterable(avail_reg_lists)) if all(
-        map(lambda chk_params:
-            _chk_avail_regs(avail_reg_lists, acc_queues, *chk_params),
-            [(unit_locks.rd_lock, instr.sources,
-              [AccessType.READ, instr_index]),
-             (unit_locks.wr_lock, [instr.destination],
-              [AccessType.WRITE, instr_index])])) else _RegAvailState(
-                  False, [])
+        _chk_avail_regs(avail_reg_lists, acc_queues, *chk_params) for
+        chk_params in
+        [(unit_locks.rd_lock, instr.sources, [AccessType.READ, instr_index]),
+         (unit_locks.wr_lock, [instr.destination],
+          [AccessType.WRITE, instr_index])]) else _RegAvailState(False, [])
 
 
 def _regs_loaded(old_unit_util: Iterable[InstrState], instr: object) -> bool:

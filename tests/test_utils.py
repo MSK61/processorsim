@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.43.2, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.44.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -126,7 +126,7 @@ def chk_warn(tokens, warn_calls):
 
     """
     assert warn_calls
-    assert all(map(lambda token: token in warn_calls[0].getMessage(), tokens))
+    assert all(token in warn_calls[0].getMessage() for token in tokens)
 
 
 def compile_prog(prog_file, isa):

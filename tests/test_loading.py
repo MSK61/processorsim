@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.43.2, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.44.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -212,8 +212,7 @@ class TestEdges:
         warning message.
 
         """
-        assert all(
-            map(lambda edge: str(edge) in warn_call.getMessage(), edges))
+        assert all(str(edge) in warn_call.getMessage() for edge in edges)
 
 
 class TestProcessors:

@@ -116,8 +116,8 @@ class BagValDict(Generic[_KT, _VT]):
         lst_pairs = itertools.starmap(lambda key, val_lst: map(
             sorted, [val_lst, self[key]]), other_items)
         item_lst_pair: List[typing.Sized] = [self, other_items]
-        return eq(*(map(len, item_lst_pair))) and all(
-            itertools.starmap(eq, lst_pairs))
+        return eq(*(len(item_lst) for item_lst in item_lst_pair)) and all(
+            eq(*pair) for pair in lst_pairs)
 
     def __getitem__(self, key: _KT) -> List[_VT]:
         """Retrieve the list of the given key.

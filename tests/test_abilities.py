@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.44.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -64,7 +64,7 @@ class TestAbilities:
         """
         assert processor_utils.get_abilities(
             test_utils.read_proc_file("processors", in_file)) == frozenset(
-                map(str_utils.ICaseString, capabilities))
+                str_utils.ICaseString(cap) for cap in capabilities)
 
 
 def main():

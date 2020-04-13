@@ -32,14 +32,13 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.42.0, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.44.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import itertools
 import operator
 import typing
 from typing import AbstractSet, Callable, Dict, Iterable, Iterator, List, \
@@ -312,8 +311,7 @@ def _cap_in_edge(
     `edge` is the edge to check.
 
     """
-    return all(
-        map(lambda unit: _cap_in_unit(processor, capability, unit), edge))
+    return all(_cap_in_unit(processor, capability, unit) for unit in edge)
 
 
 def _cap_in_unit(processor: Graph, capability: object, unit: object) -> bool:
@@ -426,12 +424,11 @@ def _chk_path_locks(
 
     """
     succ_lst = list(processor.successors(start))
-    sat_params = itertools.starmap(
-        _PathLockCalc(processor.nodes[start], succ_lst, capability, start,
-                      path_locks).calc_lock,
-        [(units.UNIT_RLOCK_KEY, _PathDescriptor.make_read_desc),
-         (units.UNIT_WLOCK_KEY, _PathDescriptor.make_write_desc)])
-    path_locks[start] = _SatInfo(*sat_params)
+    path_locks[start] = _SatInfo(
+        *(_PathLockCalc(processor.nodes[start], succ_lst, capability, start,
+                        path_locks).calc_lock(*calc_params) for calc_params in
+          [(units.UNIT_RLOCK_KEY, _PathDescriptor.make_read_desc),
+           (units.UNIT_WLOCK_KEY, _PathDescriptor.make_write_desc)]))
 
 
 def _chk_unit_flow(min_width: bool, capability_info: ComponentInfo,
@@ -464,11 +461,10 @@ def _coll_cap_edges(graph: DiGraph) -> typing.FrozenSet[_T]:
 
     """
     out_degrees = graph.out_degree()
-    cap_edges = map(lambda in_deg: _get_cap_edge(
-        graph.in_edges(in_deg[0]), graph.out_edges(in_deg[0])),
-                    filter(lambda in_deg: in_deg[1] == 1 or
-                           out_degrees[in_deg[0]] == 1, graph.in_degree()))
-    return frozenset(cap_edges)
+    in_degrees = filter(lambda in_deg: in_deg[1] == 1 or
+                        out_degrees[in_deg[0]] == 1, graph.in_degree())
+    return frozenset(_get_cap_edge(
+        graph.in_edges(node), graph.out_edges(node)) for node, _ in in_degrees)
 
 
 def _dist_edge_caps(graph: DiGraph) -> None:
@@ -529,8 +525,8 @@ def _get_anal_graph(processor: Graph) -> DiGraph:
     for idx, unit in hw_units:
         _update_graph(idx, unit, processor, width_graph, new_nodes)
 
-    width_graph.add_edges_from(map(lambda edge: operator.itemgetter(*edge)(
-        new_nodes), processor.edges))
+    width_graph.add_edges_from(
+        operator.itemgetter(*edge)(new_nodes) for edge in processor.edges)
     return width_graph
 
 
@@ -624,7 +620,7 @@ def _set_capacities(
     """
     for cur_edge in cap_edges:
         graph[cur_edge[0]][cur_edge[1]]["capacity"] = min(
-            map(lambda unit: graph.nodes[unit][UNIT_WIDTH_KEY], cur_edge))
+            graph.nodes[unit][UNIT_WIDTH_KEY] for unit in cur_edge)
 
 
 def _split_node(graph: DiGraph, old_node: object, new_node: object) -> object:
