@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.43.2, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.44.0, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -103,6 +103,33 @@ class RawTest(TestCase):
                 {ICaseString("middle"): [InstrState(1, StallState.DATA)],
                  ICaseString("output"): [InstrState(0)]},
                 {ICaseString("middle"): [InstrState(1)]},
+                {ICaseString("output"): [InstrState(1)]}]]
+
+
+class StructuralTest(TestCase):
+
+    """Test case for structural hazards"""
+
+    def test_unified_memory(self):
+        """Test detecting hazards with the unified memory architecture.
+
+        `self` is this test case.
+
+        """
+        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
+                            LockInfo(False, False), True)
+        out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")],
+                             LockInfo(False, True), True)
+        proc_desc = ProcessorDesc(
+            [in_unit], [FuncUnit(out_unit, [in_unit])], [], [])
+        assert simulate(
+            [HwInstruction(*instr_params) for instr_params in
+             [[[], ICaseString("R1"), ICaseString("ALU")],
+              [[], ICaseString("R2"), ICaseString("ALU")]]],
+            HwSpec(proc_desc)) == [BagValDict(cp_util) for cp_util in [
+                {ICaseString("input"): [InstrState(0)]},
+                {ICaseString("output"): [InstrState(0)]},
+                {ICaseString("input"): [InstrState(1)]},
                 {ICaseString("output"): [InstrState(1)]}]]
 
 

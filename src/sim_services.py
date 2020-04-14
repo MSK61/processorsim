@@ -238,20 +238,24 @@ class _TransitionUtil:
     new_util: Iterable[InstrState]
 
 
-def _accept_instr(instr: int, inputs: Iterable[UnitModel],
-                  util_info: BagValDict[ICaseString, InstrState]) -> bool:
+def _accept_instr(instr: int, inputs: Iterable[UnitModel], util_info:
+                  BagValDict[ICaseString, InstrState], mem_busy: bool) -> bool:
     """Try to accept the given instruction to the unit.
 
     `instr` is the index of the instruction to try to accept.
     `inputs` are the input processing units to select from for issuing
              the instruction.
     `util_info` is the unit utilization information.
+    `mem_busy` is the memory busy flag.
     The function tries to find an appropriate unit to issue the
     instruction to. It then updates the utilization information. It
     returns True if the instruction is issued to a unit, otherwise
     returns False.
 
     """
+    if mem_busy:
+        return False
+
     acceptor = first_true(
         inputs, pred=lambda unit: _space_avail(unit, util_info))
 
@@ -481,49 +485,54 @@ def _fill_cp_util(
 
     """
     _flush_outputs(_get_out_ports(processor), util_info)
-    _mov_flights(chain(
-        processor.out_ports, processor.internal_units), program, util_info)
     _fill_inputs(
         _build_cap_map(chain(processor.in_out_ports, processor.in_ports)),
-        program, util_info, issue_rec)
+        program, util_info,
+        _mov_flights(chain(processor.out_ports, processor.internal_units),
+                     program, util_info), issue_rec)
 
 
-def _fill_inputs(cap_unit_map: Mapping[object, Iterable[UnitModel]],
-                 program: Sequence[HwInstruction], util_info: BagValDict[
-                     ICaseString, InstrState], issue_rec: _IssueInfo) -> None:
+def _fill_inputs(
+        cap_unit_map: Mapping[object, Iterable[UnitModel]], program: Sequence[
+            HwInstruction], util_info: BagValDict[ICaseString, InstrState],
+        mem_busy: bool, issue_rec: _IssueInfo) -> None:
     """Fetch new program instructions into the pipeline.
 
     `cap_unit_map` is the mapping between capabilities and units.
     `program` is the program to fill the input units from whose
               instructions.
     `util_info` is the unit utilization information.
+    `mem_busy` is the memory busy flag.
     `issue_rec` is the issue record.
 
     """
     prog_len = len(program)
 
     while issue_rec.entered < prog_len and _accept_instr(
-            issue_rec.entered,
-            cap_unit_map.get(program[issue_rec.entered].categ, []), util_info):
+            issue_rec.entered, cap_unit_map.get(
+                program[issue_rec.entered].categ, []), util_info, mem_busy):
         issue_rec.bump_input()
 
 
 def _fill_unit(unit: FuncUnit, program: Sequence[HwInstruction],
-               util_info: BagValDict[ICaseString, InstrState]) -> None:
+               util_info: BagValDict[ICaseString, InstrState]) -> bool:
     """Fill an output with instructions from its predecessors.
 
     `unit` is the destination unit to fill.
     `program` is the master instruction list.
     `util_info` is the unit utilization information.
+    The function returns a flag indicating if a memory access is
+    currently in progess.
 
     """
     candidates = _get_candidates(unit, program, util_info)
     # instructions sorted by program index
-    _mov_candidates(candidates, unit.model.name, util_info)
+    mem_busy = _mov_candidates(candidates, unit.model, util_info)
     # Need to sort instructions by their index in the host in a
     # descending order.
     _clr_src_units(sorted(candidates, key=lambda candid: candid.index_in_host,
                           reverse=True), util_info)
+    return mem_busy
 
 
 def _flush_output(out_instr_lst: MutableSequence[InstrState]) -> None:
@@ -594,44 +603,58 @@ def _get_out_ports(processor: ProcessorDesc) -> "chain[UnitModel]":
                  map(lambda port: port.model, processor.out_ports))
 
 
-def _mov_candidate(
-        candidate: InstrState, unit_util: MutableSequence[InstrState]) -> None:
+def _mov_candidate(candidate: InstrState, unit_util:
+                   MutableSequence[InstrState], mem_access: bool) -> bool:
     """Move a candidate instruction between units.
 
     `candidate` is the candidate instruction to move.
     `unit_util` is the unit utilization information.
+    `mem_access` is the unit memory access flag.
 
     """
     candidate.stalled = StallState.NO_STALL
     unit_util.append(candidate)
+    return mem_access
 
 
-def _mov_candidates(candidates: Iterable[_HostedInstr], unit: ICaseString,
-                    util_info: BagValDict[ICaseString, InstrState]) -> None:
+def _mov_candidates(candidates: Iterable[_HostedInstr], unit: UnitModel,
+                    util_info: BagValDict[ICaseString, InstrState]) -> bool:
     """Move candidate instructions between units.
 
     `candidates` are the candidate instructions to move.
     `unit` is the destination unit.
     `util_info` is the unit utilization information.
+    The function returns a flag indicating if a memory access is
+    currently in progess.
 
     """
+    mem_busy = False
+
     for cur_candid in candidates:
-        _mov_candidate(util_info[cur_candid.host][cur_candid.index_in_host],
-                       util_info[unit])
+        mem_busy = _mov_candidate(util_info[cur_candid.host][
+            cur_candid.index_in_host], util_info[unit.name], unit.mem_access)
+
+    return mem_busy
 
 
 def _mov_flights(
         dst_units: Iterable[FuncUnit], program: Sequence[HwInstruction],
-        util_info: BagValDict[ICaseString, InstrState]) -> None:
+        util_info: BagValDict[ICaseString, InstrState]) -> bool:
     """Move the instructions inside the pipeline.
 
     `dst_units` are the destination processing units.
     `program` is the master instruction list.
     `util_info` is the unit utilization information.
+    The function returns a flag indicating if a memory access is
+    currently in progess.
 
     """
+    mem_busy = False
+
     for cur_dst in dst_units:
-        _fill_unit(cur_dst, program, util_info)
+        mem_busy = _fill_unit(cur_dst, program, util_info)
+
+    return mem_busy
 
 
 def _regs_avail(
