@@ -118,19 +118,18 @@ class StructuralTest(TestCase):
         """
         in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
                             LockInfo(False, False), True)
-        out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")],
-                             LockInfo(False, True), True)
-        proc_desc = ProcessorDesc(
-            [in_unit], [FuncUnit(out_unit, [in_unit])], [], [])
+        out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, [
+            ICaseString("ALU")], LockInfo(False, True), True), [in_unit])
         assert simulate(
             [HwInstruction(*instr_params) for instr_params in
              [[[], ICaseString("R1"), ICaseString("ALU")],
               [[], ICaseString("R2"), ICaseString("ALU")]]],
-            HwSpec(proc_desc)) == [BagValDict(cp_util) for cp_util in [
-                {ICaseString("input"): [InstrState(0)]},
-                {ICaseString("output"): [InstrState(0)]},
-                {ICaseString("input"): [InstrState(1)]},
-                {ICaseString("output"): [InstrState(1)]}]]
+            HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
+                BagValDict(cp_util) for cp_util in [
+                    {ICaseString("input"): [InstrState(0)]},
+                    {ICaseString("output"): [InstrState(0)]},
+                    {ICaseString("input"): [InstrState(1)]},
+                    {ICaseString("output"): [InstrState(1)]}]]
 
 
 class TestDataHazards:
