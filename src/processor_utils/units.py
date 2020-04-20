@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.43.2, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.44.2, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -46,7 +46,7 @@ import attr
 
 from container_utils import sorted_tuple
 import str_utils
-__all__ = ["LockInfo", "FuncUnit", "UnitModel"]
+__all__ = ["FuncUnit", "LockInfo", "UnitModel"]
 # unit attributes
 UNIT_CAPS_KEY = "capabilities"
 UNIT_MEM_KEY = "memoryAccess"
