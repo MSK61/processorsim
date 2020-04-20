@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.44.0, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.44.2, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -117,7 +117,7 @@ class StructuralTest(TestCase):
 
         """
         in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
-                            LockInfo(False, False), True)
+                            LockInfo(True, False), True)
         out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, [
             ICaseString("ALU")], LockInfo(False, True), True), [in_unit])
         assert simulate(
