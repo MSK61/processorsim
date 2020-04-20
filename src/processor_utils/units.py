@@ -46,7 +46,7 @@ import attr
 
 from container_utils import sorted_tuple
 import str_utils
-__all__ = ["FuncUnit", "LockInfo", "UnitModel"]
+__all__ = ["FuncUnit", "LockInfo", "sorted_models", "UnitModel"]
 # unit attributes
 UNIT_CAPS_KEY = "capabilities"
 UNIT_MEM_KEY = "memoryAccess"

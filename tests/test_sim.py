@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.43.2, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.44.2, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -88,6 +88,25 @@ class FlowTest(TestCase):
 class PipelineTest(TestCase):
 
     """Test case for instruction flow in the pipeline"""
+
+    def test_instructions_are_loaded_to_lexicographically_inputs_first(self):
+        """Test instructions are fed into sorted input units.
+
+        `self` is this test case.
+
+        """
+        in_unit = UnitModel(ICaseString("input 1"), 1, [ICaseString("ALU")],
+                            LockInfo(True, False), False)
+        out_unit = FuncUnit(UnitModel(ICaseString("output 1"), 1, [
+            ICaseString("ALU")], LockInfo(False, True), True), [in_unit])
+        in_out_unit = UnitModel(ICaseString("input 2"), 1, [
+            ICaseString("ALU")], LockInfo(True, False), False)
+        assert simulate([HwInstruction(*instr_params) for instr_params in [
+            [[], ICaseString("R1"), ICaseString("ALU")]]], HwSpec(
+                ProcessorDesc([in_unit], [out_unit], [in_out_unit], []))) == [
+                    BagValDict(cp_util) for cp_util in
+                    [{ICaseString("input 1"): [InstrState(0)]},
+                     {ICaseString("output 1"): [InstrState(0)]}]]
 
     def test_instructions_flow_seamlessly(self):
         """Test instructions are moved successfully along the pipeline.

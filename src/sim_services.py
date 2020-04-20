@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.44.0, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.44.2, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -55,6 +55,7 @@ from more_itertools import first_true
 
 from container_utils import BagValDict
 from processor_utils import ProcessorDesc
+import processor_utils.units
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from program_defs import HwInstruction
 from reg_access import AccessType, RegAccessQueue, RegAccQBuilder
@@ -485,10 +486,10 @@ def _fill_cp_util(
 
     """
     _flush_outputs(_get_out_ports(processor), util_info)
-    _fill_inputs(
-        _build_cap_map(chain(processor.in_out_ports, processor.in_ports)),
-        program, util_info,
-        _mov_flights(chain(processor.out_ports, processor.internal_units),
+    in_units = chain(processor.in_out_ports, processor.in_ports)
+    _fill_inputs(_build_cap_map(processor_utils.units.sorted_models(in_units)),
+                 program, util_info, _mov_flights(
+                     chain(processor.out_ports, processor.internal_units),
                      program, util_info), issue_rec)
 
 
