@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.44.0, python 3.7.6, Fedora release
+# environment:  Visual Studdio Code 1.44.2, python 3.7.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
@@ -61,8 +61,8 @@ from .exception import BadEdgeError, BadWidthError, DupElemError
 from . import optimization
 from . import port_defs
 from . import units
-from .units import FuncUnit, sorted_models, UNIT_CAPS_KEY, UNIT_MEM_KEY, \
-    UnitModel, UNIT_NAME_KEY, UNIT_RLOCK_KEY, UNIT_WIDTH_KEY, UNIT_WLOCK_KEY
+from .units import FuncUnit, UNIT_CAPS_KEY, UNIT_MEM_KEY, UnitModel, \
+    UNIT_NAME_KEY, UNIT_RLOCK_KEY, UNIT_WIDTH_KEY, UNIT_WLOCK_KEY
 __all__ = ["exception", "get_abilities", "load_isa", "load_proc_desc",
            "ProcessorDesc", "units"]
 _T = typing.TypeVar("_T")
@@ -486,11 +486,11 @@ class ProcessorDesc:
 
     """Processor description"""
 
-    in_ports: Tuple[UnitModel, ...] = attr.ib(converter=sorted_models)
+    in_ports: Tuple[UnitModel, ...] = attr.ib(converter=_get_frozen_lst)
 
     out_ports: Tuple[FuncUnit, ...] = attr.ib(converter=_sorted_units)
 
-    in_out_ports: Tuple[UnitModel, ...] = attr.ib(converter=sorted_models)
+    in_out_ports: Tuple[UnitModel, ...] = attr.ib(converter=_get_frozen_lst)
 
     internal_units: Tuple[FuncUnit, ...] = attr.ib(converter=_get_frozen_lst)
 
