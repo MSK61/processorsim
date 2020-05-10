@@ -19,7 +19,7 @@
 ############################################################
 language: python
 dist: xenial
-python: 3.7
+python: 3.8
 install:
   - pip install pipenv
   - PIPENV_VERBOSITY=-1 pipenv sync -d
