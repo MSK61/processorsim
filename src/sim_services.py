@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.44.2, python 3.7.6, Fedora release
-#               31 (Thirty One)
+# environment:  Visual Studdio Code 1.45.1, python 3.8.2, Fedora release
+#               32 (Thirty Two)
 #
 # notes:        This is a private program.
 #
@@ -254,11 +254,9 @@ def _accept_instr(instr: int, inputs: Iterable[UnitModel], util_info:
     returns False.
 
     """
-    if mem_busy:
-        return False
-
     acceptor = first_true(
-        inputs, pred=lambda unit: _space_avail(unit, util_info))
+        inputs, pred=lambda unit:
+        not (mem_busy and unit.mem_access) and _space_avail(unit, util_info))
 
     if not acceptor:
         return False
