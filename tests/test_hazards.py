@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.45.1, python 3.8.2, Fedora release
+# environment:  Visual Studdio Code 1.45.1, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -156,15 +156,15 @@ class TestStructural:
                             LockInfo(True, False), in_mem_util)
         out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, [
             ICaseString("ALU")], LockInfo(False, True), True), [in_unit])
+        res_util = itertools.chain(
+            more_itertools.prepend({ICaseString("input"): [InstrState(
+                0)]}, mid_cp_util), [{ICaseString("output"): [InstrState(1)]}])
         assert simulate(
             [HwInstruction(*instr_params) for instr_params in
              [[[], ICaseString("R1"), ICaseString("ALU")],
               [[], ICaseString("R2"), ICaseString("ALU")]]],
             HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
-                BagValDict(cp_util) for cp_util in
-                itertools.chain(more_itertools.prepend(
-                    {ICaseString("input"): [InstrState(0)]}, mid_cp_util),
-                                [{ICaseString("output"): [InstrState(1)]}])]
+                BagValDict(cp_util) for cp_util in res_util]
 
 
 class WarTest(TestCase):
