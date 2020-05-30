@@ -28,6 +28,5 @@
         "**/__pycache__": true,
         "**/.pytest_cache": true,
         "src/.mypy_cache": true
-    },
-    "python.pythonPath": ".venv/bin/python"
+    }
 }
