@@ -166,6 +166,23 @@ class TestStructural:
             HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
                 BagValDict(cp_util) for cp_util in res_util]
 
+    def test_mem_util_in_earlier_inputs_affects_later_ones(self):
+        """Test propagation of memory utilization among inputs.
+
+        `self` is this test case.
+
+        """
+        full_sys_unit = UnitModel(ICaseString("fullSys"), 2, [
+            ICaseString("ALU")], LockInfo(True, False), True)
+        res_util = map(lambda instr: BagValDict(
+            {ICaseString("fullSys"): [InstrState(instr)]}), range(2))
+        assert simulate(
+            [HwInstruction(*instr_params) for instr_params in
+             [[[], ICaseString("R1"), ICaseString("ALU")],
+              [[], ICaseString("R2"), ICaseString("ALU")]]],
+            HwSpec(ProcessorDesc([], [], [full_sys_unit], []))) == list(
+                res_util)
+
 
 class WarTest(TestCase):
 

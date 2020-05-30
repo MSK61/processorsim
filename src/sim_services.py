@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.45.1, python 3.8.2, Fedora release
+# environment:  Visual Studdio Code 1.45.1, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -160,6 +160,16 @@ def simulate(program: Sequence[HwInstruction], hw_info: HwSpec) -> List[
     return util_tbl
 
 
+@attr.s
+class _AcceptStatus:
+
+    """Instruction acceptance status"""
+
+    accepted: bool = attr.ib(default=True, init=False)
+
+    mem_used: bool = attr.ib()
+
+
 @attr.s(auto_attribs=True, frozen=True)
 class _HostedInstr:
 
@@ -239,30 +249,28 @@ class _TransitionUtil:
     new_util: Iterable[InstrState]
 
 
-def _accept_instr(instr: int, inputs: Iterable[UnitModel], util_info:
-                  BagValDict[ICaseString, InstrState], mem_busy: bool) -> bool:
-    """Try to accept the given instruction to the unit.
+def _accept_instr(issue_rec: _IssueInfo, inputs: Iterable[UnitModel],
+                  util_info: BagValDict[ICaseString, InstrState],
+                  accept_res: _AcceptStatus) -> None:
+    """Try to accept the next instruction to the unit.
 
-    `instr` is the index of the instruction to try to accept.
+    `issue_rec` is the issue record.
     `inputs` are the input processing units to select from for issuing
              the instruction.
     `util_info` is the unit utilization information.
-    `mem_busy` is the memory busy flag.
+    `accept_res` is the instruction acceptance result.
     The function tries to find an appropriate unit to issue the
-    instruction to. It then updates the utilization information. It
-    returns True if the instruction is issued to a unit, otherwise
-    returns False.
+    instruction to. It then updates the utilization information.
 
     """
-    acceptor = first_true(
-        inputs, pred=lambda unit:
-        not (mem_busy and unit.mem_access) and _space_avail(unit, util_info))
+    acceptor = first_true(inputs, pred=lambda unit:
+                          not (accept_res.mem_used and unit.mem_access) and
+                          _space_avail(unit, util_info))
+    accept_res.accepted = cast(bool, acceptor)
 
-    if not acceptor:
-        return False
-
-    util_info[acceptor.name].append(InstrState(instr))
-    return True
+    if acceptor:
+        _issue_instr(util_info[acceptor.name], acceptor.mem_access, issue_rec,
+                     accept_res)
 
 
 def _add_access(instr: HwInstruction, instr_index: int,
@@ -506,11 +514,11 @@ def _fill_inputs(
 
     """
     prog_len = len(program)
+    accept_res = _AcceptStatus(mem_busy)
 
-    while issue_rec.entered < prog_len and _accept_instr(
-            issue_rec.entered, cap_unit_map.get(
-                program[issue_rec.entered].categ, []), util_info, mem_busy):
-        issue_rec.bump_input()
+    while issue_rec.entered < prog_len and accept_res.accepted:
+        _accept_instr(issue_rec, cap_unit_map.get(
+            program[issue_rec.entered].categ, []), util_info, accept_res)
 
 
 def _fill_unit(unit: FuncUnit, program: Sequence[HwInstruction],
@@ -600,6 +608,23 @@ def _get_out_ports(processor: ProcessorDesc) -> "chain[UnitModel]":
     """
     return chain(processor.in_out_ports,
                  map(lambda port: port.model, processor.out_ports))
+
+
+def _issue_instr(instr_lst: MutableSequence[InstrState], mem_access: bool,
+                 issue_rec: _IssueInfo, accept_res: _AcceptStatus) -> None:
+    """Issue the next instruction to the issue list.
+
+    `instr_lst` is the list of hosted instructions in  a unit.
+    `mem_access` is the hosting unit memory access flag.
+    `issue_rec` is the issue record.
+    `accept_res` is the instruction acceptance result.
+
+    """
+    instr_lst.append(InstrState(issue_rec.entered))
+    issue_rec.bump_input()
+
+    if mem_access:
+        accept_res.mem_used = True
 
 
 def _mov_candidate(candidate: InstrState, unit_util:
