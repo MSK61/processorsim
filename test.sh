@@ -34,6 +34,6 @@
 #
 ############################################################
 set -e
-pytest --cov src --flakes --pycodestyle --pylint $*
+pytest --cov src --flake8 --pylint $*
 cd src
 pytest -m "mypy or pylint" --mypy --pylint $*

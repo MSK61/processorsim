@@ -4,13 +4,12 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-pytest-codestyle = "*"
 pytest-cov = "*"
-pytest-flakes = "*"
 pytest-pylint = "*"
 pytest-travis-fold = "*"
 pytest-mypy = "*"
 coveralls = "*"
+pytest-flake8 = "*"
 
 [packages]
 networkx = "*"
