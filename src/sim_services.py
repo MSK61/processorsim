@@ -43,6 +43,7 @@ import copy
 import enum
 from enum import auto
 import heapq
+import itertools
 from itertools import chain
 import string
 import typing
@@ -178,6 +179,16 @@ class _HostedInstr:
     host: ICaseString
 
     index_in_host: int
+
+
+@attr.s
+class _InstrMovStatus:
+
+    """Status of moving instructions"""
+
+    moved: int = attr.ib(default=0, init=False)
+
+    mem_used: bool = attr.ib(default=True, init=False)
 
 
 class _IssueInfo:
@@ -534,12 +545,13 @@ def _fill_unit(unit: FuncUnit, program: Sequence[HwInstruction],
     """
     candidates = _get_candidates(unit, program, util_info)
     # instructions sorted by program index
-    mem_busy = _mov_candidates(candidates, unit.model, util_info)
+    mov_res = _mov_candidates(candidates, unit.model, util_info)
     # Need to sort instructions by their index in the host in a
     # descending order.
-    _clr_src_units(sorted(candidates, key=lambda candid: candid.index_in_host,
-                          reverse=True), util_info)
-    return mem_busy
+    _clr_src_units(
+        sorted(itertools.islice(candidates, mov_res.moved), key=lambda candid:
+               candid.index_in_host, reverse=True), util_info)
+    return mov_res.mem_used
 
 
 def _flush_output(out_instr_lst: MutableSequence[InstrState]) -> None:
@@ -641,24 +653,26 @@ def _mov_candidate(candidate: InstrState, unit_util:
     return mem_access
 
 
-def _mov_candidates(candidates: Iterable[_HostedInstr], unit: UnitModel,
-                    util_info: BagValDict[ICaseString, InstrState]) -> bool:
+def _mov_candidates(
+        candidates: Iterable[_HostedInstr], unit: UnitModel,
+        util_info: BagValDict[ICaseString, InstrState]) -> _InstrMovStatus:
     """Move candidate instructions between units.
 
     `candidates` are the candidate instructions to move.
     `unit` is the destination unit.
     `util_info` is the unit utilization information.
-    The function returns a flag indicating if a memory access is
-    currently in progess.
 
     """
-    mem_busy = False
+    candid_seq = enumerate(candidates, 1)
+    mov_res = _InstrMovStatus()
 
-    for cur_candid in candidates:
-        mem_busy = _mov_candidate(util_info[cur_candid.host][
-            cur_candid.index_in_host], util_info[unit.name], unit.mem_access)
+    for mov_res.moved, cur_candid in candid_seq:
+        if _mov_candidate(util_info[cur_candid.host][cur_candid.index_in_host],
+                          util_info[unit.name], unit.mem_access):
+            return mov_res
 
-    return mem_busy
+    mov_res.mem_used = False
+    return mov_res
 
 
 def _mov_flights(
