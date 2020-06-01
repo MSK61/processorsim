@@ -42,7 +42,6 @@
 import itertools
 from unittest import TestCase
 
-import more_itertools
 import pytest
 from pytest import mark
 
@@ -139,26 +138,32 @@ class TestStructural:
 
     """Test case for structural hazards"""
 
-    @mark.parametrize(
-        "in_mem_util, mid_cp_util",
-        [(True, [{ICaseString("output"): [InstrState(0)]}, {ICaseString(
-            "input"): [InstrState(1)]}]), (False, [{ICaseString("output"): [
-                InstrState(0)], ICaseString("input"): [InstrState(1)]}])])
-    def test_hazard(self, in_mem_util, mid_cp_util):
+    @mark.parametrize("unit_width, in_mem_util, util_b4_last", [
+        (1, True,
+         [{ICaseString("input"): [InstrState(0)]}, {ICaseString("output"): [
+             InstrState(0)]}, {ICaseString("input"): [InstrState(1)]}]),
+        (1, False,
+         [{ICaseString("input"): [InstrState(0)]}, {ICaseString("output"): [
+             InstrState(0)], ICaseString("input"): [InstrState(1)]}]),
+        (2, False, [{ICaseString("input"): [InstrState(0), InstrState(1)]}, {
+            ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)],
+            ICaseString("output"): [InstrState(0)]}])])
+    def test_hazard(self, unit_width, in_mem_util, util_b4_last):
         """Test detecting structural hazards.
 
         `self` is this test case.
+        `unit_width` is the width of any unit.
         `in_mem_util` is the input unit memory utilization flag.
-        `mid_cp_util` is unit utilization for middle clock pulses.
+        `util_b4_last` is unit utilization for all clock pulses before
+                       the last one.
 
         """
-        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
-                            LockInfo(True, False), in_mem_util)
-        out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, [
+        in_unit = UnitModel(ICaseString("input"), unit_width, [
+            ICaseString("ALU")], LockInfo(True, False), in_mem_util)
+        out_unit = FuncUnit(UnitModel(ICaseString("output"), unit_width, [
             ICaseString("ALU")], LockInfo(False, True), True), [in_unit])
         res_util = itertools.chain(
-            more_itertools.prepend({ICaseString("input"): [InstrState(
-                0)]}, mid_cp_util), [{ICaseString("output"): [InstrState(1)]}])
+            util_b4_last, [{ICaseString("output"): [InstrState(1)]}])
         assert simulate(
             [HwInstruction(*instr_params) for instr_params in
              [[[], ICaseString("R1"), ICaseString("ALU")],
@@ -182,28 +187,6 @@ class TestStructural:
               [[], ICaseString("R2"), ICaseString("ALU")]]],
             HwSpec(ProcessorDesc([], [], [full_sys_unit], []))) == list(
                 res_util)
-
-    def test_mem_util_is_allowed_once_per_internal_unit(self):
-        """Test propagation of memory utilization among internal units.
-
-        `self` is this test case.
-
-        """
-        in_unit = UnitModel(ICaseString("input"), 2, [ICaseString("ALU")],
-                            LockInfo(True, False), False)
-        out_unit = FuncUnit(UnitModel(ICaseString("output"), 2, [
-            ICaseString("ALU")], LockInfo(False, True), True), [in_unit])
-        res_util = itertools.chain(
-            [{ICaseString("input"): [InstrState(0), InstrState(1)]},
-             {ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)],
-              ICaseString("output"): [InstrState(0)]}],
-            [{ICaseString("output"): [InstrState(1)]}])
-        assert simulate(
-            [HwInstruction(*instr_params) for instr_params in
-             [[[], ICaseString("R1"), ICaseString("ALU")],
-              [[], ICaseString("R2"), ICaseString("ALU")]]],
-            HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
-                BagValDict(cp_util) for cp_util in res_util]
 
 
 class WarTest(TestCase):
