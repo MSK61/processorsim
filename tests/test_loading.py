@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.44.0, python 3.7.6, Fedora release
-#               31 (Thirty One)
+# environment:  Visual Studdio Code 1.45.1, python 3.8.3, Fedora release
+#               32 (Thirty Two)
 #
 # notes:        This is a private program.
 #
@@ -301,12 +301,11 @@ class TestUnits:
         `self` is this test case.
 
         """
-        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
-                            LockInfo(True, False), False)
-        in_units = [in_unit]
+        in_units = [UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
+                              LockInfo(True, False), False)]
         mid1 = UnitModel(ICaseString("middle 1"), 1, [ICaseString("ALU")],
                          LockInfo(False, False), False)
-        mid1_unit = FuncUnit(mid1, [in_unit])
+        mid1_unit = FuncUnit(mid1, in_units)
         mid2 = UnitModel(ICaseString("middle 2"), 1, [ICaseString("ALU")],
                          LockInfo(False, False), False)
         mid2_unit = FuncUnit(mid2, [mid1])

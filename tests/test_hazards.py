@@ -87,14 +87,14 @@ class RawTest(TestCase):
         `self` is this test case.
 
         """
-        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
-                            LockInfo(False, False), False)
+        in_units = [UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
+                              LockInfo(False, False), False)]
         mid = UnitModel(ICaseString("middle"), 1, [ICaseString("ALU")],
                         LockInfo(True, False), False)
         out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")],
                              LockInfo(False, True), False)
-        proc_desc = ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
-                                  [FuncUnit(mid, [in_unit])])
+        proc_desc = ProcessorDesc(in_units, [FuncUnit(out_unit, [mid])], [],
+                                  [FuncUnit(mid, in_units)])
         assert simulate(
             [HwInstruction(*instr_params) for instr_params in
              [[[], ICaseString("R1"), ICaseString("ALU")],
@@ -152,17 +152,17 @@ class TestStructural:
         `mid_cp_util` is unit utilization for middle clock pulses.
 
         """
-        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
-                            LockInfo(True, False), in_mem_util)
+        in_units = [UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
+                              LockInfo(True, False), in_mem_util)]
         out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, [
-            ICaseString("ALU")], LockInfo(False, True), True), [in_unit])
+            ICaseString("ALU")], LockInfo(False, True), True), in_units)
         res_util = itertools.chain(prepend({ICaseString("input"): [InstrState(
             0)]}, mid_cp_util), [{ICaseString("output"): [InstrState(1)]}])
         assert simulate(
             [HwInstruction(*instr_params) for instr_params in
              [[[], ICaseString("R1"), ICaseString("ALU")],
               [[], ICaseString("R2"), ICaseString("ALU")]]],
-            HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
+            HwSpec(ProcessorDesc(in_units, [out_unit], [], []))) == [
                 BagValDict(cp_util) for cp_util in res_util]
 
     def test_mem_util_in_earlier_inputs_affects_later_ones(self):
@@ -194,17 +194,17 @@ class TestStructural:
         `out_width` is the width of output units.
 
         """
-        in_unit = UnitModel(ICaseString("input"), 2, [ICaseString("ALU")],
-                            LockInfo(True, False), False)
+        in_units = [UnitModel(ICaseString("input"), 2, [ICaseString("ALU")],
+                              LockInfo(True, False), False)]
         out_units = map(lambda output: UnitModel(
             ICaseString(output), out_width, [ICaseString("ALU")], LockInfo(
                 False, True), True), prepend(main_out_unit, extra_out_units))
-        out_units = map(lambda output: FuncUnit(output, [in_unit]), out_units)
+        out_units = map(lambda output: FuncUnit(output, in_units), out_units)
         assert simulate(
             [HwInstruction(*instr_params) for instr_params in
              [[[], ICaseString("R1"), ICaseString("ALU")],
               [[], ICaseString("R2"), ICaseString("ALU")]]],
-            HwSpec(ProcessorDesc([in_unit], out_units, [], []))) == [
+            HwSpec(ProcessorDesc(in_units, out_units, [], []))) == [
                 BagValDict(cp_util) for cp_util in
                 [{ICaseString("input"): [InstrState(0), InstrState(1)]},
                  {ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)],
@@ -222,15 +222,15 @@ class WarTest(TestCase):
         `self` is this test case.
 
         """
-        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
-                            LockInfo(False, False), False)
+        in_units = [UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
+                              LockInfo(False, False), False)]
         out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, [
-            ICaseString("ALU")], LockInfo(True, True), False), [in_unit])
+            ICaseString("ALU")], LockInfo(True, True), False), in_units)
         assert simulate(
             [HwInstruction(*instr_params) for instr_params in
              [[[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")], [
                  [], ICaseString("R1"), ICaseString("ALU")]]],
-            HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
+            HwSpec(ProcessorDesc(in_units, [out_unit], [], []))) == [
                 BagValDict(cp_util) for cp_util in
                 [{ICaseString("input"): [InstrState(0)]},
                  {ICaseString("input"): [InstrState(1)], ICaseString("output"):
