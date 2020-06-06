@@ -685,12 +685,11 @@ def _mov_flights(
     currently in progess.
 
     """
-    mem_busy = False
-
     for cur_dst in dst_units:
-        mem_busy = _fill_unit(cur_dst, program, util_info)
+        if _fill_unit(cur_dst, program, util_info):
+            return True
 
-    return mem_busy
+    return False
 
 
 def _regs_avail(

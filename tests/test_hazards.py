@@ -54,6 +54,35 @@ from sim_services import HwSpec, InstrState, simulate, StallState
 from str_utils import ICaseString
 
 
+class MemUtilTest(TestCase):
+
+    """Test case for memory utilization propagation across units"""
+
+    def test_mem_util_is_allowed_once_in_destination_units(self):
+        """Test propagation of memory utilization among consumer units.
+
+        `self` is this test case.
+
+        """
+        in_unit = UnitModel(ICaseString("input"), 2, [ICaseString("ALU")],
+                            LockInfo(True, False), False)
+        out_units = [
+            FuncUnit(UnitModel(ICaseString("output 1"), 1, [
+                ICaseString("ALU")], LockInfo(False, True), True), [in_unit]),
+            FuncUnit(UnitModel(ICaseString("output 2"), 1, [
+                ICaseString("ALU")], LockInfo(False, True), True), [in_unit])]
+        assert simulate(
+            [HwInstruction(*instr_params) for instr_params in
+             [[[], ICaseString("R1"), ICaseString("ALU")],
+              [[], ICaseString("R2"), ICaseString("ALU")]]],
+            HwSpec(ProcessorDesc([in_unit], out_units, [], []))) == [
+                BagValDict(cp_util) for cp_util in
+                [{ICaseString("input"): [InstrState(0), InstrState(1)]},
+                 {ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)],
+                  ICaseString("output 1"): [InstrState(0)]},
+                 {ICaseString("output 1"): [InstrState(1)]}]]
+
+
 class RarTest(TestCase):
 
     """Test case for RAR hazards"""
