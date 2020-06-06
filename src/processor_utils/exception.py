@@ -32,15 +32,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
-#               31 (Thirty One)
+# environment:  Visual Studdio Code 1.45.1, python 3.8.3, Fedora release
+#               32 (Thirty Two)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
 from string import Template
-from typing import cast
 
 import attr
 
@@ -60,10 +59,8 @@ class BadEdgeError(RuntimeError):
         `edge` is the bad edge.
 
         """
-        # Casting dictionary values since the type hint in typeshed for
-        # Template.substitute unnecessarily stipulates string values.
-        RuntimeError.__init__(self, Template(msg_tmpl).substitute(
-            {self.EDGE_KEY: cast(str, edge)}))
+        RuntimeError.__init__(
+            self, Template(msg_tmpl).substitute({self.EDGE_KEY: edge}))
         self._edge = edge
 
     @property
@@ -96,10 +93,8 @@ class BadWidthError(RuntimeError):
         `width` is the bad width.
 
         """
-        # Casting dictionary values since the type hint in typeshed for
-        # Template.substitute unnecessarily stipulates string values.
-        RuntimeError.__init__(self, Template(msg_tmpl).substitute({
-            self.UNIT_KEY: cast(str, unit), self.WIDTH_KEY: cast(str, width)}))
+        RuntimeError.__init__(self, Template(msg_tmpl).substitute(
+            {self.UNIT_KEY: unit, self.WIDTH_KEY: width}))
         self._unit = unit
         self._width = width
 
@@ -167,12 +162,9 @@ class BlockedCapError(RuntimeError):
         `blocking_info` is the blocking information.
 
         """
-        # Casting dictionary values since the type hint in typeshed for
-        # Template.substitute unnecessarily stipulates string values.
-        RuntimeError.__init__(self, Template(msg_tmpl).substitute({
-            self.CAPABILITY_KEY:
-            cast(str, blocking_info.capability_info.reporting_name),
-            self.PORT_KEY: cast(str, blocking_info.port_info.reporting_name)}))
+        RuntimeError.__init__(self, Template(msg_tmpl).substitute(
+            {self.CAPABILITY_KEY: blocking_info.capability_info.reporting_name,
+             self.PORT_KEY: blocking_info.port_info.reporting_name}))
         self._capability = blocking_info.capability_info.std_name
         self._port = blocking_info.port_info.std_name
 
@@ -218,10 +210,8 @@ class DeadInputError(RuntimeError):
         `port` is the blocked input port.
 
         """
-        # Casting dictionary values since the type hint in typeshed for
-        # Template.substitute unnecessarily stipulates string values.
-        RuntimeError.__init__(self, Template(msg_tmpl).substitute(
-            {self.PORT_KEY: cast(str, port)}))
+        RuntimeError.__init__(
+            self, Template(msg_tmpl).substitute({self.PORT_KEY: port}))
         self._port = port
 
     @property
@@ -251,11 +241,8 @@ class DupElemError(RuntimeError):
         `new_elem` is the element just discovered.
 
         """
-        # Casting dictionary values since the type hint in typeshed for
-        # Template.substitute unnecessarily stipulates string values.
-        RuntimeError.__init__(
-            self, Template(msg_tmpl).substitute({self.OLD_ELEM_KEY: cast(
-                str, old_elem), self.NEW_ELEM_KEY: cast(str, new_elem)}))
+        RuntimeError.__init__(self, Template(msg_tmpl).substitute(
+            {self.OLD_ELEM_KEY: old_elem, self.NEW_ELEM_KEY: new_elem}))
         self._old_elem = old_elem
         self._new_elem = new_elem
 
@@ -304,11 +291,9 @@ class MultilockError(RuntimeError):
         `capability` is the capability for which the path was computed.
 
         """
-        # Casting dictionary values since the type hint in typeshed for
-        # Template.substitute unnecessarily stipulates string values.
         RuntimeError.__init__(self, Template(msg_tmpl).substitute(
-            {self.CAP_KEY: cast(str, capability), self.LOCK_TYPE_KEY:
-             cast(str, lock_type), self.START_KEY: cast(str, start)}))
+            {self.CAP_KEY: capability, self.LOCK_TYPE_KEY: lock_type,
+             self.START_KEY: start}))
         self._start = start
         self._lock_type = lock_type
         self._capability = capability

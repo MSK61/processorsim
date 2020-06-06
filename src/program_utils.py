@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.42.0, python 3.7.6, Fedora release
-#               31 (Thirty One)
+# environment:  Visual Studdio Code 1.45.1, python 3.8.3, Fedora release
+#               32 (Thirty Two)
 #
 # notes:        This is a private program.
 #
@@ -42,7 +42,7 @@ import logging
 import operator
 from re import split
 import string
-from typing import cast, Iterable, List, Mapping
+from typing import Iterable, List, Mapping
 
 import attr
 
@@ -67,11 +67,8 @@ class CodeError(RuntimeError):
         `instr` is the instruction causing the error.
 
         """
-        # Casting dictionary values since the type hint in typeshed for
-        # Template.substitute unnecessarily stipulates string values.
-        RuntimeError.__init__(
-            self, string.Template(msg_tmpl).substitute({self.INSTR_KEY: cast(
-                str, instr), self.LINE_NUM_KEY: cast(str, line)}))
+        RuntimeError.__init__(self, string.Template(msg_tmpl).substitute(
+            {self.INSTR_KEY: instr, self.LINE_NUM_KEY: line}))
         self._line = line
         self._instr = instr
 
