@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.45.1, python 3.8.3, Fedora release
-#               32 (Thirty Two)
+# environment:  Visual Studdio Code 1.44.2, python 3.7.6, Fedora release
+#               31 (Thirty One)
 #
 # notes:        This is a private program.
 #
@@ -95,15 +95,15 @@ class PipelineTest(TestCase):
         `self` is this test case.
 
         """
-        in_units = [UnitModel(ICaseString("input 1"), 1, [ICaseString("ALU")],
-                              LockInfo(True, False), False)]
+        in_unit = UnitModel(ICaseString("input 1"), 1, [ICaseString("ALU")],
+                            LockInfo(True, False), False)
         out_unit = FuncUnit(UnitModel(ICaseString("output 1"), 1, [
-            ICaseString("ALU")], LockInfo(False, True), True), in_units)
+            ICaseString("ALU")], LockInfo(False, True), True), [in_unit])
         in_out_unit = UnitModel(ICaseString("input 2"), 1, [
             ICaseString("ALU")], LockInfo(True, False), False)
         assert simulate([HwInstruction(*instr_params) for instr_params in [
             [[], ICaseString("R1"), ICaseString("ALU")]]], HwSpec(
-                ProcessorDesc(in_units, [out_unit], [in_out_unit], []))) == [
+                ProcessorDesc([in_unit], [out_unit], [in_out_unit], []))) == [
                     BagValDict(cp_util) for cp_util in
                     [{ICaseString("input 1"): [InstrState(0)]},
                      {ICaseString("output 1"): [InstrState(0)]}]]
