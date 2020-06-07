@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.44.0, python 3.7.6, Fedora release
-#               31 (Thirty One)
+# environment:  Visual Studdio Code 1.45.1, python 3.8.3, Fedora release
+#               32 (Thirty Two)
 #
 # notes:        This is a private program.
 #
@@ -303,18 +303,18 @@ class TestUnits:
         """
         in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
                             LockInfo(True, False), False)
-        in_units = [in_unit]
-        mid1 = UnitModel(ICaseString("middle 1"), 1, [ICaseString("ALU")],
-                         LockInfo(False, False), False)
-        mid1_unit = FuncUnit(mid1, [in_unit])
-        mid2 = UnitModel(ICaseString("middle 2"), 1, [ICaseString("ALU")],
-                         LockInfo(False, False), False)
-        mid2_unit = FuncUnit(mid2, [mid1])
-        out_units = [FuncUnit(UnitModel(ICaseString("output"), 1, [
-            ICaseString("ALU")], LockInfo(False, True), False), [mid2])]
+        mid1_unit = UnitModel(ICaseString("middle 1"), 1, [ICaseString("ALU")],
+                              LockInfo(False, False), False)
+        mid2_unit = UnitModel(ICaseString("middle 2"), 1, [ICaseString("ALU")],
+                              LockInfo(False, False), False)
+        out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")],
+                             LockInfo(False, True), False)
         assert ProcessorDesc(
-            in_units, out_units, [], [mid2_unit, mid1_unit]) != ProcessorDesc(
-                in_units, out_units, [], [mid1_unit, mid2_unit])
+            [in_unit], [FuncUnit(out_unit, [mid2_unit])], [],
+            [FuncUnit(mid2_unit, [mid1_unit]),
+             FuncUnit(mid1_unit, [in_unit])]) != ProcessorDesc(
+                 [in_unit], [FuncUnit(out_unit, [mid2_unit])], [], [FuncUnit(
+                     mid1_unit, [in_unit]), FuncUnit(mid2_unit, [mid1_unit])])
 
     # pylint: disable=invalid-name
     @mark.parametrize("in_file, dup_unit", [
