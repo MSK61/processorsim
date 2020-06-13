@@ -78,7 +78,7 @@ class MemUtilTest(TestCase):
               [[], ICaseString("R2"), ICaseString("ALU")]]],
             HwSpec(ProcessorDesc([in_unit], out_units, [], []))) == [
                 BagValDict(cp_util) for cp_util in
-                [{ICaseString("input"): [InstrState(0), InstrState(1)]},
+                [{ICaseString("input"): list(map(InstrState, range(2)))},
                  {ICaseString("output 1"): [InstrState(0)],
                   ICaseString("output 2"): [InstrState(1)]}]]
 
