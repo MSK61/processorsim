@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.45.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.46.0, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -685,11 +685,14 @@ def _mov_flights(
     currently in progess.
 
     """
-    for cur_dst in dst_units:
-        if _fill_unit(cur_dst, program, util_info):
-            return True
+    mem_busy = False
 
-    return False
+    for cur_dst in dst_units:
+        if (not mem_busy or not cur_dst.model.mem_access) and _fill_unit(
+                cur_dst, program, util_info):
+            mem_busy = True
+
+    return mem_busy
 
 
 def _regs_avail(
