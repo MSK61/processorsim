@@ -688,7 +688,7 @@ def _mov_flights(
     mem_busy = False
 
     for cur_dst in dst_units:
-        if (not mem_busy or not cur_dst.model.mem_access) and _fill_unit(
+        if not (mem_busy and cur_dst.model.mem_access) and _fill_unit(
                 cur_dst, program, util_info):
             mem_busy = True
 
