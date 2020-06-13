@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.45.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.46.0, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -72,8 +72,8 @@ class RarTest(TestCase):
              [[[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")],
               [[ICaseString("R1")], ICaseString("R3"), ICaseString("ALU")]]],
             HwSpec(ProcessorDesc([], [], [full_sys_unit], []))) == [
-                BagValDict(cp_util) for cp_util in [{ICaseString(TEST_DIR): [
-                    InstrState(instr) for instr in [0, 1]]}]]
+                BagValDict(cp_util) for cp_util in
+                [{ICaseString(TEST_DIR): list(map(InstrState, range(2)))}]]
 
 
 class RawTest(TestCase):
@@ -206,7 +206,7 @@ class TestStructural:
               [[], ICaseString("R2"), ICaseString("ALU")]]],
             HwSpec(ProcessorDesc([in_unit], out_units, [], []))) == [
                 BagValDict(cp_util) for cp_util in
-                [{ICaseString("input"): [InstrState(0), InstrState(1)]},
+                [{ICaseString("input"): list(map(InstrState, range(2)))},
                  {ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)],
                   ICaseString(main_out_unit): [InstrState(0)]},
                  {ICaseString(main_out_unit): [InstrState(1)]}]]
