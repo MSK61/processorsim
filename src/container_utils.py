@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.44.0, python 3.7.6, Fedora release
-#               31 (Thirty One)
+# environment:  Visual Studdio Code 1.46.0, python 3.8.3, Fedora release
+#               32 (Thirty Two)
 #
 # notes:        This is a private program.
 #
@@ -42,8 +42,7 @@ import collections
 import itertools
 from operator import eq, itemgetter
 import typing
-from typing import Callable, Dict, Generic, Iterable, List, Mapping, \
-    Optional, Tuple, TypeVar
+from typing import Callable, Generic, Iterable, List, Optional, Tuple, TypeVar
 
 import more_itertools
 
@@ -51,17 +50,6 @@ from str_utils import format_obj
 _KT = TypeVar("_KT")
 _T = TypeVar("_T")
 _VT = TypeVar("_VT")
-
-
-def concat_dicts(dict1: Mapping[object, object],
-                 dict2: Mapping[object, object]) -> Dict[object, object]:
-    """Concatenate two dictionaries into a new one.
-
-    `dict1` is the first dictionary.
-    `dict2` is the second dictionary.
-
-    """
-    return {**dict1, **dict2}
 
 
 def sorted_tuple(elems: Iterable[_T],
@@ -79,8 +67,8 @@ class BagValDict(Generic[_KT, _VT]):
 
     """Dictionary with(unsorted) lists as values"""
 
-    def __init__(self, initial_dict: Optional[Mapping[_KT, Iterable[_VT]]] =
-                 None) -> None:
+    def __init__(self, initial_dict:
+                 Optional[typing.Mapping[_KT, Iterable[_VT]]] = None) -> None:
         """Create an empty dictionary.
 
         `self` is this dictionary.
@@ -208,7 +196,7 @@ class _IndexedSetBase(Generic[_T]):
 
         """
         self._index_func = index_func
-        self._std_form_map: Dict[object, _T] = {}
+        self._std_form_map: typing.Dict[object, _T] = {}
 
     def __repr__(self) -> str:
         """Return the official string of this indexed set.

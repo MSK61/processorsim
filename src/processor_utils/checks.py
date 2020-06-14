@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.44.0, python 3.7.6, Fedora release
-#               31 (Thirty One)
+# environment:  Visual Studdio Code 1.46.0, python 3.8.3, Fedora release
+#               32 (Thirty Two)
 #
 # notes:        This is a private program.
 #
@@ -49,7 +49,6 @@ import more_itertools
 import networkx
 from networkx import DiGraph, Graph
 
-import container_utils
 from str_utils import ICaseString
 from . import exception
 from .exception import BlockedCapError, ComponentInfo, MultilockError
@@ -684,6 +683,5 @@ def _update_graph(idx: object, unit: object, processor: Graph, width_graph:
     `unit_idx_map` is the mapping between unit names and indices.
 
     """
-    width_graph.add_node(idx, **container_utils.concat_dicts(
-        processor.nodes[unit], {_OLD_NODE_KEY: unit}))
+    width_graph.add_node(idx, **processor.nodes[unit], **{_OLD_NODE_KEY: unit})
     unit_idx_map[unit] = idx

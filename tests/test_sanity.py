@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.43.2, python 3.7.6, Fedora release
-#               31 (Thirty One)
+# environment:  Visual Studdio Code 1.46.0, python 3.8.3, Fedora release
+#               32 (Thirty Two)
 #
 # notes:        This is a private program.
 #
@@ -47,7 +47,6 @@ import pytest
 from pytest import mark, raises
 
 from test_utils import chk_error, read_proc_file, ValInStrCheck
-from container_utils import concat_dicts
 from processor_utils import exception, load_proc_desc
 from processor_utils.exception import MultilockError
 from processor_utils.units import UNIT_CAPS_KEY, UNIT_NAME_KEY, \
@@ -179,8 +178,6 @@ class TestMultiLock:
         paths don't have multiple locks.
 
         """
-        both_locks = map(lambda lock_prop: (lock_prop, True),
-                         [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY])
         load_proc_desc(
             {"units":
              [{UNIT_NAME_KEY: "ALU input", UNIT_WIDTH_KEY: 1,
@@ -188,10 +185,11 @@ class TestMultiLock:
               {UNIT_NAME_KEY: "MEM input", UNIT_WIDTH_KEY: 1, UNIT_CAPS_KEY:
                ["MEM"]}, {UNIT_NAME_KEY: "center", UNIT_WIDTH_KEY: 1,
                           UNIT_CAPS_KEY: ["ALU", "MEM"]},
-              {UNIT_NAME_KEY: "ALU output", UNIT_WIDTH_KEY: 1,
-               UNIT_CAPS_KEY: ["ALU"], UNIT_WLOCK_KEY: True},
-              concat_dicts({UNIT_NAME_KEY: "MEM output", UNIT_WIDTH_KEY: 1,
-                            UNIT_CAPS_KEY: ["MEM"]}, dict(both_locks))],
+              {UNIT_NAME_KEY: "ALU output", UNIT_WIDTH_KEY: 1, UNIT_CAPS_KEY: [
+                  "ALU"], UNIT_WLOCK_KEY: True},
+              {UNIT_NAME_KEY: "MEM output", UNIT_WIDTH_KEY: 1,
+               UNIT_CAPS_KEY: ["MEM"], **{lock_prop: True for lock_prop in [
+                   UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}}],
              "dataPath": [["ALU input", "center"], ["MEM input", "center"],
                           ["center", "ALU output"], ["center", "MEM output"]]})
 
@@ -210,17 +208,15 @@ class TestMultiLock:
         `lock_data` is the lock test data.
 
         """
-        in_locks = map(lambda lock_prop: (lock_prop, True),
-                       [UNIT_RLOCK_KEY, lock_data.prop_name])
-        out_locks = map(lambda lock_prop: (lock_prop, True),
-                        [UNIT_WLOCK_KEY, lock_data.prop_name])
         ex_info = raises(MultilockError, load_proc_desc, {
-            "units": [concat_dicts(
-                {UNIT_NAME_KEY: proc_desc.in_unit, UNIT_WIDTH_KEY: 1,
-                 UNIT_CAPS_KEY: [proc_desc.capability]}, dict(in_locks)),
-                      concat_dicts({UNIT_NAME_KEY: proc_desc.out_unit,
-                                    UNIT_WIDTH_KEY: 1, UNIT_CAPS_KEY:
-                                    [proc_desc.capability]}, dict(out_locks))],
+            "units": [{UNIT_NAME_KEY: proc_desc.in_unit, UNIT_WIDTH_KEY: 1,
+                       UNIT_CAPS_KEY: [proc_desc.capability],
+                       **{lock_prop: True for lock_prop in
+                          [UNIT_RLOCK_KEY, lock_data.prop_name]}},
+                      {UNIT_NAME_KEY: proc_desc.out_unit, UNIT_WIDTH_KEY: 1,
+                       UNIT_CAPS_KEY: [proc_desc.capability],
+                       **{lock_prop: True for lock_prop in
+                          [UNIT_WLOCK_KEY, lock_data.prop_name]}}],
             "dataPath": [[proc_desc.in_unit, proc_desc.out_unit]]})
         assert ex_info.value.start == ICaseString(proc_desc.in_unit)
         assert ex_info.value.lock_type == lock_data.lock_type
