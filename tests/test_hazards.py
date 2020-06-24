@@ -177,16 +177,14 @@ class TestStructural:
 
     """Test case for structural hazards"""
 
-    @mark.parametrize("unit_width, in_mem_util, util_b4_last", [
-        (1, True,
-         [{ICaseString("input"): [InstrState(0)]}, {ICaseString("output"): [
-             InstrState(0)]}, {ICaseString("input"): [InstrState(1)]}]),
-        (1, False,
-         [{ICaseString("input"): [InstrState(0)]}, {ICaseString("output"): [
-             InstrState(0)], ICaseString("input"): [InstrState(1)]}]),
-        (2, False, [{ICaseString("input"): list(map(InstrState, range(2)))}, {
-            ICaseString("output"): [InstrState(0)],
-            ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)]}])])
+    @mark.parametrize("unit_width, in_mem_util, util_b4_last",
+                      [(1, True, [{ICaseString("output"): [InstrState(0)]},
+                                  {ICaseString("input"): [InstrState(1)]}]),
+                       (1, False, [{ICaseString("output"): [InstrState(0)],
+                                    ICaseString("input"): [InstrState(1)]}]),
+                       (2, False, [{ICaseString("output"): [InstrState(0)],
+                                    ICaseString("input"):
+                                    [InstrState(1, StallState.STRUCTURAL)]}])])
     def test_hazard(self, unit_width, in_mem_util, util_b4_last):
         """Test detecting structural hazards.
 
@@ -201,7 +199,9 @@ class TestStructural:
             ICaseString("ALU")], LockInfo(True, False), in_mem_util)
         out_unit = FuncUnit(UnitModel(ICaseString("output"), unit_width, [
             ICaseString("ALU")], LockInfo(False, True), True), [in_unit])
+        instructions = range(unit_width)
         res_util = itertools.chain(
+            [{ICaseString("input"): list(map(InstrState, instructions))}],
             util_b4_last, [{ICaseString("output"): [InstrState(1)]}])
         assert simulate(
             [HwInstruction(*instr_params) for instr_params in
