@@ -185,8 +185,8 @@ class TestStructural:
          [{ICaseString("input"): [InstrState(0)]}, {ICaseString("output"): [
              InstrState(0)], ICaseString("input"): [InstrState(1)]}]),
         (2, False, [{ICaseString("input"): list(map(InstrState, range(2)))}, {
-            ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)],
-            ICaseString("output"): [InstrState(0)]}])])
+            ICaseString("output"): [InstrState(0)],
+            ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)]}])])
     def test_hazard(self, unit_width, in_mem_util, util_b4_last):
         """Test detecting structural hazards.
 
