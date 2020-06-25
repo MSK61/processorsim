@@ -40,10 +40,8 @@
 ############################################################
 
 import itertools
-from itertools import starmap
 from unittest import TestCase
 
-import attr
 import pytest
 from pytest import mark
 
@@ -136,63 +134,25 @@ class TestDataHazards:
                         ICaseString(TEST_DIR): [InstrState(1)]}]]
 
 
-class WarTest(TestCase):
-
-    """Test case for WAR hazards"""
-
-    def test_write_registers_are_not_checked_in_units_without_write_lock(self):
-        """Test opportune write register access check.
-
-        `self` is this test case.
-
-        """
-        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
-                            LockInfo(False, False), False)
-        out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, [
-            ICaseString("ALU")], LockInfo(True, True), False), [in_unit])
-        assert simulate(
-            [HwInstruction(*instr_params) for instr_params in
-             [[[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")], [
-                 [], ICaseString("R1"), ICaseString("ALU")]]],
-            HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
-                BagValDict(cp_util) for cp_util in
-                [{ICaseString("input"): [InstrState(0)]},
-                 {ICaseString("input"): [InstrState(1)], ICaseString("output"):
-                  [InstrState(0)]}, {ICaseString("output"): [InstrState(1)]}]]
-
-
-@attr.s(auto_attribs=True, frozen=True)
-class _OutModel:
-
-    """Output unit model"""
-
-    name: str
-
-    width: int
-
-    mem_access: bool
-
-
 class TestStructural:
 
     """Test case for structural hazards"""
 
     @mark.parametrize("in_width, in_mem_util, out_units, extra_util", [
-        (1, True, [_OutModel("output", 1, True)],
+        (1, True, [["output", 1, True]],
          [{ICaseString("output"): [InstrState(0)]}, {ICaseString("input"): [
              InstrState(1)]}, {ICaseString("output"): [InstrState(1)]}]),
-        (1, False, [_OutModel("output", 1, True)],
+        (1, False, [["output", 1, True]],
          [{ICaseString("output"): [InstrState(0)], ICaseString("input"):
            [InstrState(1)]}, {ICaseString("output"): [InstrState(1)]}]),
-        (2, False, [_OutModel("output", 2, True)],
+        (2, False, [["output", 2, True]],
          [{ICaseString("output"): [InstrState(0)],
            ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)]},
           {ICaseString("output"): [InstrState(1)]}]),
-        (2, False, starmap(_OutModel, [["output 1", 1, True], [
-            "output 2", 1, False]]), [{ICaseString("output 1"): [
-                InstrState(0)], ICaseString("output 2"): [InstrState(1)]}]),
-        (2, False,
-         starmap(_OutModel, [["output 1", 1, True], ["output 2", 1, True]]),
+        (2, False, [["output 1", 1, True], ["output 2", 1, False]],
+         [{ICaseString("output 1"): [InstrState(0)],
+           ICaseString("output 2"): [InstrState(1)]}]),
+        (2, False, [["output 1", 1, True], ["output 2", 1, True]],
          [{ICaseString("output 1"): [InstrState(0)],
            ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)]},
           {ICaseString("output 1"): [InstrState(1)]}])])
@@ -209,9 +169,10 @@ class TestStructural:
         """
         in_unit = UnitModel(ICaseString("input"), in_width, [
             ICaseString("ALU")], LockInfo(True, False), in_mem_util)
-        out_units = map(lambda out_unit: UnitModel(
-            ICaseString(out_unit.name), out_unit.width, [ICaseString("ALU")],
-            LockInfo(False, True), out_unit.mem_access), out_units)
+        out_units = itertools.starmap(
+            lambda name, width, mem_access:
+            UnitModel(ICaseString(name), width, [ICaseString("ALU")],
+                      LockInfo(False, True), mem_access), out_units)
         out_units = map(
             lambda out_unit: FuncUnit(out_unit, [in_unit]), out_units)
         cp1_util = {
@@ -239,6 +200,31 @@ class TestStructural:
               [[], ICaseString("R2"), ICaseString("ALU")]]],
             HwSpec(ProcessorDesc([], [], [full_sys_unit], []))) == list(
                 res_util)
+
+
+class WarTest(TestCase):
+
+    """Test case for WAR hazards"""
+
+    def test_write_registers_are_not_checked_in_units_without_write_lock(self):
+        """Test opportune write register access check.
+
+        `self` is this test case.
+
+        """
+        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
+                            LockInfo(False, False), False)
+        out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, [
+            ICaseString("ALU")], LockInfo(True, True), False), [in_unit])
+        assert simulate(
+            [HwInstruction(*instr_params) for instr_params in
+             [[[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")], [
+                 [], ICaseString("R1"), ICaseString("ALU")]]],
+            HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
+                BagValDict(cp_util) for cp_util in
+                [{ICaseString("input"): [InstrState(0)]},
+                 {ICaseString("input"): [InstrState(1)], ICaseString("output"):
+                  [InstrState(0)]}, {ICaseString("output"): [InstrState(1)]}]]
 
 
 def main():
