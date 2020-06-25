@@ -40,6 +40,7 @@
 ############################################################
 
 import itertools
+from itertools import starmap
 from unittest import TestCase
 
 import pytest
@@ -139,20 +140,21 @@ class TestStructural:
     """Test case for structural hazards"""
 
     @mark.parametrize("in_width, in_mem_util, out_units, extra_util", [
-        (1, True, [["output", 1, True]],
+        (1, True, [("output", 1, True)],
          [{ICaseString("output"): [InstrState(0)]}, {ICaseString("input"): [
              InstrState(1)]}, {ICaseString("output"): [InstrState(1)]}]),
-        (1, False, [["output", 1, True]],
+        (1, False, [("output", 1, True)],
          [{ICaseString("output"): [InstrState(0)], ICaseString("input"):
            [InstrState(1)]}, {ICaseString("output"): [InstrState(1)]}]),
-        (2, False, [["output", 2, True]],
+        (2, False, [("output", 2, True)],
          [{ICaseString("output"): [InstrState(0)],
            ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)]},
           {ICaseString("output"): [InstrState(1)]}]),
-        (2, False, [["output 1", 1, True], ["output 2", 1, False]],
+        (2, False, starmap(lambda name, mem_access: (name, 1, mem_access),
+                           [("output 1", True), ("output 2", False)]),
          [{ICaseString("output 1"): [InstrState(0)],
            ICaseString("output 2"): [InstrState(1)]}]),
-        (2, False, [["output 1", 1, True], ["output 2", 1, True]],
+        (2, False, map(lambda name: (name, 1, True), ["output 1", "output 2"]),
          [{ICaseString("output 1"): [InstrState(0)],
            ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)]},
           {ICaseString("output 1"): [InstrState(1)]}])])
@@ -169,10 +171,9 @@ class TestStructural:
         """
         in_unit = UnitModel(ICaseString("input"), in_width, [
             ICaseString("ALU")], LockInfo(True, False), in_mem_util)
-        out_units = itertools.starmap(
-            lambda name, width, mem_access:
-            UnitModel(ICaseString(name), width, [ICaseString("ALU")],
-                      LockInfo(False, True), mem_access), out_units)
+        out_units = starmap(lambda name, width, mem_access: UnitModel(
+            ICaseString(name), width, [ICaseString("ALU")],
+            LockInfo(False, True), mem_access), out_units)
         out_units = map(
             lambda out_unit: FuncUnit(out_unit, [in_unit]), out_units)
         cp1_util = {
