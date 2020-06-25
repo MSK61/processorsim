@@ -139,7 +139,7 @@ class TestStructural:
 
     """Test case for structural hazards"""
 
-    @mark.parametrize("in_width, in_mem_util, out_units, extra_util", [
+    @mark.parametrize("in_width, in_mem_util, out_unit_params, extra_util", [
         (1, True, [("output", 1, True)],
          [{ICaseString("output"): [InstrState(0)]}, {ICaseString("input"): [
              InstrState(1)]}, {ICaseString("output"): [InstrState(1)]}]),
@@ -158,13 +158,13 @@ class TestStructural:
          [{ICaseString("output 1"): [InstrState(0)],
            ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)]},
           {ICaseString("output 1"): [InstrState(1)]}])])
-    def test_hazard(self, in_width, in_mem_util, out_units, extra_util):
+    def test_hazard(self, in_width, in_mem_util, out_unit_params, extra_util):
         """Test detecting structural hazards.
 
         `self` is this test case.
         `in_width` is the width of the input unit.
         `in_mem_util` is the input unit memory utilization flag.
-        `out_units` are the output units.
+        `out_unit_params` are the creation parameters of output units.
         `extra_util` is the extra utilization beyond the second clock
                      pulse.
 
@@ -173,7 +173,7 @@ class TestStructural:
             ICaseString("ALU")], LockInfo(True, False), in_mem_util)
         out_units = starmap(lambda name, width, mem_access: UnitModel(
             ICaseString(name), width, [ICaseString("ALU")],
-            LockInfo(False, True), mem_access), out_units)
+            LockInfo(False, True), mem_access), out_unit_params)
         out_units = map(
             lambda out_unit: FuncUnit(out_unit, [in_unit]), out_units)
         cp1_util = {
