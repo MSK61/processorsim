@@ -254,8 +254,7 @@ class _ResultWriter:
         `sim_res` is the simulation result.
 
         """
-        ticks = cls._get_ticks(sim_res)
-        cls._print_res_row("", ticks)
+        cls._print_res_row("", cls._get_ticks(sim_res))
 
     _writer = csv.writer(sys.stdout, "excel-tab")
 
