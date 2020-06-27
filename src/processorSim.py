@@ -192,7 +192,7 @@ class _ResultWriter:
     """Simulation result writer"""
 
     @classmethod
-    def print_sim_res(cls, sim_res: Collection[Collection[str]]) -> None:
+    def print_sim_res(cls, sim_res: Collection[Collection[object]]) -> None:
         """Print the simulation result.
 
         `cls` is the writer class.
@@ -236,7 +236,7 @@ class _ResultWriter:
 
     @classmethod
     def _print_tbl_data(
-            cls, sim_res: Iterable[Tuple[int, Iterable[str]]]) -> None:
+            cls, sim_res: Iterable[Tuple[int, Iterable[object]]]) -> None:
         """Print the simulation table rows.
 
         `cls` is the writer class.
