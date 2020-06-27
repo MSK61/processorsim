@@ -224,15 +224,15 @@ class _ResultWriter:
         return map(str, range(1, cls._get_last_tick(sim_res) + 1))
 
     @classmethod
-    def _print_res_row(cls, instr: str, res_row: Iterable[str]) -> None:
+    def _print_res_row(cls, row_key: str, res_row: Iterable[str]) -> None:
         """Print the given simulation row.
 
         `cls` is the writer class.
-        `instr` is the row instruction.
+        `row_key` is the row key.
         `res_row` is the simulation row.
 
         """
-        cls._writer.writerow(prepend(instr, res_row))
+        cls._writer.writerow(prepend(row_key, res_row))
 
     @classmethod
     def _print_tbl_data(
@@ -255,7 +255,7 @@ class _ResultWriter:
 
         """
         ticks = cls._get_ticks(sim_res)
-        cls._writer.writerow(prepend("", ticks))
+        cls._print_res_row("", ticks)
 
     _writer = csv.writer(sys.stdout, "excel-tab")
 
