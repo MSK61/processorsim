@@ -212,7 +212,7 @@ class _ResultWriter:
         return max(map(len, sim_res), default=0)
 
     @classmethod
-    def _get_ticks(cls, sim_res: Iterable[Sized]) -> Iterator[str]:
+    def _get_ticks(cls, sim_res: Iterable[Sized]) -> range:
         """Retrieve the clock cycles.
 
         `cls` is the writer class.
@@ -221,10 +221,10 @@ class _ResultWriter:
         whole simulation and returns an iterator over them.
 
         """
-        return map(str, range(1, cls._get_last_tick(sim_res) + 1))
+        return range(1, cls._get_last_tick(sim_res) + 1)
 
     @classmethod
-    def _print_res_row(cls, row_key: str, res_row: Iterable[str]) -> None:
+    def _print_res_row(cls, row_key: str, res_row: Iterable[object]) -> None:
         """Print the given simulation row.
 
         `cls` is the writer class.
