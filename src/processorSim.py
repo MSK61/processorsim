@@ -154,7 +154,7 @@ def run(processor_file: IO[str], program_file: Iterable[str]) -> None:
     processor description file.
 
     """
-    _print_sim_res(get_sim_res(processor_file, program_file))
+    _ResultWriter.print_sim_res(get_sim_res(processor_file, program_file))
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -192,27 +192,15 @@ class _ResultWriter:
     """Simulation result writer"""
 
     @classmethod
-    def print_tbl_data(
-            cls, sim_res: Iterable[Tuple[int, Iterable[str]]]) -> None:
-        """Print the simulation table rows.
+    def print_sim_res(cls, sim_res: Collection[Collection[str]]) -> None:
+        """Print the simulation result.
 
         `cls` is the writer class.
-        `sim_res` is the simulation result.
+        `sim_res` is the simulation result to print.
 
         """
-        for row_idx, fields in sim_res:
-            cls._print_res_row('I' + str(row_idx), fields)
-
-    @classmethod
-    def print_tbl_hdr(cls, sim_res: Iterable[Sized]) -> None:
-        """Print the simulation table header.
-
-        `cls` is the writer class.
-        `sim_res` is the simulation result.
-
-        """
-        ticks = cls._get_ticks(sim_res)
-        cls._writer.writerow(prepend("", ticks))
+        cls._print_tbl_hdr(sim_res)
+        cls._print_tbl_data(enumerate(sim_res, 1))
 
     @staticmethod
     def _get_last_tick(sim_res: Iterable[Sized]) -> int:
@@ -245,6 +233,29 @@ class _ResultWriter:
 
         """
         cls._writer.writerow(prepend(instr, res_row))
+
+    @classmethod
+    def _print_tbl_data(
+            cls, sim_res: Iterable[Tuple[int, Iterable[str]]]) -> None:
+        """Print the simulation table rows.
+
+        `cls` is the writer class.
+        `sim_res` is the simulation result.
+
+        """
+        for row_idx, fields in sim_res:
+            cls._print_res_row('I' + str(row_idx), fields)
+
+    @classmethod
+    def _print_tbl_hdr(cls, sim_res: Iterable[Sized]) -> None:
+        """Print the simulation table header.
+
+        `cls` is the writer class.
+        `sim_res` is the simulation result.
+
+        """
+        ticks = cls._get_ticks(sim_res)
+        cls._writer.writerow(prepend("", ticks))
 
     _writer = csv.writer(sys.stdout, "excel-tab")
 
@@ -335,16 +346,6 @@ def _icu_to_flights(ixcxu: Iterable[Mapping[int, _InstrPosition]]) -> Iterator[
 
     """
     return map(_create_flight, ixcxu)
-
-
-def _print_sim_res(sim_res: Collection[Collection[str]]) -> None:
-    """Print the simulation result.
-
-    `sim_res` is the simulation result to print.
-
-    """
-    _ResultWriter.print_tbl_hdr(sim_res)
-    _ResultWriter.print_tbl_data(enumerate(sim_res, 1))
 
 
 if __name__ == '__main__':
