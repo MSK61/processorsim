@@ -38,13 +38,14 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.44.0, python 3.7.6, Fedora release
-#               31 (Thirty One)
+# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
+#               32 (Thirty Two)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import csv
 import itertools
 import logging
 import operator
@@ -63,7 +64,6 @@ import hw_loading
 import program_utils
 import sim_services
 from sim_services import InstrState, StallState
-_COL_SEP = '\t'
 # command-line option variables
 # variable to receive the processor architecture file
 _PROC_OPT_VAR = "processor_file"
@@ -187,6 +187,68 @@ class _InstrFlight:
     stops: Iterable[_InstrPosition]
 
 
+class _ResultWriter:
+
+    """Simulation result writer"""
+
+    @classmethod
+    def print_tbl_data(
+            cls, sim_res: Iterable[Tuple[int, Iterable[str]]]) -> None:
+        """Print the simulation table rows.
+
+        `cls` is the writer class.
+        `sim_res` is the simulation result.
+
+        """
+        for row_idx, fields in sim_res:
+            cls._print_res_row('I' + str(row_idx), fields)
+
+    @classmethod
+    def print_tbl_hdr(cls, sim_res: Iterable[Sized]) -> None:
+        """Print the simulation table header.
+
+        `cls` is the writer class.
+        `sim_res` is the simulation result.
+
+        """
+        ticks = cls._get_ticks(sim_res)
+        cls._writer.writerow(prepend("", ticks))
+
+    @staticmethod
+    def _get_last_tick(sim_res: Iterable[Sized]) -> int:
+        """Calculate the last clock cycle in the simulation.
+
+        `sim_res` is the simulation result.
+
+        """
+        return max(map(len, sim_res), default=0)
+
+    @classmethod
+    def _get_ticks(cls, sim_res: Iterable[Sized]) -> Iterator[str]:
+        """Retrieve the clock cycles.
+
+        `cls` is the writer class.
+        `sim_res` is the simulation result.
+        The method calculates the clock cycles necessary to run the
+        whole simulation and returns an iterator over them.
+
+        """
+        return map(str, range(1, cls._get_last_tick(sim_res) + 1))
+
+    @classmethod
+    def _print_res_row(cls, instr: str, res_row: Iterable[str]) -> None:
+        """Print the given simulation row.
+
+        `cls` is the writer class.
+        `instr` is the row instruction.
+        `res_row` is the simulation row.
+
+        """
+        cls._writer.writerow(prepend(instr, res_row))
+
+    _writer = csv.writer(sys.stdout, "excel-tab")
+
+
 def _create_flight(instr_util: Mapping[int, _InstrPosition]) -> _InstrFlight:
     """Create an instruction flight from its utilization.
 
@@ -253,15 +315,6 @@ def _get_flight_row(flight: _InstrFlight) -> List[str]:
             *(str(stop) for stop in flight.stops)]
 
 
-def _get_last_tick(sim_res: Iterable[Sized]) -> int:
-    """Calculate the last clock cycle in the simulation.
-
-    `sim_res` is the simulation result.
-
-    """
-    return max(map(len, sim_res), default=0)
-
-
 def _get_sim_rows(sim_res: Iterable[Tuple[int, BagValDict[_T, InstrState]]],
                   instructions: int) -> List[List[str]]:
     """Calculate the simulation rows.
@@ -274,17 +327,6 @@ def _get_sim_rows(sim_res: Iterable[Tuple[int, BagValDict[_T, InstrState]]],
     return [_get_flight_row(flight) for flight in flights]
 
 
-def _get_ticks(sim_res: Iterable[Sized]) -> Iterator[str]:
-    """Retrieve the clock cycles.
-
-    `sim_res` is the simulation result.
-    The function calculates the clock cycles necessary to run the whole
-    simulation and returns an iterator over them.
-
-    """
-    return map(str, range(1, _get_last_tick(sim_res) + 1))
-
-
 def _icu_to_flights(ixcxu: Iterable[Mapping[int, _InstrPosition]]) -> Iterator[
         _InstrFlight]:
     """Convert a IxCxU utilization map to instruction flights.
@@ -295,44 +337,14 @@ def _icu_to_flights(ixcxu: Iterable[Mapping[int, _InstrPosition]]) -> Iterator[
     return map(_create_flight, ixcxu)
 
 
-def _print_res_row(instr: str, res_row: Iterable[str]) -> None:
-    """Print the given simulation row.
-
-    `instr` is the row instruction.
-    `res_row` is the simulation row.
-
-    """
-    print(_COL_SEP.join(prepend(instr, res_row)))
-
-
 def _print_sim_res(sim_res: Collection[Collection[str]]) -> None:
     """Print the simulation result.
 
     `sim_res` is the simulation result to print.
 
     """
-    _print_tbl_hdr(sim_res)
-    _print_tbl_data(enumerate(sim_res, 1))
-
-
-def _print_tbl_data(sim_res: Iterable[Tuple[int, Iterable[str]]]) -> None:
-    """Print the simulation table rows.
-
-    `sim_res` is the simulation result.
-
-    """
-    for row_idx, fields in sim_res:
-        _print_res_row('I' + str(row_idx), fields)
-
-
-def _print_tbl_hdr(sim_res: Iterable[Sized]) -> None:
-    """Print the simulation table header.
-
-    `sim_res` is the simulation result.
-
-    """
-    ticks = _get_ticks(sim_res)
-    print(_COL_SEP.join(prepend("", ticks)))
+    _ResultWriter.print_tbl_hdr(sim_res)
+    _ResultWriter.print_tbl_data(enumerate(sim_res, 1))
 
 
 if __name__ == '__main__':
