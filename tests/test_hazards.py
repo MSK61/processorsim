@@ -65,15 +65,13 @@ class RarTest(TestCase):
         `self` is this test case.
 
         """
-        full_sys_unit = UnitModel(ICaseString(TEST_DIR), 2, [
-            ICaseString("ALU")], LockInfo(True, True), False)
+        full_sys_unit = UnitModel(
+            ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), False)
         instructions = map(InstrState, range(2))
-        assert simulate(
-            [HwInstruction(*instr_params) for instr_params in
-             [[[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")],
-              [[ICaseString("R1")], ICaseString("R3"), ICaseString("ALU")]]],
-            HwSpec(ProcessorDesc([], [], [full_sys_unit], []))) == list(
-                map(BagValDict, [{ICaseString(TEST_DIR): list(instructions)}]))
+        assert simulate([HwInstruction(["R1"], out_reg, "ALU") for out_reg in
+                         ["R2", "R3"]], HwSpec(ProcessorDesc([], [], [
+                             full_sys_unit], []))) == list(map(BagValDict, [
+                                 {ICaseString(TEST_DIR): list(instructions)}]))
 
 
 class RawTest(TestCase):
@@ -87,18 +85,17 @@ class RawTest(TestCase):
         `self` is this test case.
 
         """
-        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
-                            LockInfo(False, False), False)
-        mid = UnitModel(ICaseString("middle"), 1, [ICaseString("ALU")],
-                        LockInfo(True, False), False)
-        out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")],
-                             LockInfo(False, True), False)
+        in_unit = UnitModel(
+            ICaseString("input"), 1, ["ALU"], LockInfo(False, False), False)
+        mid = UnitModel(
+            ICaseString("middle"), 1, ["ALU"], LockInfo(True, False), False)
+        out_unit = UnitModel(
+            ICaseString("output"), 1, ["ALU"], LockInfo(False, True), False)
         proc_desc = ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
                                   [FuncUnit(mid, [in_unit])])
         assert simulate(
-            [HwInstruction(*instr_params) for instr_params in
-             [[[], ICaseString("R1"), ICaseString("ALU")],
-              [[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")]]],
+            [HwInstruction(*instr_regs, "ALU") for instr_regs in
+             [[[], "R1"], [["R1"], "R2"]]],
             HwSpec(proc_desc)) == [BagValDict(cp_util) for cp_util in [
                 {ICaseString("input"): [InstrState(0)]},
                 {ICaseString("input"): [InstrState(1)],
@@ -113,10 +110,8 @@ class TestDataHazards:
 
     """Test case for data hazards"""
 
-    @mark.parametrize("instr_regs", [
-        [[[ICaseString("R1")], ICaseString("R2")], [[], ICaseString("R1")]],
-        [[[], ICaseString("R1")], [[ICaseString("R1")], ICaseString("R2")]],
-        [[[], ICaseString("R1")], [[], ICaseString("R1")]]])
+    @mark.parametrize("instr_regs", [[[["R1"], "R2"], [[], "R1"]], [
+        [[], "R1"], [["R1"], "R2"]], [[[], "R1"], [[], "R1"]]])
     def test_hazard(self, instr_regs):
         """Test detecting data hazards.
 
@@ -124,11 +119,10 @@ class TestDataHazards:
         `instr_regs` are the registers accessed by each instruction.
 
         """
-        full_sys_unit = UnitModel(ICaseString(TEST_DIR), 2, [
-            ICaseString("ALU")], LockInfo(True, True), False)
+        full_sys_unit = UnitModel(
+            ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), False)
         assert simulate(
-            [HwInstruction(*reg_lst, ICaseString("ALU")) for reg_lst in
-             instr_regs],
+            [HwInstruction(*regs, "ALU") for regs in instr_regs],
             HwSpec(ProcessorDesc([], [], [full_sys_unit], []))) == [
                 BagValDict(cp_util) for cp_util in [{ICaseString(TEST_DIR): [
                     InstrState(0), InstrState(1, StallState.DATA)]}, {
@@ -169,19 +163,17 @@ class TestStructural:
                      pulse.
 
         """
-        in_unit = UnitModel(ICaseString("input"), in_width, [
-            ICaseString("ALU")], LockInfo(True, False), in_mem_util)
+        in_unit = UnitModel(ICaseString("input"), in_width,
+                            ["ALU"], LockInfo(True, False), in_mem_util)
         out_units = starmap(lambda name, width, mem_access: UnitModel(
-            ICaseString(name), width, [ICaseString("ALU")],
-            LockInfo(False, True), mem_access), out_unit_params)
+            ICaseString(name), width, ["ALU"], LockInfo(False, True),
+            mem_access), out_unit_params)
         out_units = map(
             lambda out_unit: FuncUnit(out_unit, [in_unit]), out_units)
         cp1_util = {
             ICaseString("input"): list(map(InstrState, range(in_width)))}
         assert simulate(
-            [HwInstruction(*instr_params) for instr_params in
-             [[[], ICaseString("R1"), ICaseString("ALU")],
-              [[], ICaseString("R2"), ICaseString("ALU")]]],
+            [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
             HwSpec(ProcessorDesc([in_unit], out_units, [], []))) == list(
                 map(BagValDict, itertools.chain([cp1_util], extra_util)))
 
@@ -191,16 +183,13 @@ class TestStructural:
         `self` is this test case.
 
         """
-        full_sys_unit = UnitModel(ICaseString("fullSys"), 2, [
-            ICaseString("ALU")], LockInfo(True, False), True)
+        full_sys_unit = UnitModel(
+            ICaseString("fullSys"), 2, ["ALU"], LockInfo(True, False), True)
         res_util = map(lambda instr: BagValDict(
             {ICaseString("fullSys"): [InstrState(instr)]}), range(2))
-        assert simulate(
-            [HwInstruction(*instr_params) for instr_params in
-             [[[], ICaseString("R1"), ICaseString("ALU")],
-              [[], ICaseString("R2"), ICaseString("ALU")]]],
-            HwSpec(ProcessorDesc([], [], [full_sys_unit], []))) == list(
-                res_util)
+        assert simulate([HwInstruction([], out_reg, "ALU") for out_reg in
+                         ["R1", "R2"]], HwSpec(ProcessorDesc(
+                             [], [], [full_sys_unit], []))) == list(res_util)
 
 
 class WarTest(TestCase):
@@ -213,14 +202,13 @@ class WarTest(TestCase):
         `self` is this test case.
 
         """
-        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
-                            LockInfo(False, False), False)
-        out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, [
-            ICaseString("ALU")], LockInfo(True, True), False), [in_unit])
+        in_unit = UnitModel(
+            ICaseString("input"), 1, ["ALU"], LockInfo(False, False), False)
+        out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, ["ALU"],
+                                      LockInfo(True, True), False), [in_unit])
         assert simulate(
-            [HwInstruction(*instr_params) for instr_params in
-             [[[ICaseString("R1")], ICaseString("R2"), ICaseString("ALU")], [
-                 [], ICaseString("R1"), ICaseString("ALU")]]],
+            [HwInstruction(*instr_regs, "ALU") for instr_regs in
+             [[["R1"], "R2"], [[], "R1"]]],
             HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
                 BagValDict(cp_util) for cp_util in
                 [{ICaseString("input"): [InstrState(0)]},
