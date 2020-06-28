@@ -39,6 +39,7 @@
 #
 ############################################################
 
+from itertools import starmap
 from logging import WARNING
 
 import pytest
@@ -310,10 +311,12 @@ class TestUnits:
                              LockInfo(False, True), False)
         assert ProcessorDesc(
             [in_unit], [FuncUnit(out_unit, [mid2_unit])], [],
-            [FuncUnit(mid2_unit, [mid1_unit]),
-             FuncUnit(mid1_unit, [in_unit])]) != ProcessorDesc(
-                 [in_unit], [FuncUnit(out_unit, [mid2_unit])], [], [FuncUnit(
-                     mid1_unit, [in_unit]), FuncUnit(mid2_unit, [mid1_unit])])
+            starmap(lambda model, pred: FuncUnit(model, [pred]), [
+                (mid2_unit, mid1_unit),
+                (mid1_unit, in_unit)])) != ProcessorDesc(
+                    [in_unit], [FuncUnit(out_unit, [mid2_unit])], [],
+                    starmap(lambda model, pred: FuncUnit(model, [pred]),
+                            [(mid1_unit, in_unit), (mid2_unit, mid1_unit)]))
 
     # pylint: disable=invalid-name
     @mark.parametrize("in_file, dup_unit", [
