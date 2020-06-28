@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.43.0, python 3.7.6, Fedora release
-#               31 (Thirty One)
+# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
+#               32 (Thirty Two)
 #
 # notes:        This is a private program.
 #
@@ -44,7 +44,6 @@ from typing import Tuple
 import attr
 
 import container_utils
-from str_utils import ICaseString
 
 
 def _sorted_uniq(elems: typing.Iterable[object]) -> Tuple[object, ...]:
@@ -61,9 +60,9 @@ class _Instruction:
 
     """Instruction"""
 
-    sources: Tuple[ICaseString, ...] = attr.ib(converter=_sorted_uniq)
+    sources: Tuple[object, ...] = attr.ib(converter=_sorted_uniq)
 
-    destination: ICaseString = attr.ib()
+    destination: object = attr.ib()
 
 
 @attr.s(frozen=True)

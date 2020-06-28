@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.46.0, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -245,7 +245,7 @@ class _RegAvailState:
 
     avail: bool
 
-    regs: Iterable[ICaseString]
+    regs: Iterable[object]
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -366,7 +366,7 @@ def _calc_unstalled(instructions: Iterable[InstrState]) -> int:
 def _chk_data_stall(
         unit_locks: LockInfo, instr_index: object, instr: HwInstruction,
         acc_queues: Mapping[object, RegAccessQueue], reqs_to_clear:
-        MutableMapping[ICaseString, MutableSequence[object]]) -> StallState:
+        MutableMapping[object, MutableSequence[object]]) -> StallState:
     """Check if the instruction should have a data stall.
 
     `unit_locks` are the unit lock information.
@@ -423,7 +423,7 @@ def _chk_hazards(old_util: BagValDict[_T, InstrState], new_util:
     stalled instructions appropriately according to idientified hazards.
 
     """
-    reqs_to_clear: Dict[ICaseString, MutableSequence[object]] = {}
+    reqs_to_clear: Dict[object, MutableSequence[object]] = {}
 
     for unit, new_unit_util in new_util:
         _stall_unit(name_unit_map[unit].lock_info, _TransitionUtil(
@@ -436,10 +436,9 @@ def _chk_hazards(old_util: BagValDict[_T, InstrState], new_util:
             acc_queues[reg].dequeue(cur_req)
 
 
-def _chk_avail_regs(
-        avail_regs: MutableSequence[Sequence[ICaseString]],
-        acc_queues: Mapping[object, RegAccessQueue], lock: bool,
-        new_regs: Sequence[ICaseString], req_params: Iterable[object]) -> bool:
+def _chk_avail_regs(avail_regs: MutableSequence[Sequence[object]], acc_queues:
+                    Mapping[object, RegAccessQueue], lock: bool, new_regs:
+                    Sequence[object], req_params: Iterable[object]) -> bool:
     """Check if the given registers can be accessed.
 
     `avail_regs` are the list of available registers.
@@ -708,7 +707,7 @@ def _regs_avail(
     The function returns the registers availability state.
 
     """
-    avail_reg_lists: List[Sequence[ICaseString]] = []
+    avail_reg_lists: List[Sequence[object]] = []
     return _RegAvailState(True, chain.from_iterable(avail_reg_lists)) if all(
         _chk_avail_regs(avail_reg_lists, acc_queues, *chk_params) for
         chk_params in
@@ -769,7 +768,7 @@ def _space_avail(
 def _stall_unit(unit_locks: LockInfo, trans_util: _TransitionUtil,
                 program: Sequence[HwInstruction],
                 acc_queues: Mapping[object, RegAccessQueue], reqs_to_clear:
-                MutableMapping[ICaseString, MutableSequence[object]]) -> None:
+                MutableMapping[object, MutableSequence[object]]) -> None:
     """Mark instructions in the given unit as stalled as needed.
 
     `unit_locks` are the unit lock information.
@@ -788,8 +787,8 @@ def _stall_unit(unit_locks: LockInfo, trans_util: _TransitionUtil,
                 reqs_to_clear)
 
 
-def _update_clears(reqs_to_clear: MutableMapping[ICaseString, MutableSequence[
-        object]], regs: Iterable[ICaseString], instr: object) -> None:
+def _update_clears(reqs_to_clear: MutableMapping[object, MutableSequence[
+        object]], regs: Iterable[object], instr: object) -> None:
     """Update the list of register accesses to be cleared.
 
     `reqs_to_clear` are the requests to be cleared from the access
