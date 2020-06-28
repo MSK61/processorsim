@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.43.0, python 3.7.6, Fedora release
-#               31 (Thirty One)
+# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
+#               32 (Thirty Two)
 #
 # notes:        This is a private program.
 #
@@ -110,10 +110,10 @@ class TestProgLoad:
         caplog.set_level(WARNING)
         assert read_program(itertools.chain(itertools.repeat("", preamble), [
             "ADD R1, R2, R3", "ADD R4, r2, R5"])) == [
-                ProgInstruction(*instr_params) for instr_params in
-                [[map(ICaseString, ["R2", "R3"]), ICaseString("R1"), "ADD",
-                  preamble + 1], [map(ICaseString, ["r2", "R5"]),
-                                  ICaseString("R4"), "ADD", preamble + 2]]]
+                ProgInstruction(map(ICaseString, in_regs), ICaseString(
+                    out_reg), "ADD", line_no) for in_regs, out_reg, line_no in
+                [(["R2", "R3"], "R1", preamble + 1),
+                 (["r2", "R5"], "R4", preamble + 2)]]
         assert caplog.records
         warn_msg = caplog.records[0].getMessage()
 
