@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.43.2, python 3.7.6, Fedora release
-#               31 (Thirty One)
+# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
+#               32 (Thirty Two)
 #
 # notes:        This is a private program.
 #
@@ -91,7 +91,7 @@ class TestHwDescLoad:
             assert hw_loading.read_processor(hw_src) == hw_loading.HwDesc(
                 proc_mock.return_value, isa_mock.return_value)
         isa_mock.assert_called()
-        assert list(isa_mock.call_args[0][0]) == [(instr, capability)]
+        assert tuple(isa_mock.call_args[0][0]) == ((instr, capability),)
         assert isa_mock.call_args[0][1] == ability_mock.return_value
 
         for mock_chk in [

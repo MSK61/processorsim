@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.46.0, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -422,7 +422,7 @@ def _chk_path_locks(
     the given unit have multiple locks.
 
     """
-    succ_lst = list(processor.successors(start))
+    succ_lst = tuple(processor.successors(start))
     path_locks[start] = _SatInfo(
         *(_PathLockCalc(processor.nodes[start], succ_lst, capability, start,
                         path_locks).calc_lock(*calc_params) for calc_params in
@@ -487,8 +487,8 @@ def _do_cap_checks(processor: DiGraph, cap_checks: Iterable[
     """
     cap_units: AbstractSet[
         Tuple[ICaseString, List[ICaseString]]] = _get_cap_units(processor)
-    out_ports = list(port_defs.get_out_ports(processor))
-    post_ord = list(networkx.dfs_postorder_nodes(processor))
+    out_ports = tuple(port_defs.get_out_ports(processor))
+    post_ord = tuple(networkx.dfs_postorder_nodes(processor))
 
     for cap, in_ports in cap_units:
         for cur_chk in cap_checks:
@@ -632,7 +632,7 @@ def _split_node(graph: DiGraph, old_node: object, new_node: object) -> object:
     """
     graph.add_node(
         new_node, **{UNIT_WIDTH_KEY: graph.nodes[old_node][UNIT_WIDTH_KEY]})
-    _mov_out_links(graph, list(graph.out_edges(old_node)), new_node)
+    _mov_out_links(graph, tuple(graph.out_edges(old_node)), new_node)
     graph.add_edge(old_node, new_node)
     return new_node
 
@@ -649,7 +649,7 @@ def _split_nodes(graph: DiGraph) -> Dict[object, object]:
 
     """
     out_degrees = graph.out_degree()
-    in_degrees = list(graph.in_degree())
+    in_degrees = tuple(graph.in_degree())
     return {unit: _split_node(graph, unit, len(
         out_degrees) + unit) if twin != 1 and out_degrees[unit] != 1 and (
             twin or out_degrees[unit]) else unit for unit, twin in in_degrees}

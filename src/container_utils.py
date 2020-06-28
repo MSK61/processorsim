@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.46.0, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -100,7 +100,7 @@ class BagValDict(Generic[_KT, _VT]):
 
         """
         assert type(other) is type(self)
-        other_items = list(other.items())
+        other_items = tuple(other.items())
         lst_pairs = itertools.starmap(lambda key, val_lst: map(
             sorted, [val_lst, self[key]]), other_items)
         item_lst_pair: List[typing.Sized] = [self, other_items]

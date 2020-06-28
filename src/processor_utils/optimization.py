@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
-#               31 (Thirty One)
+# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
+#               32 (Thirty Two)
 #
 # notes:        This is a private program.
 #
@@ -92,7 +92,7 @@ def rm_empty_units(processor: Graph) -> None:
     The function removes units with no capabilities from the processor.
 
     """
-    unit_entries = list(processor.nodes(True))
+    unit_entries = tuple(processor.nodes(True))
 
     for unit, attrs in unit_entries:
         if not attrs[UNIT_CAPS_KEY]:
@@ -132,7 +132,7 @@ def _clean_unit(processor: Graph, unit: object) -> None:
     processor.nodes[unit][UNIT_CAPS_KEY] = frozenset(
         processor.nodes[unit][UNIT_CAPS_KEY])
     pred_caps = map(lambda edge: _chk_edge(processor, edge),
-                    list(processor.in_edges(unit)))
+                    tuple(processor.in_edges(unit)))
     processor.nodes[unit][UNIT_CAPS_KEY] = typing.cast(
         FrozenSet[ICaseString], frozenset()).union(*pred_caps)
 
