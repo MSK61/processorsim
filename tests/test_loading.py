@@ -32,14 +32,13 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.45.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import itertools
 from logging import WARNING
 
 import pytest
@@ -85,11 +84,11 @@ class TestCaps:
         """
         caplog.set_level(WARNING)
         in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits.yaml"
+        processor = map(lambda unit_name: UnitModel(
+            ICaseString(unit_name), 1, [ICaseString("ALU")],
+            LockInfo(True, True), False), ["core 1", "core 2"])
         assert read_proc_file("capabilities", in_file) == ProcessorDesc(
-            [], [], itertools.starmap(UnitModel, [
-                [ICaseString("core 1"), 1, [ICaseString("ALU")],
-                 LockInfo(True, True), False], [ICaseString("core 2"), 1, [
-                     ICaseString("ALU")], LockInfo(True, True), False]]), [])
+            [], [], processor, [])
         chk_warn(["ALU", "core 1", "alu", "core 2"], caplog.records)
         assert ICaseString.__name__ not in caplog.records[0].getMessage()
 
@@ -243,13 +242,13 @@ class TestProcessors:
             "processors", "4ConnectedUnitsProcessor.yaml")
         assert not proc_desc.in_out_ports
         alu_cap = ICaseString("ALU")
+        wr_lock = LockInfo(False, True)
         out_ports = tuple(
-            FuncUnit(*unit_params) for unit_params in
-            [[UnitModel(ICaseString("output 1"), 1, [alu_cap],
-                        LockInfo(False, True), False), proc_desc.in_ports],
-             [UnitModel(ICaseString("output 2"), 1, [alu_cap],
-                        LockInfo(False, True), False),
-              map(lambda unit: unit.model, proc_desc.internal_units)]])
+            FuncUnit(UnitModel(name, 1, [alu_cap], wr_lock, False),
+                     predecessors) for name, predecessors in
+            [(ICaseString("output 1"), proc_desc.in_ports),
+             (ICaseString("output 2"),
+              map(lambda unit: unit.model, proc_desc.internal_units))])
         in_unit = ICaseString("input")
         internal_unit = UnitModel(
             ICaseString("middle"), 1, [alu_cap], LockInfo(False, False), False)

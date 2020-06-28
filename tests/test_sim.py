@@ -67,10 +67,10 @@ class FlowTest(TestCase):
         `self` is this test case.
 
         """
-        in_units = [UnitModel(*unit_params) for unit_params in
-                    [[ICaseString("ALU input"), 1, ["ALU"], LockInfo(
-                        True, False), False], [ICaseString("MEM input"), 1, [
-                            "MEM"], LockInfo(True, False), False]]]
+        in_units = starmap(lambda name, categ: UnitModel(
+            ICaseString(name), 1, [categ], LockInfo(True, False), False),
+                           [["ALU input", "ALU"], ["MEM input", "MEM"]])
+        in_units = tuple(in_units)
         out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, ["ALU", "MEM"],
                                       LockInfo(False, True), False), in_units)
         assert simulate([HwInstruction(*instr_params) for instr_params in [
@@ -245,10 +245,9 @@ class TestOutputFlush:
         program = starmap(HwInstruction, itertools.chain(
             [[[], "R1", "ALU"], [["R1"], "R2", "ALU"]], extra_instr_lst))
         extra_instr_len = len(extra_instr_lst)
-        cores = [UnitModel(
-            ICaseString("core 1"), 1, ["ALU"], LockInfo(True, True), False),
-                 UnitModel(ICaseString("core 2"), 1 + extra_instr_len, ["ALU"],
-                           LockInfo(True, True), False)]
+        cores = starmap(lambda name, width: UnitModel(
+            ICaseString(name), width, ["ALU"], LockInfo(True, True), False),
+                        [("core 1", 1), ("core 2", 1 + extra_instr_len)])
         assert simulate(
             tuple(program), HwSpec(ProcessorDesc([], [], cores, []))) == [
                 BagValDict(cp_util) for cp_util in

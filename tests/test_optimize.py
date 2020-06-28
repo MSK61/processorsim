@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.43.2, python 3.7.6, Fedora release
-#               31 (Thirty One)
+# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
+#               32 (Thirty Two)
 #
 # notes:        This is a private program.
 #
@@ -86,23 +86,19 @@ class TestClean:
         caplog.set_level(WARNING)
         proc_desc = read_proc_file(
             "optimization", "incompatibleEdgeProcessor.yaml")
-        # pylint: disable=not-an-iterable
-        name_input_map = {
-            in_port.name: in_port for in_port in proc_desc.in_ports}
-        # pylint: enable=not-an-iterable
-        alu_cap = ICaseString("ALU")
-        mem_cap = ICaseString("MEM")
-        out1_unit = ICaseString("output 1")
-        out2_unit = ICaseString("output 2")
-        assert proc_desc == ProcessorDesc(
-            starmap(UnitModel, [[ICaseString("input 1"), 1, [
-                alu_cap], LockInfo(True, False), False], [ICaseString(
-                    "input 2"), 1, [mem_cap], LockInfo(True, False), False]]),
-            starmap(FuncUnit, [[UnitModel(out1_unit, 1, [alu_cap], LockInfo(
-                False, True), False), [name_input_map[
-                    ICaseString("input 1")]]], [UnitModel(out2_unit, 1, [
-                        mem_cap], LockInfo(False, True), False), [
-                            name_input_map[ICaseString("input 2")]]]]), [], [])
+        in_units = starmap(lambda name, categ: UnitModel(
+            name, 1, [categ], LockInfo(True, False), False), map(
+                lambda unit_params: map(ICaseString, unit_params),
+                [["input 1", "ALU"], ["input 2", "MEM"]]))
+        wr_lock = LockInfo(False, True)
+        out_units = starmap(lambda name, categ, in_unit: FuncUnit(
+            UnitModel(name, 1, [categ], wr_lock, False),
+            [{in_port.name: in_port for in_port in proc_desc.in_ports}[
+                in_unit]]), map(
+                    lambda unit_params: map(ICaseString, unit_params),
+                    [["output 1", "ALU", "input 1"],
+                     ["output 2", "MEM", "input 2"]]))
+        assert proc_desc == ProcessorDesc(in_units, out_units, [], [])
         chk_warn(["input 2", "output 1"], caplog.records)
 
     def test_unit_with_empty_capabilities_is_removed(self, caplog):
