@@ -91,8 +91,8 @@ class TestHwDescLoad:
             assert hw_loading.read_processor(hw_src) == hw_loading.HwDesc(
                 proc_mock.return_value, isa_mock.return_value)
         isa_mock.assert_called()
-        assert tuple(isa_mock.call_args[0][0]) == ((instr, capability),)
-        assert isa_mock.call_args[0][1] == ability_mock.return_value
+        assert tuple(isa_mock.call_args.args[0]) == ((instr, capability),)
+        assert isa_mock.call_args.args[1] == ability_mock.return_value
 
         for mock_chk in [
                 [proc_mock,
