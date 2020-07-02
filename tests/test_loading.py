@@ -241,7 +241,6 @@ class TestProcessors:
         """
         proc_desc = read_proc_file(
             "processors", "4ConnectedUnitsProcessor.yaml")
-        assert not proc_desc.in_out_ports
         alu_cap = ICaseString("ALU")
         wr_lock = LockInfo(False, True)
         out_ports = tuple(
@@ -253,10 +252,9 @@ class TestProcessors:
         in_unit = ICaseString("input")
         internal_unit = UnitModel(
             ICaseString("middle"), 1, [alu_cap], LockInfo(False, False), False)
-        assert (proc_desc.in_ports, proc_desc.out_ports,
-                proc_desc.internal_units) == ((UnitModel(in_unit, 1, [
-                    alu_cap], LockInfo(True, False), False),), out_ports, (
-                        FuncUnit(internal_unit, proc_desc.in_ports),))
+        assert proc_desc == ProcessorDesc(
+            [UnitModel(in_unit, 1, [alu_cap], LockInfo(True, False), False)],
+            out_ports, [], [FuncUnit(internal_unit, proc_desc.in_ports)])
 
     @mark.parametrize(
         "in_file", ["twoConnectedUnitsProcessor.yaml",
