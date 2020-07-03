@@ -163,8 +163,8 @@ class TestStructural:
                      pulse.
 
         """
-        in_unit = UnitModel(ICaseString("input"), in_width,
-                            ["ALU"], LockInfo(True, False), in_mem_util)
+        in_unit = UnitModel(ICaseString("input"), in_width, ["ALU"],
+                            LockInfo(True, False), in_mem_util)
         out_units = starmap(lambda name, width, mem_access: UnitModel(
             ICaseString(name), width, ["ALU"], LockInfo(False, True),
             mem_access), out_unit_params)

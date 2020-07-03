@@ -113,12 +113,12 @@ class PipelineTest(TestCase):
         """
         big_input = UnitModel(
             ICaseString("big input"), 4, ["ALU"], LockInfo(True, False), False)
-        small_input1 = UnitModel(ICaseString("small input 1"), 1,
-                                 ["ALU"], LockInfo(True, False), False)
+        small_input1 = UnitModel(ICaseString("small input 1"), 1, ["ALU"],
+                                 LockInfo(True, False), False)
         mid1 = UnitModel(
             ICaseString("middle 1"), 1, ["ALU"], LockInfo(False, False), False)
-        small_input2 = UnitModel(ICaseString("small input 2"), 1,
-                                 ["ALU"], LockInfo(True, False), False)
+        small_input2 = UnitModel(ICaseString("small input 2"), 1, ["ALU"],
+                                 LockInfo(True, False), False)
         mid2 = UnitModel(
             ICaseString("middle 2"), 2, ["ALU"], LockInfo(False, False), False)
         out_unit = UnitModel(
@@ -178,12 +178,12 @@ class StallTest(TestCase):
         `self` is this test case.
 
         """
-        long_input = UnitModel(ICaseString("long input"), 1,
-                               ["ALU"], LockInfo(False, False), False)
+        long_input = UnitModel(ICaseString("long input"), 1, ["ALU"],
+                               LockInfo(False, False), False)
         mid = UnitModel(
             ICaseString("middle"), 1, ["ALU"], LockInfo(False, False), False)
-        short_input = UnitModel(ICaseString("short input"), 1,
-                                ["ALU"], LockInfo(False, False), False)
+        short_input = UnitModel(ICaseString("short input"), 1, ["ALU"],
+                                LockInfo(False, False), False)
         out_unit = UnitModel(
             ICaseString("output"), 1, ["ALU"], LockInfo(True, True), False)
         proc_desc = ProcessorDesc([long_input, short_input], [FuncUnit(
