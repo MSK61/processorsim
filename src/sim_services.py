@@ -258,29 +258,57 @@ class _TransitionUtil:
     new_util: Iterable[InstrState]
 
 
-def _accept_instr(issue_rec: _IssueInfo, instr_categ: object, inputs: Iterable[
-        UnitModel], util_info: BagValDict[ICaseString, InstrState],
-                  accept_res: _AcceptStatus) -> None:
+def _accept_instr(
+        issue_rec: _IssueInfo, instr_categ: object,
+        input_iter: Iterator[UnitModel], util_info: BagValDict[
+            ICaseString, InstrState], accept_res: _AcceptStatus) -> None:
     """Try to accept the next instruction to an input unit.
 
     `issue_rec` is the issue record.
     `instr_categ` is the next instruction category.
-    `inputs` are the input processing units to select from for issuing
-             the instruction.
+    `input_iter` is an iterator over the input processing units to
+                 select from for issuing the instruction.
     `util_info` is the unit utilization information.
     `accept_res` is the instruction acceptance result.
     The function tries to find an appropriate unit to issue the
     instruction to. It then updates the utilization information.
 
     """
-    acceptor = first_true(
-        inputs, pred=lambda unit: not (accept_res.mem_used and unit.needs_mem(
-            instr_categ)) and _space_avail(unit, util_info))
-    accept_res.accepted = cast(bool, acceptor)
+    accept_res.accepted = False
+    more_itertools.consume(iter(lambda: _accept_in_unit(
+        input_iter, instr_categ, accept_res, util_info, issue_rec), True))
 
-    if acceptor:
-        _issue_instr(util_info[acceptor.name], acceptor.needs_mem(instr_categ),
-                     issue_rec, accept_res)
+
+def _accept_in_unit(
+        input_iter: Iterator[UnitModel], instr_categ: object,
+        accept_res: _AcceptStatus, util_info:
+        BagValDict[ICaseString, InstrState], issue_rec: _IssueInfo) -> bool:
+    """Try to accept the next instruction to the given unit.
+
+    `input_iter` is an iterator over the input processing units to
+                 select from for issuing the instruction.
+    `instr_categ` is the next instruction category.
+    `accept_res` is the instruction acceptance result.
+    `util_info` is the unit utilization information.
+    `issue_rec` is the issue record.
+    The function returns whether no more input units should be attempted
+    to accept the instruction.
+
+    """
+    try:
+        unit = next(input_iter)
+    except StopIteration:
+        return True
+
+    mem_access = unit.needs_mem(instr_categ)
+
+    if (accept_res.mem_used and mem_access) or not _space_avail(
+            unit, util_info):
+        return False
+
+    _issue_instr(util_info[unit.name], mem_access, issue_rec, accept_res)
+    accept_res.accepted = True
+    return True
 
 
 def _add_access(instr: HwInstruction, instr_index: int,
@@ -527,8 +555,8 @@ def _fill_inputs(
 
     while issue_rec.entered < prog_len and accept_res.accepted:
         _accept_instr(
-            issue_rec, program[issue_rec.entered].categ, cap_unit_map.get(
-                program[issue_rec.entered].categ, []), util_info, accept_res)
+            issue_rec, program[issue_rec.entered].categ, iter(cap_unit_map.get(
+                program[issue_rec.entered].categ, [])), util_info, accept_res)
 
 
 def _fill_unit(unit: FuncUnit, program: Sequence[HwInstruction], util_info:
