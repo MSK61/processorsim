@@ -576,7 +576,8 @@ def _fill_unit(unit: FuncUnit, program: Sequence[HwInstruction], util_info:
         lambda candid: (candid, unit.model.needs_mem(program[util_info[
             candid.host][candid.index_in_host].instr].categ)), candidates)
     # instructions sorted by program index
-    mov_res = _mov_candidates(candid_info_lst, unit.model, util_info, mem_busy)
+    mov_res = _mov_candidates(
+        candid_info_lst, unit.model.name, util_info, mem_busy)
     # Need to sort instructions by their index in the host in a
     # descending order.
     _clr_src_units(
@@ -687,15 +688,16 @@ def _mov_candidate(candidate: InstrState, unit_util: MutableSequence[
     return mem_access
 
 
-def _mov_candidates(candidates: Iterable[Tuple[_HostedInstr, bool]], unit:
-                    UnitModel, util_info: BagValDict[ICaseString, InstrState],
-                    mem_busy: bool) -> _InstrMovStatus:
+def _mov_candidates(
+        candidates: Iterable[Tuple[_HostedInstr, bool]], unit: ICaseString,
+        util_info: BagValDict[ICaseString, InstrState],
+        mem_busy: bool) -> _InstrMovStatus:
     """Move candidate instructions between units.
 
     `candidates` is a list of tuples, where each tuple represents a
                  candidate instruction and its memory access requirement
                  in the destination unit.
-    `unit` is the destination unit.
+    `unit` is the destination unit name.
     `util_info` is the unit utilization information.
     `mem_busy` is the memory busy flag.
 
@@ -705,7 +707,7 @@ def _mov_candidates(candidates: Iterable[Tuple[_HostedInstr, bool]], unit:
     for cur_candid, mem_access in candidates:
         if not (mem_busy and mem_access) and _mov_candidate(
                 util_info[cur_candid.host][cur_candid.index_in_host],
-                util_info[unit.name], mov_res, mem_access):
+                util_info[unit], mov_res, mem_access):
             return mov_res
 
     mov_res.mem_used = False
