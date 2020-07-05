@@ -87,7 +87,7 @@ class TestCaps:
         in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits.yaml"
         processor = map(lambda unit_name: UnitModel(
             ICaseString(unit_name), 1, [ICaseString("ALU")],
-            LockInfo(True, True), False), ["core 1", "core 2"])
+            LockInfo(True, True), []), ["core 1", "core 2"])
         assert read_proc_file("capabilities", in_file) == ProcessorDesc(
             [], [], processor, [])
         chk_warn(["ALU", "core 1", "alu", "core 2"], caplog.records)
@@ -230,8 +230,9 @@ class TestProcessors:
                        units.UNIT_CAPS_KEY: ["ALU"], units.UNIT_RLOCK_KEY:
                        True, units.UNIT_WLOCK_KEY: True, units.UNIT_MEM_KEY:
                        True}], "dataPath": []}) == ProcessorDesc([], [], [
-                           UnitModel(ICaseString("fullSys"), 1, [ICaseString(
-                               "ALU")], LockInfo(True, True), True)], [])
+                           UnitModel(ICaseString("fullSys"), 1, [
+                               ICaseString("ALU")], LockInfo(True, True),
+                                     [ICaseString("ALU")])], [])
 
     def test_processor_with_four_connected_functional_units(self):
         """Test loading a processor with four functional units.
@@ -244,16 +245,16 @@ class TestProcessors:
         alu_cap = ICaseString("ALU")
         wr_lock = LockInfo(False, True)
         out_ports = tuple(
-            FuncUnit(UnitModel(name, 1, [alu_cap], wr_lock, False),
+            FuncUnit(UnitModel(name, 1, [alu_cap], wr_lock, []),
                      predecessors) for name, predecessors in
             [(ICaseString("output 1"), proc_desc.in_ports),
              (ICaseString("output 2"),
               map(lambda unit: unit.model, proc_desc.internal_units))])
         in_unit = ICaseString("input")
         internal_unit = UnitModel(
-            ICaseString("middle"), 1, [alu_cap], LockInfo(False, False), False)
+            ICaseString("middle"), 1, [alu_cap], LockInfo(False, False), [])
         assert proc_desc == ProcessorDesc(
-            [UnitModel(in_unit, 1, [alu_cap], LockInfo(True, False), False)],
+            [UnitModel(in_unit, 1, [alu_cap], LockInfo(True, False), [])],
             out_ports, [], [FuncUnit(internal_unit, proc_desc.in_ports)])
 
     @mark.parametrize(
@@ -300,13 +301,13 @@ class TestUnits:
 
         """
         in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
-                            LockInfo(True, False), False)
+                            LockInfo(True, False), [])
         mid1_unit = UnitModel(ICaseString("middle 1"), 1, [ICaseString("ALU")],
-                              LockInfo(False, False), False)
+                              LockInfo(False, False), [])
         mid2_unit = UnitModel(ICaseString("middle 2"), 1, [ICaseString("ALU")],
-                              LockInfo(False, False), False)
+                              LockInfo(False, False), [])
         out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")],
-                             LockInfo(False, True), False)
+                             LockInfo(False, True), [])
         assert ProcessorDesc(
             [in_unit], [FuncUnit(out_unit, [mid2_unit])], [],
             starmap(lambda model, pred: FuncUnit(model, [pred]), [
@@ -351,7 +352,7 @@ def _chk_one_unit(proc_dir, proc_file):
     """
     assert read_proc_file(proc_dir, proc_file) == ProcessorDesc(
         [], [], [UnitModel(ICaseString("fullSys"), 1, [ICaseString("ALU")],
-                           LockInfo(True, True), False)], [])
+                           LockInfo(True, True), [])], [])
 
 
 if __name__ == '__main__':

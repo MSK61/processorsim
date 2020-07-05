@@ -80,7 +80,7 @@ class TestHwDescLoad:
                     "processor_utils.load_proc_desc",
                     return_value=processor_utils.ProcessorDesc(
                         [], [], [units.UnitModel(
-                            full_sys_unit, 1, [icase_cap], lock_info, False)],
+                            full_sys_unit, 1, [icase_cap], lock_info, [])],
                         [])) as proc_mock, patch(
                             "processor_utils.get_abilities",
                             return_value=frozenset(

@@ -68,11 +68,11 @@ class FlowTest(TestCase):
 
         """
         in_units = starmap(lambda name, categ: UnitModel(
-            ICaseString(name), 1, [categ], LockInfo(True, False), False),
+            ICaseString(name), 1, [categ], LockInfo(True, False), []),
                            [["ALU input", "ALU"], ["MEM input", "MEM"]])
         in_units = tuple(in_units)
         out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, ["ALU", "MEM"],
-                                      LockInfo(False, True), False), in_units)
+                                      LockInfo(False, True), []), in_units)
         assert simulate([HwInstruction(*instr_params) for instr_params in [
             [[], "R12", "MEM"], [["R11", "R15"], "R14", "ALU"]]], HwSpec(
                 ProcessorDesc(in_units, [out_unit], [], []))) == [
@@ -95,11 +95,12 @@ class PipelineTest(TestCase):
 
         """
         in_unit = UnitModel(
-            ICaseString("input 1"), 1, ["ALU"], LockInfo(True, False), False)
-        out_unit = FuncUnit(UnitModel(ICaseString("output 1"), 1, ["ALU"],
-                                      LockInfo(False, True), True), [in_unit])
+            ICaseString("input 1"), 1, ["ALU"], LockInfo(True, False), [])
+        out_unit = FuncUnit(
+            UnitModel(ICaseString("output 1"), 1, ["ALU"],
+                      LockInfo(False, True), ["ALU"]), [in_unit])
         in_out_unit = UnitModel(
-            ICaseString("input 2"), 1, ["ALU"], LockInfo(True, False), False)
+            ICaseString("input 2"), 1, ["ALU"], LockInfo(True, False), [])
         assert simulate([HwInstruction([], "R1", "ALU")], HwSpec(ProcessorDesc(
             [in_unit], [out_unit], [in_out_unit], []))) == [BagValDict(
                 cp_util) for cp_util in [{ICaseString("input 1"): [InstrState(
@@ -112,17 +113,17 @@ class PipelineTest(TestCase):
 
         """
         big_input = UnitModel(
-            ICaseString("big input"), 4, ["ALU"], LockInfo(True, False), False)
+            ICaseString("big input"), 4, ["ALU"], LockInfo(True, False), [])
         small_input1 = UnitModel(ICaseString("small input 1"), 1, ["ALU"],
-                                 LockInfo(True, False), False)
+                                 LockInfo(True, False), [])
         mid1 = UnitModel(
-            ICaseString("middle 1"), 1, ["ALU"], LockInfo(False, False), False)
+            ICaseString("middle 1"), 1, ["ALU"], LockInfo(False, False), [])
         small_input2 = UnitModel(ICaseString("small input 2"), 1, ["ALU"],
-                                 LockInfo(True, False), False)
+                                 LockInfo(True, False), [])
         mid2 = UnitModel(
-            ICaseString("middle 2"), 2, ["ALU"], LockInfo(False, False), False)
+            ICaseString("middle 2"), 2, ["ALU"], LockInfo(False, False), [])
         out_unit = UnitModel(
-            ICaseString("output"), 2, ["ALU"], LockInfo(False, True), False)
+            ICaseString("output"), 2, ["ALU"], LockInfo(False, True), [])
         proc_desc = ProcessorDesc([big_input, small_input1, small_input2], [
             FuncUnit(out_unit, [big_input, mid2])], [], starmap(FuncUnit, [
                 [mid2, [mid1, small_input2]], [mid1, [small_input1]]]))
@@ -155,11 +156,11 @@ class StallTest(TestCase):
 
         """
         in_unit = UnitModel(
-            ICaseString("input"), 2, ["ALU"], LockInfo(True, False), False)
+            ICaseString("input"), 2, ["ALU"], LockInfo(True, False), [])
         mid = UnitModel(
-            ICaseString("middle"), 2, ["ALU"], LockInfo(False, False), False)
+            ICaseString("middle"), 2, ["ALU"], LockInfo(False, False), [])
         out_unit = UnitModel(
-            ICaseString("output"), 1, ["ALU"], LockInfo(False, True), False)
+            ICaseString("output"), 1, ["ALU"], LockInfo(False, True), [])
         proc_desc = ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
                                   [FuncUnit(mid, [in_unit])])
         assert simulate(
@@ -178,14 +179,14 @@ class StallTest(TestCase):
         `self` is this test case.
 
         """
-        long_input = UnitModel(ICaseString("long input"), 1, ["ALU"],
-                               LockInfo(False, False), False)
+        long_input = UnitModel(
+            ICaseString("long input"), 1, ["ALU"], LockInfo(False, False), [])
         mid = UnitModel(
-            ICaseString("middle"), 1, ["ALU"], LockInfo(False, False), False)
-        short_input = UnitModel(ICaseString("short input"), 1, ["ALU"],
-                                LockInfo(False, False), False)
+            ICaseString("middle"), 1, ["ALU"], LockInfo(False, False), [])
+        short_input = UnitModel(
+            ICaseString("short input"), 1, ["ALU"], LockInfo(False, False), [])
         out_unit = UnitModel(
-            ICaseString("output"), 1, ["ALU"], LockInfo(True, True), False)
+            ICaseString("output"), 1, ["ALU"], LockInfo(True, True), [])
         proc_desc = ProcessorDesc([long_input, short_input], [FuncUnit(
             out_unit, [mid, short_input])], [], [FuncUnit(mid, [long_input])])
         assert raises(
@@ -246,7 +247,7 @@ class TestOutputFlush:
             [[[], "R1", "ALU"], [["R1"], "R2", "ALU"]], extra_instr_lst))
         extra_instr_len = len(extra_instr_lst)
         cores = starmap(lambda name, width: UnitModel(
-            ICaseString(name), width, ["ALU"], LockInfo(True, True), False),
+            ICaseString(name), width, ["ALU"], LockInfo(True, True), []),
                         [("core 1", 1), ("core 2", 1 + extra_instr_len)])
         assert simulate(
             tuple(program), HwSpec(ProcessorDesc([], [], cores, []))) == [

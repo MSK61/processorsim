@@ -66,7 +66,7 @@ class RarTest(TestCase):
 
         """
         full_sys_unit = UnitModel(
-            ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), False)
+            ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), [])
         instructions = map(InstrState, range(2))
         assert simulate([HwInstruction(["R1"], out_reg, "ALU") for out_reg in
                          ["R2", "R3"]], HwSpec(ProcessorDesc([], [], [
@@ -86,11 +86,11 @@ class RawTest(TestCase):
 
         """
         in_unit = UnitModel(
-            ICaseString("input"), 1, ["ALU"], LockInfo(False, False), False)
+            ICaseString("input"), 1, ["ALU"], LockInfo(False, False), [])
         mid = UnitModel(
-            ICaseString("middle"), 1, ["ALU"], LockInfo(True, False), False)
+            ICaseString("middle"), 1, ["ALU"], LockInfo(True, False), [])
         out_unit = UnitModel(
-            ICaseString("output"), 1, ["ALU"], LockInfo(False, True), False)
+            ICaseString("output"), 1, ["ALU"], LockInfo(False, True), [])
         proc_desc = ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
                                   [FuncUnit(mid, [in_unit])])
         assert simulate(
@@ -120,7 +120,7 @@ class TestDataHazards:
 
         """
         full_sys_unit = UnitModel(
-            ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), False)
+            ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), [])
         assert simulate(
             [HwInstruction(*regs, "ALU") for regs in instr_regs],
             HwSpec(ProcessorDesc([], [], [full_sys_unit], []))) == [
@@ -134,21 +134,21 @@ class TestStructural:
     """Test case for structural hazards"""
 
     @mark.parametrize("in_width, in_mem_util, out_unit_params, extra_util", [
-        (1, True, [("output", 1, True)],
+        (1, ["ALU"], [("output", 1, ["ALU"])],
          [{ICaseString("output"): [InstrState(0)]}, {ICaseString("input"): [
              InstrState(1)]}, {ICaseString("output"): [InstrState(1)]}]),
-        (1, False, [("output", 1, True)],
+        (1, [], [("output", 1, ["ALU"])],
          [{ICaseString("output"): [InstrState(0)], ICaseString("input"):
            [InstrState(1)]}, {ICaseString("output"): [InstrState(1)]}]),
-        (2, False, [("output", 2, True)],
+        (2, [], [("output", 2, ["ALU"])],
          [{ICaseString("output"): [InstrState(0)],
            ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)]},
           {ICaseString("output"): [InstrState(1)]}]),
-        (2, False, starmap(lambda name, mem_access: (name, 1, mem_access),
-                           [("output 1", True), ("output 2", False)]),
+        (2, [], starmap(lambda name, mem_access: (name, 1, mem_access),
+                        [("output 1", ["ALU"]), ("output 2", [])]),
          [{ICaseString("output 1"): [InstrState(0)],
            ICaseString("output 2"): [InstrState(1)]}]),
-        (2, False, map(lambda name: (name, 1, True), ["output 1", "output 2"]),
+        (2, [], map(lambda name: (name, 1, ["ALU"]), ["output 1", "output 2"]),
          [{ICaseString("output 1"): [InstrState(0)],
            ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)]},
           {ICaseString("output 1"): [InstrState(1)]}])])
@@ -157,7 +157,8 @@ class TestStructural:
 
         `self` is this test case.
         `in_width` is the width of the input unit.
-        `in_mem_util` is the input unit memory utilization flag.
+        `in_mem_util` is the list of input unit capabilities requiring
+                      memory utilization.
         `out_unit_params` are the creation parameters of output units.
         `extra_util` is the extra utilization beyond the second clock
                      pulse.
@@ -184,12 +185,38 @@ class TestStructural:
 
         """
         full_sys_unit = UnitModel(
-            ICaseString("fullSys"), 2, ["ALU"], LockInfo(True, False), True)
+            ICaseString("fullSys"), 2, ["ALU"], LockInfo(True, False), ["ALU"])
         res_util = map(lambda instr: BagValDict(
             {ICaseString("fullSys"): [InstrState(instr)]}), range(2))
         assert simulate([HwInstruction([], out_reg, "ALU") for out_reg in
                          ["R1", "R2"]], HwSpec(ProcessorDesc(
                              [], [], [full_sys_unit], []))) == list(res_util)
+
+
+class UnifiedMemTest(TestCase):
+
+    """Test case for the unified memory architecture"""
+
+    def test_hazard(self):
+        """Test structural hazards in a unified memory architecture.
+
+        `self` is this test case.
+
+        """
+        capabilities = tuple(ICaseString(cap) for cap in ["ALU", "MEM"])
+        in_unit = UnitModel(ICaseString("input"), 1, capabilities,
+                            LockInfo(True, False), capabilities)
+        out_unit = FuncUnit(
+            UnitModel(ICaseString("output"), 1, capabilities,
+                      LockInfo(False, True), [ICaseString("MEM")]), [in_unit])
+        assert simulate(
+            [HwInstruction([], ICaseString(out_reg), ICaseString("ALU")) for
+             out_reg in ["R1", "R2"]],
+            HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
+                BagValDict(cp_util) for cp_util in
+                [{ICaseString("input"): [InstrState(0)]},
+                 {ICaseString("output"): [InstrState(0)], ICaseString("input"):
+                  [InstrState(1)]}, {ICaseString("output"): [InstrState(1)]}]]
 
 
 class WarTest(TestCase):
@@ -203,9 +230,9 @@ class WarTest(TestCase):
 
         """
         in_unit = UnitModel(
-            ICaseString("input"), 1, ["ALU"], LockInfo(False, False), False)
+            ICaseString("input"), 1, ["ALU"], LockInfo(False, False), [])
         out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, ["ALU"],
-                                      LockInfo(True, True), False), [in_unit])
+                                      LockInfo(True, True), []), [in_unit])
         assert simulate(
             [HwInstruction(*instr_regs, "ALU") for instr_regs in
              [[["R1"], "R2"], [[], "R1"]]],

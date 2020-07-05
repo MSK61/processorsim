@@ -70,10 +70,10 @@ class TestClean:
             "optimization", "pathThatGetsCutOffItsOutput.yaml")
         out1_unit = ICaseString("output 1")
         alu_cap = ICaseString("ALU")
-        assert proc_desc == ProcessorDesc([UnitModel(ICaseString("input"), 1, [
-            alu_cap], LockInfo(True, False), False)], [
-                FuncUnit(UnitModel(out1_unit, 1, [alu_cap], LockInfo(
-                    False, True), False), proc_desc.in_ports)], [], [])
+        assert proc_desc == ProcessorDesc([UnitModel(
+            ICaseString("input"), 1, [alu_cap], LockInfo(True, False),
+            [])], [FuncUnit(UnitModel(out1_unit, 1, [alu_cap], LockInfo(
+                False, True), []), proc_desc.in_ports)], [], [])
         chk_warn(["middle"], caplog.records)
 
     def test_incompatible_edge_is_removed(self, caplog):
@@ -87,12 +87,12 @@ class TestClean:
         proc_desc = read_proc_file(
             "optimization", "incompatibleEdgeProcessor.yaml")
         in_units = starmap(lambda name, categ: UnitModel(
-            name, 1, [categ], LockInfo(True, False), False), map(
+            name, 1, [categ], LockInfo(True, False), []), map(
                 lambda unit_params: map(ICaseString, unit_params),
                 [["input 1", "ALU"], ["input 2", "MEM"]]))
         wr_lock = LockInfo(False, True)
         out_units = starmap(lambda name, categ, in_unit: FuncUnit(
-            UnitModel(name, 1, [categ], wr_lock, False),
+            UnitModel(name, 1, [categ], wr_lock, []),
             [{in_port.name: in_port for in_port in proc_desc.in_ports}[
                 in_unit]]), map(
                     lambda unit_params: map(ICaseString, unit_params),
@@ -112,7 +112,7 @@ class TestClean:
         assert read_proc_file(
             "optimization", "unitWithNoCapabilities.yaml") == ProcessorDesc(
                 [], [], [UnitModel(ICaseString("core 1"), 1, [
-                    ICaseString("ALU")], LockInfo(True, True), False)], [])
+                    ICaseString("ALU")], LockInfo(True, True), [])], [])
         chk_warn(["core 2"], caplog.records)
 
 

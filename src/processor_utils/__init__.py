@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.46.0, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -377,8 +377,9 @@ def _get_unit_entry(
 
     """
     lock_attrs = itemgetter(UNIT_RLOCK_KEY, UNIT_WLOCK_KEY)(attrs)
-    return UnitModel(name, attrs[UNIT_WIDTH_KEY], attrs[UNIT_CAPS_KEY],
-                     units.LockInfo(*lock_attrs), attrs[UNIT_MEM_KEY])
+    return UnitModel(
+        name, attrs[UNIT_WIDTH_KEY], attrs[UNIT_CAPS_KEY], units.LockInfo(
+            *lock_attrs), attrs[UNIT_CAPS_KEY] if attrs[UNIT_MEM_KEY] else [])
 
 
 def _get_unit_name(

@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.44.2, python 3.7.6, Fedora release
-#               31 (Thirty One)
+# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
+#               32 (Thirty Two)
 #
 # notes:        This is a private program.
 #
@@ -72,6 +72,14 @@ class UnitModel:
 
     """Functional unit model"""
 
+    def needs_mem(self, cap: object) -> bool:
+        """Test if the given capability will require memory access.
+
+        `self` is this unit model.
+
+        """
+        return cap in self._mem_acl
+
     name: str_utils.ICaseString = attr.ib()
 
     width: int = attr.ib()
@@ -80,7 +88,7 @@ class UnitModel:
 
     lock_info: LockInfo = attr.ib()
 
-    mem_access: bool = attr.ib()
+    _mem_acl: Tuple[object, ...] = attr.ib(converter=sorted_tuple)
 
 
 def sorted_models(models: Iterable[UnitModel]) -> Tuple[UnitModel, ...]:
