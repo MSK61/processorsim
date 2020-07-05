@@ -261,7 +261,7 @@ class _TransitionUtil:
 def _accept_instr(issue_rec: _IssueInfo, instr_categ: object, inputs: Iterable[
         UnitModel], util_info: BagValDict[ICaseString, InstrState],
                   accept_res: _AcceptStatus) -> None:
-    """Try to accept the next instruction to the unit.
+    """Try to accept the next instruction to an input unit.
 
     `issue_rec` is the issue record.
     `instr_categ` is the next instruction category.
