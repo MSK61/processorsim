@@ -299,7 +299,6 @@ def _accept_in_unit(
         unit = next(input_iter)
     except StopIteration:
         return True
-
     mem_access = unit.needs_mem(instr_categ)
 
     if (accept_res.mem_used and mem_access) or not _space_avail(
