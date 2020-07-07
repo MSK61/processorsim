@@ -23,7 +23,7 @@
 #
 # program:      processor simulator
 #
-# file:         checks.py
+# file:         _checks.py
 #
 # function:     chk_caps, chk_cycles and chk_non_empty
 #

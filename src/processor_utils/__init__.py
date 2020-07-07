@@ -56,13 +56,13 @@ import container_utils
 from container_utils import IndexedSet, SelfIndexSet
 from errors import UndefElemError
 from str_utils import ICaseString
-from . import checks
 from .exception import BadEdgeError, BadWidthError, DupElemError
 from . import optimization
 from . import port_defs
 from . import units
 from .units import FuncUnit, UNIT_CAPS_KEY, UNIT_MEM_KEY, UnitModel, \
     UNIT_NAME_KEY, UNIT_RLOCK_KEY, UNIT_WIDTH_KEY, UNIT_WLOCK_KEY
+from . import _checks
 __all__ = ["exception", "get_abilities", "load_isa", "load_proc_desc",
            "ProcessorDesc", "units"]
 _T = typing.TypeVar("_T")
@@ -463,13 +463,13 @@ def _prep_proc_desc(processor: DiGraph) -> None:
     exceeds the minimum bus width.
 
     """
-    checks.chk_cycles(processor)
+    _checks.chk_cycles(processor)
     port_info = port_defs.PortGroup(processor)
     optimization.clean_struct(processor)
     optimization.rm_empty_units(processor)
     optimization.chk_terminals(processor, port_info)
-    checks.chk_non_empty(processor, port_info.in_ports)
-    checks.chk_caps(processor)
+    _checks.chk_non_empty(processor, port_info.in_ports)
+    _checks.chk_caps(processor)
 
 
 def _sorted_units(hw_units: Iterable[FuncUnit]) -> Tuple[FuncUnit, ...]:
