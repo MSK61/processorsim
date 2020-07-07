@@ -47,12 +47,12 @@ from networkx import DiGraph, Graph
 
 from str_utils import ICaseString
 from .exception import DeadInputError
-from . import port_defs
 from .units import UNIT_CAPS_KEY
+from . import _port_defs
 
 
 def chk_terminals(
-        processor: DiGraph, orig_port_info: port_defs.PortGroup) -> None:
+        processor: DiGraph, orig_port_info: _port_defs.PortGroup) -> None:
     """Check if new terminals have appeared after optimization.
 
     `processor` is the processor to check.
@@ -62,7 +62,7 @@ def chk_terminals(
     after trimming actions during optimization.
 
     """
-    new_out_ports = frozenset(port_defs.get_out_ports(processor)).difference(
+    new_out_ports = frozenset(_port_defs.get_out_ports(processor)).difference(
         orig_port_info.out_ports)
 
     for out_port in new_out_ports:

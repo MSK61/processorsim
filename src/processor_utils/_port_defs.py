@@ -23,7 +23,7 @@
 #
 # program:      processor simulator
 #
-# file:         port_defs.py
+# file:         _port_defs.py
 #
 # function:     get_in_ports and get_out_ports
 #
@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.6, Fedora release
-#               31 (Thirty One)
+# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
+#               32 (Thirty Two)
 #
 # notes:        This is a private program.
 #

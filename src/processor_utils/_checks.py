@@ -52,9 +52,9 @@ from networkx import DiGraph, Graph
 from str_utils import ICaseString
 from . import exception
 from .exception import BlockedCapError, ComponentInfo, MultilockError
-from . import port_defs
 from . import units
 from .units import UNIT_CAPS_KEY, UNIT_WIDTH_KEY
+from . import _port_defs
 _OLD_NODE_KEY = "old_node"
 _T = typing.TypeVar("_T")
 
@@ -487,7 +487,7 @@ def _do_cap_checks(processor: DiGraph, cap_checks: Iterable[
     """
     cap_units: AbstractSet[
         Tuple[ICaseString, List[ICaseString]]] = _get_cap_units(processor)
-    out_ports = tuple(port_defs.get_out_ports(processor))
+    out_ports = tuple(_port_defs.get_out_ports(processor))
     post_ord = tuple(networkx.dfs_postorder_nodes(processor))
 
     for cap, in_ports in cap_units:
@@ -555,7 +555,7 @@ def _get_cap_units(processor: DiGraph) -> AbstractSet[
 
     """
     cap_unit_map: Dict[ICaseString, List[_T]] = {}
-    in_ports: typing.Generator[_T, None, None] = port_defs.get_in_ports(
+    in_ports: typing.Generator[_T, None, None] = _port_defs.get_in_ports(
         processor)
 
     for cur_port in in_ports:
