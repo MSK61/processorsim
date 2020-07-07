@@ -63,8 +63,6 @@ from .units import FuncUnit, UNIT_CAPS_KEY, UNIT_MEM_KEY, UnitModel, \
 from . import _checks
 from . import _optimization
 from . import _port_defs
-__all__ = ["exception", "get_abilities", "load_isa", "load_proc_desc",
-           "ProcessorDesc", "units"]
 _T = typing.TypeVar("_T")
 
 
