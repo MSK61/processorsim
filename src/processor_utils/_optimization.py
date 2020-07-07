@@ -23,7 +23,7 @@
 #
 # program:      processor simulator
 #
-# file:         optimization.py
+# file:         _optimization.py
 #
 # function:     chk_terminals, clean_struct and rm_empty_units
 #

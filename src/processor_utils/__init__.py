@@ -57,12 +57,12 @@ from container_utils import IndexedSet, SelfIndexSet
 from errors import UndefElemError
 from str_utils import ICaseString
 from .exception import BadEdgeError, BadWidthError, DupElemError
-from . import optimization
 from . import port_defs
 from . import units
 from .units import FuncUnit, UNIT_CAPS_KEY, UNIT_MEM_KEY, UnitModel, \
     UNIT_NAME_KEY, UNIT_RLOCK_KEY, UNIT_WIDTH_KEY, UNIT_WLOCK_KEY
 from . import _checks
+from . import _optimization
 __all__ = ["exception", "get_abilities", "load_isa", "load_proc_desc",
            "ProcessorDesc", "units"]
 _T = typing.TypeVar("_T")
@@ -465,9 +465,9 @@ def _prep_proc_desc(processor: DiGraph) -> None:
     """
     _checks.chk_cycles(processor)
     port_info = port_defs.PortGroup(processor)
-    optimization.clean_struct(processor)
-    optimization.rm_empty_units(processor)
-    optimization.chk_terminals(processor, port_info)
+    _optimization.clean_struct(processor)
+    _optimization.rm_empty_units(processor)
+    _optimization.chk_terminals(processor, port_info)
     _checks.chk_non_empty(processor, port_info.in_ports)
     _checks.chk_caps(processor)
 
