@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""simulation services"""
+"""sim_services package"""
 
 ############################################################
 #
@@ -23,11 +23,11 @@
 #
 # program:      processor simulator
 #
-# file:         sim_services.py
+# file:         __init__.py
 #
-# function:     program execution simulation services
+# function:     sim_services package
 #
-# description:  simulates program execution
+# description:  sim_services package export file
 #
 # author:       Mohammed El-Afifi (ME)
 #
