@@ -47,12 +47,11 @@ import itertools
 from itertools import chain
 import string
 import typing
-from typing import cast, Dict, Iterable, Iterator, List, Mapping, \
-    MutableMapping, MutableSequence, Sequence, Tuple
+from typing import Dict, Iterable, Iterator, List, Mapping, MutableMapping, \
+    MutableSequence, Sequence, Tuple
 
 import attr
 import more_itertools
-from more_itertools import first_true
 
 from container_utils import BagValDict
 from processor_utils import ProcessorDesc
@@ -765,7 +764,7 @@ def _regs_loaded(old_unit_util: Iterable[InstrState], instr: object) -> bool:
             checked for being previously loaded.
 
     """
-    return cast(bool, first_true(
+    return typing.cast(bool, more_itertools.first_true(
         old_unit_util, pred=lambda old_instr:
         old_instr.instr == instr and old_instr.stalled != StallState.DATA))
 
