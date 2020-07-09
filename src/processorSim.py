@@ -63,7 +63,7 @@ from container_utils import BagValDict
 import hw_loading
 import program_utils
 import sim_services
-from sim_services import InstrState, StallState
+from sim_services.sim_defs import InstrState, StallState
 # command-line option variables
 # variable to receive the processor architecture file
 _PROC_OPT_VAR = "processor_file"

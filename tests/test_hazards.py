@@ -51,7 +51,8 @@ from container_utils import BagValDict
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from program_defs import HwInstruction
-from sim_services import HwSpec, InstrState, simulate, StallState
+from sim_services import HwSpec, simulate
+from sim_services.sim_defs import InstrState, StallState
 from str_utils import ICaseString
 
 
