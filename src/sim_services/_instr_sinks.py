@@ -124,10 +124,8 @@ def fill_unit(
     currently in progess.
 
     """
-    candidates = _get_candidates(unit, program, util_info)
-    # instructions sorted by program index
-    mov_res = _mov_candidates(
-        candidates, unit.model, program, util_info, mem_busy)
+    mov_res = _mov_candidates(_get_candidates(unit, program, util_info),
+                              unit.model, program, util_info, mem_busy)
     return mov_res
 
 
@@ -158,6 +156,7 @@ def _get_candidates(
         pred.name], lambda instr: instr.stalled != StallState.DATA and program[
             instr.instr].categ in unit.model.capabilities)) for pred in
                   unit.predecessors if pred.name in util_info)
+    # Earlier instructions in the program are selected first.
     return heapq.nsmallest(
         space_avail(unit.model, util_info),
         itertools.chain.from_iterable(candidates), key=lambda instr_info:
