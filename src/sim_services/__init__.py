@@ -51,8 +51,8 @@ import more_itertools
 
 from container_utils import BagValDict
 from processor_utils import ProcessorDesc
-from processor_utils import units
-from processor_utils.units import LockInfo, UnitModel
+import processor_utils.units
+from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from program_defs import HwInstruction
 from reg_access import AccessType, RegAccessQueue, RegAccQBuilder
 from str_utils import ICaseString
@@ -443,6 +443,22 @@ def _chk_avail_regs(avail_regs: MutableSequence[Sequence[object]], acc_queues:
     return True
 
 
+def _clr_src_units(instructions: Iterable[_instr_sinks.HostedInstr],
+                   util_info: BagValDict[ICaseString, _T]) -> None:
+    """Clear the utilization of units releasing instructions.
+
+    `instructions` is the information of instructions being moved from
+                   one unit to a predecessor, sorted by their program
+                   index.
+    `util_info` is the unit utilization information.
+    The function clears the utilization information of units from which
+    instructions were moved to predecessor units.
+
+    """
+    for cur_instr in instructions:
+        del util_info[cur_instr.host][cur_instr.index_in_host]
+
+
 def _count_outputs(outputs: Iterable[UnitModel],
                    util_info: BagValDict[ICaseString, InstrState]) -> int:
     """Count the number of unstalled outputs.
@@ -469,9 +485,9 @@ def _fill_cp_util(
     """
     _instr_sinks.flush_outputs(_get_out_ports(processor), util_info)
     in_units = chain(processor.in_out_ports, processor.in_ports)
-    _fill_inputs(
-        _build_cap_map(units.sorted_models(in_units)), program, util_info,
-        _mov_flights(chain(processor.out_ports, processor.internal_units),
+    _fill_inputs(_build_cap_map(processor_utils.units.sorted_models(in_units)),
+                 program, util_info, _mov_flights(
+                     chain(processor.out_ports, processor.internal_units),
                      program, util_info), issue_rec)
 
 
@@ -496,6 +512,23 @@ def _fill_inputs(
         _accept_instr(
             issue_rec, program[issue_rec.entered].categ, iter(cap_unit_map.get(
                 program[issue_rec.entered].categ, [])), util_info, accept_res)
+
+
+def _fill_unit(unit: FuncUnit, program: Sequence[HwInstruction], util_info:
+               BagValDict[ICaseString, InstrState], mem_busy: bool) -> bool:
+    """Fill an output with instructions from its predecessors.
+
+    `unit` is the destination unit to fill.
+    `program` is the master instruction list.
+    `util_info` is the unit utilization information.
+    `mem_busy` is the memory busy flag.
+    The function returns a flag indicating if a memory access is
+    currently in progess.
+
+    """
+    mov_res = _instr_sinks.fill_unit(unit, program, util_info, mem_busy)
+    _clr_src_units(mov_res.get_moved(), util_info)
+    return mov_res.mem_used
 
 
 def _get_out_ports(processor: ProcessorDesc) -> "chain[UnitModel]":
@@ -528,7 +561,7 @@ def _issue_instr(instr_lst: MutableSequence[InstrState], mem_access: bool,
 
 
 def _mov_flights(
-        dst_units: Iterable[units.FuncUnit], program: Sequence[HwInstruction],
+        dst_units: Iterable[FuncUnit], program: Sequence[HwInstruction],
         util_info: BagValDict[ICaseString, InstrState]) -> bool:
     """Move the instructions inside the pipeline.
 
@@ -542,7 +575,7 @@ def _mov_flights(
     mem_busy = False
 
     for cur_dst in dst_units:
-        if _instr_sinks.fill_unit(cur_dst, program, util_info, mem_busy):
+        if _fill_unit(cur_dst, program, util_info, mem_busy):
             mem_busy = True
 
     return mem_busy
