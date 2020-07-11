@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.47.0, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -41,14 +41,13 @@
 import heapq
 import itertools
 import typing
-from typing import Iterable, Sequence
+from typing import Iterable, MutableSequence, Sequence
 
 import attr
 import more_itertools
 
 from container_utils import BagValDict
-import processor_utils.units
-from processor_utils.units import FuncUnit
+from processor_utils.units import FuncUnit, UnitModel
 from program_defs import HwInstruction
 from str_utils import ICaseString
 from .sim_defs import InstrState, StallState
@@ -82,8 +81,20 @@ def fill_unit(unit: FuncUnit, program: Sequence[HwInstruction], util_info:
     return mov_res.mem_used
 
 
-def space_avail(unit: processor_utils.units.UnitModel,
-                util_info: BagValDict[ICaseString, _T]) -> int:
+def flush_outputs(out_units: Iterable[UnitModel],
+                  util_info: BagValDict[ICaseString, InstrState]) -> None:
+    """Flush output units in preparation for a new cycle.
+
+    `out_units` are the output processing units.
+    `util_info` is the unit utilization information.
+
+    """
+    for cur_out in out_units:
+        _flush_output(util_info[cur_out.name])
+
+
+def space_avail(
+        unit: UnitModel, util_info: BagValDict[ICaseString, _T]) -> int:
     """Calculate the free space for receiving instructions in the unit.
 
     `unit` is the unit to test whose free space.
@@ -129,6 +140,19 @@ def _clr_src_units(instructions: Iterable[_HostedInstr],
         del util_info[cur_instr.host][cur_instr.index_in_host]
 
 
+def _flush_output(out_instr_lst: MutableSequence[InstrState]) -> None:
+    """Flush the output unit in preparation for a new cycle.
+
+    `out_instr_lst` is the list of instructions in the output unit.
+
+    """
+    instr_indices = more_itertools.rlocate(
+        out_instr_lst, lambda instr: instr.stalled == StallState.NO_STALL)
+
+    for instr_index in instr_indices:
+        del out_instr_lst[instr_index]
+
+
 def _get_candidates(
         unit: FuncUnit, program: Sequence[HwInstruction], util_info:
         BagValDict[ICaseString, InstrState]) -> typing.List[_HostedInstr]:
@@ -160,7 +184,7 @@ def _get_new_guests(src_unit: ICaseString, instructions:
     return map(lambda instr: _HostedInstr(src_unit, instr), instructions)
 
 
-def _mov_candidate(candidate: InstrState, unit_util: typing.MutableSequence[
+def _mov_candidate(candidate: InstrState, unit_util: MutableSequence[
         InstrState], mov_res: _InstrMovStatus, mem_access: bool) -> bool:
     """Move a candidate instruction between units.
 

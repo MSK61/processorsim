@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.47.0, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -467,7 +467,7 @@ def _fill_cp_util(
     `issue_rec` is the issue record.
 
     """
-    _flush_outputs(_get_out_ports(processor), util_info)
+    _instr_sinks.flush_outputs(_get_out_ports(processor), util_info)
     in_units = chain(processor.in_out_ports, processor.in_ports)
     _fill_inputs(
         _build_cap_map(units.sorted_models(in_units)), program, util_info,
@@ -496,31 +496,6 @@ def _fill_inputs(
         _accept_instr(
             issue_rec, program[issue_rec.entered].categ, iter(cap_unit_map.get(
                 program[issue_rec.entered].categ, [])), util_info, accept_res)
-
-
-def _flush_output(out_instr_lst: MutableSequence[InstrState]) -> None:
-    """Flush the output unit in preparation for a new cycle.
-
-    `out_instr_lst` is the list of instructions in the output unit.
-
-    """
-    instr_indices = more_itertools.rlocate(
-        out_instr_lst, lambda instr: instr.stalled == StallState.NO_STALL)
-
-    for instr_index in instr_indices:
-        del out_instr_lst[instr_index]
-
-
-def _flush_outputs(out_units: Iterable[UnitModel],
-                   util_info: BagValDict[ICaseString, InstrState]) -> None:
-    """Flush output units in preparation for a new cycle.
-
-    `out_units` are the output processing units.
-    `util_info` is the unit utilization information.
-
-    """
-    for cur_out in out_units:
-        _flush_output(util_info[cur_out.name])
 
 
 def _get_out_ports(processor: ProcessorDesc) -> "chain[UnitModel]":
