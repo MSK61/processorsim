@@ -120,8 +120,7 @@ def fill_unit(
     `program` is the master instruction list.
     `util_info` is the unit utilization information.
     `mem_busy` is the memory busy flag.
-    The function returns a flag indicating if a memory access is
-    currently in progess.
+    The function returns the instructions moving status.
 
     """
     return _mov_candidates(_get_candidates(unit, program, util_info),
