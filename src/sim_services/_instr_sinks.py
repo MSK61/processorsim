@@ -124,9 +124,8 @@ def fill_unit(
     currently in progess.
 
     """
-    mov_res = _mov_candidates(_get_candidates(unit, program, util_info),
-                              unit.model, program, util_info, mem_busy)
-    return mov_res
+    return _mov_candidates(_get_candidates(unit, program, util_info),
+                           unit.model, program, util_info, mem_busy)
 
 
 def _flush_output(out_instr_lst: MutableSequence[InstrState]) -> None:
