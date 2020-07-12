@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.47.0, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -532,8 +532,8 @@ def _get_anal_graph(processor: Graph) -> DiGraph:
 def _get_cap_edge(in_edges: Iterable[_T], out_edges: Iterable[_T]) -> _T:
     """Select the capping edge.
 
-    `in_edges` is an iterator over input edges.
-    `out_edges` is an iterator over output edges.
+    `in_edges` are an iterator over input edges.
+    `out_edges` are an iterator over output edges.
     A capping edge is the sole edge on either side of a node that
     determines the maximum flow through the node. Either the input edges
     or the output edges must contain exactly one edge.

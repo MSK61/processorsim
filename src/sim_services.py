@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.47.0, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -213,7 +213,7 @@ class _IssueInfo:
         """Pump outputs out of the pipeline.
 
         `self` is this issue information record.
-        `outputs` is the number of outputs to pump out of the pipeline.
+        `outputs` are the number of outputs to pump out of the pipeline.
 
         """
         self._exited += outputs
@@ -490,7 +490,7 @@ def _clr_src_units(instructions: Iterable[_HostedInstr],
                    util_info: BagValDict[ICaseString, _T]) -> None:
     """Clear the utilization of units releasing instructions.
 
-    `instructions` is the information of instructions being moved from
+    `instructions` are the information of instructions being moved from
                    one unit to a predecessor, sorted by their program
                    index.
     `util_info` is the unit utilization information.
@@ -692,7 +692,7 @@ def _mov_candidates(
         mem_busy: bool) -> _InstrMovStatus:
     """Move candidate instructions between units.
 
-    `candidates` is a list of tuples, where each tuple represents a
+    `candidates` are a list of tuples, where each tuple represents a
                  candidate instruction and its memory access requirement
                  in the destination unit.
     `unit` is the destination unit name.
