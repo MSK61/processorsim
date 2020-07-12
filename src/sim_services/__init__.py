@@ -52,12 +52,13 @@ import more_itertools
 from container_utils import BagValDict
 from processor_utils import ProcessorDesc
 import processor_utils.units
-from processor_utils.units import FuncUnit, LockInfo, UnitModel
+from processor_utils.units import LockInfo, UnitModel
 from program_defs import HwInstruction
 from reg_access import AccessType, RegAccessQueue, RegAccQBuilder
 from str_utils import ICaseString
 from .sim_defs import InstrState, StallState
 from . import _instr_sinks
+from ._instr_sinks import UnitSink
 _T = typing.TypeVar("_T")
 
 
@@ -485,10 +486,11 @@ def _fill_cp_util(
     """
     _instr_sinks.flush_outputs(_get_out_ports(processor), util_info)
     in_units = chain(processor.in_out_ports, processor.in_ports)
-    _fill_inputs(_build_cap_map(processor_utils.units.sorted_models(in_units)),
-                 program, util_info, _mov_flights(
-                     chain(processor.out_ports, processor.internal_units),
-                     program, util_info), issue_rec)
+    dst_units = map(lambda dst: UnitSink(dst, program),
+                    chain(processor.out_ports, processor.internal_units))
+    _fill_inputs(
+        _build_cap_map(processor_utils.units.sorted_models(in_units)), program,
+        util_info, _mov_flights(dst_units, util_info), issue_rec)
 
 
 def _fill_inputs(
@@ -514,19 +516,18 @@ def _fill_inputs(
                 program[issue_rec.entered].categ, [])), util_info, accept_res)
 
 
-def _fill_unit(unit: FuncUnit, program: Sequence[HwInstruction], util_info:
-               BagValDict[ICaseString, InstrState], mem_busy: bool) -> bool:
+def _fill_unit(unit: UnitSink, util_info: BagValDict[ICaseString, InstrState],
+               mem_busy: bool) -> bool:
     """Fill an output with instructions from its predecessors.
 
     `unit` is the destination unit to fill.
-    `program` is the master instruction list.
     `util_info` is the unit utilization information.
     `mem_busy` is the memory busy flag.
     The function returns a flag indicating if a memory access is
     currently in progess.
 
     """
-    mov_res = _instr_sinks.fill_unit(unit, program, util_info, mem_busy)
+    mov_res = unit.fill_unit(util_info, mem_busy)
     _clr_src_units(sorted(mov_res.instructions, key=lambda candid:
                           candid.index_in_host, reverse=True), util_info)
     return mov_res.mem_used
@@ -561,13 +562,11 @@ def _issue_instr(instr_lst: MutableSequence[InstrState], mem_access: bool,
         accept_res.mem_used = True
 
 
-def _mov_flights(
-        dst_units: Iterable[FuncUnit], program: Sequence[HwInstruction],
-        util_info: BagValDict[ICaseString, InstrState]) -> bool:
+def _mov_flights(dst_units: Iterable[UnitSink],
+                 util_info: BagValDict[ICaseString, InstrState]) -> bool:
     """Move the instructions inside the pipeline.
 
     `dst_units` are the destination processing units.
-    `program` is the master instruction list.
     `util_info` is the unit utilization information.
     The function returns a flag indicating if a memory access is
     currently in progess.
@@ -576,7 +575,7 @@ def _mov_flights(
     mem_busy = False
 
     for cur_dst in dst_units:
-        if _fill_unit(cur_dst, program, util_info, mem_busy):
+        if _fill_unit(cur_dst, util_info, mem_busy):
             mem_busy = True
 
     return mem_busy
