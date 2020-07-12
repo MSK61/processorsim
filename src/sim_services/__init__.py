@@ -527,7 +527,8 @@ def _fill_unit(unit: FuncUnit, program: Sequence[HwInstruction], util_info:
 
     """
     mov_res = _instr_sinks.fill_unit(unit, program, util_info, mem_busy)
-    _clr_src_units(mov_res.get_moved(), util_info)
+    _clr_src_units(sorted(mov_res.instructions, key=lambda candid:
+                          candid.index_in_host, reverse=True), util_info)
     return mov_res.mem_used
 
 

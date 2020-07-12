@@ -41,7 +41,7 @@
 import heapq
 import itertools
 import typing
-from typing import Iterable, List, MutableSequence, Sequence
+from typing import Iterable, MutableSequence, Sequence
 
 import attr
 import more_itertools
@@ -87,24 +87,20 @@ class HostedInstr:
     index_in_host: int
 
 
+@attr.s(auto_attribs=True, frozen=True)
+class UnitFillStatus:
+
+    """Unit filling status"""
+
+    instructions: Iterable[HostedInstr]
+
+    mem_used: bool
+
+
 @attr.s
-class InstrMovStatus:
+class _InstrMovStatus:
 
     """Status of moving instructions"""
-
-    def get_moved(self) -> List[HostedInstr]:
-        """Retrieve the moved instructions.
-
-        `self` is this instructions moving status.
-        The method may be called only once.
-
-        """
-        # Need to sort instructions by their index in the host in a
-        # descending order.
-        return sorted(itertools.islice(self._instructions, self.moved),
-                      key=lambda candid: candid.index_in_host, reverse=True)
-
-    _instructions: Iterable[HostedInstr] = attr.ib()
 
     moved: int = attr.ib(default=0, init=False)
 
@@ -113,18 +109,21 @@ class InstrMovStatus:
 
 def fill_unit(
         unit: FuncUnit, program: Sequence[HwInstruction], util_info:
-        BagValDict[ICaseString, InstrState], mem_busy: bool) -> InstrMovStatus:
+        BagValDict[ICaseString, InstrState], mem_busy: bool) -> UnitFillStatus:
     """Fill an output with instructions from its predecessors.
 
     `unit` is the destination unit to fill.
     `program` is the master instruction list.
     `util_info` is the unit utilization information.
     `mem_busy` is the memory busy flag.
-    The function returns the instructions moving status.
+    The function returns the destination unit filling status.
 
     """
-    return _mov_candidates(_get_candidates(unit, program, util_info),
-                           unit.model, program, util_info, mem_busy)
+    candidates = _get_candidates(unit, program, util_info)
+    mov_res = _mov_candidates(
+        candidates, unit.model, program, util_info, mem_busy)
+    return UnitFillStatus(
+        itertools.islice(candidates, mov_res.moved), mov_res.mem_used)
 
 
 def _flush_output(out_instr_lst: MutableSequence[InstrState]) -> None:
@@ -142,7 +141,7 @@ def _flush_output(out_instr_lst: MutableSequence[InstrState]) -> None:
 
 def _get_candidates(
         unit: FuncUnit, program: Sequence[HwInstruction], util_info:
-        BagValDict[ICaseString, InstrState]) -> List[HostedInstr]:
+        BagValDict[ICaseString, InstrState]) -> typing.List[HostedInstr]:
     """Find candidate instructions in the predecessors of a unit.
 
     `unit` is the unit to match instructions from predecessors against.
@@ -174,7 +173,7 @@ def _get_new_guests(src_unit: ICaseString, instructions:
 
 def _mov_candidate(
         candidate: InstrState, unit_util: MutableSequence[InstrState],
-        mem_busy: bool, mem_access: bool, mov_res: InstrMovStatus) -> bool:
+        mem_busy: bool, mem_access: bool, mov_res: _InstrMovStatus) -> bool:
     """Move a candidate instruction between units.
 
     `candidate` is the candidate instruction to move.
@@ -198,8 +197,8 @@ def _mov_candidate(
 
 def _mov_candidates(
         candidates: typing.Collection[HostedInstr], unit: UnitModel,
-        program: Sequence[HwInstruction], util_info:
-        BagValDict[ICaseString, InstrState], mem_busy: bool) -> InstrMovStatus:
+        program: Sequence[HwInstruction], util_info: BagValDict[
+            ICaseString, InstrState], mem_busy: bool) -> _InstrMovStatus:
     """Move candidate instructions between units.
 
     `candidates` are a list of tuples, where each tuple represents a
@@ -211,7 +210,7 @@ def _mov_candidates(
     `mem_busy` is the memory busy flag.
 
     """
-    mov_res = InstrMovStatus(candidates)
+    mov_res = _InstrMovStatus()
 
     for cur_candid in candidates:
         if _mov_candidate(
