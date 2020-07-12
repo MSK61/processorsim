@@ -172,17 +172,24 @@ def _get_new_guests(src_unit: ICaseString, instructions:
     return map(lambda instr: HostedInstr(src_unit, instr), instructions)
 
 
-def _mov_candidate(candidate: InstrState, unit_util: MutableSequence[
-        InstrState], mov_res: InstrMovStatus, mem_access: bool) -> bool:
+def _mov_candidate(
+        candidate: InstrState, unit_util: MutableSequence[InstrState],
+        mem_busy: bool, mem_access: bool, mov_res: InstrMovStatus) -> bool:
     """Move a candidate instruction between units.
 
     `candidate` is the candidate instruction to move.
     `unit_util` is the unit utilization information.
+    `mem_busy` is the memory busy flag.
+    `mem_access` is the unit memory access flag.
     `mov_res` is the move result to update the number of moved
               instructions in.
-    `mem_access` is the unit memory access flag.
+    The function returns a flag indicating if the destination unit has
+    received the instruction and held the memory busy.
 
     """
+    if mem_busy and mem_access:
+        return False
+
     candidate.stalled = StallState.NO_STALL
     unit_util.append(candidate)
     mov_res.moved += 1
@@ -190,7 +197,7 @@ def _mov_candidate(candidate: InstrState, unit_util: MutableSequence[
 
 
 def _mov_candidates(
-        candidates: Iterable[HostedInstr], unit: UnitModel,
+        candidates: typing.Collection[HostedInstr], unit: UnitModel,
         program: Sequence[HwInstruction], util_info:
         BagValDict[ICaseString, InstrState], mem_busy: bool) -> InstrMovStatus:
     """Move candidate instructions between units.
@@ -205,14 +212,13 @@ def _mov_candidates(
 
     """
     mov_res = InstrMovStatus(candidates)
-    candid_info_lst = map(
-        lambda candid: (candid, unit.needs_mem(program[util_info[candid.host][
-            candid.index_in_host].instr].categ)), candidates)
 
-    for cur_candid, mem_access in candid_info_lst:
-        if not (mem_busy and mem_access) and _mov_candidate(
+    for cur_candid in candidates:
+        if _mov_candidate(
                 util_info[cur_candid.host][cur_candid.index_in_host],
-                util_info[unit.name], mov_res, mem_access):
+                util_info[unit.name], mem_busy,
+                unit.needs_mem(program[util_info[cur_candid.host][
+                    cur_candid.index_in_host].instr].categ), mov_res):
             return mov_res
 
     mov_res.mem_used = False
