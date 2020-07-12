@@ -195,7 +195,7 @@ def _mov_candidates(
         BagValDict[ICaseString, InstrState], mem_busy: bool) -> InstrMovStatus:
     """Move candidate instructions between units.
 
-    `candidates` is a list of tuples, where each tuple represents a
+    `candidates` are a list of tuples, where each tuple represents a
                  candidate instruction and its memory access requirement
                  in the destination unit.
     `unit` is the destination unit.

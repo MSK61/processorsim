@@ -170,7 +170,7 @@ class _IssueInfo:
         """Pump outputs out of the pipeline.
 
         `self` is this issue information record.
-        `outputs` is the number of outputs to pump out of the pipeline.
+        `outputs` are the number of outputs to pump out of the pipeline.
 
         """
         self._exited += outputs
@@ -447,7 +447,7 @@ def _clr_src_units(instructions: Iterable[_instr_sinks.HostedInstr],
                    util_info: BagValDict[ICaseString, _T]) -> None:
     """Clear the utilization of units releasing instructions.
 
-    `instructions` is the information of instructions being moved from
+    `instructions` are the information of instructions being moved from
                    one unit to a predecessor, sorted by their program
                    index.
     `util_info` is the unit utilization information.

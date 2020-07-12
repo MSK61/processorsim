@@ -38,7 +38,7 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.47.0, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -276,7 +276,7 @@ def _cui_to_flights(cxuxi: Iterable[Tuple[int, BagValDict[_T, InstrState]]],
     """Convert a CxUxI utilization map to instruction flights.
 
     `cxuxi` is the ClockxUnitxInstruction utilization map to convert.
-    `instructions` is the total number of instructions.
+    `instructions` are the total number of instructions.
 
     """
     return _icu_to_flights(_cui_to_icu(cxuxi, instructions))
@@ -287,7 +287,7 @@ def _cui_to_icu(cxuxi: Iterable[Tuple[int, BagValDict[_T, InstrState]]],
     """Convert a CxUxI utilization map to IxCxU format.
 
     `cxuxi` is the ClockxUnitxInstruction utilization map to convert.
-    `instructions` is the total number of instructions.
+    `instructions` are the total number of instructions.
 
     """
     ixcxu: List[Dict[int, _InstrPosition]] = list(
@@ -330,7 +330,7 @@ def _get_sim_rows(sim_res: Iterable[Tuple[int, BagValDict[_T, InstrState]]],
     """Calculate the simulation rows.
 
     `sim_res` is the simulation result.
-    `instructions` is the total number of instructions.
+    `instructions` are the total number of instructions.
 
     """
     flights = _cui_to_flights(sim_res, instructions)
