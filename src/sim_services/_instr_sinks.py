@@ -41,7 +41,7 @@
 import heapq
 import itertools
 import typing
-from typing import Iterable, MutableSequence
+from typing import Collection, Iterable, MutableSequence
 
 import attr
 import more_itertools
@@ -123,10 +123,7 @@ class UnitSink:
         The method returns the destination unit filling status.
 
         """
-        candidates = self._get_candidates(util_info)
-        mov_res = self._mov_candidates(candidates, util_info, mem_busy)
-        return UnitFillStatus(
-            itertools.islice(candidates, mov_res.moved), mov_res.mem_used)
+        return self._fill(self._get_candidates(util_info), util_info, mem_busy)
 
     def _get_candidates(self, util_info: BagValDict[
             ICaseString, InstrState]) -> typing.List[HostedInstr]:
@@ -148,9 +145,25 @@ class UnitSink:
             itertools.chain.from_iterable(candidates), key=lambda instr_info:
             util_info[instr_info.host][instr_info.index_in_host].instr)
 
-    def _mov_candidates(self, candidates: typing.Collection[HostedInstr],
-                        util_info: BagValDict[ICaseString, InstrState],
-                        mem_busy: bool) -> _InstrMovStatus:
+    def _fill(self, candidates: Collection[HostedInstr], util_info: BagValDict[
+            ICaseString, InstrState], mem_busy: bool) -> UnitFillStatus:
+        """Fill the underlying unit.
+
+        `self` is this unit sink.
+        `candidates` are a list of tuples, where each tuple represents a
+                     candidate instruction and its memory access
+                     requirement in the destination unit.
+        `util_info` is the unit utilization information.
+        `mem_busy` is the memory busy flag.
+
+        """
+        mov_res = self._mov_candidates(candidates, util_info, mem_busy)
+        return UnitFillStatus(
+            itertools.islice(candidates, mov_res.moved), mov_res.mem_used)
+
+    def _mov_candidates(
+            self, candidates: Collection[HostedInstr], util_info: BagValDict[
+                ICaseString, InstrState], mem_busy: bool) -> _InstrMovStatus:
         """Move candidate instructions between units.
 
         `self` is this unit sink.
