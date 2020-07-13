@@ -47,28 +47,27 @@ import attr
 import more_itertools
 
 from container_utils import BagValDict
-import processor_utils.units
-from processor_utils.units import UnitModel
+from processor_utils import units
 import program_defs
 from str_utils import ICaseString
 from .sim_defs import InstrState, StallState
 _T = typing.TypeVar("_T")
 
 
-def flush_outputs(out_units: Iterable[UnitModel],
+def flush_outputs(out_units: Iterable[ICaseString],
                   util_info: BagValDict[ICaseString, InstrState]) -> None:
     """Flush output units in preparation for a new cycle.
 
-    `out_units` are the output processing units.
+    `out_units` are the output processing unit names.
     `util_info` is the unit utilization information.
 
     """
     for cur_out in out_units:
-        _flush_output(util_info[cur_out.name])
+        _flush_output(util_info[cur_out])
 
 
 def space_avail(
-        unit: UnitModel, util_info: BagValDict[ICaseString, _T]) -> int:
+        unit: units.UnitModel, util_info: BagValDict[ICaseString, _T]) -> int:
     """Calculate the free space for receiving instructions in the unit.
 
     `unit` is the unit to test whose free space.
@@ -222,7 +221,7 @@ class UnitSink:
         return instr.stalled != StallState.DATA and self._accepts_cap(
             instr.instr)
 
-    _unit: processor_utils.units.FuncUnit
+    _unit: units.FuncUnit
 
     _program: typing.Sequence[program_defs.HwInstruction]
 
