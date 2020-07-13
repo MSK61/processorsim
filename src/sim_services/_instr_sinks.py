@@ -134,17 +134,9 @@ class UnitSink:
         """
         candidates = map(
             lambda pred: _get_new_guests(pred, more_itertools.locate(
-                util_info[pred], self._valid_candid)), self._get_donors())
+                util_info[pred], self._valid_candid)), self._donors)
         return self._pick_guests(
             itertools.chain.from_iterable(candidates), util_info)
-
-    def _get_donors(self) -> Iterator[ICaseString]:
-        """Retrieve the names of the units ready to supply instructions.
-
-        `self` is this unit sink.
-
-        """
-        return map(lambda pred: pred.name, self._unit.predecessors)
 
     def _accepts_cap(self, instr: int) -> bool:
         """Check if the given instruction capability may be accepted.
@@ -220,6 +212,15 @@ class UnitSink:
         """
         return instr.stalled != StallState.DATA and self._accepts_cap(
             instr.instr)
+
+    @property
+    def _donors(self) -> Iterator[ICaseString]:
+        """Retrieve the names of the units ready to supply instructions.
+
+        `self` is this unit sink.
+
+        """
+        return map(lambda pred: pred.name, self._unit.predecessors)
 
     _unit: units.FuncUnit
 
