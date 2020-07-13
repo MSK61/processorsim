@@ -41,7 +41,7 @@
 import heapq
 import itertools
 import typing
-from typing import Collection, Iterable, MutableSequence
+from typing import Collection, Iterable, Iterator, MutableSequence
 
 import attr
 import more_itertools
@@ -126,7 +126,7 @@ class UnitSink:
         return self._fill(self._get_candidates(util_info), util_info, mem_busy)
 
     def _get_candidates(self, util_info: BagValDict[
-            ICaseString, InstrState]) -> typing.List[HostedInstr]:
+            ICaseString, InstrState]) -> Collection[HostedInstr]:
         """Find candidate instructions in the predecessors of a unit.
 
         `self` is this unit sink.
@@ -134,16 +134,28 @@ class UnitSink:
 
         """
         candidates = map(
-            lambda pred: _get_new_guests(pred.name, more_itertools.locate(
-                util_info[pred.name],
-                lambda instr: instr.stalled != StallState.DATA and
-                self._program[instr.instr].categ in
-                self._unit.model.capabilities)), self._unit.predecessors)
-        # Earlier instructions in the program are selected first.
-        return heapq.nsmallest(
-            space_avail(self._unit.model, util_info),
-            itertools.chain.from_iterable(candidates), key=lambda instr_info:
-            util_info[instr_info.host][instr_info.index_in_host].instr)
+            lambda pred: _get_new_guests(pred, more_itertools.locate(
+                util_info[pred], self._valid_candid)), self._get_donors())
+        return self._pick_guests(
+            itertools.chain.from_iterable(candidates), util_info)
+
+    def _get_donors(self) -> Iterator[ICaseString]:
+        """Retrieve the units ready to supply instructions.
+
+        `self` is this unit sink.
+
+        """
+        return map(lambda pred: pred.name, self._unit.predecessors)
+
+    def _accepts_cap(self, instr: int) -> bool:
+        """Check if the given instruction capability may be accepted.
+
+        `self` is this unit sink.
+        `instr` is the instruction to evaluate the acceptance of whose
+                capability.
+
+        """
+        return self._program[instr].categ in self._unit.model.capabilities
 
     def _fill(self, candidates: Collection[HostedInstr], util_info: BagValDict[
             ICaseString, InstrState], mem_busy: bool) -> UnitFillStatus:
@@ -183,6 +195,32 @@ class UnitSink:
 
         mov_res.mem_used = False
         return mov_res
+
+    def _pick_guests(
+            self, candidates: Iterable[HostedInstr], util_info:
+            BagValDict[ICaseString, InstrState]) -> Collection[HostedInstr]:
+        """Pick the instructions to be accepted.
+
+        `self` is this unit sink.
+        `candidates` are a list of candidate instructions.
+        `util_info` is the unit utilization information.
+
+        """
+        # Earlier instructions in the program are selected first.
+        return heapq.nsmallest(
+            space_avail(self._unit.model, util_info), candidates,
+            key=lambda instr_info:
+            util_info[instr_info.host][instr_info.index_in_host].instr)
+
+    def _valid_candid(self, instr: InstrState) -> bool:
+        """Check if the given instruction is a good candidate.
+
+        `self` is this unit sink.
+        `instr` is the instruction to evaluate whose acceptance chance.
+
+        """
+        return instr.stalled != StallState.DATA and self._accepts_cap(
+            instr.instr)
 
     _unit: processor_utils.units.FuncUnit
 
