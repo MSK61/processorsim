@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.47.0, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -81,16 +81,6 @@ class BagValDict(Generic[_KT, _VT]):
 
         if initial_dict:
             self._add_items(initial_dict.items())
-
-    def __contains__(self, item: _KT) -> bool:
-        """Check if the given key exists.
-
-        `self` is this dictionary.
-        `key` is the key to check whose existence.
-        The method only considers existing keys with non-empty lists.
-
-        """
-        return item in self._dict and typing.cast(bool, self[item])
 
     def __eq__(self, other: typing.Any) -> bool:
         """Test if the two dictionaries are identical.

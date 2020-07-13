@@ -133,12 +133,12 @@ class UnitSink:
         `util_info` is the unit utilization information.
 
         """
-        candidates = (self._get_new_guests(pred.name, more_itertools.locate(
-            util_info[pred.name],
-            lambda instr: instr.stalled != StallState.DATA and
-            self._program[instr.instr].categ in
-            self._unit.model.capabilities)) for pred in
-                      self._unit.predecessors if pred.name in util_info)
+        candidates = map(
+            lambda pred: self._get_new_guests(pred.name, more_itertools.locate(
+                util_info[pred.name],
+                lambda instr: instr.stalled != StallState.DATA and
+                self._program[instr.instr].categ in
+                self._unit.model.capabilities)), self._unit.predecessors)
         # Earlier instructions in the program are selected first.
         return heapq.nsmallest(
             space_avail(self._unit.model, util_info),
