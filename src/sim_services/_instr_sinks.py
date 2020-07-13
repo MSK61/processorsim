@@ -139,7 +139,7 @@ class UnitSink:
             itertools.chain.from_iterable(candidates), util_info)
 
     def _get_donors(self) -> Iterator[ICaseString]:
-        """Retrieve the units ready to supply instructions.
+        """Retrieve the names of the units ready to supply instructions.
 
         `self` is this unit sink.
 
