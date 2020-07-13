@@ -134,7 +134,7 @@ class UnitSink:
 
         """
         candidates = map(
-            lambda pred: self._get_new_guests(pred.name, more_itertools.locate(
+            lambda pred: _get_new_guests(pred.name, more_itertools.locate(
                 util_info[pred.name],
                 lambda instr: instr.stalled != StallState.DATA and
                 self._program[instr.instr].categ in
@@ -144,17 +144,6 @@ class UnitSink:
             space_avail(self._unit.model, util_info),
             itertools.chain.from_iterable(candidates), key=lambda instr_info:
             util_info[instr_info.host][instr_info.index_in_host].instr)
-
-    @staticmethod
-    def _get_new_guests(src_unit: ICaseString, instructions:
-                        Iterable[int]) -> typing.Iterator[HostedInstr]:
-        """Prepare new hosted instructions.
-
-        `src_unit` is the old host of instructions.
-        `instructions` are the new instructions to be hosted.
-
-        """
-        return map(lambda instr: HostedInstr(src_unit, instr), instructions)
 
     def _fill(self, candidates: Collection[HostedInstr], util_info: BagValDict[
             ICaseString, InstrState], mem_busy: bool) -> UnitFillStatus:
@@ -170,30 +159,6 @@ class UnitSink:
         return UnitFillStatus(
             itertools.islice(candidates, mov_res.moved), mov_res.mem_used)
 
-    @staticmethod
-    def _mov_candidate(candidate: InstrState,
-                       unit_util: MutableSequence[InstrState], mem_busy: bool,
-                       mem_access: bool, mov_res: _InstrMovStatus) -> bool:
-        """Move a candidate instruction between units.
-
-        `candidate` is the candidate instruction to move.
-        `unit_util` is the unit utilization information.
-        `mem_busy` is the memory busy flag.
-        `mem_access` is the unit memory access flag.
-        `mov_res` is the move result to update the number of moved
-                  instructions in.
-        The function returns a flag indicating if the destination unit has
-        received the instruction and held the memory busy.
-
-        """
-        if mem_busy and mem_access:
-            return False
-
-        candidate.stalled = StallState.NO_STALL
-        unit_util.append(candidate)
-        mov_res.moved += 1
-        return mem_access
-
     def _mov_candidates(
             self, candidates: Collection[HostedInstr], util_info: BagValDict[
                 ICaseString, InstrState], mem_busy: bool) -> _InstrMovStatus:
@@ -208,7 +173,7 @@ class UnitSink:
         mov_res = _InstrMovStatus()
 
         for cur_candid in candidates:
-            if self._mov_candidate(
+            if _mov_candidate(
                     util_info[cur_candid.host][cur_candid.index_in_host],
                     util_info[self._unit.model.name], mem_busy,
                     self._unit.model.needs_mem(
@@ -235,3 +200,38 @@ def _flush_output(out_instr_lst: MutableSequence[InstrState]) -> None:
 
     for instr_index in instr_indices:
         del out_instr_lst[instr_index]
+
+
+def _get_new_guests(src_unit: ICaseString, instructions:
+                    Iterable[int]) -> typing.Iterator[HostedInstr]:
+    """Prepare new hosted instructions.
+
+    `src_unit` is the old host of instructions.
+    `instructions` are the new instructions to be hosted.
+
+    """
+    return map(lambda instr: HostedInstr(src_unit, instr), instructions)
+
+
+def _mov_candidate(
+        candidate: InstrState, unit_util: MutableSequence[InstrState],
+        mem_busy: bool, mem_access: bool, mov_res: _InstrMovStatus) -> bool:
+    """Move a candidate instruction between units.
+
+    `candidate` is the candidate instruction to move.
+    `unit_util` is the unit utilization information.
+    `mem_busy` is the memory busy flag.
+    `mem_access` is the unit memory access flag.
+    `mov_res` is the move result to update the number of moved
+              instructions in.
+    The function returns a flag indicating if the destination unit has
+    received the instruction and held the memory busy.
+
+    """
+    if mem_busy and mem_access:
+        return False
+
+    candidate.stalled = StallState.NO_STALL
+    unit_util.append(candidate)
+    mov_res.moved += 1
+    return mem_access
