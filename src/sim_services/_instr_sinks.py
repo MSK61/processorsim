@@ -38,13 +38,15 @@
 #
 ############################################################
 
+import abc
 import heapq
 import itertools
+from itertools import chain
 import typing
-from typing import Collection, Iterable, Iterator, MutableSequence
+from typing import Collection, Iterable, Iterator
 
 import attr
-import more_itertools
+from more_itertools import locate
 
 from container_utils import BagValDict
 from processor_utils import units
@@ -52,18 +54,6 @@ import program_defs
 from str_utils import ICaseString
 from .sim_defs import InstrState, StallState
 _T = typing.TypeVar("_T")
-
-
-def flush_outputs(out_units: Iterable[ICaseString],
-                  util_info: BagValDict[ICaseString, InstrState]) -> None:
-    """Flush output units in preparation for a new cycle.
-
-    `out_units` are the output processing unit names.
-    `util_info` is the unit utilization information.
-
-    """
-    for cur_out in out_units:
-        _flush_output(util_info[cur_out])
 
 
 def space_avail(
@@ -97,6 +87,23 @@ class UnitFillStatus:
     mem_used: bool
 
 
+class InstrSink(abc.ABC):
+
+    """Instruction sink"""
+
+    @abc.abstractmethod
+    def fill_unit(self, util_info: BagValDict[ICaseString, InstrState],
+                  mem_busy: bool) -> UnitFillStatus:
+        """Fill an output with instructions from its predecessors.
+
+        `self` is this unit sink.
+        `util_info` is the unit utilization information.
+        `mem_busy` is the memory busy flag.
+        The method returns the destination unit filling status.
+
+        """
+
+
 @attr.s
 class _InstrMovStatus:
 
@@ -108,7 +115,95 @@ class _InstrMovStatus:
 
 
 @attr.s(auto_attribs=True, frozen=True)
-class UnitSink:
+class OutSink(InstrSink):
+
+    """Dummy sink for flushing output ports"""
+
+    def fill_unit(self, util_info: BagValDict[ICaseString, InstrState],
+                  mem_busy: bool) -> UnitFillStatus:
+        """Fill an output with instructions from its predecessors.
+
+        `self` is this unit sink.
+        `util_info` is the unit utilization information.
+        `mem_busy` is the memory busy flag.
+        The method returns the destination unit filling status.
+
+        """
+        return self._fill(self._get_candidates(util_info), util_info, mem_busy)
+
+    def _get_candidates(self, util_info: BagValDict[
+            ICaseString, InstrState]) -> Collection[HostedInstr]:
+        """Find candidate instructions in the predecessors of a unit.
+
+        `self` is this unit sink.
+        `util_info` is the unit utilization information.
+
+        """
+        candidates = map(lambda pred: _get_new_guests(
+            pred, locate(util_info[pred], self._valid_candid)), self._donors)
+        return self._pick_guests(chain.from_iterable(candidates), util_info)
+
+    # pylint: disable=unused-argument
+    # pylint: disable=no-self-use
+    def _accepts_cap(self, instr: int) -> bool:
+        """Always accept all instructions.
+
+        `self` is this unit sink.
+        `instr` is unused.
+
+        """
+        return True
+
+    def _fill(self, candidates: Collection[HostedInstr], util_info: BagValDict[
+            ICaseString, InstrState], mem_busy: bool) -> UnitFillStatus:
+        """Fill the underlying unit.
+
+        `self` is this unit sink.
+        `candidates` are a list of candidate instructions.
+        `util_info` is the unit utilization information.
+        `mem_busy` is the memory busy flag.
+
+        """
+        return UnitFillStatus(candidates, False)
+
+    def _pick_guests(
+            self, candidates: Iterable[HostedInstr], util_info:
+            BagValDict[ICaseString, InstrState]) -> Collection[HostedInstr]:
+        """Pick the instructions to be accepted.
+
+        `self` is this unit sink.
+        `candidates` are a list of candidate instructions.
+        `util_info` is the unit utilization information.
+
+        """
+        return tuple(candidates)
+    # pylint: enable=no-self-use
+    # pylint: enable=unused-argument
+
+    def _valid_candid(self, instr: InstrState) -> bool:
+        """Check if the given instruction is a good candidate.
+
+        `self` is this unit sink.
+        `instr` is the instruction to evaluate whose acceptance chance.
+
+        """
+        return instr.stalled != StallState.DATA and self._accepts_cap(
+            instr.instr)
+
+    @property
+    def _donors(self) -> Iterator[ICaseString]:
+        """Retrieve the names of the units ready to supply instructions.
+
+        `self` is this unit sink.
+
+        """
+        return self._out_ports
+
+    _out_ports: Iterator[ICaseString]
+
+
+@attr.s(auto_attribs=True, frozen=True)
+class UnitSink(InstrSink):
 
     """Instruction sink wrapper for functional units"""
 
@@ -132,11 +227,9 @@ class UnitSink:
         `util_info` is the unit utilization information.
 
         """
-        candidates = map(
-            lambda pred: _get_new_guests(pred, more_itertools.locate(
-                util_info[pred], self._valid_candid)), self._donors)
-        return self._pick_guests(
-            itertools.chain.from_iterable(candidates), util_info)
+        candidates = map(lambda pred: _get_new_guests(
+            pred, locate(util_info[pred], self._valid_candid)), self._donors)
+        return self._pick_guests(chain.from_iterable(candidates), util_info)
 
     def _accepts_cap(self, instr: int) -> bool:
         """Check if the given instruction capability may be accepted.
@@ -227,19 +320,6 @@ class UnitSink:
     _program: typing.Sequence[program_defs.HwInstruction]
 
 
-def _flush_output(out_instr_lst: MutableSequence[InstrState]) -> None:
-    """Flush the output unit in preparation for a new cycle.
-
-    `out_instr_lst` is the list of instructions in the output unit.
-
-    """
-    instr_indices = more_itertools.rlocate(
-        out_instr_lst, lambda instr: instr.stalled == StallState.NO_STALL)
-
-    for instr_index in instr_indices:
-        del out_instr_lst[instr_index]
-
-
 def _get_new_guests(src_unit: ICaseString, instructions:
                     Iterable[int]) -> typing.Iterator[HostedInstr]:
     """Prepare new hosted instructions.
@@ -252,7 +332,7 @@ def _get_new_guests(src_unit: ICaseString, instructions:
 
 
 def _mov_candidate(
-        candidate: InstrState, unit_util: MutableSequence[InstrState],
+        candidate: InstrState, unit_util: typing.MutableSequence[InstrState],
         mem_busy: bool, mem_access: bool, mov_res: _InstrMovStatus) -> bool:
     """Move a candidate instruction between units.
 

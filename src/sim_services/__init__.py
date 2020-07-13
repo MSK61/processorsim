@@ -483,7 +483,8 @@ def _fill_cp_util(
     `issue_rec` is the issue record.
 
     """
-    _instr_sinks.flush_outputs(_get_out_ports(processor), util_info)
+    _fill_unit(
+        _instr_sinks.OutSink(_get_out_ports(processor)), util_info, False)
     in_units = chain(processor.in_out_ports, processor.in_ports)
     dst_units = map(lambda dst: UnitSink(dst, program),
                     chain(processor.out_ports, processor.internal_units))
@@ -515,8 +516,8 @@ def _fill_inputs(
                 program[issue_rec.entered].categ, [])), util_info, accept_res)
 
 
-def _fill_unit(unit: UnitSink, util_info: BagValDict[ICaseString, InstrState],
-               mem_busy: bool) -> bool:
+def _fill_unit(unit: _instr_sinks.InstrSink, util_info:
+               BagValDict[ICaseString, InstrState], mem_busy: bool) -> bool:
     """Fill an output with instructions from its predecessors.
 
     `unit` is the destination unit to fill.
