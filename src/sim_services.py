@@ -619,10 +619,11 @@ def _get_candidates(
     `util_info` is the unit utilization information.
 
     """
-    candidates = (_get_new_guests(pred.name, more_itertools.locate(util_info[
-        pred.name], lambda instr: instr.stalled != StallState.DATA and program[
-            instr.instr].categ in unit.model.capabilities)) for pred in
-                  unit.predecessors if pred.name in util_info)
+    candidates = map(
+        lambda pred: _get_new_guests(pred.name, more_itertools.locate(
+            util_info[pred.name], lambda instr:
+            instr.stalled != StallState.DATA and program[instr.instr].categ in
+            unit.model.capabilities)), unit.predecessors)
     return heapq.nsmallest(
         _space_avail(unit.model, util_info), chain.from_iterable(candidates),
         key=lambda instr_info:
