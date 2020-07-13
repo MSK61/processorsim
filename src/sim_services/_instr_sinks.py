@@ -161,9 +161,7 @@ class UnitSink:
         """Fill the underlying unit.
 
         `self` is this unit sink.
-        `candidates` are a list of tuples, where each tuple represents a
-                     candidate instruction and its memory access
-                     requirement in the destination unit.
+        `candidates` are a list of candidate instructions.
         `util_info` is the unit utilization information.
         `mem_busy` is the memory busy flag.
 
@@ -202,9 +200,7 @@ class UnitSink:
         """Move candidate instructions between units.
 
         `self` is this unit sink.
-        `candidates` are a list of tuples, where each tuple represents a
-                     candidate instruction and its memory access
-                     requirement in the destination unit.
+        `candidates` are a list of candidate instructions.
         `util_info` is the unit utilization information.
         `mem_busy` is the memory busy flag.
 
