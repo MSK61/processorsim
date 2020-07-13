@@ -502,7 +502,7 @@ def _clr_src_units(instructions: Iterable[_HostedInstr],
         del util_info[cur_instr.host][cur_instr.index_in_host]
 
 
-def _count_outputs(outputs: Iterable[UnitModel],
+def _count_outputs(outputs: Iterable[ICaseString],
                    util_info: BagValDict[ICaseString, InstrState]) -> int:
     """Count the number of unstalled outputs.
 
@@ -510,8 +510,7 @@ def _count_outputs(outputs: Iterable[UnitModel],
     `util_info` is the unit utilization information.
 
     """
-    return sum(
-        _calc_unstalled(util_info[out_port.name]) for out_port in outputs)
+    return sum(_calc_unstalled(util_info[out_port]) for out_port in outputs)
 
 
 def _fill_cp_util(
@@ -597,16 +596,16 @@ def _flush_output(out_instr_lst: MutableSequence[InstrState]) -> None:
         del out_instr_lst[instr_index]
 
 
-def _flush_outputs(out_units: Iterable[UnitModel],
+def _flush_outputs(out_units: Iterable[ICaseString],
                    util_info: BagValDict[ICaseString, InstrState]) -> None:
     """Flush output units in preparation for a new cycle.
 
-    `out_units` are the output processing units.
+    `out_units` are the output processing unit names.
     `util_info` is the unit utilization information.
 
     """
     for cur_out in out_units:
-        _flush_output(util_info[cur_out.name])
+        _flush_output(util_info[cur_out])
 
 
 def _get_candidates(
@@ -641,16 +640,16 @@ def _get_new_guests(src_unit: ICaseString,
     return map(lambda instr: _HostedInstr(src_unit, instr), instructions)
 
 
-def _get_out_ports(processor: ProcessorDesc) -> "chain[UnitModel]":
+def _get_out_ports(processor: ProcessorDesc) -> Iterator[ICaseString]:
     """Find all units at the processor output boundary.
 
     `processor` is the processor to find whose output ports.
-    The function returns an iterable over all ports at the output
+    The function returns an iterable over all port names at the output
     boundary.
 
     """
-    return chain(processor.in_out_ports,
-                 map(lambda port: port.model, processor.out_ports))
+    return map(lambda port: port.name, chain(processor.in_out_ports, map(
+        lambda port: port.model, processor.out_ports)))
 
 
 def _issue_instr(instr_lst: MutableSequence[InstrState], mem_access: bool,
