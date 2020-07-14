@@ -58,7 +58,7 @@ from reg_access import AccessType, RegAccessQueue, RegAccQBuilder
 from str_utils import ICaseString
 from .sim_defs import InstrState, StallState
 from . import _instr_sinks
-from ._instr_sinks import UnitSink
+from ._instr_sinks import InstrSink
 _T = typing.TypeVar("_T")
 
 
@@ -483,11 +483,10 @@ def _fill_cp_util(
     `issue_rec` is the issue record.
 
     """
-    _fill_unit(
-        _instr_sinks.OutSink(_get_out_ports(processor)), util_info, False)
     in_units = chain(processor.in_out_ports, processor.in_ports)
-    dst_units = map(lambda dst: UnitSink(dst, program),
-                    chain(processor.out_ports, processor.internal_units))
+    dst_units = more_itertools.prepend(_instr_sinks.OutSink(_get_out_ports(
+        processor)), map(lambda dst: _instr_sinks.UnitSink(dst, program),
+                         chain(processor.out_ports, processor.internal_units)))
     _fill_inputs(
         _build_cap_map(processor_utils.units.sorted_models(in_units)), program,
         util_info, _mov_flights(dst_units, util_info), issue_rec)
@@ -516,8 +515,8 @@ def _fill_inputs(
                 program[issue_rec.entered].categ, [])), util_info, accept_res)
 
 
-def _fill_unit(unit: _instr_sinks.InstrSink, util_info:
-               BagValDict[ICaseString, InstrState], mem_busy: bool) -> bool:
+def _fill_unit(unit: InstrSink, util_info: BagValDict[ICaseString, InstrState],
+               mem_busy: bool) -> bool:
     """Fill an output with instructions from its predecessors.
 
     `unit` is the destination unit to fill.
@@ -562,7 +561,7 @@ def _issue_instr(instr_lst: MutableSequence[InstrState], mem_access: bool,
         accept_res.mem_used = True
 
 
-def _mov_flights(dst_units: Iterable[UnitSink],
+def _mov_flights(dst_units: Iterable[InstrSink],
                  util_info: BagValDict[ICaseString, InstrState]) -> bool:
     """Move the instructions inside the pipeline.
 
