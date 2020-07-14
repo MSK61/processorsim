@@ -104,16 +104,6 @@ class InstrSink(abc.ABC):
         """
 
 
-@attr.s
-class _InstrMovStatus:
-
-    """Status of moving instructions"""
-
-    moved: int = attr.ib(default=0, init=False)
-
-    mem_used: bool = attr.ib(default=True, init=False)
-
-
 @attr.s(auto_attribs=True, frozen=True)
 class OutSink(InstrSink):
 
@@ -200,6 +190,16 @@ class OutSink(InstrSink):
         return self._out_ports
 
     _out_ports: Iterator[ICaseString]
+
+
+@attr.s
+class _InstrMovStatus:
+
+    """Status of moving instructions"""
+
+    moved: int = attr.ib(default=0, init=False)
+
+    mem_used: bool = attr.ib(default=True, init=False)
 
 
 @attr.s(auto_attribs=True, frozen=True)
