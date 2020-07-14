@@ -112,10 +112,21 @@ class InstrSink(abc.ABC):
 
         """
         candidates = map(
-            lambda pred: _get_new_guests(pred, more_itertools.locate(
+            lambda pred: self._get_new_guests(pred, more_itertools.locate(
                 util_info[pred], self._valid_candid)), self._donors)
         return self._pick_guests(
             itertools.chain.from_iterable(candidates), util_info)
+
+    @staticmethod
+    def _get_new_guests(src_unit: ICaseString, instructions:
+                        Iterable[int]) -> typing.Iterator[HostedInstr]:
+        """Prepare new hosted instructions.
+
+        `src_unit` is the old host of instructions.
+        `instructions` are the new instructions to be hosted.
+
+        """
+        return map(lambda instr: HostedInstr(src_unit, instr), instructions)
 
     @abstractmethod
     def _accepts_cap(self, instr: int) -> bool:
@@ -263,6 +274,30 @@ class UnitSink(InstrSink):
         return UnitFillStatus(
             itertools.islice(candidates, mov_res.moved), mov_res.mem_used)
 
+    @staticmethod
+    def _mov_candidate(candidate: InstrState, unit_util:
+                       typing.MutableSequence[InstrState], mem_busy: bool,
+                       mem_access: bool, mov_res: _InstrMovStatus) -> bool:
+        """Move a candidate instruction between units.
+
+        `candidate` is the candidate instruction to move.
+        `unit_util` is the unit utilization information.
+        `mem_busy` is the memory busy flag.
+        `mem_access` is the unit memory access flag.
+        `mov_res` is the move result to update the number of moved
+                  instructions in.
+        The method returns a flag indicating if the destination unit has
+        received the instruction and held the memory busy.
+
+        """
+        if mem_busy and mem_access:
+            return False
+
+        candidate.stalled = StallState.NO_STALL
+        unit_util.append(candidate)
+        mov_res.moved += 1
+        return mem_access
+
     def _mov_candidates(
             self, candidates: Collection[HostedInstr], util_info: BagValDict[
                 ICaseString, InstrState], mem_busy: bool) -> _InstrMovStatus:
@@ -277,7 +312,7 @@ class UnitSink(InstrSink):
         mov_res = _InstrMovStatus()
 
         for cur_candid in candidates:
-            if _mov_candidate(
+            if self._mov_candidate(
                     util_info[cur_candid.host][cur_candid.index_in_host],
                     util_info[self._unit.model.name], mem_busy,
                     self._unit.model.needs_mem(
@@ -316,38 +351,3 @@ class UnitSink(InstrSink):
     _unit: units.FuncUnit
 
     _program: typing.Sequence[program_defs.HwInstruction]
-
-
-def _get_new_guests(src_unit: ICaseString, instructions:
-                    Iterable[int]) -> typing.Iterator[HostedInstr]:
-    """Prepare new hosted instructions.
-
-    `src_unit` is the old host of instructions.
-    `instructions` are the new instructions to be hosted.
-
-    """
-    return map(lambda instr: HostedInstr(src_unit, instr), instructions)
-
-
-def _mov_candidate(
-        candidate: InstrState, unit_util: typing.MutableSequence[InstrState],
-        mem_busy: bool, mem_access: bool, mov_res: _InstrMovStatus) -> bool:
-    """Move a candidate instruction between units.
-
-    `candidate` is the candidate instruction to move.
-    `unit_util` is the unit utilization information.
-    `mem_busy` is the memory busy flag.
-    `mem_access` is the unit memory access flag.
-    `mov_res` is the move result to update the number of moved
-              instructions in.
-    The function returns a flag indicating if the destination unit has
-    received the instruction and held the memory busy.
-
-    """
-    if mem_busy and mem_access:
-        return False
-
-    candidate.stalled = StallState.NO_STALL
-    unit_util.append(candidate)
-    mov_res.moved += 1
-    return mem_access
