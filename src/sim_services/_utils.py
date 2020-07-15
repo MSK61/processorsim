@@ -25,7 +25,7 @@
 #
 # file:         _utils.py
 #
-# function:     space_avail
+# function:     mem_unavail and space_avail
 #
 # description:  simulation helper utilities
 #
@@ -44,6 +44,16 @@ import container_utils
 import processor_utils.units
 import str_utils
 _T = typing.TypeVar("_T")
+
+
+def mem_unavail(mem_busy: bool, mem_req: bool) -> bool:
+    """Check if the memory is unavailable for the given access.
+
+        `mem_busy` is the memory busy flag.
+        `mem_req` is the unit memory access request.
+
+    """
+    return mem_busy and mem_req
 
 
 def space_avail(unit: processor_utils.units.UnitModel, util_info:

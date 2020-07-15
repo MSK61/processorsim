@@ -258,8 +258,9 @@ def _accept_in_unit(
         return True
     mem_access = unit.needs_mem(instr_categ)
 
-    if (accept_res.mem_used and mem_access) or not _utils.space_avail(
-            unit, util_info):
+    if _utils.mem_unavail(
+            accept_res.mem_used, mem_access) or not _utils.space_avail(
+                unit, util_info):
         return False
 
     _issue_instr(util_info[unit.name], mem_access, issue_rec, accept_res)

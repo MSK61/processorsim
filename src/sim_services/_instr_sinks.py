@@ -279,7 +279,7 @@ class UnitSink(InstrSink):
         received the instruction and held the memory busy.
 
         """
-        if mem_busy and mem_access:
+        if _utils.mem_unavail(mem_busy, mem_access):
             return False
 
         candidate.stalled = StallState.NO_STALL
