@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""simulation definitions"""
+"""simulation helper utilities"""
 
 ############################################################
 #
@@ -23,11 +23,11 @@
 #
 # program:      processor simulator
 #
-# file:         sim_defs.py
+# file:         _utils.py
 #
-# function:     simulation helper classes
+# function:     space_avail
 #
-# description:  simulation definitions
+# description:  simulation helper utilities
 #
 # author:       Mohammed El-Afifi (ME)
 #
@@ -38,28 +38,20 @@
 #
 ############################################################
 
-import enum
-from enum import auto
+import typing
 
-import attr
-
-
-class StallState(enum.Enum):
-
-    """Instruction stalling state"""
-
-    NO_STALL = auto()
-
-    STRUCTURAL = auto()
-
-    DATA = auto()
+import container_utils
+import processor_utils.units
+import str_utils
+_T = typing.TypeVar("_T")
 
 
-@attr.s
-class InstrState:
+def space_avail(unit: processor_utils.units.UnitModel, util_info:
+                container_utils.BagValDict[str_utils.ICaseString, _T]) -> int:
+    """Calculate the free space for receiving instructions in the unit.
 
-    """Instruction state"""
+    `unit` is the unit to test whose free space.
+    `util_info` is the unit utilization information.
 
-    instr: int = attr.ib()
-
-    stalled: StallState = attr.ib(default=StallState.NO_STALL)
+    """
+    return unit.width - len(util_info[unit.name])

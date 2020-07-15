@@ -56,7 +56,7 @@ from processor_utils.units import LockInfo, UnitModel
 from program_defs import HwInstruction
 from reg_access import AccessType, RegAccessQueue, RegAccQBuilder
 from str_utils import ICaseString
-from . import _instr_sinks
+from . import _instr_sinks, _utils
 from ._instr_sinks import InstrSink
 from .sim_defs import InstrState, StallState
 _T = typing.TypeVar("_T")
@@ -258,7 +258,7 @@ def _accept_in_unit(
         return True
     mem_access = unit.needs_mem(instr_categ)
 
-    if (accept_res.mem_used and mem_access) or not _instr_sinks.space_avail(
+    if (accept_res.mem_used and mem_access) or not _utils.space_avail(
             unit, util_info):
         return False
 

@@ -25,7 +25,7 @@
 #
 # file:         _instr_sinks.py
 #
-# function:     space_avail
+# function:     instruction sink classes
 #
 # description:  instruction sinks
 #
@@ -49,22 +49,11 @@ import attr
 import more_itertools
 
 from container_utils import BagValDict
-from processor_utils import units
+import processor_utils.units
 import program_defs
 from str_utils import ICaseString
 from .sim_defs import InstrState, StallState
-_T = typing.TypeVar("_T")
-
-
-def space_avail(
-        unit: units.UnitModel, util_info: BagValDict[ICaseString, _T]) -> int:
-    """Calculate the free space for receiving instructions in the unit.
-
-    `unit` is the unit to test whose free space.
-    `util_info` is the unit utilization information.
-
-    """
-    return unit.width - len(util_info[unit.name])
+from . import _utils
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -335,7 +324,7 @@ class UnitSink(InstrSink):
         """
         # Earlier instructions in the program are selected first.
         return heapq.nsmallest(
-            space_avail(self._unit.model, util_info), candidates,
+            _utils.space_avail(self._unit.model, util_info), candidates,
             key=lambda instr_info:
             util_info[instr_info.host][instr_info.index_in_host].instr)
 
@@ -348,6 +337,6 @@ class UnitSink(InstrSink):
         """
         return map(lambda pred: pred.name, self._unit.predecessors)
 
-    _unit: units.FuncUnit
+    _unit: processor_utils.units.FuncUnit
 
     _program: typing.Sequence[program_defs.HwInstruction]
