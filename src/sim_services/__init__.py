@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.47.0, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.47.1, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -56,9 +56,9 @@ from processor_utils.units import LockInfo, UnitModel
 from program_defs import HwInstruction
 from reg_access import AccessType, RegAccessQueue, RegAccQBuilder
 from str_utils import ICaseString
-from .sim_defs import InstrState, StallState
 from . import _instr_sinks
 from ._instr_sinks import InstrSink
+from .sim_defs import InstrState, StallState
 _T = typing.TypeVar("_T")
 
 
