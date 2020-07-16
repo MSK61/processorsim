@@ -44,6 +44,7 @@ from operator import eq, itemgetter
 import typing
 from typing import Callable, Generic, Iterable, List, Optional, Tuple, TypeVar
 
+import attr
 import more_itertools
 
 from str_utils import format_obj
@@ -174,19 +175,10 @@ class BagValDict(Generic[_KT, _VT]):
     items = _useful_items
 
 
+@attr.s(frozen=True, repr=False)
 class _IndexedSetBase(Generic[_T]):
 
     """Indexed set base class"""
-
-    def __init__(self, index_func: Callable[[_T], object]) -> None:
-        """Create an indexed set.
-
-        `self` is this set.
-        `index_func` is the index calculation function.
-
-        """
-        self._index_func = index_func
-        self._std_form_map: typing.Dict[object, _T] = {}
 
     def __repr__(self) -> str:
         """Return the official string of this indexed set.
@@ -216,6 +208,10 @@ class _IndexedSetBase(Generic[_T]):
 
         """
         self._std_form_map[self._index_func(elem)] = elem
+
+    _index_func: Callable[[_T], object] = attr.ib()
+
+    _std_form_map: typing.Dict[object, _T] = attr.ib(factory=dict, init=False)
 
 
 class IndexedSet(_IndexedSetBase[_T]):
