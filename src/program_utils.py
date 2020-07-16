@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.45.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.47.1, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -67,7 +67,7 @@ class CodeError(RuntimeError):
         `instr` is the instruction causing the error.
 
         """
-        RuntimeError.__init__(self, string.Template(msg_tmpl).substitute(
+        super().__init__(string.Template(msg_tmpl).substitute(
             {self.INSTR_KEY: instr, self.LINE_NUM_KEY: line}))
         self._line = line
         self._instr = instr

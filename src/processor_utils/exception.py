@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.45.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.47.1, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -59,8 +59,7 @@ class BadEdgeError(RuntimeError):
         `edge` is the bad edge.
 
         """
-        RuntimeError.__init__(
-            self, Template(msg_tmpl).substitute({self.EDGE_KEY: edge}))
+        super().__init__(Template(msg_tmpl).substitute({self.EDGE_KEY: edge}))
         self._edge = edge
 
     @property
@@ -93,7 +92,7 @@ class BadWidthError(RuntimeError):
         `width` is the bad width.
 
         """
-        RuntimeError.__init__(self, Template(msg_tmpl).substitute(
+        super().__init__(Template(msg_tmpl).substitute(
             {self.UNIT_KEY: unit, self.WIDTH_KEY: width}))
         self._unit = unit
         self._width = width
@@ -162,7 +161,7 @@ class BlockedCapError(RuntimeError):
         `blocking_info` is the blocking information.
 
         """
-        RuntimeError.__init__(self, Template(msg_tmpl).substitute(
+        super().__init__(Template(msg_tmpl).substitute(
             {self.CAPABILITY_KEY: blocking_info.capability_info.reporting_name,
              self.PORT_KEY: blocking_info.port_info.reporting_name}))
         self._capability = blocking_info.capability_info.std_name
@@ -210,8 +209,7 @@ class DeadInputError(RuntimeError):
         `port` is the blocked input port.
 
         """
-        RuntimeError.__init__(
-            self, Template(msg_tmpl).substitute({self.PORT_KEY: port}))
+        super().__init__(Template(msg_tmpl).substitute({self.PORT_KEY: port}))
         self._port = port
 
     @property
@@ -241,7 +239,7 @@ class DupElemError(RuntimeError):
         `new_elem` is the element just discovered.
 
         """
-        RuntimeError.__init__(self, Template(msg_tmpl).substitute(
+        super().__init__(Template(msg_tmpl).substitute(
             {self.OLD_ELEM_KEY: old_elem, self.NEW_ELEM_KEY: new_elem}))
         self._old_elem = old_elem
         self._new_elem = new_elem
@@ -291,7 +289,7 @@ class MultilockError(RuntimeError):
         `capability` is the capability for which the path was computed.
 
         """
-        RuntimeError.__init__(self, Template(msg_tmpl).substitute(
+        super().__init__(Template(msg_tmpl).substitute(
             {self.CAP_KEY: capability, self.LOCK_TYPE_KEY: lock_type,
              self.START_KEY: start}))
         self._start = start

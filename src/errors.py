@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.45.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.47.1, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -54,8 +54,8 @@ class UndefElemError(RuntimeError):
         `elem` is the unknown element.
 
         """
-        RuntimeError.__init__(
-            self, string.Template(msg_tmpl).substitute({self.ELEM_KEY: elem}))
+        super().__init__(
+            string.Template(msg_tmpl).substitute({self.ELEM_KEY: elem}))
         self._elem = elem
 
     @property

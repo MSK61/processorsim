@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.47.0, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.47.1, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -251,4 +251,4 @@ class SelfIndexSet(_IndexedSetBase[_T]):
         `self` is this set.
 
         """
-        _IndexedSetBase.__init__(self, lambda elem: elem)
+        super().__init__(lambda elem: elem)

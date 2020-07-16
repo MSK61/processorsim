@@ -75,7 +75,7 @@ class StallError(RuntimeError):
         `stalled_state` is the stalled processor state.
 
         """
-        RuntimeError.__init__(self, string.Template(msg_tmpl).substitute(
+        super().__init__(string.Template(msg_tmpl).substitute(
             {self.STATE_KEY: stalled_state}))
         self._stalled_state = stalled_state
 
