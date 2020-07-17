@@ -158,10 +158,10 @@ class BagValDict(Generic[_KT, _VT]):
         """
         elems = starmap(
             lambda key, val_lst: (key, sorted(val_lst)), self.items())
-        item_strings = starmap(lambda key, val_lst: f"{key!r}: {val_lst}",
-                               sorted(elems, key=itemgetter(0)))
         sep = ", "
-        return sep.join(item_strings)
+        key_getter = itemgetter(0)
+        return sep.join(starmap(lambda key, val_lst: f"{key!r}: {val_lst}",
+                                sorted(elems, key=key_getter)))
 
     def _useful_items(self) -> typing.Iterator[Tuple[_KT, List[_VT]]]:
         """Filter out items with empty value lists.
