@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.47.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.47.2, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -39,7 +39,7 @@
 ############################################################
 
 import collections
-import itertools
+from itertools import starmap
 from operator import eq, itemgetter
 import typing
 from typing import Callable, Generic, Iterable, List, Optional, Tuple, TypeVar
@@ -92,8 +92,8 @@ class BagValDict(Generic[_KT, _VT]):
         """
         assert type(other) is type(self)
         other_items = tuple(other.items())
-        lst_pairs = itertools.starmap(lambda key, val_lst: map(
-            sorted, [val_lst, self[key]]), other_items)
+        lst_pairs = starmap(lambda key, val_lst:
+                            map(sorted, [val_lst, self[key]]), other_items)
         item_lst_pair: List[typing.Sized] = [self, other_items]
         return eq(*(len(item_lst) for item_lst in item_lst_pair)) and all(
             eq(*pair) for pair in lst_pairs)
@@ -156,9 +156,10 @@ class BagValDict(Generic[_KT, _VT]):
         `self` is this dictionary.
 
         """
-        elems = map(lambda item: (item[0], sorted(item[1])), self.items())
-        item_strings = map(lambda item: f"{item[0]!r}: {item[1]}",
-                           sorted(elems, key=itemgetter(0)))
+        elems = starmap(
+            lambda key, val_lst: (key, sorted(val_lst)), self.items())
+        item_strings = starmap(lambda key, val_lst: f"{key!r}: {val_lst}",
+                               sorted(elems, key=itemgetter(0)))
         sep = ", "
         return sep.join(item_strings)
 
