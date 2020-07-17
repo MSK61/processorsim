@@ -42,7 +42,7 @@ import collections
 from itertools import starmap
 from operator import eq, itemgetter
 import typing
-from typing import Callable, Generic, Iterable, List, Optional, Tuple, TypeVar
+from typing import Callable, DefaultDict, Generic, List, Tuple, TypeVar
 
 import attr
 import more_itertools
@@ -53,7 +53,7 @@ _T = TypeVar("_T")
 _VT = TypeVar("_VT")
 
 
-def sorted_tuple(elems: Iterable[_T],
+def sorted_tuple(elems: typing.Iterable[_T],
                  key: Callable[[_T], object] = None) -> Tuple[_T, ...]:
     """Sort the elements.
 
@@ -62,118 +62,6 @@ def sorted_tuple(elems: Iterable[_T],
 
     """
     return tuple(sorted(elems, key=key))
-
-
-class BagValDict(Generic[_KT, _VT]):
-
-    """Dictionary with(unsorted) lists as values"""
-
-    def __init__(self, initial_dict:
-                 Optional[typing.Mapping[_KT, Iterable[_VT]]] = None) -> None:
-        """Create an empty dictionary.
-
-        `self` is this dictionary.
-        `initial_dict` is the initial dictionary contents, defaulting to
-                       an empty dictionary.
-
-        """
-        self._dict: typing.DefaultDict[
-            _KT, List[_VT]] = collections.defaultdict(list)
-
-        if initial_dict:
-            self._add_items(initial_dict.items())
-
-    def __eq__(self, other: typing.Any) -> bool:
-        """Test if the two dictionaries are identical.
-
-        `self` is this dictionary.
-        `other` is the other dictionary.
-
-        """
-        assert type(other) is type(self)
-        other_items = tuple(other.items())
-        lst_pairs = starmap(lambda key, val_lst:
-                            map(sorted, [val_lst, self[key]]), other_items)
-        item_lst_pair: List[typing.Sized] = [self, other_items]
-        return eq(*(len(item_lst) for item_lst in item_lst_pair)) and all(
-            eq(*pair) for pair in lst_pairs)
-
-    def __getitem__(self, key: _KT) -> List[_VT]:
-        """Retrieve the list of the given key.
-
-        `self` is this dictionary.
-        `key` is the key to retrieve whose list.
-
-        """
-        return self._dict[key]
-
-    def __len__(self) -> int:
-        """Count the number of elements in this dictionary.
-
-        `self` is this dictionary.
-
-        """
-        return more_itertools.ilen(self.items())
-
-    def __ne__(self, other: object) -> bool:
-        """Test if the two dictionaries are different.
-
-        `self` is this dictionary.
-        `other` is the other dictionary.
-
-        """
-        return not self == other
-
-    def __repr__(self) -> str:
-        """Return the official string of this dictionary.
-
-        `self` is this dictionary.
-
-        """
-        return format_obj(type(self).__name__, [self._format_dict()])
-
-    def _add_items(self, elems: Iterable[Tuple[_KT, Iterable[_VT]]]) -> None:
-        """Add items to this dictionary.
-
-        `self` is this dictionary.
-        `elems` are the items to add.
-
-        """
-        for key, elem_lst in elems:
-            self[key].extend(elem_lst)
-
-    def _format_dict(self) -> str:
-        """Format this dictionary.
-
-        `self` is this dictionary.
-
-        """
-        return f"{{{self._format_elems()}}}"
-
-    def _format_elems(self) -> str:
-        """Format the elements of this dictionary.
-
-        `self` is this dictionary.
-
-        """
-        elems = starmap(
-            lambda key, val_lst: (key, sorted(val_lst)), self.items())
-        sep = ", "
-        key_getter = itemgetter(0)
-        return sep.join(starmap(lambda key, val_lst: f"{key!r}: {val_lst}",
-                                sorted(elems, key=key_getter)))
-
-    def _useful_items(self) -> typing.Iterator[Tuple[_KT, List[_VT]]]:
-        """Filter out items with empty value lists.
-
-        `self` is this dictionary.
-        The method returns an iterator over dictionary items with
-        non-empty lists.
-
-        """
-        return filter(itemgetter(1), self._dict.items())
-
-    items = _useful_items
 
 
 @attr.s(frozen=True, repr=False)
@@ -189,7 +77,7 @@ class _IndexedSetBase(Generic[_T]):
         """
         return format_obj(type(self).__name__, [repr(self._std_form_map)])
 
-    def get(self, elem: _T) -> Optional[_T]:
+    def get(self, elem: _T) -> typing.Optional[_T]:
         """Retrieve the elem in this set matching the given one.
 
         `self` is this set.
@@ -249,3 +137,106 @@ class SelfIndexSet(_IndexedSetBase[_T]):
 
         """
         super().__init__(lambda elem: elem)
+
+
+def _val_lst_dict(val_iter_dict: typing.Mapping[
+        object, object]) -> DefaultDict[object, List[object]]:
+    """Convert the given value iterable dictionary to a value list one.
+
+    `val_iter_dict` is the dictionary containing value iterables.
+
+    """
+    val_lst_dict = starmap(
+        lambda key, val_lst: (key, list(val_lst)), val_iter_dict.items())
+    return collections.defaultdict(list, val_lst_dict)
+
+
+@attr.s(eq=False, frozen=True, repr=False)
+class BagValDict(Generic[_KT, _VT]):
+
+    """Dictionary with(unsorted) lists as values"""
+
+    def __eq__(self, other: typing.Any) -> bool:
+        """Test if the two dictionaries are identical.
+
+        `self` is this dictionary.
+        `other` is the other dictionary.
+
+        """
+        assert type(other) is type(self)
+        other_items = tuple(other.items())
+        lst_pairs = starmap(lambda key, val_lst:
+                            map(sorted, [val_lst, self[key]]), other_items)
+        item_lst_pair: List[typing.Sized] = [self, other_items]
+        return eq(*(len(item_lst) for item_lst in item_lst_pair)) and all(
+            eq(*pair) for pair in lst_pairs)
+
+    def __getitem__(self, key: _KT) -> List[_VT]:
+        """Retrieve the list of the given key.
+
+        `self` is this dictionary.
+        `key` is the key to retrieve whose list.
+
+        """
+        return self._dict[key]
+
+    def __len__(self) -> int:
+        """Count the number of elements in this dictionary.
+
+        `self` is this dictionary.
+
+        """
+        return more_itertools.ilen(self.items())
+
+    def __ne__(self, other: object) -> bool:
+        """Test if the two dictionaries are different.
+
+        `self` is this dictionary.
+        `other` is the other dictionary.
+
+        """
+        return not self == other
+
+    def __repr__(self) -> str:
+        """Return the official string of this dictionary.
+
+        `self` is this dictionary.
+
+        """
+        return format_obj(type(self).__name__, [self._format_dict()])
+
+    def _format_dict(self) -> str:
+        """Format this dictionary.
+
+        `self` is this dictionary.
+
+        """
+        return f"{{{self._format_elems()}}}"
+
+    def _format_elems(self) -> str:
+        """Format the elements of this dictionary.
+
+        `self` is this dictionary.
+
+        """
+        elems = starmap(
+            lambda key, val_lst: (key, sorted(val_lst)), self.items())
+        sep = ", "
+        key_getter = itemgetter(0)
+        return sep.join(starmap(lambda key, val_lst: f"{key!r}: {val_lst}",
+                                sorted(elems, key=key_getter)))
+
+    def _useful_items(self) -> typing.Iterator[Tuple[_KT, List[_VT]]]:
+        """Filter out items with empty value lists.
+
+        `self` is this dictionary.
+        The method returns an iterator over dictionary items with
+        non-empty lists.
+
+        """
+        return filter(itemgetter(1), self._dict.items())
+
+    items = _useful_items
+
+    _dict: DefaultDict[_KT, List[_VT]] = attr.ib(
+        converter=_val_lst_dict, factory=dict)
