@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.47.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.47.2, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -229,9 +229,9 @@ class _InstrMovStatus:
 
     """Status of moving instructions"""
 
-    moved: int = attr.ib(default=0, init=False)
+    moved: int = attr.ib(0, init=False)
 
-    mem_used: bool = attr.ib(default=True, init=False)
+    mem_used: bool = attr.ib(True, init=False)
 
 
 @attr.s(auto_attribs=True, frozen=True)
