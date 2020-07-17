@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.47.2, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -70,7 +70,7 @@ class FlowTest(TestCase):
         """
         in_units = starmap(lambda name, categ: UnitModel(
             ICaseString(name), 1, [categ], LockInfo(True, False), []),
-                           [["ALU input", "ALU"], ["MEM input", "MEM"]])
+                           [("ALU input", "ALU"), ("MEM input", "MEM")])
         in_units = tuple(in_units)
         out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, ["ALU", "MEM"],
                                       LockInfo(False, True), []), in_units)
