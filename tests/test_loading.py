@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.47.2, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -300,14 +300,14 @@ class TestUnits:
         `self` is this test case.
 
         """
-        in_unit = UnitModel(ICaseString("input"), 1, [ICaseString("ALU")],
-                            LockInfo(True, False), [])
-        mid1_unit = UnitModel(ICaseString("middle 1"), 1, [ICaseString("ALU")],
-                              LockInfo(False, False), [])
-        mid2_unit = UnitModel(ICaseString("middle 2"), 1, [ICaseString("ALU")],
-                              LockInfo(False, False), [])
-        out_unit = UnitModel(ICaseString("output"), 1, [ICaseString("ALU")],
-                             LockInfo(False, True), [])
+        in_unit = UnitModel(
+            ICaseString("input"), 1, ["ALU"], LockInfo(True, False), [])
+        mid1_unit = UnitModel(
+            ICaseString("middle 1"), 1, ["ALU"], LockInfo(False, False), [])
+        mid2_unit = UnitModel(
+            ICaseString("middle 2"), 1, ["ALU"], LockInfo(False, False), [])
+        out_unit = UnitModel(
+            ICaseString("output"), 1, ["ALU"], LockInfo(False, True), [])
         assert ProcessorDesc(
             [in_unit], [FuncUnit(out_unit, [mid2_unit])], [],
             starmap(lambda model, pred: FuncUnit(model, [pred]), [

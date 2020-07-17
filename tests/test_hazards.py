@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.47.2, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -204,15 +204,12 @@ class UnifiedMemTest(TestCase):
         `self` is this test case.
 
         """
-        capabilities = tuple(ICaseString(cap) for cap in ["ALU", "MEM"])
-        in_unit = UnitModel(ICaseString("input"), 1, capabilities,
-                            LockInfo(True, False), capabilities)
-        out_unit = FuncUnit(
-            UnitModel(ICaseString("output"), 1, capabilities,
-                      LockInfo(False, True), [ICaseString("MEM")]), [in_unit])
+        in_unit = UnitModel(ICaseString("input"), 1, ["ALU", "MEM"],
+                            LockInfo(True, False), ["ALU", "MEM"])
+        out_unit = FuncUnit(UnitModel(ICaseString("output"), 1, [
+            "ALU", "MEM"], LockInfo(False, True), ["MEM"]), [in_unit])
         assert simulate(
-            [HwInstruction([], ICaseString(out_reg), ICaseString("ALU")) for
-             out_reg in ["R1", "R2"]],
+            [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
             HwSpec(ProcessorDesc([in_unit], [out_unit], [], []))) == [
                 BagValDict(cp_util) for cp_util in
                 [{ICaseString("input"): [InstrState(0)]},
