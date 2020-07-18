@@ -39,10 +39,10 @@
 #
 ############################################################
 
-import itertools
 from itertools import starmap
 from unittest import TestCase
 
+import more_itertools
 import pytest
 from pytest import mark
 
@@ -177,7 +177,7 @@ class TestStructural:
         assert simulate(
             [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
             HwSpec(ProcessorDesc([in_unit], out_units, [], []))) == list(
-                map(BagValDict, itertools.chain([cp1_util], extra_util)))
+                map(BagValDict, more_itertools.prepend(cp1_util, extra_util)))
 
     def test_mem_util_in_earlier_inputs_affects_later_ones(self):
         """Test propagation of memory utilization among inputs.
