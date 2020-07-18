@@ -215,6 +215,21 @@ class UnifiedMemTest(TestCase):
                  {ICaseString("output"): [InstrState(0)], ICaseString("input"):
                   [InstrState(1)]}, {ICaseString("output"): [InstrState(1)]}]]
 
+    def test_only_mem_access_instructions_are_checked(self):
+        """Test always allowing instructions without memory access.
+
+        `self` is this test case.
+
+        """
+        in_unit = UnitModel(
+            ICaseString("input"), 2, ["ALU", "MEM"], LockInfo(True, False), [])
+        out_unit = FuncUnit(UnitModel(ICaseString("output"), 2, [
+            "ALU", "MEM"], LockInfo(False, True), ["MEM"]), [in_unit])
+        assert simulate([HwInstruction([], *instr_params) for instr_params in [
+            ["R1", "MEM"], ["R2", "ALU"]]], HwSpec(ProcessorDesc([in_unit], [
+                out_unit], [], []))) == [BagValDict({ICaseString(unit): map(
+                    InstrState, [0, 1])}) for unit in ["input", "output"]]
+
 
 class WarTest(TestCase):
 

@@ -231,7 +231,7 @@ class _InstrMovStatus:
 
     moved: int = attr.ib(0, init=False)
 
-    mem_used: bool = attr.ib(True, init=False)
+    mem_used: bool = attr.ib(False, init=False)
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -282,6 +282,9 @@ class UnitSink(InstrSink):
         if _utils.mem_unavail(mem_busy, mem_access):
             return False
 
+        if mem_access:
+            mov_res.mem_used = True
+
         candidate.stalled = StallState.NO_STALL
         unit_util.append(candidate)
         mov_res.moved += 1
@@ -307,9 +310,8 @@ class UnitSink(InstrSink):
                     self._unit.model.needs_mem(
                         self._program[util_info[cur_candid.host][
                             cur_candid.index_in_host].instr].categ), mov_res):
-                return mov_res
+                mem_busy = True
 
-        mov_res.mem_used = False
         return mov_res
 
     def _pick_guests(
