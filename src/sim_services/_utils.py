@@ -25,13 +25,13 @@
 #
 # file:         _utils.py
 #
-# function:     mem_unavail and space_avail
+# function:     mem_unavail and unit_full
 #
 # description:  simulation helper utilities
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.47.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.47.2, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -56,12 +56,12 @@ def mem_unavail(mem_busy: bool, mem_req: bool) -> bool:
     return mem_busy and mem_req
 
 
-def space_avail(unit: processor_utils.units.UnitModel, util_info:
-                container_utils.BagValDict[str_utils.ICaseString, _T]) -> int:
-    """Calculate the free space for receiving instructions in the unit.
+def unit_full(unit: processor_utils.units.UnitModel, util_info:
+              container_utils.BagValDict[str_utils.ICaseString, _T]) -> int:
+    """Check if the unit is full.
 
-    `unit` is the unit to test whose free space.
+    `unit` is the unit to check.
     `util_info` is the unit utilization information.
 
     """
-    return unit.width - len(util_info[unit.name])
+    return len(util_info[unit.name]) == unit.width

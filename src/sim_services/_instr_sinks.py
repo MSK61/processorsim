@@ -276,7 +276,7 @@ class UnitSink(InstrSink):
         possible.
 
         """
-        if not _utils.space_avail(self._unit.model, util_info):
+        if _utils.unit_full(self._unit.model, util_info):
             return False
 
         try:
