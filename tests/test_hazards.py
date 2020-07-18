@@ -68,11 +68,10 @@ class RarTest(TestCase):
         """
         full_sys_unit = UnitModel(
             ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), [])
-        instr_rng = range(2)
         assert simulate([HwInstruction(["R1"], out_reg, "ALU") for out_reg in [
             "R2", "R3"]], HwSpec(ProcessorDesc(
                 [], [], [full_sys_unit], []))) == list(map(BagValDict, [
-                    {ICaseString(TEST_DIR): map(InstrState, instr_rng)}]))
+                    {ICaseString(TEST_DIR): map(InstrState, [0, 1])}]))
 
 
 class RawTest(TestCase):
@@ -188,7 +187,7 @@ class TestStructural:
         full_sys_unit = UnitModel(
             ICaseString("fullSys"), 2, ["ALU"], LockInfo(True, False), ["ALU"])
         res_util = map(lambda instr: BagValDict(
-            {ICaseString("fullSys"): [InstrState(instr)]}), range(2))
+            {ICaseString("fullSys"): [InstrState(instr)]}), [0, 1])
         assert simulate([HwInstruction([], out_reg, "ALU") for out_reg in
                          ["R1", "R2"]], HwSpec(ProcessorDesc(
                              [], [], [full_sys_unit], []))) == list(res_util)
