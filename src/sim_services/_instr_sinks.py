@@ -107,8 +107,8 @@ class InstrSink(abc.ABC):
             itertools.chain.from_iterable(candidates), util_info)
 
     @staticmethod
-    def _get_new_guests(src_unit: ICaseString, instructions:
-                        Iterable[int]) -> typing.Iterator[HostedInstr]:
+    def _get_new_guests(src_unit: ICaseString,
+                        instructions: Iterable[int]) -> Iterator[HostedInstr]:
         """Prepare new hosted instructions.
 
         `src_unit` is the old host of instructions.
