@@ -68,11 +68,11 @@ class RarTest(TestCase):
         """
         full_sys_unit = UnitModel(
             ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), [])
-        instructions = map(InstrState, range(2))
-        assert simulate([HwInstruction(["R1"], out_reg, "ALU") for out_reg in
-                         ["R2", "R3"]], HwSpec(ProcessorDesc([], [], [
-                             full_sys_unit], []))) == list(map(BagValDict, [
-                                 {ICaseString(TEST_DIR): list(instructions)}]))
+        instr_rng = range(2)
+        assert simulate([HwInstruction(["R1"], out_reg, "ALU") for out_reg in [
+            "R2", "R3"]], HwSpec(ProcessorDesc(
+                [], [], [full_sys_unit], []))) == list(map(BagValDict, [
+                    {ICaseString(TEST_DIR): map(InstrState, instr_rng)}]))
 
 
 class RawTest(TestCase):
@@ -125,9 +125,10 @@ class TestDataHazards:
         assert simulate(
             [HwInstruction(*regs, "ALU") for regs in instr_regs],
             HwSpec(ProcessorDesc([], [], [full_sys_unit], []))) == [
-                BagValDict(cp_util) for cp_util in [{ICaseString(TEST_DIR): [
-                    InstrState(0), InstrState(1, StallState.DATA)]}, {
-                        ICaseString(TEST_DIR): [InstrState(1)]}]]
+                BagValDict(cp_util) for cp_util in
+                [{ICaseString(TEST_DIR):
+                  starmap(InstrState, [[0], [1, StallState.DATA]])},
+                 {ICaseString(TEST_DIR): [InstrState(1)]}]]
 
 
 class TestStructural:
@@ -172,8 +173,7 @@ class TestStructural:
             mem_access), out_unit_params)
         out_units = map(
             lambda out_unit: FuncUnit(out_unit, [in_unit]), out_units)
-        cp1_util = {
-            ICaseString("input"): list(map(InstrState, range(in_width)))}
+        cp1_util = {ICaseString("input"): map(InstrState, range(in_width))}
         assert simulate(
             [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
             HwSpec(ProcessorDesc([in_unit], out_units, [], []))) == list(

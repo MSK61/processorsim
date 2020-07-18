@@ -43,6 +43,7 @@ import itertools
 from itertools import starmap
 from unittest import TestCase
 
+import more_itertools
 import pytest
 from pytest import mark, raises
 
@@ -250,12 +251,14 @@ class TestOutputFlush:
         cores = starmap(lambda name, width: UnitModel(
             ICaseString(name), width, ["ALU"], LockInfo(True, True), []),
                         [("core 1", 1), ("core 2", 1 + extra_instr_len)])
+        extra_instr_seq = range(2, 2 + extra_instr_len)
         assert simulate(
             tuple(program), HwSpec(ProcessorDesc([], [], cores, []))) == [
                 BagValDict(cp_util) for cp_util in
-                [{ICaseString("core 1"): [InstrState(0)],
-                  ICaseString("core 2"): [InstrState(1, StallState.DATA), *(
-                      map(InstrState, range(2, 2 + extra_instr_len)))]},
+                [{ICaseString("core 1"): [InstrState(0)], ICaseString(
+                    "core 2"): starmap(InstrState, more_itertools.prepend(
+                        [1, StallState.DATA],
+                        map(lambda instr: [instr], extra_instr_seq)))},
                  {ICaseString("core 2"): [InstrState(1)]}]]
 
 
