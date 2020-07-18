@@ -40,7 +40,6 @@
 
 import abc
 from abc import abstractmethod
-import heapq
 import itertools
 import typing
 from typing import Collection, Iterable, Iterator
@@ -229,7 +228,7 @@ class _InstrMovStatus:
 
     """Status of moving instructions"""
 
-    moved: int = attr.ib(0, init=False)
+    moved: typing.List[HostedInstr] = attr.ib(factory=list, init=False)
 
     mem_used: bool = attr.ib(False, init=False)
 
@@ -260,35 +259,45 @@ class UnitSink(InstrSink):
 
         """
         mov_res = self._mov_candidates(candidates, util_info, mem_busy)
-        return UnitFillStatus(
-            itertools.islice(candidates, mov_res.moved), mov_res.mem_used)
+        return UnitFillStatus(mov_res.moved, mov_res.mem_used)
 
-    @staticmethod
-    def _mov_candidate(candidate: InstrState, unit_util:
-                       typing.MutableSequence[InstrState], mem_busy: bool,
-                       mem_access: bool, mov_res: _InstrMovStatus) -> bool:
+    def _mov_candidate(self, candid_iter: Iterator[HostedInstr],
+                       util_info: BagValDict[ICaseString, InstrState],
+                       mem_busy: bool, mov_res: _InstrMovStatus) -> bool:
         """Move a candidate instruction between units.
 
-        `candidate` is the candidate instruction to move.
-        `unit_util` is the unit utilization information.
+        `self` is this unit sink.
+        `candid_iter` is an iterator over the candidate instructions.
+        `util_info` is the unit utilization information.
         `mem_busy` is the memory busy flag.
-        `mem_access` is the unit memory access flag.
-        `mov_res` is the move result to update the number of moved
-                  instructions in.
-        The method returns a flag indicating if the destination unit has
-        received the instruction and held the memory busy.
+        `mov_res` is the move result to update the moved instructions
+                  in.
+        The method returns a flag indicating if moving instructions is still
+        possible.
 
         """
-        if _utils.mem_unavail(mem_busy, mem_access):
+        if not _utils.space_avail(self._unit.model, util_info):
             return False
+
+        try:
+            candid = next(candid_iter)
+        except StopIteration:
+            return False
+        mem_access = self._unit.model.needs_mem(self._program[
+            util_info[candid.host][candid.index_in_host].instr].categ)
+
+        if _utils.mem_unavail(mem_busy, mem_access):
+            return True
 
         if mem_access:
             mov_res.mem_used = True
 
-        candidate.stalled = StallState.NO_STALL
-        unit_util.append(candidate)
-        mov_res.moved += 1
-        return mem_access
+        util_info[candid.host][
+            candid.index_in_host].stalled = StallState.NO_STALL
+        util_info[self._unit.model.name].append(
+            util_info[candid.host][candid.index_in_host])
+        mov_res.moved.append(candid)
+        return True
 
     def _mov_candidates(
             self, candidates: Collection[HostedInstr], util_info: BagValDict[
@@ -302,16 +311,10 @@ class UnitSink(InstrSink):
 
         """
         mov_res = _InstrMovStatus()
-
-        for cur_candid in candidates:
-            if self._mov_candidate(
-                    util_info[cur_candid.host][cur_candid.index_in_host],
-                    util_info[self._unit.model.name], mem_busy,
-                    self._unit.model.needs_mem(
-                        self._program[util_info[cur_candid.host][
-                            cur_candid.index_in_host].instr].categ), mov_res):
-                mem_busy = True
-
+        candid_iter = iter(candidates)
+        more_itertools.consume(iter(
+            lambda: self._mov_candidate(candid_iter, util_info, mem_busy or
+                                        mov_res.mem_used, mov_res), False))
         return mov_res
 
     def _pick_guests(
@@ -325,10 +328,8 @@ class UnitSink(InstrSink):
 
         """
         # Earlier instructions in the program are selected first.
-        return heapq.nsmallest(
-            _utils.space_avail(self._unit.model, util_info), candidates,
-            key=lambda instr_info:
-            util_info[instr_info.host][instr_info.index_in_host].instr)
+        return sorted(candidates, key=lambda instr_info: util_info[
+            instr_info.host][instr_info.index_in_host].instr)
 
     @property
     def _donors(self) -> Iterator[ICaseString]:

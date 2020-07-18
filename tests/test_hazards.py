@@ -197,6 +197,26 @@ class UnifiedMemTest(TestCase):
 
     """Test case for the unified memory architecture"""
 
+    def test_all_candidate_instructions_are_offered_to_the_destinaton_unit(
+            self):
+        """Test candidate instructions aren't shortlisted.
+
+        `self` is this test case.
+
+        """
+        in_unit = UnitModel(
+            ICaseString("input"), 3, ["ALU", "MEM"], LockInfo(True, False), [])
+        out_unit = FuncUnit(UnitModel(ICaseString("output"), 2, [
+            "ALU", "MEM"], LockInfo(False, True), ["MEM"]), [in_unit])
+        assert simulate([HwInstruction([], *instr_params) for instr_params in [
+            ["R1", "MEM"], ["R2", "MEM"], ["R3", "ALU"]]], HwSpec(
+                ProcessorDesc([in_unit], [out_unit], [], []))) == [BagValDict(
+                    cp_util) for cp_util in [{ICaseString("input"): map(
+                        InstrState, [0, 1, 2])}, {ICaseString("output"): map(
+                            InstrState, [0, 2]), ICaseString("input"): [
+                                InstrState(1, StallState.STRUCTURAL)]}, {
+                                    ICaseString("output"): [InstrState(1)]}]]
+
     def test_hazard(self):
         """Test structural hazards in a unified memory architecture.
 
