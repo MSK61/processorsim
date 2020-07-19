@@ -240,7 +240,7 @@ class UnitSink(InstrSink):
 
     def _fill(self, candidates: Iterable[HostedInstr], util_info: BagValDict[
             ICaseString, InstrState], mem_busy: bool) -> InstrMovStatus:
-        """Fill the underlying unit.
+        """Move candidate instructions between units.
 
         `self` is this unit sink.
         `candidates` are a list of candidate instructions.
@@ -248,7 +248,12 @@ class UnitSink(InstrSink):
         `mem_busy` is the memory busy flag.
 
         """
-        return self._mov_candidates(iter(candidates), util_info, mem_busy)
+        candid_iter = iter(candidates)
+        mov_res = InstrMovStatus()
+        more_itertools.consume(iter(
+            lambda: self._mov_candidate(candid_iter, util_info, mem_busy or
+                                        mov_res.mem_used, mov_res), False))
+        return mov_res
 
     def _mov_candidate(self, candid_iter: Iterator[HostedInstr],
                        util_info: BagValDict[ICaseString, InstrState],
@@ -287,23 +292,6 @@ class UnitSink(InstrSink):
             util_info[candid.host][candid.index_in_host])
         mov_res.moved.append(candid)
         return True
-
-    def _mov_candidates(
-            self, candid_iter: Iterator[HostedInstr], util_info: BagValDict[
-                ICaseString, InstrState], mem_busy: bool) -> InstrMovStatus:
-        """Move candidate instructions between units.
-
-        `self` is this unit sink.
-        `candid_iter` is an iterator over the candidate instructions.
-        `util_info` is the unit utilization information.
-        `mem_busy` is the memory busy flag.
-
-        """
-        mov_res = InstrMovStatus()
-        more_itertools.consume(iter(
-            lambda: self._mov_candidate(candid_iter, util_info, mem_busy or
-                                        mov_res.mem_used, mov_res), False))
-        return mov_res
 
     def _pick_guests(
             self, candidates: Iterable[HostedInstr], util_info:
