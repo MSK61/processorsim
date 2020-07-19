@@ -527,7 +527,7 @@ def _fill_unit(unit: InstrSink, util_info: BagValDict[ICaseString, InstrState],
 
     """
     mov_res = unit.fill_unit(util_info, mem_busy)
-    _clr_src_units(sorted(mov_res.instructions, key=lambda candid:
+    _clr_src_units(sorted(mov_res.moved, key=lambda candid:
                           candid.index_in_host, reverse=True), util_info)
     return mov_res.mem_used
 

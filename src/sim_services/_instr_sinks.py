@@ -65,14 +65,14 @@ class HostedInstr:
     index_in_host: int
 
 
-@attr.s(auto_attribs=True, frozen=True)
-class UnitFillStatus:
+@attr.s
+class InstrMovStatus:
 
-    """Unit filling status"""
+    """Status of moving instructions"""
 
-    instructions: Iterable[HostedInstr]
+    moved: typing.List[HostedInstr] = attr.ib(factory=list)
 
-    mem_used: bool
+    mem_used: bool = attr.ib(False, init=False)
 
 
 class InstrSink(abc.ABC):
@@ -80,7 +80,7 @@ class InstrSink(abc.ABC):
     """Instruction sink"""
 
     def fill_unit(self, util_info: BagValDict[ICaseString, InstrState],
-                  mem_busy: bool) -> UnitFillStatus:
+                  mem_busy: bool) -> InstrMovStatus:
         """Fill this sink with instructions from its donors.
 
         `self` is this instruction sink.
@@ -128,7 +128,7 @@ class InstrSink(abc.ABC):
 
     @abstractmethod
     def _fill(self, candidates: Iterable[HostedInstr], util_info: BagValDict[
-            ICaseString, InstrState], mem_busy: bool) -> UnitFillStatus:
+            ICaseString, InstrState], mem_busy: bool) -> InstrMovStatus:
         """Fill this sink.
 
         `self` is this instruction sink.
@@ -186,7 +186,7 @@ class OutSink(InstrSink):
         return True
 
     def _fill(self, candidates: Iterable[HostedInstr], util_info: BagValDict[
-            ICaseString, InstrState], mem_busy: bool) -> UnitFillStatus:
+            ICaseString, InstrState], mem_busy: bool) -> InstrMovStatus:
         """Commit all candidate instructions to the output.
 
         `self` is this output sink.
@@ -195,7 +195,7 @@ class OutSink(InstrSink):
         `mem_busy` is unused.
 
         """
-        return UnitFillStatus(candidates, False)
+        return InstrMovStatus(list(candidates))
 
     def _pick_guests(
             self, candidates: Iterable[HostedInstr], util_info:
@@ -223,16 +223,6 @@ class OutSink(InstrSink):
     _out_ports: Iterator[ICaseString]
 
 
-@attr.s
-class _InstrMovStatus:
-
-    """Status of moving instructions"""
-
-    moved: typing.List[HostedInstr] = attr.ib(factory=list, init=False)
-
-    mem_used: bool = attr.ib(False, init=False)
-
-
 @attr.s(auto_attribs=True, frozen=True)
 class UnitSink(InstrSink):
 
@@ -249,7 +239,7 @@ class UnitSink(InstrSink):
         return self._program[instr].categ in self._unit.model.capabilities
 
     def _fill(self, candidates: Iterable[HostedInstr], util_info: BagValDict[
-            ICaseString, InstrState], mem_busy: bool) -> UnitFillStatus:
+            ICaseString, InstrState], mem_busy: bool) -> InstrMovStatus:
         """Fill the underlying unit.
 
         `self` is this unit sink.
@@ -258,12 +248,11 @@ class UnitSink(InstrSink):
         `mem_busy` is the memory busy flag.
 
         """
-        mov_res = self._mov_candidates(iter(candidates), util_info, mem_busy)
-        return UnitFillStatus(mov_res.moved, mov_res.mem_used)
+        return self._mov_candidates(iter(candidates), util_info, mem_busy)
 
     def _mov_candidate(self, candid_iter: Iterator[HostedInstr],
                        util_info: BagValDict[ICaseString, InstrState],
-                       mem_busy: bool, mov_res: _InstrMovStatus) -> bool:
+                       mem_busy: bool, mov_res: InstrMovStatus) -> bool:
         """Move a candidate instruction between units.
 
         `self` is this unit sink.
@@ -301,7 +290,7 @@ class UnitSink(InstrSink):
 
     def _mov_candidates(
             self, candid_iter: Iterator[HostedInstr], util_info: BagValDict[
-                ICaseString, InstrState], mem_busy: bool) -> _InstrMovStatus:
+                ICaseString, InstrState], mem_busy: bool) -> InstrMovStatus:
         """Move candidate instructions between units.
 
         `self` is this unit sink.
@@ -310,7 +299,7 @@ class UnitSink(InstrSink):
         `mem_busy` is the memory busy flag.
 
         """
-        mov_res = _InstrMovStatus()
+        mov_res = InstrMovStatus()
         more_itertools.consume(iter(
             lambda: self._mov_candidate(candid_iter, util_info, mem_busy or
                                         mov_res.mem_used, mov_res), False))
