@@ -270,7 +270,8 @@ class UnitSink(InstrSink):
         possible.
 
         """
-        if _utils.unit_full(self._unit.model, util_info):
+        if _utils.unit_full(
+                self._unit.model.width, util_info[self._unit.model.name]):
             return False
 
         try:

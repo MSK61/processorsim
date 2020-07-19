@@ -40,11 +40,6 @@
 
 import typing
 
-import container_utils
-import processor_utils.units
-import str_utils
-_T = typing.TypeVar("_T")
-
 
 def mem_unavail(mem_busy: bool, mem_req: bool) -> bool:
     """Check if the memory is unavailable for the given access.
@@ -56,12 +51,11 @@ def mem_unavail(mem_busy: bool, mem_req: bool) -> bool:
     return mem_busy and mem_req
 
 
-def unit_full(unit: processor_utils.units.UnitModel, util_info:
-              container_utils.BagValDict[str_utils.ICaseString, _T]) -> bool:
+def unit_full(width: object, unit_util: typing.Sized) -> bool:
     """Check if the unit is full.
 
-    `unit` is the unit to check.
-    `util_info` is the unit utilization information.
+    `width` is the unit width.
+    `unit_util` is the unit utilization information.
 
     """
-    return len(util_info[unit.name]) == unit.width
+    return len(unit_util) == width
