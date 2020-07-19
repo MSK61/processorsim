@@ -42,7 +42,7 @@ import abc
 from abc import abstractmethod
 import itertools
 import typing
-from typing import Collection, Iterable, Iterator
+from typing import Iterable, Iterator
 
 import attr
 import more_itertools
@@ -92,7 +92,7 @@ class InstrSink(abc.ABC):
         return self._fill(self._get_candidates(util_info), util_info, mem_busy)
 
     def _get_candidates(self, util_info: BagValDict[
-            ICaseString, InstrState]) -> Collection[HostedInstr]:
+            ICaseString, InstrState]) -> Iterable[HostedInstr]:
         """Find candidate instructions in the donors of this sink.
 
         `self` is this instruction sink.
@@ -127,7 +127,7 @@ class InstrSink(abc.ABC):
         """
 
     @abstractmethod
-    def _fill(self, candidates: Collection[HostedInstr], util_info: BagValDict[
+    def _fill(self, candidates: Iterable[HostedInstr], util_info: BagValDict[
             ICaseString, InstrState], mem_busy: bool) -> UnitFillStatus:
         """Fill this sink.
 
@@ -141,7 +141,7 @@ class InstrSink(abc.ABC):
     @abstractmethod
     def _pick_guests(
             self, candidates: Iterable[HostedInstr], util_info:
-            BagValDict[ICaseString, InstrState]) -> Collection[HostedInstr]:
+            BagValDict[ICaseString, InstrState]) -> Iterable[HostedInstr]:
         """Pick the instructions to be accepted.
 
         `self` is this instruction sink.
@@ -185,7 +185,7 @@ class OutSink(InstrSink):
         """
         return True
 
-    def _fill(self, candidates: Collection[HostedInstr], util_info: BagValDict[
+    def _fill(self, candidates: Iterable[HostedInstr], util_info: BagValDict[
             ICaseString, InstrState], mem_busy: bool) -> UnitFillStatus:
         """Commit all candidate instructions to the output.
 
@@ -199,7 +199,7 @@ class OutSink(InstrSink):
 
     def _pick_guests(
             self, candidates: Iterable[HostedInstr], util_info:
-            BagValDict[ICaseString, InstrState]) -> Collection[HostedInstr]:
+            BagValDict[ICaseString, InstrState]) -> Iterable[HostedInstr]:
         """Pick all prospective instructions unconditionally.
 
         `self` is this output sink.
@@ -248,7 +248,7 @@ class UnitSink(InstrSink):
         """
         return self._program[instr].categ in self._unit.model.capabilities
 
-    def _fill(self, candidates: Collection[HostedInstr], util_info: BagValDict[
+    def _fill(self, candidates: Iterable[HostedInstr], util_info: BagValDict[
             ICaseString, InstrState], mem_busy: bool) -> UnitFillStatus:
         """Fill the underlying unit.
 
@@ -300,7 +300,7 @@ class UnitSink(InstrSink):
         return True
 
     def _mov_candidates(
-            self, candidates: Collection[HostedInstr], util_info: BagValDict[
+            self, candidates: Iterable[HostedInstr], util_info: BagValDict[
                 ICaseString, InstrState], mem_busy: bool) -> _InstrMovStatus:
         """Move candidate instructions between units.
 
@@ -319,7 +319,7 @@ class UnitSink(InstrSink):
 
     def _pick_guests(
             self, candidates: Iterable[HostedInstr], util_info:
-            BagValDict[ICaseString, InstrState]) -> Collection[HostedInstr]:
+            BagValDict[ICaseString, InstrState]) -> Iterable[HostedInstr]:
         """Pick the instructions to be accepted.
 
         `self` is this unit sink.
