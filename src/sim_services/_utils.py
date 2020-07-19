@@ -57,7 +57,7 @@ def mem_unavail(mem_busy: bool, mem_req: bool) -> bool:
 
 
 def unit_full(unit: processor_utils.units.UnitModel, util_info:
-              container_utils.BagValDict[str_utils.ICaseString, _T]) -> int:
+              container_utils.BagValDict[str_utils.ICaseString, _T]) -> bool:
     """Check if the unit is full.
 
     `unit` is the unit to check.
