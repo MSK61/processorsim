@@ -31,13 +31,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.47.3, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import itertools
 import operator
 import typing
 from typing import Iterable, Tuple
@@ -111,8 +112,9 @@ class FuncUnit:
         `other` is the other functional unit.
 
         """
-        criteria = map(lambda attrs: (attrs[0], len(attrs[1])), [(
-            self.model, self.predecessors), (other.model, other.predecessors)])
+        criteria = itertools.starmap(lambda model, predecessors: (
+            model, len(predecessors)), [(self.model, self.predecessors),
+                                        (other.model, other.predecessors)])
         return operator.eq(*criteria) and all(
             map(operator.is_, self.predecessors, other.predecessors))
 
