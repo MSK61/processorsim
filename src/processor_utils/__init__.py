@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.47.3, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -345,7 +345,7 @@ def _get_preds(processor: DiGraph, unit: object,
     `processor` is the processor containing the unit.
     `unit` is the unit to retrieve whose predecessors.
     `unit_map` is the mapping between names and units.
-    The function returns an iterable of predecessor units.
+    The function returns an iterator over predecessor units.
 
     """
     return map(lambda pred: unit_map[pred], processor.predecessors(unit))
@@ -439,8 +439,8 @@ def _post_order(graph: DiGraph) -> Iterator[FuncUnit]:
     """Create a post-order for the given processor.
 
     `graph` is the processor.
-    The function returns a list of the processor functional units in
-    post-order.
+    The function returns an iterator over the processor functional units
+    in post-order.
 
     """
     unit_map = {
