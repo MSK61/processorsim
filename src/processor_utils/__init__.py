@@ -38,7 +38,6 @@
 #
 ############################################################
 
-import functools
 from itertools import chain
 from logging import warning
 from operator import itemgetter
@@ -540,9 +539,9 @@ def get_abilities(processor: ProcessorDesc) -> typing.FrozenSet[object]:
     `processor` is the processor to retrieve whose capabilities.
 
     """
-    return functools.reduce(
-        lambda old_caps, port: old_caps.union(port.capabilities),
-        chain(processor.in_out_ports, processor.in_ports), frozenset())
+    in_units = chain(processor.in_out_ports, processor.in_ports)
+    return frozenset(
+        chain.from_iterable(port.capabilities for port in in_units))
 
 
 def load_proc_desc(raw_desc: Mapping[object, Any]) -> ProcessorDesc:
