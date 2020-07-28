@@ -39,7 +39,7 @@
 ############################################################
 
 import functools
-import itertools
+from itertools import chain
 from logging import warning
 from operator import itemgetter
 import os
@@ -64,6 +64,7 @@ from . import _checks
 from . import _optimization
 from . import _port_defs
 _T = typing.TypeVar("_T")
+_UNIT_KEY = "unit"
 
 
 def load_isa(raw_isa: Iterable[Tuple[str, str]],
@@ -227,6 +228,18 @@ def _chk_instr(instr: object, instr_registry: SelfIndexSet[object]) -> None:
             f"${DupElemError.OLD_ELEM_KEY}", old_instr, instr)
 
 
+def _add_rev_edges(graph: Graph) -> None:
+    """Add reverse edges to the given graph.
+
+    `graph` is the graph to add edges to.
+
+    """
+    edges = chain.from_iterable(
+        ((name, pred.name) for pred in unit.predecessors if pred.name in
+         graph) for name, unit in graph.nodes(_UNIT_KEY))
+    graph.add_edges_from(edges)
+
+
 def _chk_unit_name(name: object, name_registry: SelfIndexSet[object]) -> None:
     """Check the given unit name.
 
@@ -350,6 +363,20 @@ def _get_preds(processor: DiGraph, unit: object,
     return map(lambda pred: unit_map[pred], processor.predecessors(unit))
 
 
+def _get_proc_units(graph: DiGraph) -> Iterator[FuncUnit]:
+    """Create units for the given processor graph.
+
+    `graph` is the processor.
+    The function returns an iterator over the processor functional
+    units.
+
+    """
+    unit_map = {
+        unit: _get_unit_entry(unit, graph.nodes[unit]) for unit in graph}
+    return map(lambda name: FuncUnit(
+        unit_map[name], _get_preds(graph, name, unit_map)), graph)
+
+
 def _get_std_edge(edge: Iterable[str],
                   unit_registry: SelfIndexSet[object]) -> Iterator[object]:
     """Return a validated edge.
@@ -377,6 +404,19 @@ def _get_unit_entry(
     return UnitModel(
         name, attrs[UNIT_WIDTH_KEY], attrs[UNIT_CAPS_KEY], units.LockInfo(
             *lock_attrs), attrs[UNIT_CAPS_KEY] if attrs[UNIT_MEM_KEY] else [])
+
+
+def _get_unit_graph(internal_units: Iterable[FuncUnit]) -> DiGraph:
+    """Create a graph for internal units.
+
+    `internal_units` are the internal units.
+
+    """
+    rev_graph = DiGraph()
+    rev_graph.add_nodes_from(
+        (unit.model.name, {_UNIT_KEY: unit}) for unit in internal_units)
+    _add_rev_edges(rev_graph)
+    return rev_graph
 
 
 def _get_unit_name(
@@ -434,18 +474,19 @@ def _load_caps(unit: Mapping[object, Any],
     return cap_list
 
 
-def _post_order(graph: DiGraph) -> Iterator[FuncUnit]:
-    """Create a post-order for the given processor.
+def _post_order(internal_units: Iterable[FuncUnit]) -> Tuple[FuncUnit, ...]:
+    """Create a post-order for internal units.
 
-    `graph` is the processor.
-    The function returns an iterator over the processor functional units
+    `internal_units` are the internal units.
+    The function uses a reverse graph to represent the internal units,
+    thus a topological order of the reverse graph is a post-order for
+    the normal graph. The function returns a tuple of the internal units
     in post-order.
 
     """
-    unit_map = {
-        unit: _get_unit_entry(unit, graph.nodes[unit]) for unit in graph}
-    return map(lambda name: FuncUnit(unit_map[name], _get_preds(
-        graph, name, unit_map)), networkx.dfs_postorder_nodes(graph))
+    rev_graph = _get_unit_graph(internal_units)
+    return tuple(map(lambda name: rev_graph.nodes[name][_UNIT_KEY],
+                     networkx.topological_sort(rev_graph)))
 
 
 def _prep_proc_desc(processor: DiGraph) -> None:
@@ -490,7 +531,7 @@ class ProcessorDesc:
 
     in_out_ports: Tuple[UnitModel, ...] = attr.ib(converter=_get_frozen_tpl)
 
-    internal_units: Tuple[FuncUnit, ...] = attr.ib(converter=_get_frozen_tpl)
+    internal_units: Tuple[FuncUnit, ...] = attr.ib(converter=_post_order)
 
 
 def get_abilities(processor: ProcessorDesc) -> typing.FrozenSet[object]:
@@ -499,9 +540,9 @@ def get_abilities(processor: ProcessorDesc) -> typing.FrozenSet[object]:
     `processor` is the processor to retrieve whose capabilities.
 
     """
-    return functools.reduce(lambda old_caps, port: old_caps.union(
-        port.capabilities), itertools.chain(
-            processor.in_out_ports, processor.in_ports), frozenset())
+    return functools.reduce(
+        lambda old_caps, port: old_caps.union(port.capabilities),
+        chain(processor.in_out_ports, processor.in_ports), frozenset())
 
 
 def load_proc_desc(raw_desc: Mapping[object, Any]) -> ProcessorDesc:
@@ -524,7 +565,7 @@ def _make_processor(proc_graph: DiGraph) -> ProcessorDesc:
     `proc_desc` is the processor graph.
 
     """
-    post_ord = _post_order(proc_graph)
+    unit_graph = _get_proc_units(proc_graph)
     in_out_ports = []
     in_ports = []
     internal_units = []
@@ -532,7 +573,7 @@ def _make_processor(proc_graph: DiGraph) -> ProcessorDesc:
     in_degrees = proc_graph.in_degree()
     out_degrees = proc_graph.out_degree()
 
-    for unit in post_ord:
+    for unit in unit_graph:
         if in_degrees[unit.model.name] and out_degrees[unit.model.name]:
             internal_units.append(unit)
         elif in_degrees[unit.model.name]:

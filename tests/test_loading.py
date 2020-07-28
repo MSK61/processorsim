@@ -39,6 +39,7 @@
 #
 ############################################################
 
+import itertools
 from logging import WARNING
 
 import pytest
@@ -293,8 +294,8 @@ class TestUnits:
 
     """Test case for loading processor units"""
 
-    def test_processor_retains_unit_post_order(self):
-        """Test retaining post-order among units.
+    def test_processor_puts_units_in_post_order(self):
+        """Test putting units in post-order.
 
         `self` is this test case.
 
@@ -305,12 +306,18 @@ class TestUnits:
             ICaseString("middle 1"), 1, ["ALU"], LockInfo(False, False), [])
         mid2_unit = UnitModel(
             ICaseString("middle 2"), 1, ["ALU"], LockInfo(False, False), [])
+        mid3_unit = UnitModel(
+            ICaseString("middle 3"), 1, ["ALU"], LockInfo(False, False), [])
         out_unit = UnitModel(
             ICaseString("output"), 1, ["ALU"], LockInfo(False, True), [])
-        internal_units = tuple(FuncUnit(model, [pred]) for model, pred in
-                               [(mid2_unit, mid1_unit), (mid1_unit, in_unit)])
-        assert ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid2_unit])], [],
-                             internal_units).internal_units == internal_units
+        assert ProcessorDesc(
+            [in_unit], [FuncUnit(out_unit, [mid3_unit])], [],
+            itertools.starmap(lambda model, pred: FuncUnit(model, [pred]), [
+                (mid1_unit, in_unit), (mid3_unit, mid2_unit),
+                (mid2_unit, mid1_unit)])).internal_units == tuple(
+                    FuncUnit(model, [pred]) for model, pred in
+                    [(mid3_unit, mid2_unit), (mid2_unit, mid1_unit),
+                     (mid1_unit, in_unit)])
 
     # pylint: disable=invalid-name
     @mark.parametrize("in_file, dup_unit", [
