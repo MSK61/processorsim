@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.47.3, python 3.8.3, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -92,10 +92,10 @@ def rm_empty_units(processor: Graph) -> None:
     The function removes units with no capabilities from the processor.
 
     """
-    unit_entries = tuple(processor.nodes(True))
+    unit_entries = tuple(processor.nodes(UNIT_CAPS_KEY))
 
-    for unit, attrs in unit_entries:
-        if not attrs[UNIT_CAPS_KEY]:
+    for unit, capabilities in unit_entries:
+        if not capabilities:
             _rm_empty_unit(processor, unit)
 
 
