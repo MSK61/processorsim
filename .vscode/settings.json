@@ -27,6 +27,6 @@
         ".vscode/tags": true,
         "**/__pycache__": true,
         "**/.pytest_cache": true,
-        "src/.mypy_cache": true
+        "**/.mypy_cache": true
     }
 }
