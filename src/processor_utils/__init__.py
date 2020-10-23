@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.47.3, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.50.1, python 3.8.6, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -341,9 +341,10 @@ def _get_edge_units(edge: Iterable[str],
 
 
 def _get_frozen_tpl(obj_lst: Iterable[object]) -> Tuple[object, ...]:
-    """Return a tuple of the given objects.
+    """Return a read-only list of the given objects.
 
-    `obj_lst` is an iterable over the objects to be stored in a tuple.
+    `obj_lst` is an iterable over the objects to be stored in the
+              read-only list.
 
     """
     return tuple(obj_lst)
