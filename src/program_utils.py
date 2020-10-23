@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.47.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.50.1, python 3.8.6, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -172,10 +172,10 @@ def _get_cap(isa: Mapping[str, object], instr: ProgInstruction) -> object:
     """
     try:
         return isa[instr.name.upper()]
-    except KeyError:  # unsupported instruction
+    except KeyError as err:  # unsupported instruction
         raise UndefElemError(
             f"Unsupported instruction ${UndefElemError.ELEM_KEY} at line "
-            f"{instr.line}", instr.name)
+            f"{instr.line}", instr.name) from err
 
 
 def _get_line_parts(line_num: object, line_txt: str) -> _LineInfo:

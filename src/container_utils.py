@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.47.2, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.50.1, python 3.8.6, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -42,7 +42,7 @@ import collections
 from itertools import starmap
 from operator import eq, itemgetter
 import typing
-from typing import Callable, DefaultDict, Generic, List, Tuple, TypeVar
+from typing import Any, Callable, DefaultDict, Generic, List, Tuple, TypeVar
 
 import attr
 import more_itertools
@@ -53,8 +53,8 @@ _T = TypeVar("_T")
 _VT = TypeVar("_VT")
 
 
-def sorted_tuple(elems: typing.Iterable[_T],
-                 key: Callable[[_T], object] = None) -> Tuple[_T, ...]:
+def sorted_tuple(elems: typing.Iterable[Any],
+                 key: Callable[[Any], Any] = None) -> Tuple[Any, ...]:
     """Sort the elements.
 
     `elems` are the elements to sort.
@@ -156,7 +156,7 @@ class BagValDict(Generic[_KT, _VT]):
 
     """Dictionary with(unsorted) lists as values"""
 
-    def __eq__(self, other: typing.Any) -> bool:
+    def __eq__(self, other: Any) -> bool:
         """Test if the two dictionaries are identical.
 
         `self` is this dictionary.
