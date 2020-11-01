@@ -32,13 +32,15 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
+# environment:  Visual Studdio Code 1.50.1, python 3.8.6, Fedora release
 #               31 (Thirty One)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import itertools
+import operator
 import unittest
 
 import test_env
@@ -57,7 +59,8 @@ class CoverageTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        assert BagValDict() != BagValDict({test_env.TEST_DIR: [0]})
+        assert operator.ne(
+            *(itertools.starmap(BagValDict, [[], [{test_env.TEST_DIR: [0]}]])))
 
     def test_BagValDict_repr(self):
         """Test BagValDict representation.
