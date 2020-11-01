@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.47.2, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.50.1, python 3.8.6, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -68,10 +68,10 @@ class RarTest(TestCase):
         """
         full_sys_unit = UnitModel(
             ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), [])
-        assert simulate([HwInstruction(["R1"], out_reg, "ALU") for out_reg in [
-            "R2", "R3"]], HwSpec(ProcessorDesc(
-                [], [], [full_sys_unit], []))) == list(map(BagValDict, [
-                    {ICaseString(TEST_DIR): map(InstrState, [0, 1])}]))
+        assert simulate([HwInstruction(["R1"], out_reg, "ALU") for out_reg in
+                         ["R2", "R3"]], HwSpec(ProcessorDesc([], [], [
+                             full_sys_unit], []))) == [BagValDict({ICaseString(
+                                 TEST_DIR): map(InstrState, [0, 1])})]
 
 
 class RawTest(TestCase):
