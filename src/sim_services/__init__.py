@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.47.2, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.50.1, python 3.8.6, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -107,7 +107,6 @@ class HwSpec:
         `self` is this hardware specification.
 
         """
-        # pylint: disable=no-member
         models = chain(
             self.processor_desc.in_ports, self.processor_desc.in_out_ports,
             map(lambda func_unit: func_unit.model,
