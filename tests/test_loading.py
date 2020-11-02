@@ -32,14 +32,13 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.47.3, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.50.1, python 3.8.6, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import itertools
 from logging import WARNING
 
 import pytest
@@ -312,12 +311,11 @@ class TestUnits:
             ICaseString("output"), 1, ["ALU"], LockInfo(False, True), [])
         assert ProcessorDesc(
             [in_unit], [FuncUnit(out_unit, [mid3_unit])], [],
-            itertools.starmap(lambda model, pred: FuncUnit(model, [pred]), [
-                (mid1_unit, in_unit), (mid3_unit, mid2_unit),
-                (mid2_unit, mid1_unit)])).internal_units == tuple(
-                    FuncUnit(model, [pred]) for model, pred in
-                    [(mid3_unit, mid2_unit), (mid2_unit, mid1_unit),
-                     (mid1_unit, in_unit)])
+            (FuncUnit(model, [pred]) for model, pred in
+             [(mid1_unit, in_unit), (mid3_unit, mid2_unit),
+              (mid2_unit, mid1_unit)])).internal_units == tuple(FuncUnit(
+                  model, [pred]) for model, pred in [(mid3_unit, mid2_unit), (
+                      mid2_unit, mid1_unit), (mid1_unit, in_unit)])
 
     # pylint: disable=invalid-name
     @mark.parametrize("in_file, dup_unit", [

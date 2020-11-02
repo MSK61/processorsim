@@ -145,10 +145,9 @@ class TestStructural:
          [{ICaseString("output"): [InstrState(0)],
            ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)]},
           {ICaseString("output"): [InstrState(1)]}]),
-        (2, [], starmap(lambda name, mem_access: (name, 1, mem_access),
-                        [("output 1", ["ALU"]), ("output 2", [])]),
-         [{ICaseString("output 1"): [InstrState(0)],
-           ICaseString("output 2"): [InstrState(1)]}]),
+        (2, [], ((name, 1, mem_access) for name, mem_access in [("output 1", [
+            "ALU"]), ("output 2", [])]), [{ICaseString("output 1"): [
+                InstrState(0)], ICaseString("output 2"): [InstrState(1)]}]),
         (2, [], map(lambda name: (name, 1, ["ALU"]), ["output 1", "output 2"]),
          [{ICaseString("output 1"): [InstrState(0)],
            ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)]},

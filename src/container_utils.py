@@ -165,8 +165,8 @@ class BagValDict(Generic[_KT, _VT]):
         """
         assert type(other) is type(self)
         other_items = tuple(other.items())
-        lst_pairs = starmap(lambda key, val_lst:
-                            map(sorted, [val_lst, self[key]]), other_items)
+        lst_pairs = (
+            map(sorted, [val_lst, self[key]]) for key, val_lst in other_items)
         item_lst_pair: List[typing.Sized] = [self, other_items]
         return eq(*(len(item_lst) for item_lst in item_lst_pair)) and all(
             starmap(eq, lst_pairs))
