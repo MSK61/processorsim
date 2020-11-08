@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.51.0, python 3.8.6, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
@@ -41,7 +41,8 @@
 
 from itertools import starmap
 from logging import WARNING
-import unittest
+
+import pytest
 
 import test_utils
 from test_utils import chk_warn, read_proc_file
@@ -116,7 +117,7 @@ class TestClean:
         chk_warn(["core 2"], caplog.records)
 
 
-class WidthTest(unittest.TestCase):
+class TestWidth:
 
     """Test case for checking data path width"""
 
@@ -132,7 +133,7 @@ class WidthTest(unittest.TestCase):
 
 def main():
     """entry point for running test in this module"""
-    unittest.main()
+    pytest.main([__file__])
 
 
 if __name__ == '__main__':

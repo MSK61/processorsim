@@ -32,14 +32,12 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.46.0, python 3.8.3, Fedora release
+# environment:  Visual Studdio Code 1.51.0, python 3.8.6, Fedora release
 #               32 (Thirty Two)
 #
 # notes:        This is a private program.
 #
 ############################################################
-
-import unittest
 
 import attr
 import networkx
@@ -124,7 +122,7 @@ class TestNoLock:
                {"units": units, "dataPath": data_path})
 
 
-class WidthTest(unittest.TestCase):
+class TestWidth:
 
     """Test case for checking data path width"""
 
@@ -135,12 +133,12 @@ class WidthTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        with self.assertRaises(exception.BlockedCapError) as ex_chk:
-            read_proc_file("widths", "inputPortWithUnconsumedCapability.yaml")
+        ex_chk = raises(exception.BlockedCapError, read_proc_file, "widths",
+                        "inputPortWithUnconsumedCapability.yaml")
         chk_error([ValInStrCheck(
-            "Capability " + ex_chk.exception.capability, "Capability MEM"),
-                   ValInStrCheck("port " + ex_chk.exception.port,
-                                 "port input")], ex_chk.exception)
+            "Capability " + ex_chk.value.capability, "Capability MEM"),
+                   ValInStrCheck("port " + ex_chk.value.port, "port input")],
+                  ex_chk.value)
 
 
 @attr.s(auto_attribs=True, frozen=True)
