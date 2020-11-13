@@ -11,4 +11,5 @@ Please refer to [Pipfile](Pipfile) for the list of dependency packages.
 Running tests
 -------------
 To run the test suite, execute test.sh script(from within a shell open by pipenv):
+
     ./test.sh
