@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.50.1, python 3.8.6, Fedora release
-#               32 (Thirty Two)
+# environment:  Visual Studdio Code 1.52.1, python 3.8.6, Fedora release
+#               33 (Thirty Three)
 #
 # notes:        This is a private program.
 #
@@ -145,18 +145,10 @@ class _AcceptStatus:
     mem_used: bool = attr.ib()
 
 
+@attr.s
 class _IssueInfo:
 
     """Instruction issue information record"""
-
-    def __init__(self) -> None:
-        """Create an issue information record.
-
-        `self` is this issue information record.
-
-        """
-        self._entered = 0
-        self._exited = 0
 
     def bump_input(self) -> None:
         """Increment the entered instructions index.
@@ -192,6 +184,10 @@ class _IssueInfo:
 
         """
         return self._exited < self._entered
+
+    _entered = attr.ib(0, init=False)
+
+    _exited = attr.ib(0, init=False)
 
 
 @attr.s(auto_attribs=True, frozen=True)
