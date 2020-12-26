@@ -32,15 +32,15 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.41.1, python 3.7.5, Fedora release
-#               31 (Thirty One)
+# environment:  Visual Studdio Code 1.52.1, python 3.8.6, Fedora release
+#               33 (Thirty Three)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
 import logging
-import os
+import os.path
 import sys
 TEST_DIR = os.path.dirname(__file__)
 
@@ -52,8 +52,7 @@ def _add_src_path():
     may be imported in test modules.
 
     """
-    src_dir = "src"
-    sys.path.append(os.path.join(TEST_DIR, os.pardir, src_dir))
+    sys.path.append(os.path.join(TEST_DIR, "../src"))
 
 
 def _init():

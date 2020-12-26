@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
-#               32 (Thirty Two)
+# environment:  Visual Studdio Code 1.52.1, python 3.8.6, Fedora release
+#               33 (Thirty Three)
 #
 # notes:        This is a private program.
 #
@@ -170,8 +170,7 @@ def read_prog_file(file_name):
     The function returns the loaded program.
 
     """
-    test_dir = "programs"
-    with open(join(TEST_DATA_DIR, test_dir, file_name)) as prog_file:
+    with open(join(TEST_DATA_DIR, "programs", file_name)) as prog_file:
         return program_utils.read_program(prog_file)
 
 
