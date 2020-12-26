@@ -1,7 +1,6 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""examples execution tests"""
+"""test paths initialization"""
 
 ############################################################
 #
@@ -24,11 +23,11 @@
 #
 # program:      processor simulator
 #
-# file:         test_examples.py
+# file:         test_paths.py
 #
-# function:     examples execution tests
+# function:     test paths initialization
 #
-# description:  makes sure examples don't get outdated
+# description:  initializes test paths
 #
 # author:       Mohammed El-Afifi (ME)
 #
@@ -39,36 +38,5 @@
 #
 ############################################################
 
-from os.path import join
-import unittest
-
-import nbconvert.preprocessors
-import nbformat
-
-import test_paths
-
-
-class ExampleTest(unittest.TestCase):
-
-    """Test case for fulfilling complete code coverage"""
-
-    def test_example(self):
-        """Test example execution.
-
-        `self` is this test case.
-
-        """
-        examples_dir = join(test_paths.TEST_DIR, "../examples")
-        with open(join(examples_dir, "unified memory.ipynb")) as nb_file:
-            nbconvert.preprocessors.ExecutePreprocessor().preprocess(
-                nbformat.read(nb_file, nbformat.NO_CONVERT),
-                {"metadata": {"path": examples_dir}})
-
-
-def main():
-    """entry point for running test in this module"""
-    unittest.main()
-
-
-if __name__ == '__main__':
-    main()
+import os.path
+TEST_DIR = os.path.dirname(__file__)

@@ -42,7 +42,9 @@
 import logging
 import os.path
 import sys
-TEST_DIR = os.path.dirname(__file__)
+
+from test_paths import TEST_DIR
+__all__ = ["TEST_DIR"]
 
 
 def _add_src_path():
