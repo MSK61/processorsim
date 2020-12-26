@@ -10,6 +10,8 @@ pytest-travis-fold = "*"
 pytest-mypy = "*"
 coveralls = "*"
 pytest-flake8 = "*"
+nbconvert = "*"
+ipykernel = "*"
 
 [packages]
 networkx = "*"
