@@ -340,7 +340,7 @@ def _get_edge_units(edge: Iterable[str],
     return map(lambda unit: unit_registry.get(ICaseString(unit)), edge)
 
 
-def _get_frozen_tpl(obj_lst: Iterable[object]) -> Tuple[object, ...]:
+def _get_frozen_lst(obj_lst: Iterable[object]) -> Tuple[object, ...]:
     """Return a read-only list of the given objects.
 
     `obj_lst` is an iterable over the objects to be stored in the
@@ -525,11 +525,11 @@ class ProcessorDesc:
 
     """Processor description"""
 
-    in_ports: Tuple[UnitModel, ...] = attr.ib(converter=_get_frozen_tpl)
+    in_ports: Tuple[UnitModel, ...] = attr.ib(converter=_get_frozen_lst)
 
     out_ports: Tuple[FuncUnit, ...] = attr.ib(converter=_sorted_units)
 
-    in_out_ports: Tuple[UnitModel, ...] = attr.ib(converter=_get_frozen_tpl)
+    in_out_ports: Tuple[UnitModel, ...] = attr.ib(converter=_get_frozen_lst)
 
     internal_units: Tuple[FuncUnit, ...] = attr.ib(converter=_post_order)
 
