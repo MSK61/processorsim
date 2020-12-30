@@ -32,14 +32,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.51.0, python 3.8.6, Fedora release
-#               32 (Thirty Two)
+# environment:  Visual Studdio Code 1.52.1, python 3.8.6, Fedora release
+#               33 (Thirty Three)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-from itertools import starmap
+import itertools
 from unittest import TestCase
 
 import more_itertools
@@ -126,7 +126,7 @@ class TestDataHazards:
             HwSpec(ProcessorDesc([], [], [full_sys_unit], []))) == [
                 BagValDict(cp_util) for cp_util in
                 [{ICaseString(TEST_DIR):
-                  starmap(InstrState, [[0], [1, StallState.DATA]])},
+                  itertools.starmap(InstrState, [[0], [1, StallState.DATA]])},
                  {ICaseString(TEST_DIR): [InstrState(1)]}]]
 
 
@@ -148,7 +148,7 @@ class TestStructural:
         (2, [], ((name, 1, mem_access) for name, mem_access in [("output 1", [
             "ALU"]), ("output 2", [])]), [{ICaseString("output 1"): [
                 InstrState(0)], ICaseString("output 2"): [InstrState(1)]}]),
-        (2, [], map(lambda name: (name, 1, ["ALU"]), ["output 1", "output 2"]),
+        (2, [], ((name, 1, ["ALU"]) for name in ["output 1", "output 2"]),
          [{ICaseString("output 1"): [InstrState(0)],
            ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)]},
           {ICaseString("output 1"): [InstrState(1)]}])])
@@ -166,11 +166,10 @@ class TestStructural:
         """
         in_unit = UnitModel(ICaseString("input"), in_width, ["ALU"],
                             LockInfo(True, False), in_mem_util)
-        out_units = starmap(lambda name, width, mem_access: UnitModel(
+        out_units = (UnitModel(
             ICaseString(name), width, ["ALU"], LockInfo(False, True),
-            mem_access), out_unit_params)
-        out_units = map(
-            lambda out_unit: FuncUnit(out_unit, [in_unit]), out_units)
+            mem_access) for name, width, mem_access in out_unit_params)
+        out_units = (FuncUnit(out_unit, [in_unit]) for out_unit in out_units)
         cp1_util = {ICaseString("input"): map(InstrState, range(in_width))}
         assert simulate(
             [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
@@ -185,8 +184,8 @@ class TestStructural:
         """
         full_sys_unit = UnitModel(
             ICaseString("fullSys"), 2, ["ALU"], LockInfo(True, False), ["ALU"])
-        res_util = map(lambda instr: BagValDict(
-            {ICaseString("fullSys"): [InstrState(instr)]}), [0, 1])
+        res_util = (BagValDict(
+            {ICaseString("fullSys"): [InstrState(instr)]}) for instr in [0, 1])
         assert simulate([HwInstruction([], out_reg, "ALU") for out_reg in
                          ["R1", "R2"]], HwSpec(ProcessorDesc(
                              [], [], [full_sys_unit], []))) == list(res_util)

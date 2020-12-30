@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.51.0, python 3.8.6, Fedora release
-#               32 (Thirty Two)
+# environment:  Visual Studdio Code 1.52.1, python 3.8.6, Fedora release
+#               33 (Thirty Three)
 #
 # notes:        This is a private program.
 #
@@ -88,17 +88,16 @@ class TestClean:
         proc_desc = read_proc_file(
             "optimization", "incompatibleEdgeProcessor.yaml")
         in_units = starmap(lambda name, categ: UnitModel(
-            name, 1, [categ], LockInfo(True, False), []), map(
-                lambda unit_params: map(ICaseString, unit_params),
-                [["input 1", "ALU"], ["input 2", "MEM"]]))
+            name, 1, [categ], LockInfo(True, False), []),
+                           (map(ICaseString, unit_params) for unit_params in
+                            [["input 1", "ALU"], ["input 2", "MEM"]]))
         wr_lock = LockInfo(False, True)
         out_units = starmap(lambda name, categ, in_unit: FuncUnit(
             UnitModel(name, 1, [categ], wr_lock, []),
             [{in_port.name: in_port for in_port in proc_desc.in_ports}[
-                in_unit]]), map(
-                    lambda unit_params: map(ICaseString, unit_params),
-                    [["output 1", "ALU", "input 1"],
-                     ["output 2", "MEM", "input 2"]]))
+                in_unit]]), (map(ICaseString, unit_params) for unit_params in
+                             [["output 1", "ALU", "input 1"],
+                              ["output 2", "MEM", "input 2"]]))
         assert proc_desc == ProcessorDesc(in_units, out_units, [], [])
         chk_warn(["input 2", "output 1"], caplog.records)
 

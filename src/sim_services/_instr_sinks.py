@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.47.2, python 3.8.3, Fedora release
-#               32 (Thirty Two)
+# environment:  Visual Studdio Code 1.52.1, python 3.8.6, Fedora release
+#               33 (Thirty Three)
 #
 # notes:        This is a private program.
 #
@@ -99,22 +99,21 @@ class InstrSink(abc.ABC):
         `util_info` is the unit utilization information.
 
         """
-        candidates = map(
-            lambda pred: self._get_new_guests(pred, more_itertools.locate(
-                util_info[pred], self._valid_candid)), self._donors)
+        candidates = (self._get_new_guests(pred, more_itertools.locate(
+            util_info[pred], self._valid_candid)) for pred in self._donors)
         return self._pick_guests(
             itertools.chain.from_iterable(candidates), util_info)
 
     @staticmethod
-    def _get_new_guests(src_unit: ICaseString,
-                        instructions: Iterable[int]) -> Iterator[HostedInstr]:
+    def _get_new_guests(src_unit: ICaseString, instructions: Iterable[
+            int]) -> typing.Generator[HostedInstr, None, None]:
         """Prepare new hosted instructions.
 
         `src_unit` is the old host of instructions.
         `instructions` are the new instructions to be hosted.
 
         """
-        return map(lambda instr: HostedInstr(src_unit, instr), instructions)
+        return (HostedInstr(src_unit, instr) for instr in instructions)
 
     @abstractmethod
     def _accepts_cap(self, instr: int) -> bool:

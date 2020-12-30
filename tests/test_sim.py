@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.51.0, python 3.8.6, Fedora release
-#               32 (Thirty Two)
+# environment:  Visual Studdio Code 1.52.1, python 3.8.6, Fedora release
+#               33 (Thirty Three)
 #
 # notes:        This is a private program.
 #
@@ -137,8 +137,8 @@ class PipelineTest(TestCase):
                 {ICaseString("big input"): map(InstrState, [0, 1, 2, 3]),
                  ICaseString("small input 1"): [InstrState(4)],
                  ICaseString("small input 2"): [InstrState(5)]},
-                {ICaseString("big input"): map(lambda instr: InstrState(
-                    instr, StallState.STRUCTURAL), [2, 3]),
+                {ICaseString("big input"): (InstrState(
+                    instr, StallState.STRUCTURAL) for instr in [2, 3]),
                  ICaseString("output"): map(InstrState, [0, 1]),
                  ICaseString("middle 1"): [InstrState(4)],
                  ICaseString("middle 2"): [InstrState(5)]},
@@ -258,7 +258,7 @@ class TestOutputFlush:
                 [{ICaseString("core 1"): [InstrState(0)], ICaseString(
                     "core 2"): starmap(InstrState, more_itertools.prepend(
                         [1, StallState.DATA],
-                        map(lambda instr: [instr], extra_instr_seq)))},
+                        ([instr] for instr in extra_instr_seq)))},
                  {ICaseString("core 2"): [InstrState(1)]}]]
 
 

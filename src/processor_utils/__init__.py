@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.50.1, python 3.8.6, Fedora release
-#               32 (Thirty Two)
+# environment:  Visual Studdio Code 1.52.1, python 3.8.6, Fedora release
+#               33 (Thirty Three)
 #
 # notes:        This is a private program.
 #
@@ -44,7 +44,7 @@ from operator import itemgetter
 import os
 import sys
 import typing
-from typing import Any, Collection, Dict, Iterable, Iterator, List, Mapping, \
+from typing import Any, Collection, Dict, Generator, Iterable, List, Mapping, \
     MutableSequence, Tuple
 
 import attr
@@ -329,15 +329,15 @@ def _get_cap_name(
     return std_cap
 
 
-def _get_edge_units(edge: Iterable[str],
-                    unit_registry: SelfIndexSet[object]) -> Iterator[object]:
+def _get_edge_units(edge: Iterable[str], unit_registry:
+                    SelfIndexSet[object]) -> Generator[object, None, None]:
     """Return the units of an edge.
 
     `edge` is the edge to retrieve whose units.
     `unit_registry` is the store of units.
 
     """
-    return map(lambda unit: unit_registry.get(ICaseString(unit)), edge)
+    return (unit_registry.get(ICaseString(unit)) for unit in edge)
 
 
 def _get_frozen_lst(obj_lst: Iterable[object]) -> Tuple[object, ...]:
@@ -351,7 +351,7 @@ def _get_frozen_lst(obj_lst: Iterable[object]) -> Tuple[object, ...]:
 
 
 def _get_preds(processor: DiGraph, unit: object,
-               unit_map: Mapping[object, _T]) -> Iterator[_T]:
+               unit_map: Mapping[object, _T]) -> typing.Iterator[_T]:
     """Retrieve the predecessor units of the given unit.
 
     `processor` is the processor containing the unit.
@@ -363,7 +363,7 @@ def _get_preds(processor: DiGraph, unit: object,
     return map(lambda pred: unit_map[pred], processor.predecessors(unit))
 
 
-def _get_proc_units(graph: DiGraph) -> Iterator[FuncUnit]:
+def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
     """Create units for the given processor graph.
 
     `graph` is the processor.
@@ -373,12 +373,12 @@ def _get_proc_units(graph: DiGraph) -> Iterator[FuncUnit]:
     """
     unit_map = {
         unit: _get_unit_entry(unit, graph.nodes[unit]) for unit in graph}
-    return map(lambda name: FuncUnit(
-        unit_map[name], _get_preds(graph, name, unit_map)), graph)
+    return (FuncUnit(unit_map[name], _get_preds(graph, name, unit_map)) for
+            name in graph)
 
 
-def _get_std_edge(edge: Iterable[str],
-                  unit_registry: SelfIndexSet[object]) -> Iterator[object]:
+def _get_std_edge(edge: Iterable[str], unit_registry:
+                  SelfIndexSet[object]) -> Generator[object, None, None]:
     """Return a validated edge.
 
     `edge` is the edge to validate.
@@ -387,8 +387,7 @@ def _get_std_edge(edge: Iterable[str],
     encountered.
 
     """
-    return map(
-        lambda unit: _get_unit_name(ICaseString(unit), unit_registry), edge)
+    return (_get_unit_name(ICaseString(unit), unit_registry) for unit in edge)
 
 
 def _get_unit_entry(

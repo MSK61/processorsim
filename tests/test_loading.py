@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.50.1, python 3.8.6, Fedora release
-#               32 (Thirty Two)
+# environment:  Visual Studdio Code 1.52.1, python 3.8.6, Fedora release
+#               33 (Thirty Three)
 #
 # notes:        This is a private program.
 #
@@ -84,9 +84,9 @@ class TestCaps:
         """
         caplog.set_level(WARNING)
         in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits.yaml"
-        processor = map(lambda unit_name: UnitModel(
+        processor = (UnitModel(
             ICaseString(unit_name), 1, [ICaseString("ALU")],
-            LockInfo(True, True), []), ["core 1", "core 2"])
+            LockInfo(True, True), []) for unit_name in ["core 1", "core 2"])
         assert read_proc_file("capabilities", in_file) == ProcessorDesc(
             [], [], processor, [])
         chk_warn(["ALU", "core 1", "alu", "core 2"], caplog.records)
