@@ -38,8 +38,8 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.47.0, python 3.8.3, Fedora release
-#               32 (Thirty Two)
+# environment:  Visual Studdio Code 1.52.1, python 3.8.6, Fedora release
+#               33 (Thirty Three)
 #
 # notes:        This is a private program.
 #
@@ -56,6 +56,7 @@ from typing import Collection, Dict, IO, Iterable, Iterator, List, Mapping, \
     Optional, Sequence, Sized, TextIO, Tuple
 
 import attr
+import fastcore.foundation
 import more_itertools
 from more_itertools import prepend
 
@@ -267,8 +268,8 @@ def _create_flight(instr_util: Mapping[int, _InstrPosition]) -> _InstrFlight:
     """
     start_time = min(instr_util.keys())
     time_span = len(instr_util)
-    return _InstrFlight(start_time, map(lambda clock_pulse: instr_util[
-        clock_pulse], range(start_time, start_time + time_span)))
+    return _InstrFlight(start_time, fastcore.foundation.map_ex(
+        range(start_time, start_time + time_span), instr_util))
 
 
 def _cui_to_flights(cxuxi: Iterable[Tuple[int, BagValDict[_T, InstrState]]],

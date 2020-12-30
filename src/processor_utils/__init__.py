@@ -48,6 +48,7 @@ from typing import Any, Collection, Dict, Generator, Iterable, List, Mapping, \
     MutableSequence, Tuple
 
 import attr
+import fastcore.foundation
 from fastcore.foundation import Self
 import networkx
 from networkx import DiGraph, Graph
@@ -361,7 +362,7 @@ def _get_preds(processor: DiGraph, unit: object,
     The function returns an iterator over predecessor units.
 
     """
-    return map(lambda pred: unit_map[pred], processor.predecessors(unit))
+    return fastcore.foundation.map_ex(processor.predecessors(unit), unit_map)
 
 
 def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
