@@ -42,6 +42,7 @@
 from itertools import starmap
 from logging import WARNING
 
+import more_itertools
 import pytest
 
 import test_utils
@@ -92,10 +93,10 @@ class TestClean:
                            (map(ICaseString, unit_params) for unit_params in
                             [["input 1", "ALU"], ["input 2", "MEM"]]))
         wr_lock = LockInfo(False, True)
-        out_units = starmap(lambda name, categ, in_unit: FuncUnit(
-            UnitModel(name, 1, [categ], wr_lock, []),
-            [{in_port.name: in_port for in_port in proc_desc.in_ports}[
-                in_unit]]), (map(ICaseString, unit_params) for unit_params in
+        out_units = starmap(lambda name, categ, in_unit: FuncUnit(UnitModel(
+            name, 1, [categ], wr_lock, []), [more_itertools.first_true(
+                proc_desc.in_ports, pred=lambda in_port: in_port.name ==
+                in_unit)]), (map(ICaseString, unit_params) for unit_params in
                              [["output 1", "ALU", "input 1"],
                               ["output 2", "MEM", "input 2"]]))
         assert proc_desc == ProcessorDesc(in_units, out_units, [], [])
