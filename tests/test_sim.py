@@ -39,8 +39,7 @@
 #
 ############################################################
 
-import itertools
-from itertools import starmap
+from itertools import chain, starmap
 from unittest import TestCase
 
 import more_itertools
@@ -245,7 +244,7 @@ class TestOutputFlush:
                           ones causing the hazard.
 
         """
-        program = starmap(HwInstruction, itertools.chain(
+        program = starmap(HwInstruction, chain(
             [[[], "R1", "ALU"], [["R1"], "R2", "ALU"]], extra_instr_lst))
         extra_instr_len = len(extra_instr_lst)
         cores = starmap(lambda name, width: UnitModel(
@@ -322,7 +321,7 @@ class TestSim:
         """
         prog = starmap(lambda in_regs, out_reg, categ:
                        HwInstruction(in_regs, out_reg, ICaseString(categ)),
-                       valid_prog + [([], "R14", "MEM")])
+                       chain(valid_prog, [([], "R14", "MEM")]))
         ex_chk = raises(StallError, simulate, tuple(prog), HwSpec(
             read_proc_file("processors", "singleALUProcessor.yaml")))
         test_utils.chk_error(
