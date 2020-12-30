@@ -248,7 +248,7 @@ class TestProcessors:
                      predecessors) for name, predecessors in
             [(ICaseString("output 1"), proc_desc.in_ports),
              (ICaseString("output 2"),
-              map(lambda unit: unit.model, proc_desc.internal_units))])
+              (unit.model for unit in proc_desc.internal_units))])
         in_unit = ICaseString("input")
         internal_unit = UnitModel(
             ICaseString("middle"), 1, [alu_cap], LockInfo(False, False), [])
