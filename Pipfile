@@ -17,6 +17,7 @@ ipykernel = "*"
 networkx = "*"
 pyyaml = "*"
 more-itertools = "*"
+fastcore = "*"
 
 [requires]
 python_version = "3.8"

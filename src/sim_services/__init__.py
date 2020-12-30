@@ -47,6 +47,7 @@ from typing import Dict, Iterable, Iterator, List, Mapping, MutableMapping, \
     MutableSequence, Sequence, Tuple
 
 import attr
+from fastcore.foundation import Self
 import more_itertools
 
 from container_utils import BagValDict
@@ -109,9 +110,8 @@ class HwSpec:
         """
         models = chain(
             self.processor_desc.in_ports, self.processor_desc.in_out_ports,
-            map(lambda func_unit: func_unit.model,
-                chain(self.processor_desc.out_ports,
-                      self.processor_desc.internal_units)))
+            map(Self.model(), chain(self.processor_desc.out_ports,
+                                    self.processor_desc.internal_units)))
         return {unit.name: unit for unit in models}
 
 
@@ -522,8 +522,8 @@ def _fill_unit(unit: InstrSink, util_info: BagValDict[ICaseString, InstrState],
 
     """
     mov_res = unit.fill_unit(util_info, mem_busy)
-    _clr_src_units(sorted(mov_res.moved, key=lambda candid:
-                          candid.index_in_host, reverse=True), util_info)
+    _clr_src_units(sorted(
+        mov_res.moved, key=Self.index_in_host(), reverse=True), util_info)
     return mov_res.mem_used
 
 
@@ -535,7 +535,7 @@ def _get_out_ports(processor: ProcessorDesc) -> Iterator[ICaseString]:
     boundary.
 
     """
-    return map(lambda port: port.name, chain(processor.in_out_ports, map(
+    return map(Self.name(), chain(processor.in_out_ports, map(
         lambda port: port.model, processor.out_ports)))
 
 

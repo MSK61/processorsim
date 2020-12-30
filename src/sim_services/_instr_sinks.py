@@ -45,6 +45,7 @@ import typing
 from typing import Iterable, Iterator
 
 import attr
+import fastcore.foundation
 import more_itertools
 
 from container_utils import BagValDict
@@ -314,7 +315,7 @@ class UnitSink(InstrSink):
         `self` is this unit sink.
 
         """
-        return map(lambda pred: pred.name, self._unit.predecessors)
+        return map(fastcore.foundation.Self.name(), self._unit.predecessors)
 
     _unit: processor_utils.units.FuncUnit
 

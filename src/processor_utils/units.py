@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.50.1, python 3.8.6, Fedora release
-#               32 (Thirty Two)
+# environment:  Visual Studdio Code 1.52.1, python 3.8.6, Fedora release
+#               33 (Thirty Three)
 #
 # notes:        This is a private program.
 #
@@ -43,6 +43,7 @@ import typing
 from typing import Iterable, Tuple
 
 import attr
+import fastcore.foundation
 
 from container_utils import sorted_tuple
 import str_utils
@@ -96,7 +97,7 @@ def sorted_models(models: Iterable[UnitModel]) -> Tuple[UnitModel, ...]:
     `models` are the models to create a sorted list of.
 
     """
-    return sorted_tuple(models, key=lambda model: model.name)
+    return sorted_tuple(models, key=fastcore.foundation.Self.name())
 
 
 @attr.s(eq=False, frozen=True)

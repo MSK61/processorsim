@@ -48,6 +48,7 @@ from typing import Any, Collection, Dict, Generator, Iterable, List, Mapping, \
     MutableSequence, Tuple
 
 import attr
+from fastcore.foundation import Self
 import networkx
 from networkx import DiGraph, Graph
 
@@ -283,7 +284,7 @@ def _create_graph(hw_units: Iterable[Mapping[object, object]],
     unit_registry = SelfIndexSet[object]()
     edge_registry = IndexedSet[Collection[str]](
         lambda edge: tuple(_get_edge_units(edge, unit_registry)))
-    cap_registry = IndexedSet[_CapabilityInfo](lambda cap: cap.name)
+    cap_registry = IndexedSet[_CapabilityInfo](Self.name())
 
     for cur_unit in hw_units:
         _add_unit(flow_graph, cur_unit, unit_registry, cap_registry)
@@ -515,8 +516,7 @@ def _sorted_units(hw_units: Iterable[FuncUnit]) -> Tuple[FuncUnit, ...]:
     `hw_units` are the units to create a sorted list of.
 
     """
-    return container_utils.sorted_tuple(
-        hw_units, key=lambda unit: unit.model.name)
+    return container_utils.sorted_tuple(hw_units, key=Self.model.name())
 
 
 @attr.s(frozen=True)

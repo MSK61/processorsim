@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.50.1, python 3.8.6, Fedora release
-#               32 (Thirty Two)
+# environment:  Visual Studdio Code 1.52.1, python 3.8.6, Fedora release
+#               33 (Thirty Three)
 #
 # notes:        This is a private program.
 #
@@ -45,6 +45,7 @@ import string
 from typing import Iterable, List, Mapping
 
 import attr
+import fastcore.foundation
 
 import container_utils
 from container_utils import IndexedSet
@@ -121,7 +122,7 @@ def read_program(prog_file: Iterable[str]) -> List[ProgInstruction]:
     """
     program = filter(
         operator.itemgetter(1), enumerate(map(str.strip, prog_file), 1))
-    reg_registry = IndexedSet[_OperandInfo](lambda reg: reg.name)
+    reg_registry = IndexedSet[_OperandInfo](fastcore.foundation.Self.name())
     return [_create_instr(*line, reg_registry) for line in program]
 
 

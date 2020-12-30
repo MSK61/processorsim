@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.47.0, python 3.8.3, Fedora release
-#               32 (Thirty Two)
+# environment:  Visual Studdio Code 1.52.1, python 3.8.6, Fedora release
+#               33 (Thirty Three)
 #
 # notes:        This is a private program.
 #
@@ -45,6 +45,7 @@ from typing import AbstractSet, Callable, Dict, Iterable, Iterator, List, \
     Mapping, MutableMapping, Sequence, Tuple
 
 import attr
+from fastcore.foundation import Self
 import more_itertools
 import networkx
 from networkx import DiGraph, Graph
@@ -129,8 +130,7 @@ class _PathDescriptor:
         `start` is the path start unit.
 
         """
-        return cls(
-            lambda sat_info: sat_info.read_lock, "read", capability, start)
+        return cls(Self.read_lock(), "read", capability, start)
 
     @classmethod
     def make_write_desc(
@@ -142,8 +142,7 @@ class _PathDescriptor:
         `start` is the path start unit.
 
         """
-        return cls(
-            lambda sat_info: sat_info.write_lock, "write", capability, start)
+        return cls(Self.write_lock(), "write", capability, start)
 
     selector: typing.Callable[[_SatInfo], int]
 
