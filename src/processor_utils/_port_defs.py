@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.46.1, python 3.8.3, Fedora release
-#               32 (Thirty Two)
+# environment:  Visual Studdio Code 1.52.1, python 3.8.6, Fedora release
+#               33 (Thirty Three)
 #
 # notes:        This is a private program.
 #
@@ -41,6 +41,7 @@
 import typing
 from typing import Generator, Tuple
 
+from fastcore import foundation
 from networkx import DiGraph
 _T = typing.TypeVar("_T")
 
@@ -77,8 +78,8 @@ class PortGroup:
                     from.
 
         """
-        self._in_ports, self._out_ports = map(lambda port_getter: tuple(
-            port_getter(processor)), [get_in_ports, get_out_ports])
+        self._in_ports, self._out_ports = foundation.maps(
+            foundation.Self(processor), tuple, [get_in_ports, get_out_ports])
 
     @property
     def in_ports(self) -> Tuple[object, ...]:

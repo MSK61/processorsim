@@ -486,8 +486,8 @@ def _post_order(internal_units: Iterable[FuncUnit]) -> Tuple[FuncUnit, ...]:
 
     """
     rev_graph = _get_unit_graph(internal_units)
-    return tuple(map(lambda name: rev_graph.nodes[name][_UNIT_KEY],
-                     networkx.topological_sort(rev_graph)))
+    return tuple(fastcore.foundation.maps(rev_graph.nodes.get, itemgetter(
+        _UNIT_KEY), networkx.topological_sort(rev_graph)))
 
 
 def _prep_proc_desc(processor: DiGraph) -> None:
