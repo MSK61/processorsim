@@ -218,21 +218,6 @@ class TestProcessors:
 
     """Test case for loading valid processors"""
 
-    def test_processor_with_explicit_attributes(self):
-        """Test loading a processor with explicitly defined attributes.
-
-        `self` is this test case.
-
-        """
-        assert processor_utils.load_proc_desc({
-            "units": [{units.UNIT_NAME_KEY: "fullSys", units.UNIT_WIDTH_KEY: 1,
-                       units.UNIT_CAPS_KEY: ["ALU"], units.UNIT_RLOCK_KEY:
-                       True, units.UNIT_WLOCK_KEY: True, units.UNIT_MEM_KEY:
-                       True}], "dataPath": []}) == ProcessorDesc([], [], [
-                           UnitModel(ICaseString("fullSys"), 1, [
-                               ICaseString("ALU")], LockInfo(True, True),
-                                     [ICaseString("ALU")])], [])
-
     def test_processor_with_four_connected_functional_units(self):
         """Test loading a processor with four functional units.
 
@@ -316,6 +301,21 @@ class TestUnits:
               (mid2_unit, mid1_unit)])).internal_units == tuple(FuncUnit(
                   model, [pred]) for model, pred in [(mid3_unit, mid2_unit), (
                       mid2_unit, mid1_unit), (mid1_unit, in_unit)])
+
+    def test_processor_with_explicit_attributes(self):
+        """Test loading a processor with explicitly defined attributes.
+
+        `self` is this test case.
+
+        """
+        assert processor_utils.load_proc_desc({
+            "units": [{units.UNIT_NAME_KEY: "fullSys", units.UNIT_WIDTH_KEY: 1,
+                       units.UNIT_CAPS_KEY: ["ALU"], units.UNIT_RLOCK_KEY:
+                       True, units.UNIT_WLOCK_KEY: True, units.UNIT_MEM_KEY:
+                       True}], "dataPath": []}) == ProcessorDesc([], [], [
+                           UnitModel(ICaseString("fullSys"), 1, [
+                               ICaseString("ALU")], LockInfo(True, True),
+                                     [ICaseString("ALU")])], [])
 
     # pylint: disable=invalid-name
     @mark.parametrize("in_file, dup_unit", [
