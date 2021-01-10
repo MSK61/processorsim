@@ -5,7 +5,7 @@
 
 ############################################################
 #
-# Copyright 2017, 2019, 2020 Mohammed El-Afifi
+# Copyright 2017, 2019, 2020, 2021 Mohammed El-Afifi
 # This file is part of processorSim.
 #
 # processorSim is free software: you can redistribute it and/or modify
@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.51.0, python 3.8.6, Fedora release
-#               31 (Thirty One)
+# environment:  Visual Studdio Code 1.52.1, python 3.8.7, Fedora release
+#               33 (Thirty Three)
 #
 # notes:        This is a private program.
 #

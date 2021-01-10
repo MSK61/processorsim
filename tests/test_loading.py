@@ -5,7 +5,7 @@
 
 ############################################################
 #
-# Copyright 2017, 2019, 2020 Mohammed El-Afifi
+# Copyright 2017, 2019, 2020, 2021 Mohammed El-Afifi
 # This file is part of processorSim.
 #
 # processorSim is free software: you can redistribute it and/or modify
@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.52.1, python 3.8.6, Fedora release
+# environment:  Visual Studdio Code 1.52.1, python 3.8.7, Fedora release
 #               33 (Thirty Three)
 #
 # notes:        This is a private program.
@@ -74,7 +74,7 @@ class TestCaps:
                        "capabilities", in_file).value))
     # pylint: enable=invalid-name
 
-    def test_same_capability_with_different_case_in_two_units_is_detected(
+    def test_same_capability_with_different_cases_in_two_units_is_detected(
             self, caplog):
         """Test loading a capability with different cases in two units.
 
