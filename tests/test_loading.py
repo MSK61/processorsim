@@ -308,14 +308,14 @@ class TestUnits:
         `self` is this test case.
 
         """
-        assert processor_utils.load_proc_desc({
-            "units": [{units.UNIT_NAME_KEY: "fullSys", units.UNIT_WIDTH_KEY: 1,
-                       units.UNIT_CAPS_KEY: ["ALU"], units.UNIT_RLOCK_KEY:
-                       True, units.UNIT_WLOCK_KEY: True, units.UNIT_MEM_KEY:
-                       True}], "dataPath": []}) == ProcessorDesc([], [], [
-                           UnitModel(ICaseString("fullSys"), 1, [
-                               ICaseString("ALU")], LockInfo(True, True),
-                                     [ICaseString("ALU")])], [])
+        assert processor_utils.load_proc_desc({"units": [
+            {units.UNIT_NAME_KEY: "fullSys", units.UNIT_WIDTH_KEY: 1,
+             units.UNIT_CAPS_KEY: ["ALU"], **{attr: True for attr in [
+                 units.UNIT_RLOCK_KEY, units.UNIT_WLOCK_KEY,
+                 units.UNIT_MEM_KEY]}}], "dataPath": []}) == ProcessorDesc(
+                     [], [], [UnitModel(ICaseString("fullSys"), 1, [
+                         ICaseString("ALU")], LockInfo(True, True), [
+                             ICaseString("ALU")])], [])
 
     # pylint: disable=invalid-name
     @mark.parametrize("in_file, dup_unit", [
