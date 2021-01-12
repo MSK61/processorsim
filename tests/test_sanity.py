@@ -46,7 +46,7 @@ from pytest import mark, raises
 
 from test_utils import chk_error, read_proc_file, ValInStrCheck
 from processor_utils import exception, load_proc_desc
-from processor_utils.exception import MultilockError
+from processor_utils.exception import PathLockError
 from processor_utils.units import UNIT_CAPS_KEY, UNIT_NAME_KEY, \
     UNIT_RLOCK_KEY, UNIT_WIDTH_KEY, UNIT_WLOCK_KEY
 from str_utils import ICaseString
@@ -110,7 +110,7 @@ class TestNoLock:
          [["input", "output 1"], ["input", "output 2"]]),
         ([{UNIT_NAME_KEY: "fullSys", UNIT_WIDTH_KEY: 1, UNIT_CAPS_KEY: ["ALU"],
            UNIT_WLOCK_KEY: True}], [])])
-    def test_path_with_no_locks_raises_MultilockError(self, units, data_path):
+    def test_path_with_no_locks_raises_PathLockError(self, units, data_path):
         """Test loading a processor with no locks in paths.
 
         `self` is this test case.
@@ -118,7 +118,7 @@ class TestNoLock:
         `data_path` is the data path between units.
 
         """
-        raises(MultilockError, load_proc_desc,
+        raises(PathLockError, load_proc_desc,
                {"units": units, "dataPath": data_path})
 
 
@@ -197,7 +197,7 @@ class TestMultiLock:
                                   _LockTestData(UNIT_RLOCK_KEY, "read")),
                                  (_IoProcessor("in_unit", "out_unit", "MEM"),
                                   _LockTestData(UNIT_WLOCK_KEY, "write"))])
-    def test_path_with_multiple_locks_raises_MultilockError(
+    def test_path_with_multiple_locks_raises_PathLockError(
             self, proc_desc, lock_data):
         """Test loading a processor with multiple locks in paths.
 
@@ -206,7 +206,7 @@ class TestMultiLock:
         `lock_data` is the lock test data.
 
         """
-        ex_info = raises(MultilockError, load_proc_desc, {
+        ex_info = raises(PathLockError, load_proc_desc, {
             "units": [{UNIT_NAME_KEY: proc_desc.in_unit, UNIT_WIDTH_KEY: 1,
                        UNIT_CAPS_KEY: [proc_desc.capability],
                        **{lock_prop: True for lock_prop in

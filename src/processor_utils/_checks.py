@@ -52,7 +52,7 @@ from networkx import DiGraph, Graph
 
 from str_utils import ICaseString
 from . import exception
-from .exception import BlockedCapError, ComponentInfo, MultilockError
+from .exception import BlockedCapError, ComponentInfo, PathLockError
 from . import units
 from .units import UNIT_CAPS_KEY, UNIT_WIDTH_KEY
 from . import _port_defs
@@ -177,7 +177,7 @@ class _PathLockCalc:
         `path_desc` is the path descriptor.
         The method returns the lock of successor paths, which has to be
         the same for all units. If the paths have different locks, the
-        method raises a MultilockError. If the given list of units is
+        method raises a PathLockError. If the given list of units is
         empty, the method returns a negative value.
 
         """
@@ -196,7 +196,7 @@ class _PathLockCalc:
         `self` is this path lock calculator.
         `unit_lock` is the lock status of the unit.
         `path_desc` is the path descriptor.
-        The method raises a MultilockError if any path originating from
+        The method raises a PathLockError if any path originating from
         the start unit has multiple locks or differnt paths have
         different locks.
 
@@ -216,15 +216,15 @@ class _PathLockCalc:
 
         `seg_desc` is the segment descriptor.
         `seg_lock` is the segment lock.
-        The method raises a MultilockError if the segment has multiple
+        The method raises a PathLockError if the segment has multiple
         locks.
 
         """
         if seg_lock > 1:
-            raise MultilockError(
-                f"Found a path passing through ${MultilockError.START_KEY} "
-                f"with multiple ${MultilockError.LOCK_TYPE_KEY} locks for "
-                f"capability ${MultilockError.CAP_KEY}.", seg_desc.start,
+            raise PathLockError(
+                f"Found a path passing through ${PathLockError.START_KEY} "
+                f"with multiple ${PathLockError.LOCK_TYPE_KEY} locks for "
+                f"capability ${PathLockError.CAP_KEY}.", seg_desc.start,
                 seg_desc.lock_type, seg_desc.capability)
 
     @staticmethod
@@ -239,17 +239,17 @@ class _PathLockCalc:
         The method initializes the current lock value if it hasn't
         already been initialized, otherwise it makes sure the new value
         matches the old one. If the new value is different from the
-        current one, the method raises a MultilockError. The method
+        current one, the method raises a PathLockError. The method
         returns the updated lock.
 
         """
         if old_lock < 0 or new_lock == old_lock:
             return new_lock
 
-        raise MultilockError(
-            f"Paths passing through ${MultilockError.START_KEY} have different"
-            f" ${MultilockError.LOCK_TYPE_KEY} locks for capability "
-            f"${MultilockError.CAP_KEY}.", path_desc.start,
+        raise PathLockError(
+            f"Paths passing through ${PathLockError.START_KEY} have different"
+            f" ${PathLockError.LOCK_TYPE_KEY} locks for capability "
+            f"${PathLockError.CAP_KEY}.", path_desc.start,
             path_desc.lock_type, path_desc.capability)
 
     _start_unit: Mapping[object, bool]
@@ -356,15 +356,15 @@ def _chk_in_lock(in_lock_info: _SatInfo, path_desc: _PathDescriptor) -> None:
 
     `in_lock_info` is the input lock information.
     `path_desc` is the path descriptor.
-    The function raises a MultilockError if any paths with multiple
-    locks exist at the given port.
+    The function raises a PathLockError if any paths with multiple locks
+    exist at the given port.
 
     """
     if not path_desc.selector(in_lock_info):
-        raise MultilockError(
-            f"Found a path starting at input port ${MultilockError.START_KEY} "
-            f"with no ${MultilockError.LOCK_TYPE_KEY} locks for capability "
-            f"${MultilockError.CAP_KEY}.", path_desc.start,
+        raise PathLockError(
+            f"Found a path starting at input port ${PathLockError.START_KEY} "
+            f"with no ${PathLockError.LOCK_TYPE_KEY} locks for capability "
+            f"${PathLockError.CAP_KEY}.", path_desc.start,
             path_desc.lock_type, path_desc.capability)
 
 
@@ -376,8 +376,8 @@ def _chk_in_locks(in_ports: Iterable[object], path_locks:
     `path_locks` are the map from a unit to the information of the path
                  with maximum locks.
     `capability` is the capability for which input paths are inspected.
-    The function raises a MultilockError if any paths with multiple
-    locks exist at any port.
+    The function raises a PathLockError if any paths with multiple locks
+    exist at any port.
 
     """
     for cur_port in in_ports:
@@ -395,8 +395,8 @@ def _chk_multilock(processor: DiGraph, post_ord: Iterable[object],
     `post_ord` is the post-order of the processor functional units.
     `capability` is the capability of lock paths under consideration.
     `in_ports` are the input ports supporting the given capability.
-    The function raises a MultilockError if any paths with multiple
-    locks exist.
+    The function raises a PathLockError if any paths with multiple locks
+    exist.
 
     """
     path_locks: Dict[object, _SatInfo] = {}
@@ -417,7 +417,7 @@ def _chk_path_locks(
     `path_locks` are the map from a unit to the information of the path
                  with maximum locks.
     `capability` is the capability of lock paths under consideration.
-    The function raises a MultilockError if any paths originating from
+    The function raises a PathLockError if any paths originating from
     the given unit have multiple locks.
 
     """

@@ -273,9 +273,9 @@ class EmptyProcError(RuntimeError):
     """Empty processor error"""
 
 
-class MultilockError(RuntimeError):
+class PathLockError(RuntimeError):
 
-    """Error for a multi-lock path"""
+    """Path lock error"""
 
     def __init__(self, msg_tmpl: str, start: object, lock_type: object,
                  capability: object) -> None:
