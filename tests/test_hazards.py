@@ -183,7 +183,7 @@ class TestStructural:
 
         """
         full_sys_unit = UnitModel(
-            ICaseString("fullSys"), 2, ["ALU"], LockInfo(True, False), ["ALU"])
+            ICaseString("fullSys"), 2, ["ALU"], LockInfo(True, True), ["ALU"])
         res_util = (BagValDict(
             {ICaseString("fullSys"): [InstrState(instr)]}) for instr in [0, 1])
         assert simulate([HwInstruction([], out_reg, "ALU") for out_reg in
