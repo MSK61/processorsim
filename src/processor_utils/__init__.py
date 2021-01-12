@@ -204,11 +204,11 @@ def _add_unit(processor: Graph, unit: Mapping[object, Any],
     unit_name = ICaseString(unit[UNIT_NAME_KEY])
     _chk_unit_name(unit_name, unit_registry)
     _chk_unit_width(unit)
-    processor.add_node(
-        unit_name, **{UNIT_WIDTH_KEY: unit[UNIT_WIDTH_KEY],
-                      UNIT_CAPS_KEY: _load_caps(unit, cap_registry)},
-        **{cur_attr: unit.get(cur_attr, False) for cur_attr in
-           [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY, UNIT_MEM_KEY]})
+    processor.add_node(unit_name, **{
+        UNIT_WIDTH_KEY: unit[UNIT_WIDTH_KEY], UNIT_CAPS_KEY: _load_caps(
+            unit, cap_registry), UNIT_MEM_KEY: unit.get(UNIT_MEM_KEY, [])},
+                       **{cur_attr: unit.get(cur_attr, False) for cur_attr in
+                          [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]})
     unit_registry.add(unit_name)
 
 
@@ -402,9 +402,8 @@ def _get_unit_entry(
 
     """
     lock_attrs = itemgetter(UNIT_RLOCK_KEY, UNIT_WLOCK_KEY)(attrs)
-    return UnitModel(
-        name, attrs[UNIT_WIDTH_KEY], attrs[UNIT_CAPS_KEY], units.LockInfo(
-            *lock_attrs), attrs[UNIT_CAPS_KEY] if attrs[UNIT_MEM_KEY] else [])
+    return UnitModel(name, attrs[UNIT_WIDTH_KEY], attrs[UNIT_CAPS_KEY],
+                     units.LockInfo(*lock_attrs), attrs[UNIT_MEM_KEY])
 
 
 def _get_unit_graph(internal_units: Iterable[FuncUnit]) -> DiGraph:

@@ -47,9 +47,10 @@ from pytest import mark, raises
 from test_utils import chk_error, chk_two_units, chk_warn, read_proc_file, \
     ValInStrCheck
 import errors
-import processor_utils
-from processor_utils import exception, ProcessorDesc, units
-from processor_utils.units import FuncUnit, LockInfo, UnitModel
+from processor_utils import exception, load_proc_desc, ProcessorDesc
+from processor_utils.units import FuncUnit, LockInfo, UNIT_CAPS_KEY, \
+    UNIT_MEM_KEY, UnitModel, UNIT_NAME_KEY, UNIT_RLOCK_KEY, UNIT_WIDTH_KEY, \
+    UNIT_WLOCK_KEY
 from str_utils import ICaseString
 
 
@@ -278,6 +279,21 @@ class TestUnits:
 
     """Test case for loading processor units"""
 
+    def test_partial_mem_access(self):
+        """Test loading a processor with partial memory access.
+
+        `self` is this test case.
+
+        """
+        assert load_proc_desc(
+            {"units":
+             [{UNIT_NAME_KEY: "fullSys", UNIT_WIDTH_KEY: 1,
+               UNIT_CAPS_KEY: ["ALU", "MEM"], **{attr: True for attr in [
+                   UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}, UNIT_MEM_KEY: ["MEM"]}],
+             "dataPath": []}) == ProcessorDesc([], [], [UnitModel(ICaseString(
+                 "fullSys"), 1, map(ICaseString, ["ALU", "MEM"]), LockInfo(
+                     True, True), ["MEM"])], [])
+
     def test_processor_puts_units_in_post_order(self):
         """Test putting units in post-order.
 
@@ -308,14 +324,14 @@ class TestUnits:
         `self` is this test case.
 
         """
-        assert processor_utils.load_proc_desc({"units": [
-            {units.UNIT_NAME_KEY: "fullSys", units.UNIT_WIDTH_KEY: 1,
-             units.UNIT_CAPS_KEY: ["ALU"], **{attr: True for attr in [
-                 units.UNIT_RLOCK_KEY, units.UNIT_WLOCK_KEY,
-                 units.UNIT_MEM_KEY]}}], "dataPath": []}) == ProcessorDesc(
-                     [], [], [UnitModel(ICaseString("fullSys"), 1, [
-                         ICaseString("ALU")], LockInfo(True, True), [
-                             ICaseString("ALU")])], [])
+        assert load_proc_desc(
+            {"units":
+             [{UNIT_NAME_KEY: "fullSys", UNIT_WIDTH_KEY: 1,
+               UNIT_CAPS_KEY: ["ALU"], UNIT_MEM_KEY: ["ALU"],
+               **{attr: True for attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}}],
+             "dataPath": []}) == ProcessorDesc(
+                 [], [], [UnitModel(ICaseString("fullSys"), 1, [
+                     ICaseString("ALU")], LockInfo(True, True), ["ALU"])], [])
 
     # pylint: disable=invalid-name
     @mark.parametrize("in_file, dup_unit", [
