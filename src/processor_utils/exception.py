@@ -275,7 +275,7 @@ class EmptyProcError(RuntimeError):
 
 class MultilockError(RuntimeError):
 
-    """Bad edge error"""
+    """Error for a multi-lock path"""
 
     def __init__(self, msg_tmpl: str, start: object, lock_type: object,
                  capability: object) -> None:
