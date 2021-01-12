@@ -292,7 +292,7 @@ class TestUnits:
                    UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}, UNIT_MEM_KEY: ["MEM"]}],
              "dataPath": []}) == ProcessorDesc([], [], [UnitModel(ICaseString(
                  "fullSys"), 1, map(ICaseString, ["ALU", "MEM"]), LockInfo(
-                     True, True), ["MEM"])], [])
+                     True, True), [ICaseString("MEM")])], [])
 
     def test_processor_puts_units_in_post_order(self):
         """Test putting units in post-order.
@@ -330,8 +330,8 @@ class TestUnits:
                UNIT_CAPS_KEY: ["ALU"], UNIT_MEM_KEY: ["ALU"],
                **{attr: True for attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}}],
              "dataPath": []}) == ProcessorDesc(
-                 [], [], [UnitModel(ICaseString("fullSys"), 1, [
-                     ICaseString("ALU")], LockInfo(True, True), ["ALU"])], [])
+                 [], [], [UnitModel(ICaseString("fullSys"), 1, [ICaseString(
+                     "ALU")], LockInfo(True, True), [ICaseString("ALU")])], [])
 
     # pylint: disable=invalid-name
     @mark.parametrize("in_file, dup_unit", [

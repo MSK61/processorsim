@@ -48,7 +48,8 @@ from pytest import mark
 
 from test_env import TEST_DIR
 from container_utils import BagValDict
-from processor_utils import ProcessorDesc
+import processor_utils
+from processor_utils import ProcessorDesc, units
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from program_defs import HwInstruction
 from sim_services import HwSpec, simulate
@@ -175,6 +176,25 @@ class TestStructural:
             [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
             HwSpec(ProcessorDesc([in_unit], out_units, [], []))) == list(
                 map(BagValDict, more_itertools.prepend(cp1_util, extra_util)))
+
+    # pylint: disable=invalid-name
+    def test_mem_ACL_is_correctly_matched_against_instructions(self):
+        """Test comparing memory ACL against instructions.
+
+        `self` is this test case.
+
+        """
+        res_util = (BagValDict(
+            {ICaseString("fullSys"): [InstrState(instr)]}) for instr in [0, 1])
+        assert simulate([HwInstruction([], out_reg, ICaseString(
+            "ALU")) for out_reg in ["R1", "R2"]], HwSpec(
+                processor_utils.load_proc_desc({"units": [
+                    {units.UNIT_NAME_KEY: "fullSys", units.UNIT_WIDTH_KEY: 2,
+                     units.UNIT_CAPS_KEY: ["ALU"], **{attr: True for attr in [
+                         units.UNIT_RLOCK_KEY, units.UNIT_WLOCK_KEY]},
+                     units.UNIT_MEM_KEY: ["ALU"]}], "dataPath": []}))) == list(
+                         res_util)
+    # pylint: enable=invalid-name
 
     def test_mem_util_in_earlier_inputs_affects_later_ones(self):
         """Test propagation of memory utilization among inputs.

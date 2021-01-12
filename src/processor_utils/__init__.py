@@ -402,8 +402,9 @@ def _get_unit_entry(
 
     """
     lock_attrs = itemgetter(UNIT_RLOCK_KEY, UNIT_WLOCK_KEY)(attrs)
-    return UnitModel(name, attrs[UNIT_WIDTH_KEY], attrs[UNIT_CAPS_KEY],
-                     units.LockInfo(*lock_attrs), attrs[UNIT_MEM_KEY])
+    return UnitModel(
+        name, attrs[UNIT_WIDTH_KEY], attrs[UNIT_CAPS_KEY],
+        units.LockInfo(*lock_attrs), map(ICaseString, attrs[UNIT_MEM_KEY]))
 
 
 def _get_unit_graph(internal_units: Iterable[FuncUnit]) -> DiGraph:
