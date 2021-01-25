@@ -126,7 +126,10 @@ def chk_warn(tokens, warn_calls):
 
     """
     assert warn_calls
-    assert all(token in warn_calls[0].getMessage() for token in tokens)
+    warn_msg = warn_calls[0].getMessage()
+
+    for token in tokens:
+        assert token in warn_msg
 
 
 def compile_prog(prog_file, isa):

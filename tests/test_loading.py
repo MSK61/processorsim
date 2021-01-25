@@ -212,7 +212,10 @@ class TestEdges:
         warning message.
 
         """
-        assert all(str(edge) in warn_call.getMessage() for edge in edges)
+        warn_msg = warn_call.getMessage()
+
+        for edge in edges:
+            assert str(edge) in warn_msg
 
 
 class TestProcessors:
