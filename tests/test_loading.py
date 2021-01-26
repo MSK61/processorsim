@@ -244,6 +244,22 @@ class TestMemAcl:
 
         for token in ["alu", "fullSys", "ALU"]:
             assert token in warn_msg
+    # pylint: enable=invalid-name
+
+    def test_partial_mem_access(self):
+        """Test loading a processor with partial memory access.
+
+        `self` is this test case.
+
+        """
+        assert load_proc_desc(
+            {"units":
+             [{UNIT_NAME_KEY: "fullSys", UNIT_WIDTH_KEY: 1,
+               UNIT_CAPS_KEY: ["ALU", "MEM"], **{attr: True for attr in [
+                   UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}, UNIT_MEM_KEY: ["MEM"]}],
+             "dataPath": []}) == ProcessorDesc([], [], [UnitModel(ICaseString(
+                 "fullSys"), 1, map(ICaseString, ["ALU", "MEM"]), LockInfo(
+                     True, True), [ICaseString("MEM")])], [])
 
 
 class TestProcessors:
@@ -309,21 +325,6 @@ class TestProcessors:
 class TestUnits:
 
     """Test case for loading processor units"""
-
-    def test_partial_mem_access(self):
-        """Test loading a processor with partial memory access.
-
-        `self` is this test case.
-
-        """
-        assert load_proc_desc(
-            {"units":
-             [{UNIT_NAME_KEY: "fullSys", UNIT_WIDTH_KEY: 1,
-               UNIT_CAPS_KEY: ["ALU", "MEM"], **{attr: True for attr in [
-                   UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}, UNIT_MEM_KEY: ["MEM"]}],
-             "dataPath": []}) == ProcessorDesc([], [], [UnitModel(ICaseString(
-                 "fullSys"), 1, map(ICaseString, ["ALU", "MEM"]), LockInfo(
-                     True, True), [ICaseString("MEM")])], [])
 
     def test_processor_puts_units_in_post_order(self):
         """Test putting units in post-order.
