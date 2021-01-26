@@ -44,8 +44,8 @@ from operator import itemgetter
 import os
 import sys
 import typing
-from typing import Any, Collection, Dict, Generator, Iterable, List, Mapping, \
-    MutableSequence, Tuple
+from typing import Any, Collection, Dict, Generator, Iterable, Iterator, \
+    List, Mapping, MutableSequence, Tuple
 
 import attr
 import fastcore.foundation
@@ -205,10 +205,10 @@ def _add_unit(processor: Graph, unit: Mapping[object, Any],
     _chk_unit_name(unit_name, unit_registry)
     _chk_unit_width(unit)
     processor.add_node(unit_name, **{
-        UNIT_WIDTH_KEY: unit[UNIT_WIDTH_KEY], UNIT_CAPS_KEY: _load_caps(
-            unit, cap_registry), UNIT_MEM_KEY: unit.get(UNIT_MEM_KEY, [])},
-                       **{cur_attr: unit.get(cur_attr, False) for cur_attr in
-                          [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]})
+        UNIT_WIDTH_KEY: unit[UNIT_WIDTH_KEY],
+        UNIT_CAPS_KEY: _load_caps(unit, cap_registry), UNIT_MEM_KEY:
+        _load_mem_acl(unit, cap_registry)}, **{cur_attr: unit.get(
+            cur_attr, False) for cur_attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]})
     unit_registry.add(unit_name)
 
 
@@ -312,6 +312,26 @@ def _create_isa(isa_spec: Iterable[Tuple[str, str]],
             prop) for prop in [instr, cap])) for instr, cap in isa_spec}
 
 
+def _get_acl_cap(unit: object, cap: str,
+                 global_cap_reg: IndexedSet[_CapabilityInfo]) -> ICaseString:
+    """Return a supported ACL capability name.
+
+    `unit` is the unit to get a capability from whose memory ACL.
+    `cap` is the capability to add.
+    `global_cap_reg` is the store of added capabilities across all
+                     units.
+
+    """
+    std_cap = global_cap_reg.get(_CapabilityInfo(ICaseString(cap), unit))
+    assert std_cap
+
+    if std_cap.name.raw_str != cap:
+        warning("Capability alu in unit fullSys memory ACL previously defined "
+                "as ALU in unit , using original definition...")
+
+    return std_cap.name
+
+
 def _get_cap_name(
         capability: object, cap_registry: SelfIndexSet[object]) -> object:
     """Return a supported capability name.
@@ -353,7 +373,7 @@ def _get_frozen_lst(obj_lst: Iterable[object]) -> Tuple[object, ...]:
 
 
 def _get_preds(processor: DiGraph, unit: object,
-               unit_map: Mapping[object, _T]) -> typing.Iterator[_T]:
+               unit_map: Mapping[object, _T]) -> Iterator[_T]:
     """Retrieve the predecessor units of the given unit.
 
     `processor` is the processor containing the unit.
@@ -402,9 +422,8 @@ def _get_unit_entry(
 
     """
     lock_attrs = itemgetter(UNIT_RLOCK_KEY, UNIT_WLOCK_KEY)(attrs)
-    return UnitModel(
-        name, attrs[UNIT_WIDTH_KEY], attrs[UNIT_CAPS_KEY],
-        units.LockInfo(*lock_attrs), map(ICaseString, attrs[UNIT_MEM_KEY]))
+    return UnitModel(name, attrs[UNIT_WIDTH_KEY], attrs[UNIT_CAPS_KEY],
+                     units.LockInfo(*lock_attrs), attrs[UNIT_MEM_KEY])
 
 
 def _get_unit_graph(internal_units: Iterable[FuncUnit]) -> DiGraph:
@@ -473,6 +492,20 @@ def _load_caps(unit: Mapping[object, Any],
                         unit_cap_reg, cap_registry)
 
     return cap_list
+
+
+def _load_mem_acl(unit: Mapping[object, Any], cap_registry:
+                  IndexedSet[_CapabilityInfo]) -> Iterator[ICaseString]:
+    """Load the given unit memory ACL.
+
+    `unit` is the unit to load whose memory ACL.
+    `cap_registry` is the store of valid capabilities.
+    The function returns an iterator over loaded memory ACL
+    capabilities.
+
+    """
+    return map(lambda cap: _get_acl_cap(
+        unit[UNIT_NAME_KEY], cap, cap_registry), unit.get(UNIT_MEM_KEY, []))
 
 
 def _post_order(internal_units: Iterable[FuncUnit]) -> Tuple[FuncUnit, ...]:

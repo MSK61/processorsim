@@ -218,6 +218,34 @@ class TestEdges:
             assert str(edge) in warn_msg
 
 
+class TestMemAcl:
+
+    """Test case for loading memory ACL"""
+
+    # pylint: disable=invalid-name
+    def test_ACL_capability_with_nonstandard_case_is_detected(self, caplog):
+        """Test loading an ACL with a non-standard capability case.
+
+        `self` is this test case.
+        `caplog` is the log capture fixture.
+
+        """
+        caplog.set_level(WARNING)
+        assert load_proc_desc(
+            {"units":
+             [{UNIT_NAME_KEY: "fullSys", UNIT_WIDTH_KEY: 1,
+               UNIT_CAPS_KEY: ["ALU"], **{attr: True for attr in [
+                   UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}, UNIT_MEM_KEY: ["alu"]}],
+             "dataPath": []}) == ProcessorDesc(
+                 [], [], [UnitModel(ICaseString("fullSys"), 1, [ICaseString(
+                     "ALU")], LockInfo(True, True), [ICaseString("ALU")])], [])
+        assert caplog.records
+        warn_msg = caplog.records[0].getMessage()
+
+        for token in ["alu", "fullSys", "ALU"]:
+            assert token in warn_msg
+
+
 class TestProcessors:
 
     """Test case for loading valid processors"""
