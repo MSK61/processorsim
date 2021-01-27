@@ -222,9 +222,8 @@ class TestMemAcl:
 
     """Test case for loading memory ACL"""
 
-    # pylint: disable=invalid-name
     @mark.parametrize("unit", ["full system", "single core"])
-    def test_ACL_capability_with_nonstandard_case_is_detected(
+    def test_capability_with_nonstandard_case_is_detected(
             self, caplog, unit):
         """Test loading an ACL with a non-standard capability case.
 
@@ -247,7 +246,6 @@ class TestMemAcl:
 
         for token in ["alu", unit, "ALU"]:
             assert token in warn_msg
-    # pylint: enable=invalid-name
 
     def test_partial_mem_access(self):
         """Test loading a processor with partial memory access.
