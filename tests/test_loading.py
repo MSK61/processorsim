@@ -249,9 +249,51 @@ class TestMemAcl:
         for token in ["alu", "core 2", "ALU", unit]:
             assert token in warn_msg
 
+    def test_partial_mem_access(self):
+        """Test loading a processor with partial memory access.
+
+        `self` is this test case.
+
+        """
+        assert load_proc_desc(
+            {"units":
+             [{UNIT_NAME_KEY: "full system", UNIT_WIDTH_KEY: 1,
+               UNIT_CAPS_KEY: ["ALU", "MEM"], **{attr: True for attr in [
+                   UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}, UNIT_MEM_KEY: ["MEM"]}],
+             "dataPath": []}) == ProcessorDesc([], [], [UnitModel(ICaseString(
+                 "full system"), 1, map(ICaseString, ["ALU", "MEM"]), LockInfo(
+                     True, True), [ICaseString("MEM")])], [])
+
+
+class TestMemAclCase:
+
+    """Test case for checking memory ACL letter cases"""
+
+    def test_capability_with_mixed_case_is_detected(self, caplog):
+        """Test loading an ACL with a mixed capability case.
+
+        `self` is this test case.
+        `caplog` is the log capture fixture.
+
+        """
+        caplog.set_level(WARNING)
+        assert load_proc_desc(
+            {"units":
+             [{UNIT_NAME_KEY: "fullSys", UNIT_WIDTH_KEY: 1,
+               UNIT_CAPS_KEY: ["ALU"], **{attr: True for attr in [
+                   UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}, UNIT_MEM_KEY: ["Alu"]}],
+             "dataPath": []}) == ProcessorDesc(
+                 [], [], [UnitModel(ICaseString("fullSys"), 1, [ICaseString(
+                     "ALU")], LockInfo(True, True), [ICaseString("ALU")])], [])
+        assert caplog.records
+        warn_msg = caplog.records[0].getMessage()
+
+        for token in ["Alu", "fullSys", "ALU"]:
+            assert token in warn_msg
+
     @mark.parametrize("unit", ["full system", "single core"])
-    def test_capability_with_nonstandard_case_is_detected(self, caplog, unit):
-        """Test loading an ACL with a non-standard capability case.
+    def test_capability_with_small_case_is_detected(self, caplog, unit):
+        """Test loading an ACL with a small capability case.
 
         `self` is this test case.
         `caplog` is the log capture fixture.
@@ -272,21 +314,6 @@ class TestMemAcl:
 
         for token in ["alu", unit, "ALU"]:
             assert token in warn_msg
-
-    def test_partial_mem_access(self):
-        """Test loading a processor with partial memory access.
-
-        `self` is this test case.
-
-        """
-        assert load_proc_desc(
-            {"units":
-             [{UNIT_NAME_KEY: "full system", UNIT_WIDTH_KEY: 1,
-               UNIT_CAPS_KEY: ["ALU", "MEM"], **{attr: True for attr in [
-                   UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}, UNIT_MEM_KEY: ["MEM"]}],
-             "dataPath": []}) == ProcessorDesc([], [], [UnitModel(ICaseString(
-                 "full system"), 1, map(ICaseString, ["ALU", "MEM"]), LockInfo(
-                     True, True), [ICaseString("MEM")])], [])
 
 
 class TestProcessors:
