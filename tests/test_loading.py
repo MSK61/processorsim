@@ -222,6 +222,33 @@ class TestMemAcl:
 
     """Test case for loading memory ACL"""
 
+    def test_capability_case_is_checked_across_all_units(self, caplog):
+        """Test ACL capability cases are checked across all units.
+
+        `self` is this test case.
+        `caplog` is the log capture fixture.
+
+        """
+        caplog.set_level(WARNING)
+        assert load_proc_desc({
+            "units":
+            [{UNIT_NAME_KEY: "core 1", UNIT_WIDTH_KEY: 1,
+              UNIT_CAPS_KEY: ["ALU"],
+              **{attr: True for attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}},
+             {UNIT_NAME_KEY: "core 2", UNIT_WIDTH_KEY: 1,
+              UNIT_CAPS_KEY: ["ALU"], **{attr: True for attr in [
+                  UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}, UNIT_MEM_KEY: ["alu"]}],
+            "dataPath": []}) == ProcessorDesc(
+                [], [], [UnitModel(ICaseString("core 1"), 1, [
+                    ICaseString("ALU")], LockInfo(True, True), []), UnitModel(
+                        ICaseString("core 2"), 1, [ICaseString("ALU")],
+                        LockInfo(True, True), [ICaseString("ALU")])], [])
+        assert caplog.records
+        warn_msg = caplog.records[0].getMessage()
+
+        for token in ["alu", "core 2", "ALU", "core 1"]:
+            assert token in warn_msg
+
     @mark.parametrize("unit", ["full system", "single core"])
     def test_capability_with_nonstandard_case_is_detected(
             self, caplog, unit):
