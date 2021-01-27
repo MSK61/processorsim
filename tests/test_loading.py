@@ -223,8 +223,7 @@ class TestMemAcl:
     """Test case for loading memory ACL"""
 
     @mark.parametrize("unit", ["full system", "single core"])
-    def test_capability_with_nonstandard_case_is_detected(
-            self, caplog, unit):
+    def test_capability_with_nonstandard_case_is_detected(self, caplog, unit):
         """Test loading an ACL with a non-standard capability case.
 
         `self` is this test case.
