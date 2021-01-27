@@ -126,7 +126,7 @@ class TestCaps:
         """
         ex_chk = raises(
             exception.BadWidthError, read_proc_file, "capabilities", in_file)
-        chk_error([ValInStrCheck(ex_chk.value.unit, "fullSys"),
+        chk_error([ValInStrCheck(ex_chk.value.unit, "full system"),
                    ValInStrCheck(ex_chk.value.width, bad_width)], ex_chk.value)
 
 
@@ -233,16 +233,16 @@ class TestMemAcl:
         caplog.set_level(WARNING)
         assert load_proc_desc(
             {"units":
-             [{UNIT_NAME_KEY: "fullSys", UNIT_WIDTH_KEY: 1,
+             [{UNIT_NAME_KEY: "full system", UNIT_WIDTH_KEY: 1,
                UNIT_CAPS_KEY: ["ALU"], **{attr: True for attr in [
                    UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}, UNIT_MEM_KEY: ["alu"]}],
-             "dataPath": []}) == ProcessorDesc(
-                 [], [], [UnitModel(ICaseString("fullSys"), 1, [ICaseString(
+             "dataPath": []}) == ProcessorDesc([], [], [
+                 UnitModel(ICaseString("full system"), 1, [ICaseString(
                      "ALU")], LockInfo(True, True), [ICaseString("ALU")])], [])
         assert caplog.records
         warn_msg = caplog.records[0].getMessage()
 
-        for token in ["alu", "fullSys", "ALU"]:
+        for token in ["alu", "full system", "ALU"]:
             assert token in warn_msg
     # pylint: enable=invalid-name
 
@@ -254,11 +254,11 @@ class TestMemAcl:
         """
         assert load_proc_desc(
             {"units":
-             [{UNIT_NAME_KEY: "fullSys", UNIT_WIDTH_KEY: 1,
+             [{UNIT_NAME_KEY: "full system", UNIT_WIDTH_KEY: 1,
                UNIT_CAPS_KEY: ["ALU", "MEM"], **{attr: True for attr in [
                    UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}, UNIT_MEM_KEY: ["MEM"]}],
              "dataPath": []}) == ProcessorDesc([], [], [UnitModel(ICaseString(
-                 "fullSys"), 1, map(ICaseString, ["ALU", "MEM"]), LockInfo(
+                 "full system"), 1, map(ICaseString, ["ALU", "MEM"]), LockInfo(
                      True, True), [ICaseString("MEM")])], [])
 
 
@@ -358,17 +358,17 @@ class TestUnits:
         """
         assert load_proc_desc(
             {"units":
-             [{UNIT_NAME_KEY: "fullSys", UNIT_WIDTH_KEY: 1,
+             [{UNIT_NAME_KEY: "full system", UNIT_WIDTH_KEY: 1,
                UNIT_CAPS_KEY: ["ALU"], UNIT_MEM_KEY: ["ALU"],
                **{attr: True for attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}}],
-             "dataPath": []}) == ProcessorDesc(
-                 [], [], [UnitModel(ICaseString("fullSys"), 1, [ICaseString(
+             "dataPath": []}) == ProcessorDesc([], [], [
+                 UnitModel(ICaseString("full system"), 1, [ICaseString(
                      "ALU")], LockInfo(True, True), [ICaseString("ALU")])], [])
 
     # pylint: disable=invalid-name
     @mark.parametrize("in_file, dup_unit", [
-        ("twoUnitsWithSameNameAndCase.yaml", "fullSys"),
-        ("twoUnitsWithSameNameAndDifferentCase.yaml", "FULLsYS")])
+        ("twoUnitsWithSameNameAndCase.yaml", "full system"),
+        ("twoUnitsWithSameNameAndDifferentCase.yaml", "FULL SYSTEM")])
     def test_two_units_with_same_name_raise_DupElemError(
             self, in_file, dup_unit):
         """Test loading two units with the same name.
@@ -382,8 +382,8 @@ class TestUnits:
             exception.DupElemError, read_proc_file, "units", in_file)
         chk_error(
             [ValInStrCheck(ex_chk.value.new_element, ICaseString(dup_unit)),
-             ValInStrCheck(ex_chk.value.old_element, ICaseString("fullSys"))],
-            ex_chk.value)
+             ValInStrCheck(ex_chk.value.old_element,
+                           ICaseString("full system"))], ex_chk.value)
 
 
 def main():
@@ -399,7 +399,7 @@ def _chk_one_unit(proc_dir, proc_file):
 
     """
     assert read_proc_file(proc_dir, proc_file) == ProcessorDesc(
-        [], [], [UnitModel(ICaseString("fullSys"), 1, [ICaseString("ALU")],
+        [], [], [UnitModel(ICaseString("full system"), 1, [ICaseString("ALU")],
                            LockInfo(True, True), [])], [])
 
 

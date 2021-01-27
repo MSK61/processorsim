@@ -71,7 +71,7 @@ class TestHwDescLoad:
         processor and ISA descriptions.
 
         """
-        full_sys_unit = ICaseString("fullSys")
+        full_sys_unit = ICaseString("full system")
         icase_cap = ICaseString(capability)
         lock_info = units.LockInfo(True, True)
         with open(os.path.join(
@@ -97,8 +97,8 @@ class TestHwDescLoad:
         for mock_chk in [
                 [proc_mock,
                  {"units":
-                  [{units.UNIT_NAME_KEY: "fullSys", units.UNIT_WIDTH_KEY: 1,
-                    units.UNIT_CAPS_KEY: [capability],
+                  [{units.UNIT_NAME_KEY: "full system",
+                    units.UNIT_WIDTH_KEY: 1, units.UNIT_CAPS_KEY: [capability],
                     units.UNIT_RLOCK_KEY: True, units.UNIT_WLOCK_KEY: True}],
                   "dataPath": []}], [ability_mock, proc_mock.return_value]]:
             unittest.mock.MagicMock.assert_called_with(*mock_chk)

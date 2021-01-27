@@ -1,6 +1,6 @@
 microarch:
     units:
-        - name: fullSys
+        - name: full system
           width: 2
           capabilities:
             - ALU

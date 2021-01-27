@@ -108,8 +108,8 @@ class TestNoLock:
            ["ALU"]}, {UNIT_NAME_KEY: "output 2", UNIT_WIDTH_KEY: 1,
                       UNIT_CAPS_KEY: ["ALU"], UNIT_RLOCK_KEY: True}],
          [["input", "output 1"], ["input", "output 2"]]),
-        ([{UNIT_NAME_KEY: "fullSys", UNIT_WIDTH_KEY: 1, UNIT_CAPS_KEY: ["ALU"],
-           UNIT_WLOCK_KEY: True}], [])])
+        ([{UNIT_NAME_KEY: "full system", UNIT_WIDTH_KEY: 1,
+           UNIT_CAPS_KEY: ["ALU"], UNIT_WLOCK_KEY: True}], [])])
     def test_path_with_no_locks_raises_PathLockError(self, units, data_path):
         """Test loading a processor with no locks in paths.
 

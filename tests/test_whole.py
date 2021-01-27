@@ -54,13 +54,13 @@ class TestWhole:
     @pytest.mark.parametrize("proc_file_name, prog_file_name, sim_res", [
         ("processorWithALUISA.yaml",
          "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         [["U:fullSys"]]),
+         [["U:full system"]]),
         ("processorWithALUISA.yaml", "2InstructionProgram.asm",
-         [["U:fullSys"], ["", "U:fullSys"]]),
+         [["U:full system"], ["", "U:full system"]]),
         ("2WideInput1WideOutputProcessor.yaml", "2InstructionProgram.asm",
          [["U:input", "U:output"], ["U:input", "S:input", "U:output"]]),
         ("2WideALUProcessor.yaml", "RAW.asm",
-         [["U:fullSys"], ["D:fullSys", "U:fullSys"]])])
+         [["U:full system"], ["D:full system", "U:full system"]])])
     def test_sim(self, proc_file_name, prog_file_name, sim_res):
         """Test executing a program.
 

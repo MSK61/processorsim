@@ -211,7 +211,7 @@ class TestBasic:
     @mark.parametrize("prog, cpu, util_tbl", [
         ([(["R11", "R15"], "R14", "alu")],
          read_proc_file("processors", "singleALUProcessor.yaml"),
-         [{ICaseString("fullSys"): [InstrState(0)]}]),
+         [{ICaseString("full system"): [InstrState(0)]}]),
         ([([], "R12", "MEM"), (["R11", "R15"], "R14", "ALU")], read_proc_file(
             "processors", "multiplexedInputSplitOutputProcessor.yaml"),
          [{ICaseString("input"): map(InstrState, [1, 0])},
@@ -269,7 +269,7 @@ class TestSim:
         ("empty.asm", "singleALUProcessor.yaml", []),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
          "singleALUProcessor.yaml",
-         [{ICaseString("fullSys"): [InstrState(0)]}]),
+         [{ICaseString("full system"): [InstrState(0)]}]),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
          "dualCoreALUProcessor.yaml",
          [{ICaseString("core 1"): [InstrState(0)]}]),
@@ -280,10 +280,10 @@ class TestSim:
          "dualCoreMemALUProcessor.yaml",
          [{ICaseString("core 2"): [InstrState(0)]}]),
         ("2InstructionProgram.asm", "2WideALUProcessor.yaml",
-         [{ICaseString("fullSys"): map(InstrState, [0, 1])}]),
+         [{ICaseString("full system"): map(InstrState, [0, 1])}]),
         ("3InstructionProgram.asm", "2WideALUProcessor.yaml",
-         [{ICaseString("fullSys"): map(InstrState, [0, 1])},
-          {ICaseString("fullSys"): [InstrState(2)]}]),
+         [{ICaseString("full system"): map(InstrState, [0, 1])},
+          {ICaseString("full system"): [InstrState(2)]}]),
         ("instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
          "twoConnectedUnitsProcessor.yaml", [{ICaseString("input"): [
              InstrState(0)]}, {ICaseString("output"): [InstrState(0)]}]),
@@ -309,7 +309,7 @@ class TestSim:
 
     @mark.parametrize("valid_prog, util_tbl", [
         ([], []), ([(["R11", "R15"], "R14", "ALU")],
-                   [{ICaseString("fullSys"): [InstrState(0)]}, {}])])
+                   [{ICaseString("full system"): [InstrState(0)]}, {}])])
     def test_unsupported_instruction_stalls_pipeline(
             self, valid_prog, util_tbl):
         """Test executing an invalid instruction after a valid program.

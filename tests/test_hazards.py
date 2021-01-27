@@ -184,16 +184,16 @@ class TestStructural:
         `self` is this test case.
 
         """
-        res_util = (BagValDict(
-            {ICaseString("fullSys"): [InstrState(instr)]}) for instr in [0, 1])
-        assert simulate([HwInstruction([], out_reg, ICaseString(
-            "ALU")) for out_reg in ["R1", "R2"]], HwSpec(
-                processor_utils.load_proc_desc({"units": [
-                    {units.UNIT_NAME_KEY: "fullSys", units.UNIT_WIDTH_KEY: 2,
-                     units.UNIT_CAPS_KEY: ["ALU"], **{attr: True for attr in [
-                         units.UNIT_RLOCK_KEY, units.UNIT_WLOCK_KEY]},
-                     units.UNIT_MEM_KEY: ["ALU"]}], "dataPath": []}))) == list(
-                         res_util)
+        res_util = (BagValDict({ICaseString("full system"):
+                                [InstrState(instr)]}) for instr in [0, 1])
+        assert simulate(
+            [HwInstruction([], out_reg, ICaseString("ALU")) for out_reg in
+             ["R1", "R2"]], HwSpec(processor_utils.load_proc_desc({"units": [
+                 {units.UNIT_NAME_KEY: "full system", units.UNIT_WIDTH_KEY: 2,
+                  units.UNIT_CAPS_KEY: ["ALU"], **{attr: True for attr in [
+                      units.UNIT_RLOCK_KEY, units.UNIT_WLOCK_KEY]},
+                  units.UNIT_MEM_KEY: ["ALU"]}], "dataPath": []}))) == list(
+                      res_util)
     # pylint: enable=invalid-name
 
     def test_mem_util_in_earlier_inputs_affects_later_ones(self):
@@ -202,10 +202,10 @@ class TestStructural:
         `self` is this test case.
 
         """
-        full_sys_unit = UnitModel(
-            ICaseString("fullSys"), 2, ["ALU"], LockInfo(True, True), ["ALU"])
-        res_util = (BagValDict(
-            {ICaseString("fullSys"): [InstrState(instr)]}) for instr in [0, 1])
+        full_sys_unit = UnitModel(ICaseString("full system"), 2, ["ALU"],
+                                  LockInfo(True, True), ["ALU"])
+        res_util = (BagValDict({ICaseString("full system"):
+                                [InstrState(instr)]}) for instr in [0, 1])
         assert simulate([HwInstruction([], out_reg, "ALU") for out_reg in
                          ["R1", "R2"]], HwSpec(ProcessorDesc(
                              [], [], [full_sys_unit], []))) == list(res_util)

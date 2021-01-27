@@ -1,8 +1,8 @@
 units:
-    - name: fullSys
+    - name: full system
       width: 1
       capabilities: []
-    - name: FULLsYS
+    - name: FULL SYSTEM
       width: 2
       capabilities:
         - ALU
