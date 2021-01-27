@@ -326,9 +326,9 @@ def _get_acl_cap(unit: object, cap: str,
     assert std_cap
 
     if std_cap.name.raw_str != cap:
-        warning(
-            f"Capability {cap} in unit {unit} memory ACL previously defined as"
-            f" ALU in unit {std_cap.unit}, using original definition...")
+        warning(f"Capability {cap} in unit {unit} memory ACL previously "
+                f"defined as {std_cap.name} in unit {std_cap.unit}, using "
+                "original definition...")
 
     return std_cap.name
 
