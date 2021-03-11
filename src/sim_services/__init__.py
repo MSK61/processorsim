@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.52.1, python 3.8.7, Fedora release
+# environment:  Visual Studdio Code 1.54.1, python 3.8.7, Fedora release
 #               33 (Thirty Three)
 #
 # notes:        This is a private program.
@@ -58,7 +58,7 @@ from program_defs import HwInstruction
 from reg_access import AccessType, RegAccessQueue, RegAccQBuilder
 from str_utils import ICaseString
 from . import _instr_sinks, _utils
-from ._instr_sinks import InstrSink
+from ._instr_sinks import IInstrSink
 from .sim_defs import InstrState, StallState
 _T = typing.TypeVar("_T")
 
@@ -510,8 +510,8 @@ def _fill_inputs(
                 program[issue_rec.entered].categ, [])), util_info, accept_res)
 
 
-def _fill_unit(unit: InstrSink, util_info: BagValDict[ICaseString, InstrState],
-               mem_busy: bool) -> bool:
+def _fill_unit(unit: IInstrSink, util_info:
+               BagValDict[ICaseString, InstrState], mem_busy: bool) -> bool:
     """Fill an output with instructions from its predecessors.
 
     `unit` is the destination unit to fill.
@@ -556,7 +556,7 @@ def _issue_instr(instr_lst: MutableSequence[InstrState], mem_access: bool,
         accept_res.mem_used = True
 
 
-def _mov_flights(dst_units: Iterable[InstrSink],
+def _mov_flights(dst_units: Iterable[IInstrSink],
                  util_info: BagValDict[ICaseString, InstrState]) -> bool:
     """Move the instructions inside the pipeline.
 

@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.52.1, python 3.8.7, Fedora release
+# environment:  Visual Studdio Code 1.54.1, python 3.8.7, Fedora release
 #               33 (Thirty Three)
 #
 # notes:        This is a private program.
@@ -76,7 +76,7 @@ class InstrMovStatus:
     mem_used: bool = attr.ib(False, init=False)
 
 
-class InstrSink(abc.ABC):
+class IInstrSink(abc.ABC):
 
     """Instruction sink"""
 
@@ -170,7 +170,7 @@ class InstrSink(abc.ABC):
 
 
 @attr.s(auto_attribs=True, frozen=True)
-class OutSink(InstrSink):
+class OutSink(IInstrSink):
 
     """Dummy sink for flushing output ports"""
 
@@ -224,7 +224,7 @@ class OutSink(InstrSink):
 
 
 @attr.s(auto_attribs=True, frozen=True)
-class UnitSink(InstrSink):
+class UnitSink(IInstrSink):
 
     """Instruction sink wrapper for functional units"""
 
