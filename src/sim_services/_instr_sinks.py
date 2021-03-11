@@ -160,7 +160,8 @@ class IInstrSink(abc.ABC):
         return instr.stalled != StallState.DATA and self._accepts_cap(
             instr.instr)
 
-    @abc.abstractproperty
+    @property
+    @abstractmethod
     def _donors(self) -> Iterator[ICaseString]:
         """Retrieve the names of the units ready to supply instructions.
 
