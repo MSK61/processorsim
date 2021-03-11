@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.52.1, python 3.8.7, Fedora release
+# environment:  Visual Studdio Code 1.54.1, python 3.8.7, Fedora release
 #               33 (Thirty Three)
 #
 # notes:        This is a private program.
@@ -88,7 +88,7 @@ def chk_cycles(processor: Graph) -> None:
 
     """
     if not networkx.is_directed_acyclic_graph(processor):
-        raise networkx.NetworkXUnfeasible()
+        raise networkx.NetworkXUnfeasible
 
 
 def chk_non_empty(processor: typing.Container[object],
