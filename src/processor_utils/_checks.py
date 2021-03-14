@@ -46,6 +46,7 @@ from typing import AbstractSet, Callable, Dict, Iterable, Iterator, List, \
 
 import attr
 from fastcore.foundation import Self
+import iteration_utilities
 import more_itertools
 import networkx
 from networkx import DiGraph, Graph
@@ -459,8 +460,9 @@ def _coll_cap_edges(graph: DiGraph) -> typing.FrozenSet[_T]:
 
     """
     out_degrees = graph.out_degree()
-    in_degrees = filter(lambda in_deg: in_deg[1] == 1 or
-                        out_degrees[in_deg[0]] == 1, graph.in_degree())
+    in_degrees = iteration_utilities.starfilter(
+        lambda node, in_deg: in_deg == 1 or out_degrees[node] == 1,
+        graph.in_degree())
     return frozenset(_get_cap_edge(
         graph.in_edges(node), graph.out_edges(node)) for node, _ in in_degrees)
 

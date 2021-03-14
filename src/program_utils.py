@@ -39,13 +39,14 @@
 ############################################################
 
 import logging
-import operator
 from re import split
 import string
+import typing
 from typing import Iterable, List, Mapping
 
 import attr
 import fastcore.foundation
+import iteration_utilities
 
 import container_utils
 from container_utils import IndexedSet
@@ -120,8 +121,9 @@ def read_program(prog_file: Iterable[str]) -> List[ProgInstruction]:
     The function returns the program instructions.
 
     """
-    program = filter(
-        operator.itemgetter(1), enumerate(map(str.strip, prog_file), 1))
+    program: typing.Generator[
+        typing.Tuple[int, str], None, None] = iteration_utilities.starfilter(
+            lambda _, line: line, enumerate(map(str.strip, prog_file), 1))
     reg_registry = IndexedSet[_OperandInfo](fastcore.foundation.Self.name())
     return [_create_instr(*line, reg_registry) for line in program]
 

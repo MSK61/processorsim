@@ -40,11 +40,13 @@
 
 import collections
 from itertools import starmap
-from operator import eq, itemgetter
+import operator
+from operator import eq
 import typing
 from typing import Any, Callable, DefaultDict, Generic, List, Tuple, TypeVar
 
 import attr
+import iteration_utilities
 import more_itertools
 
 from str_utils import format_obj
@@ -222,7 +224,7 @@ class BagValDict(Generic[_KT, _VT]):
         elems = starmap(
             lambda key, val_lst: (key, sorted(val_lst)), self.items())
         sep = ", "
-        key_getter = itemgetter(0)
+        key_getter = operator.itemgetter(0)
         return sep.join(starmap(lambda key, val_lst: f"{key!r}: {val_lst}",
                                 sorted(elems, key=key_getter)))
 
@@ -234,7 +236,8 @@ class BagValDict(Generic[_KT, _VT]):
         non-empty lists.
 
         """
-        return filter(itemgetter(1), self._dict.items())
+        return iteration_utilities.starfilter(
+            lambda _, val_lst: val_lst, self._dict.items())
 
     items = _useful_items
 

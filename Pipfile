@@ -18,6 +18,7 @@ networkx = "*"
 pyyaml = "*"
 more-itertools = "*"
 fastcore = "*"
+iteration-utilities = "*"
 
 [requires]
 python_version = "3.8"
