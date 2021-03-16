@@ -24,9 +24,6 @@
     "files.exclude": {
         ".coverage": true,
         ".venv": true,
-        ".vscode/.ropeproject/objectdb": true,
-        "**/__pycache__": true,
-        "**/.pytest_cache": true,
-        "**/.mypy_cache": true
+        "**/.pytest_cache": true
     }
 }
