@@ -25,7 +25,6 @@
         ".coverage": true,
         ".venv": true,
         ".vscode/.ropeproject/objectdb": true,
-        ".vscode/tags": true,
         "**/__pycache__": true,
         "**/.pytest_cache": true,
         "**/.mypy_cache": true
