@@ -317,7 +317,7 @@ def _get_acl_cap(unit: object, cap: str,
     """Return a supported ACL capability name.
 
     `unit` is the unit to get a capability from whose memory ACL.
-    `cap` is the capability to add.
+    `cap` is the capability to return whose standard form.
     `global_cap_reg` is the store of added capabilities across all
                      units.
 
