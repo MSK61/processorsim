@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.52.1, python 3.8.7, Fedora release
+# environment:  Visual Studdio Code 1.54.3, python 3.8.7, Fedora release
 #               33 (Thirty Three)
 #
 # notes:        This is a private program.
@@ -324,12 +324,6 @@ def _get_acl_cap(unit: object, cap: str,
     """
     std_cap = global_cap_reg.get(_CapabilityInfo(ICaseString(cap), unit))
     assert std_cap
-
-    if std_cap.name.raw_str != cap:
-        warning(f"Capability {cap} in unit {unit} memory ACL previously "
-                f"defined as {std_cap.name} in unit {std_cap.unit}, using "
-                "original definition...")
-
     return std_cap.name
 
 
