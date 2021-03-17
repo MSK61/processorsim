@@ -40,6 +40,7 @@
 ############################################################
 
 from logging import WARNING
+import unittest
 
 import pytest
 from pytest import mark, raises
@@ -47,11 +48,33 @@ from pytest import mark, raises
 from test_utils import chk_error, chk_two_units, chk_warn, read_proc_file, \
     ValInStrCheck
 import errors
+from hw_loading import make_unit_dict
 from processor_utils import exception, load_proc_desc, ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UNIT_CAPS_KEY, \
-    UNIT_MEM_KEY, UnitModel, UNIT_NAME_KEY, UNIT_RLOCK_KEY, UNIT_WIDTH_KEY, \
-    UNIT_WLOCK_KEY
+    UnitModel, UNIT_NAME_KEY, UNIT_RLOCK_KEY, UNIT_WIDTH_KEY, UNIT_WLOCK_KEY
 from str_utils import ICaseString
+
+
+class MemAclTest(unittest.TestCase):
+
+    """Test case for loading memory ACL"""
+
+    def test_partial_mem_access(self):
+        """Test loading a processor with partial memory access.
+
+        `self` is this test case.
+
+        """
+        full_sys_unit = UnitModel(
+            ICaseString("full system"), 1, map(ICaseString, ["ALU", "MEM"]),
+            LockInfo(True, True), [ICaseString("MEM")])
+        self.assertEqual(load_proc_desc(
+            {"units":
+             [make_unit_dict(unit_desc) for unit_desc in
+              [{UNIT_NAME_KEY: "full system", UNIT_WIDTH_KEY: 1, UNIT_CAPS_KEY:
+                [{"name": "ALU"}, {"name": "MEM", "memoryAccess": True}],
+                **{attr: True for attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}}]],
+             "dataPath": []}), ProcessorDesc([], [], [full_sys_unit], []))
 
 
 class TestCaps:
@@ -219,81 +242,6 @@ class TestEdges:
             assert str(edge) in warn_msg
 
 
-class TestMemAcl:
-
-    """Test case for loading memory ACL"""
-
-    @mark.parametrize("unit", ["core 1", "core 0"])
-    def test_capability_case_is_checked_across_all_units(self, caplog, unit):
-        """Test ACL capability cases are checked across all units.
-
-        `self` is this test case.
-        `caplog` is the log capture fixture.
-
-        """
-        caplog.set_level(WARNING)
-        assert load_proc_desc({
-            "units":
-            [{UNIT_NAME_KEY: unit, UNIT_WIDTH_KEY: 1, UNIT_CAPS_KEY: ["ALU"],
-              **{attr: True for attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}},
-             {UNIT_NAME_KEY: "core 2", UNIT_WIDTH_KEY: 1,
-              UNIT_CAPS_KEY: ["ALU"], **{attr: True for attr in [
-                  UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}, UNIT_MEM_KEY: ["alu"]}],
-            "dataPath": []}) == ProcessorDesc(
-                [], [], [UnitModel(ICaseString(unit), 1, [
-                    ICaseString("ALU")], LockInfo(True, True), []), UnitModel(
-                        ICaseString("core 2"), 1, [ICaseString("ALU")],
-                        LockInfo(True, True), [ICaseString("ALU")])], [])
-        assert caplog.records
-        warn_msg = caplog.records[0].getMessage()
-
-        for token in ["alu", "core 2", "ALU", unit]:
-            assert token in warn_msg
-
-    @mark.parametrize("unit, acl_cap", [("full system", "alu"), (
-        "single core", "alu"), ("full system", "Alu"), ("full system", "mem")])
-    def test_capability_with_nonstandard_case_is_detected(
-            self, caplog, unit, acl_cap):
-        """Test loading an ACL with a non-standard capability case.
-
-        `self` is this test case.
-        `caplog` is the log capture fixture.
-        `unit` is the loaded unit name.
-        `acl_cap` is the ACL capability to verify.
-
-        """
-        caplog.set_level(WARNING)
-        ref_cap = acl_cap.upper()
-        assert load_proc_desc({
-            "units":
-            [{UNIT_NAME_KEY: unit, UNIT_WIDTH_KEY: 1, UNIT_CAPS_KEY: [ref_cap],
-              **{attr: True for attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]},
-              UNIT_MEM_KEY: [acl_cap]}], "dataPath": []}) == ProcessorDesc(
-                  [], [], [UnitModel(
-                      ICaseString(unit), 1, [ICaseString(ref_cap)],
-                      LockInfo(True, True), [ICaseString(ref_cap)])], [])
-        assert caplog.records
-        warn_msg = caplog.records[0].getMessage()
-
-        for token in [acl_cap, unit, ref_cap]:
-            assert token in warn_msg
-
-    def test_partial_mem_access(self):
-        """Test loading a processor with partial memory access.
-
-        `self` is this test case.
-
-        """
-        assert load_proc_desc(
-            {"units":
-             [{UNIT_NAME_KEY: "full system", UNIT_WIDTH_KEY: 1,
-               UNIT_CAPS_KEY: ["ALU", "MEM"], **{attr: True for attr in [
-                   UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}, UNIT_MEM_KEY: ["MEM"]}],
-             "dataPath": []}) == ProcessorDesc([], [], [UnitModel(ICaseString(
-                 "full system"), 1, map(ICaseString, ["ALU", "MEM"]), LockInfo(
-                     True, True), [ICaseString("MEM")])], [])
-
-
 class TestProcessors:
 
     """Test case for loading valid processors"""
@@ -389,10 +337,11 @@ class TestUnits:
 
         """
         assert load_proc_desc(
-            {"units":
-             [{UNIT_NAME_KEY: "full system", UNIT_WIDTH_KEY: 1,
-               UNIT_CAPS_KEY: ["ALU"], **{attr: True for attr in [
-                   UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}, UNIT_MEM_KEY: ["ALU"]}],
+            {"units": [make_unit_dict(
+                {UNIT_NAME_KEY: "full system", UNIT_WIDTH_KEY: 1,
+                 UNIT_CAPS_KEY: [{"name": "ALU", "memoryAccess": True}],
+                 **{attr: True for attr in
+                    [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}})],
              "dataPath": []}) == ProcessorDesc([], [], [
                  UnitModel(ICaseString("full system"), 1, [ICaseString(
                      "ALU")], LockInfo(True, True), [ICaseString("ALU")])], [])
