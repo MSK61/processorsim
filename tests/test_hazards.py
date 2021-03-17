@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.52.1, python 3.8.7, Fedora release
+# environment:  Visual Studdio Code 1.54.3, python 3.8.7, Fedora release
 #               33 (Thirty Three)
 #
 # notes:        This is a private program.
@@ -48,6 +48,7 @@ from pytest import mark
 
 from test_env import TEST_DIR
 from container_utils import BagValDict
+import hw_loading
 import processor_utils
 from processor_utils import ProcessorDesc, units
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
@@ -188,12 +189,14 @@ class TestStructural:
                                 [InstrState(instr)]}) for instr in [0, 1])
         assert simulate(
             [HwInstruction([], out_reg, ICaseString("ALU")) for out_reg in
-             ["R1", "R2"]], HwSpec(processor_utils.load_proc_desc({"units": [
-                 {units.UNIT_NAME_KEY: "full system", units.UNIT_WIDTH_KEY: 2,
-                  units.UNIT_CAPS_KEY: ["ALU"], **{attr: True for attr in [
-                      units.UNIT_RLOCK_KEY, units.UNIT_WLOCK_KEY]},
-                  units.UNIT_MEM_KEY: ["ALU"]}], "dataPath": []}))) == list(
-                      res_util)
+             ["R1", "R2"]], HwSpec(processor_utils.load_proc_desc({
+                 "units": [hw_loading.make_unit_dict(
+                     {units.UNIT_NAME_KEY: "full system",
+                      units.UNIT_WIDTH_KEY: 2, units.UNIT_CAPS_KEY:
+                      [{"name": "ALU", "memoryAccess": True}],
+                      **{attr: True for attr in
+                         [units.UNIT_RLOCK_KEY, units.UNIT_WLOCK_KEY]}})],
+                 "dataPath": []}))) == list(res_util)
     # pylint: enable=invalid-name
 
     def test_mem_util_in_earlier_inputs_affects_later_ones(self):

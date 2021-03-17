@@ -31,19 +31,39 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.52.1, python 3.8.7, Fedora release
+# environment:  Visual Studdio Code 1.54.3, python 3.8.7, Fedora release
 #               33 (Thirty Three)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import copy
 import typing
+from typing import Any, Iterable, MutableMapping
 
 import attr
 import yaml
 
 import processor_utils
+from processor_utils.units import UNIT_CAPS_KEY, UNIT_MEM_KEY
+
+
+def make_unit_dict(new_unit_dict: MutableMapping[
+        object, Iterable[Any]]) -> MutableMapping[object, Iterable[Any]]:
+    """Create the unit dictionary.
+
+    `new_unit_dict` is the unit dictionary in the new format.
+    The function converts the unit dictionary from the new format to the
+    old one.
+
+    """
+    old_unit_dict = copy.deepcopy(new_unit_dict)
+    old_unit_dict[UNIT_MEM_KEY] = [cap["name"] for cap in old_unit_dict[
+        UNIT_CAPS_KEY] if cap["memoryAccess"]]
+    old_unit_dict[UNIT_CAPS_KEY] = [
+        cap["name"] for cap in old_unit_dict[UNIT_CAPS_KEY]]
+    return old_unit_dict
 
 
 @attr.s(auto_attribs=True, frozen=True)
