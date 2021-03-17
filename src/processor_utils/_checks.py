@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.54.1, python 3.8.7, Fedora release
+# environment:  Visual Studdio Code 1.54.3, python 3.8.7, Fedora release
 #               33 (Thirty Three)
 #
 # notes:        This is a private program.
@@ -423,11 +423,15 @@ def _chk_path_locks(
 
     """
     succ_lst = tuple(processor.successors(start))
-    path_locks[start] = _SatInfo(
-        *(_PathLockCalc(processor.nodes[start], succ_lst, capability, start,
-                        path_locks).calc_lock(*calc_params) for calc_params in
-          [(units.UNIT_RLOCK_KEY, _PathDescriptor.make_read_desc),
-           (units.UNIT_WLOCK_KEY, _PathDescriptor.make_write_desc)]))
+    # because pylint can't detect packed as a member of
+    # iteration_utilities
+    # pylint: disable=no-member
+    sat_params = map(iteration_utilities.packed(_PathLockCalc(processor.nodes[
+        start], succ_lst, capability, start, path_locks).calc_lock),
+                     [(units.UNIT_RLOCK_KEY, _PathDescriptor.make_read_desc),
+                      (units.UNIT_WLOCK_KEY, _PathDescriptor.make_write_desc)])
+    # pylint: disable=no-member
+    path_locks[start] = _SatInfo(*sat_params)
 
 
 def _chk_unit_flow(min_width: bool, capability_info: ComponentInfo,
