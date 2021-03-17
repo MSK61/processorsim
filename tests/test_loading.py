@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.52.1, python 3.8.7, Fedora release
+# environment:  Visual Studdio Code 1.54.3, python 3.8.7, Fedora release
 #               33 (Thirty Three)
 #
 # notes:        This is a private program.
@@ -126,8 +126,9 @@ class TestCaps:
         """
         ex_chk = raises(
             exception.BadWidthError, read_proc_file, "capabilities", in_file)
-        chk_error([ValInStrCheck(ex_chk.value.unit, "full system"),
-                   ValInStrCheck(ex_chk.value.width, bad_width)], ex_chk.value)
+        chk_error([ValInStrCheck(*chk_params) for chk_params in
+                   [(ex_chk.value.unit, "full system"),
+                    (ex_chk.value.width, bad_width)]], ex_chk.value)
 
 
 class TestEdges:
@@ -411,10 +412,10 @@ class TestUnits:
         """
         ex_chk = raises(
             exception.DupElemError, read_proc_file, "units", in_file)
-        chk_error(
-            [ValInStrCheck(ex_chk.value.new_element, ICaseString(dup_unit)),
-             ValInStrCheck(ex_chk.value.old_element,
-                           ICaseString("full system"))], ex_chk.value)
+        chk_error([ValInStrCheck(*chk_params) for chk_params in
+                   [(ex_chk.value.new_element, ICaseString(dup_unit)),
+                    (ex_chk.value.old_element, ICaseString("full system"))]],
+                  ex_chk.value)
 
 
 def main():
