@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.52.1, python 3.8.7, Fedora release
+# environment:  Visual Studdio Code 1.54.3, python 3.8.7, Fedora release
 #               33 (Thirty Three)
 #
 # notes:        This is a private program.
@@ -96,10 +96,10 @@ class TestHwDescLoad:
 
         for mock_chk in [
                 [proc_mock,
-                 {"units":
-                  [{units.UNIT_NAME_KEY: "full system",
-                    units.UNIT_WIDTH_KEY: 1, units.UNIT_CAPS_KEY: [capability],
-                    units.UNIT_RLOCK_KEY: True, units.UNIT_WLOCK_KEY: True}],
+                 {"units": [hw_loading.make_unit_dict({
+                     units.UNIT_NAME_KEY: "full system", units.UNIT_WIDTH_KEY:
+                     1, units.UNIT_CAPS_KEY: [{"name": capability}],
+                     units.UNIT_RLOCK_KEY: True, units.UNIT_WLOCK_KEY: True})],
                   "dataPath": []}], [ability_mock, proc_mock.return_value]]:
             unittest.mock.MagicMock.assert_called_with(*mock_chk)
 

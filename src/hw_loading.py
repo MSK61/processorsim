@@ -59,8 +59,12 @@ def make_unit_dict(new_unit_dict: MutableMapping[
 
     """
     old_unit_dict = copy.deepcopy(new_unit_dict)
-    old_unit_dict[UNIT_MEM_KEY] = [cap["name"] for cap in old_unit_dict[
-        UNIT_CAPS_KEY] if cap["memoryAccess"]]
+    old_caps = [cap["name"] for cap in old_unit_dict[
+        UNIT_CAPS_KEY] if cap.get("memoryAccess", False)]
+
+    if old_caps:
+        old_unit_dict[UNIT_MEM_KEY] = old_caps
+
     old_unit_dict[UNIT_CAPS_KEY] = [
         cap["name"] for cap in old_unit_dict[UNIT_CAPS_KEY]]
     return old_unit_dict
