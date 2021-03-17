@@ -391,8 +391,8 @@ class TestUnits:
         assert load_proc_desc(
             {"units":
              [{UNIT_NAME_KEY: "full system", UNIT_WIDTH_KEY: 1,
-               UNIT_CAPS_KEY: ["ALU"], UNIT_MEM_KEY: ["ALU"],
-               **{attr: True for attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}}],
+               UNIT_CAPS_KEY: ["ALU"], **{attr: True for attr in [
+                   UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}, UNIT_MEM_KEY: ["ALU"]}],
              "dataPath": []}) == ProcessorDesc([], [], [
                  UnitModel(ICaseString("full system"), 1, [ICaseString(
                      "ALU")], LockInfo(True, True), [ICaseString("ALU")])], [])
