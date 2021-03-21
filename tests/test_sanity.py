@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.52.1, python 3.8.7, Fedora release
+# environment:  Visual Studdio Code 1.54.3, python 3.8.7, Fedora release
 #               33 (Thirty Three)
 #
 # notes:        This is a private program.
@@ -45,6 +45,7 @@ import pytest
 from pytest import mark, raises
 
 from test_utils import chk_error, read_proc_file, ValInStrCheck
+from hw_loading import make_unit_dict
 from processor_utils import exception, load_proc_desc
 from processor_utils.exception import PathLockError
 from processor_utils.units import UNIT_CAPS_KEY, UNIT_NAME_KEY, \
@@ -102,14 +103,15 @@ class TestNoLock:
     # pylint: disable=invalid-name
 
     @mark.parametrize("units, data_path", [
-        ([{UNIT_NAME_KEY: "input", UNIT_WIDTH_KEY: 1, UNIT_CAPS_KEY: ["ALU"],
-           UNIT_WLOCK_KEY: True},
-          {UNIT_NAME_KEY: "output 1", UNIT_WIDTH_KEY: 1, UNIT_CAPS_KEY:
-           ["ALU"]}, {UNIT_NAME_KEY: "output 2", UNIT_WIDTH_KEY: 1,
-                      UNIT_CAPS_KEY: ["ALU"], UNIT_RLOCK_KEY: True}],
+        ([{UNIT_NAME_KEY: "input", UNIT_WIDTH_KEY: 1,
+           UNIT_CAPS_KEY: [{"name": "ALU"}], UNIT_WLOCK_KEY: True},
+          {UNIT_NAME_KEY: "output 1", UNIT_WIDTH_KEY: 1,
+           UNIT_CAPS_KEY: [{"name": "ALU"}]},
+          {UNIT_NAME_KEY: "output 2", UNIT_WIDTH_KEY: 1,
+           UNIT_CAPS_KEY: [{"name": "ALU"}], UNIT_RLOCK_KEY: True}],
          [["input", "output 1"], ["input", "output 2"]]),
         ([{UNIT_NAME_KEY: "full system", UNIT_WIDTH_KEY: 1,
-           UNIT_CAPS_KEY: ["ALU"], UNIT_WLOCK_KEY: True}], [])])
+           UNIT_CAPS_KEY: [{"name": "ALU"}], UNIT_WLOCK_KEY: True}], [])])
     def test_path_with_no_locks_raises_PathLockError(self, units, data_path):
         """Test loading a processor with no locks in paths.
 
@@ -118,8 +120,8 @@ class TestNoLock:
         `data_path` is the data path between units.
 
         """
-        raises(PathLockError, load_proc_desc,
-               {"units": units, "dataPath": data_path})
+        raises(PathLockError, load_proc_desc, {"units": [make_unit_dict(
+            cur_unit) for cur_unit in units], "dataPath": data_path})
 
 
 class TestWidth:
@@ -177,17 +179,19 @@ class TestMultiLock:
 
         """
         load_proc_desc(
-            {"units":
-             [{UNIT_NAME_KEY: "ALU input", UNIT_WIDTH_KEY: 1,
-               UNIT_CAPS_KEY: ["ALU"], UNIT_RLOCK_KEY: True},
-              {UNIT_NAME_KEY: "MEM input", UNIT_WIDTH_KEY: 1, UNIT_CAPS_KEY:
-               ["MEM"]}, {UNIT_NAME_KEY: "center", UNIT_WIDTH_KEY: 1,
-                          UNIT_CAPS_KEY: ["ALU", "MEM"]},
-              {UNIT_NAME_KEY: "ALU output", UNIT_WIDTH_KEY: 1, UNIT_CAPS_KEY: [
-                  "ALU"], UNIT_WLOCK_KEY: True},
-              {UNIT_NAME_KEY: "MEM output", UNIT_WIDTH_KEY: 1,
-               UNIT_CAPS_KEY: ["MEM"], **{lock_prop: True for lock_prop in [
-                   UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}}],
+            {"units": [make_unit_dict(unit_desc) for unit_desc in [
+                {UNIT_NAME_KEY: "ALU input", UNIT_WIDTH_KEY: 1,
+                 UNIT_CAPS_KEY: [{"name": "ALU"}], UNIT_RLOCK_KEY: True},
+                {UNIT_NAME_KEY: "MEM input", UNIT_WIDTH_KEY: 1,
+                 UNIT_CAPS_KEY: [{"name": "MEM"}]},
+                {UNIT_NAME_KEY: "center", UNIT_WIDTH_KEY: 1,
+                 UNIT_CAPS_KEY: [{"name": "ALU"}, {"name": "MEM"}]},
+                {UNIT_NAME_KEY: "ALU output", UNIT_WIDTH_KEY: 1,
+                 UNIT_CAPS_KEY: [{"name": "ALU"}], UNIT_WLOCK_KEY: True},
+                {UNIT_NAME_KEY: "MEM output", UNIT_WIDTH_KEY: 1,
+                 UNIT_CAPS_KEY: [{"name": "MEM"}],
+                 **{lock_prop: True for lock_prop in
+                    [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}}]],
              "dataPath": [["ALU input", "center"], ["MEM input", "center"],
                           ["center", "ALU output"], ["center", "MEM output"]]})
 
@@ -207,14 +211,15 @@ class TestMultiLock:
 
         """
         ex_info = raises(PathLockError, load_proc_desc, {
-            "units": [{UNIT_NAME_KEY: proc_desc.in_unit, UNIT_WIDTH_KEY: 1,
-                       UNIT_CAPS_KEY: [proc_desc.capability],
-                       **{lock_prop: True for lock_prop in
-                          [UNIT_RLOCK_KEY, lock_data.prop_name]}},
-                      {UNIT_NAME_KEY: proc_desc.out_unit, UNIT_WIDTH_KEY: 1,
-                       UNIT_CAPS_KEY: [proc_desc.capability],
-                       **{lock_prop: True for lock_prop in
-                          [UNIT_WLOCK_KEY, lock_data.prop_name]}}],
+            "units": [make_unit_dict(unit_desc) for unit_desc in [
+                {UNIT_NAME_KEY: proc_desc.in_unit, UNIT_WIDTH_KEY: 1,
+                 UNIT_CAPS_KEY: [{"name": proc_desc.capability}],
+                 **{lock_prop: True for lock_prop in
+                    [UNIT_RLOCK_KEY, lock_data.prop_name]}},
+                {UNIT_NAME_KEY: proc_desc.out_unit, UNIT_WIDTH_KEY: 1,
+                 UNIT_CAPS_KEY: [{"name": proc_desc.capability}],
+                 **{lock_prop: True for lock_prop in
+                    [UNIT_WLOCK_KEY, lock_data.prop_name]}}]],
             "dataPath": [[proc_desc.in_unit, proc_desc.out_unit]]})
         assert ex_info.value.start == ICaseString(proc_desc.in_unit)
         assert ex_info.value.lock_type == lock_data.lock_type
