@@ -39,7 +39,7 @@
 #
 ############################################################
 
-import itertools
+from itertools import starmap
 from unittest import TestCase
 
 import more_itertools
@@ -51,7 +51,8 @@ from container_utils import BagValDict
 import hw_loading
 import processor_utils
 from processor_utils import ProcessorDesc, units
-from processor_utils.units import FuncUnit, LockInfo, UnitModel
+from processor_utils.units import CapabilityInfo, FuncUnit, LockInfo, \
+    make_unit_model, UnitModel2
 from program_defs import HwInstruction
 from sim_services import HwSpec, simulate
 from sim_services.sim_defs import InstrState, StallState
@@ -68,8 +69,9 @@ class RarTest(TestCase):
         `self` is this test case.
 
         """
-        proc_desc = ProcessorDesc([], [], [UnitModel(ICaseString(
-            TEST_DIR), 2, ["ALU"], LockInfo(True, True), [])], [])
+        proc_desc = ProcessorDesc(
+            [], [], [make_unit_model(UnitModel2(ICaseString(TEST_DIR), 2, [
+                CapabilityInfo("ALU", False)], LockInfo(True, True)))], [])
         self.assertEqual(
             simulate([HwInstruction(["R1"], out_reg, "ALU") for out_reg in
                       ["R2", "R3"]], HwSpec(proc_desc)),
@@ -88,10 +90,10 @@ class RawTest(TestCase):
 
         """
         in_unit, mid, out_unit = (
-            UnitModel(
-                ICaseString(name), 1, ["ALU"], LockInfo(rd_lock, wr_lock),
-                []) for name, rd_lock, wr_lock in [("input", False, False), (
-                    "middle", True, False), ("output", False, True)])
+            make_unit_model(UnitModel2(ICaseString(name), 1, [
+                CapabilityInfo("ALU", False)], LockInfo(rd_lock, wr_lock))) for
+            name, rd_lock, wr_lock in [("input", False, False), (
+                "middle", True, False), ("output", False, True)])
         proc_desc = ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
                                   [FuncUnit(mid, [in_unit])])
         self.assertEqual(simulate(
@@ -120,14 +122,14 @@ class TestDataHazards:
         `instr_regs` are the registers accessed by each instruction.
 
         """
-        full_sys_unit = UnitModel(
-            ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), [])
+        full_sys_unit = make_unit_model(UnitModel2(ICaseString(TEST_DIR), 2, [
+            CapabilityInfo("ALU", False)], LockInfo(True, True)))
         assert simulate(
             [HwInstruction(*regs, "ALU") for regs in instr_regs],
             HwSpec(ProcessorDesc([], [], [full_sys_unit], []))) == [
                 BagValDict(cp_util) for cp_util in
                 [{ICaseString(TEST_DIR):
-                  itertools.starmap(InstrState, [[0], [1, StallState.DATA]])},
+                  starmap(InstrState, [[0], [1, StallState.DATA]])},
                  {ICaseString(TEST_DIR): [InstrState(1)]}]]
 
 
@@ -136,20 +138,21 @@ class TestStructural:
     """Test case for structural hazards"""
 
     @mark.parametrize("in_width, in_mem_util, out_unit_params, extra_util", [
-        (1, ["ALU"], [("output", 1, ["ALU"])],
+        (1, True, [("output", 1, True)],
          [{ICaseString("output"): [InstrState(0)]}, {ICaseString("input"): [
              InstrState(1)]}, {ICaseString("output"): [InstrState(1)]}]),
-        (1, [], [("output", 1, ["ALU"])],
+        (1, False, [("output", 1, True)],
          [{ICaseString("output"): [InstrState(0)], ICaseString("input"):
            [InstrState(1)]}, {ICaseString("output"): [InstrState(1)]}]),
-        (2, [], [("output", 2, ["ALU"])],
+        (2, False, [("output", 2, True)],
          [{ICaseString("output"): [InstrState(0)],
            ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)]},
           {ICaseString("output"): [InstrState(1)]}]),
-        (2, [], ((name, 1, mem_access) for name, mem_access in [("output 1", [
-            "ALU"]), ("output 2", [])]), [{ICaseString("output 1"): [
-                InstrState(0)], ICaseString("output 2"): [InstrState(1)]}]),
-        (2, [], ((name, 1, ["ALU"]) for name in ["output 1", "output 2"]),
+        (2, False,
+         ((name, 1, mem_access) for name, mem_access in [("output 1", True), (
+             "output 2", False)]), [{ICaseString("output 1"): [InstrState(
+                 0)], ICaseString("output 2"): [InstrState(1)]}]),
+        (2, False, ((name, 1, True) for name in ["output 1", "output 2"]),
          [{ICaseString("output 1"): [InstrState(0)],
            ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)]},
           {ICaseString("output 1"): [InstrState(1)]}])])
@@ -158,18 +161,18 @@ class TestStructural:
 
         `self` is this test case.
         `in_width` is the width of the input unit.
-        `in_mem_util` is the list of input unit capabilities requiring
-                      memory utilization.
+        `in_mem_util` is a flag indicating whether the input unit
+                      capability requires memory utilization.
         `out_unit_params` are the creation parameters of output units.
         `extra_util` is the extra utilization beyond the second clock
                      pulse.
 
         """
-        in_unit = UnitModel(ICaseString("input"), in_width, ["ALU"],
-                            LockInfo(True, False), in_mem_util)
-        out_units = (UnitModel(
-            ICaseString(name), width, ["ALU"], LockInfo(False, True),
-            mem_access) for name, width, mem_access in out_unit_params)
+        in_unit = make_unit_model(UnitModel2(ICaseString("input"), in_width, [
+            CapabilityInfo("ALU", in_mem_util)], LockInfo(True, False)))
+        out_units = (make_unit_model(UnitModel2(ICaseString(name), width, [
+            CapabilityInfo("ALU", mem_access)], LockInfo(False, True))) for
+                     name, width, mem_access in out_unit_params)
         out_units = (FuncUnit(out_unit, [in_unit]) for out_unit in out_units)
         cp1_util = {ICaseString("input"): map(InstrState, range(in_width))}
         assert simulate(
@@ -204,8 +207,9 @@ class TestStructural:
         `self` is this test case.
 
         """
-        full_sys_unit = UnitModel(ICaseString("full system"), 2, ["ALU"],
-                                  LockInfo(True, True), ["ALU"])
+        full_sys_unit = make_unit_model(
+            UnitModel2(ICaseString("full system"), 2,
+                       [CapabilityInfo("ALU", True)], LockInfo(True, True)))
         res_util = (BagValDict({ICaseString("full system"):
                                 [InstrState(instr)]}) for instr in [0, 1])
         assert simulate([HwInstruction([], out_reg, "ALU") for out_reg in
@@ -224,11 +228,12 @@ class UnifiedMemTest(TestCase):
         `self` is this test case.
 
         """
-        in_unit, out_unit = (
-            UnitModel(ICaseString(name), width, ["ALU", "MEM"],
-                      LockInfo(rd_lock, wr_lock), mem_acl) for name, width,
-            rd_lock, wr_lock, mem_acl in [("input", 3, True, False, []),
-                                          ("output", 2, False, True, ["MEM"])])
+        in_unit, out_unit = (make_unit_model(
+            UnitModel2(ICaseString(name), width, starmap(CapabilityInfo, [
+                ("ALU", False), ("MEM", mem_access)]), LockInfo(
+                    rd_lock, wr_lock))) for name, width, mem_access, rd_lock,
+                             wr_lock in [("input", 3, False, True, False),
+                                         ("output", 2, True, False, True)])
         proc_desc = ProcessorDesc(
             [in_unit], [FuncUnit(out_unit, [in_unit])], [], [])
         self.assertEqual(simulate([HwInstruction(
@@ -247,10 +252,11 @@ class UnifiedMemTest(TestCase):
 
         """
         in_unit, out_unit = (
-            UnitModel(ICaseString(name), 1, ["ALU", "MEM"],
-                      LockInfo(rd_lock, wr_lock), mem_acl) for
-            name, rd_lock, wr_lock, mem_acl in [("input", True, False, [
-                "ALU", "MEM"]), ("output", False, True, ["MEM"])])
+            make_unit_model(UnitModel2(ICaseString(name), 1, starmap(
+                CapabilityInfo, [("ALU", alu_mem_access), ("MEM", True)]),
+                                       LockInfo(rd_lock, wr_lock))) for
+            name, alu_mem_access, rd_lock, wr_lock in
+            [("input", True, True, False), ("output", False, False, True)])
         proc_desc = ProcessorDesc(
             [in_unit], [FuncUnit(out_unit, [in_unit])], [], [])
         self.assertEqual(simulate(
@@ -267,10 +273,11 @@ class UnifiedMemTest(TestCase):
 
         """
         in_unit, out_unit = (
-            UnitModel(ICaseString(name), 2, ["ALU", "MEM"],
-                      LockInfo(rd_lock, wr_lock), mem_acl) for
-            name, rd_lock, wr_lock, mem_acl in
-            [("input", True, False, []), ("output", False, True, ["MEM"])])
+            make_unit_model(UnitModel2(ICaseString(name), 2, starmap(
+                CapabilityInfo, [("ALU", False), ("MEM", mem_access)]),
+                                       LockInfo(rd_lock, wr_lock))) for
+            name, mem_access, rd_lock, wr_lock in
+            [("input", False, True, False), ("output", True, False, True)])
         proc_desc = ProcessorDesc(
             [in_unit], [FuncUnit(out_unit, [in_unit])], [], [])
         self.assertEqual(
@@ -290,9 +297,10 @@ class WarTest(TestCase):
         `self` is this test case.
 
         """
-        in_unit, out_unit = (UnitModel(ICaseString(name), 1, ["ALU"], LockInfo(
-            rd_lock, wr_lock), []) for name, rd_lock, wr_lock in
-                             [("input", False, False), ("output", True, True)])
+        in_unit, out_unit = (
+            make_unit_model(UnitModel2(ICaseString(name), 1, [CapabilityInfo(
+                "ALU", False)], LockInfo(rd_lock, wr_lock))) for name, rd_lock,
+            wr_lock in [("input", False, False), ("output", True, True)])
         proc_desc = ProcessorDesc(
             [in_unit], [FuncUnit(out_unit, [in_unit])], [], [])
         self.assertEqual(
