@@ -312,16 +312,11 @@ class TestUnits:
         `self` is this test case.
 
         """
-        in_unit = UnitModel(
-            ICaseString("input"), 1, ["ALU"], LockInfo(True, False), [])
-        mid1_unit = UnitModel(
-            ICaseString("middle 1"), 1, ["ALU"], LockInfo(False, False), [])
-        mid2_unit = UnitModel(
-            ICaseString("middle 2"), 1, ["ALU"], LockInfo(False, False), [])
-        mid3_unit = UnitModel(
-            ICaseString("middle 3"), 1, ["ALU"], LockInfo(False, False), [])
-        out_unit = UnitModel(
-            ICaseString("output"), 1, ["ALU"], LockInfo(False, True), [])
+        in_unit, mid1_unit, mid2_unit, mid3_unit, out_unit = (UnitModel(
+            ICaseString(name), 1, ["ALU"], LockInfo(rd_lock, wr_lock),
+            []) for name, rd_lock, wr_lock in [("input", True, False), (
+                "middle 1", False, False), ("middle 2", False, False), (
+                    "middle 3", False, False), ("output", False, True)])
         assert ProcessorDesc(
             [in_unit], [FuncUnit(out_unit, [mid3_unit])], [],
             (FuncUnit(model, [pred]) for model, pred in
