@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.52.1, python 3.8.7, Fedora release
+# environment:  Visual Studdio Code 1.54.3, python 3.8.7, Fedora release
 #               33 (Thirty Three)
 #
 # notes:        This is a private program.
@@ -545,7 +545,7 @@ def _prep_proc_desc(processor: DiGraph) -> None:
     _checks.chk_caps(processor)
 
 
-def _sorted_units(hw_units: Iterable[FuncUnit]) -> Tuple[FuncUnit, ...]:
+def _sorted_units(hw_units: Iterable[object]) -> Tuple[FuncUnit, ...]:
     """Create a sorted list of the given units.
 
     `hw_units` are the units to create a sorted list of.

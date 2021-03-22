@@ -91,7 +91,7 @@ class UnitModel:
     _mem_acl: Tuple[object, ...] = attr.ib(converter=sorted_tuple)
 
 
-def sorted_models(models: typing.Iterable[UnitModel]) -> Tuple[UnitModel, ...]:
+def sorted_models(models: typing.Iterable[object]) -> Tuple[UnitModel, ...]:
     """Create a sorted list of the given models.
 
     `models` are the models to create a sorted list of.
