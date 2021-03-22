@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.52.1, python 3.8.7, Fedora release
+# environment:  Visual Studdio Code 1.54.3, python 3.8.7, Fedora release
 #               33 (Thirty Three)
 #
 # notes:        This is a private program.
@@ -40,7 +40,7 @@
 
 import operator
 import typing
-from typing import Iterable, Tuple
+from typing import Tuple
 
 import attr
 import fastcore.foundation
@@ -91,7 +91,7 @@ class UnitModel:
     _mem_acl: Tuple[object, ...] = attr.ib(converter=sorted_tuple)
 
 
-def sorted_models(models: Iterable[UnitModel]) -> Tuple[UnitModel, ...]:
+def sorted_models(models: typing.Iterable[UnitModel]) -> Tuple[UnitModel, ...]:
     """Create a sorted list of the given models.
 
     `models` are the models to create a sorted list of.
