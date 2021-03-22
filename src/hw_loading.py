@@ -49,25 +49,25 @@ import processor_utils
 from processor_utils.units import UNIT_CAPS_KEY, UNIT_MEM_KEY
 
 
-def make_unit_dict(new_unit_dict: MutableMapping[
+def make_unit_dict(unit_dict2: MutableMapping[
         object, Iterable[Any]]) -> MutableMapping[object, Iterable[Any]]:
     """Create the unit dictionary.
 
-    `new_unit_dict` is the unit dictionary in the new format.
+    `unit_dict2` is the unit dictionary in the new format.
     The function converts the unit dictionary from the new format to the
     old one.
 
     """
-    old_unit_dict = copy.deepcopy(new_unit_dict)
-    old_caps = [cap["name"] for cap in old_unit_dict[
-        UNIT_CAPS_KEY] if cap.get("memoryAccess", False)]
+    unit_dict = copy.deepcopy(unit_dict2)
+    old_caps = [cap["name"] for cap in unit_dict[UNIT_CAPS_KEY] if
+                cap.get("memoryAccess", False)]
 
     if old_caps:
-        old_unit_dict[UNIT_MEM_KEY] = old_caps
+        unit_dict[UNIT_MEM_KEY] = old_caps
 
-    old_unit_dict[UNIT_CAPS_KEY] = [
-        cap["name"] for cap in old_unit_dict[UNIT_CAPS_KEY]]
-    return old_unit_dict
+    unit_dict[UNIT_CAPS_KEY] = [
+        cap["name"] for cap in unit_dict[UNIT_CAPS_KEY]]
+    return unit_dict
 
 
 @attr.s(auto_attribs=True, frozen=True)
