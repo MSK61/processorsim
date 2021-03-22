@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.52.1, python 3.8.7, Fedora release
+# environment:  Visual Studdio Code 1.54.3, python 3.8.7, Fedora release
 #               33 (Thirty Three)
 #
 # notes:        This is a private program.
@@ -86,12 +86,11 @@ class RawTest(TestCase):
         `self` is this test case.
 
         """
-        in_unit = UnitModel(
-            ICaseString("input"), 1, ["ALU"], LockInfo(False, False), [])
-        mid = UnitModel(
-            ICaseString("middle"), 1, ["ALU"], LockInfo(True, False), [])
-        out_unit = UnitModel(
-            ICaseString("output"), 1, ["ALU"], LockInfo(False, True), [])
+        in_unit, mid, out_unit = (
+            UnitModel(
+                ICaseString(name), 1, ["ALU"], LockInfo(rd_lock, wr_lock),
+                []) for name, rd_lock, wr_lock in [("input", False, False), (
+                    "middle", True, False), ("output", False, True)])
         proc_desc = ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
                                   [FuncUnit(mid, [in_unit])])
         self.assertEqual(simulate(
@@ -222,10 +221,11 @@ class UnifiedMemTest(TestCase):
         `self` is this test case.
 
         """
-        in_unit = UnitModel(
-            ICaseString("input"), 3, ["ALU", "MEM"], LockInfo(True, False), [])
-        out_unit = UnitModel(ICaseString("output"), 2, ["ALU", "MEM"],
-                             LockInfo(False, True), ["MEM"])
+        in_unit, out_unit = (
+            UnitModel(ICaseString(name), width, ["ALU", "MEM"],
+                      LockInfo(rd_lock, wr_lock), mem_acl) for name, width,
+            rd_lock, wr_lock, mem_acl in [("input", 3, True, False, []),
+                                          ("output", 2, False, True, ["MEM"])])
         proc_desc = ProcessorDesc(
             [in_unit], [FuncUnit(out_unit, [in_unit])], [], [])
         self.assertEqual(simulate([HwInstruction(
@@ -243,10 +243,11 @@ class UnifiedMemTest(TestCase):
         `self` is this test case.
 
         """
-        in_unit = UnitModel(ICaseString("input"), 1, ["ALU", "MEM"],
-                            LockInfo(True, False), ["ALU", "MEM"])
-        out_unit = UnitModel(ICaseString("output"), 1, ["ALU", "MEM"],
-                             LockInfo(False, True), ["MEM"])
+        in_unit, out_unit = (
+            UnitModel(ICaseString(name), 1, ["ALU", "MEM"],
+                      LockInfo(rd_lock, wr_lock), mem_acl) for
+            name, rd_lock, wr_lock, mem_acl in [("input", True, False, [
+                "ALU", "MEM"]), ("output", False, True, ["MEM"])])
         proc_desc = ProcessorDesc(
             [in_unit], [FuncUnit(out_unit, [in_unit])], [], [])
         self.assertEqual(simulate(
@@ -262,10 +263,11 @@ class UnifiedMemTest(TestCase):
         `self` is this test case.
 
         """
-        in_unit = UnitModel(
-            ICaseString("input"), 2, ["ALU", "MEM"], LockInfo(True, False), [])
-        out_unit = UnitModel(ICaseString("output"), 2, ["ALU", "MEM"],
-                             LockInfo(False, True), ["MEM"])
+        in_unit, out_unit = (
+            UnitModel(ICaseString(name), 2, ["ALU", "MEM"],
+                      LockInfo(rd_lock, wr_lock), mem_acl) for
+            name, rd_lock, wr_lock, mem_acl in
+            [("input", True, False, []), ("output", False, True, ["MEM"])])
         proc_desc = ProcessorDesc(
             [in_unit], [FuncUnit(out_unit, [in_unit])], [], [])
         self.assertEqual(
@@ -285,10 +287,9 @@ class WarTest(TestCase):
         `self` is this test case.
 
         """
-        in_unit = UnitModel(
-            ICaseString("input"), 1, ["ALU"], LockInfo(False, False), [])
-        out_unit = UnitModel(
-            ICaseString("output"), 1, ["ALU"], LockInfo(True, True), [])
+        in_unit, out_unit = (UnitModel(ICaseString(name), 1, ["ALU"], LockInfo(
+            rd_lock, wr_lock), []) for name, rd_lock, wr_lock in
+                             [("input", False, False), ("output", True, True)])
         proc_desc = ProcessorDesc(
             [in_unit], [FuncUnit(out_unit, [in_unit])], [], [])
         self.assertEqual(

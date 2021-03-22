@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.52.1, python 3.8.7, Fedora release
+# environment:  Visual Studdio Code 1.54.3, python 3.8.7, Fedora release
 #               33 (Thirty Three)
 #
 # notes:        This is a private program.
@@ -96,10 +96,10 @@ class PipelineTest(TestCase):
         `self` is this test case.
 
         """
-        in_unit = UnitModel(
-            ICaseString("input 1"), 1, ["ALU"], LockInfo(True, False), [])
-        out_unit = UnitModel(ICaseString("output 1"), 1, ["ALU"],
-                             LockInfo(False, True), ["ALU"])
+        in_unit, out_unit = (UnitModel(ICaseString(name), 1, ["ALU"], LockInfo(
+            rd_lock, wr_lock), mem_acl) for name, rd_lock, wr_lock, mem_acl in
+                             [("input 1", True, False, []),
+                              ("output 1", False, True, ["ALU"])])
         proc_desc = ProcessorDesc(
             [in_unit], [FuncUnit(out_unit, [in_unit])], [UnitModel(ICaseString(
                 "input 2"), 1, ["ALU"], LockInfo(True, False), [])], [])
@@ -114,18 +114,12 @@ class PipelineTest(TestCase):
         `self` is this test case.
 
         """
-        big_input = UnitModel(
-            ICaseString("big input"), 4, ["ALU"], LockInfo(True, False), [])
-        small_input1 = UnitModel(ICaseString("small input 1"), 1, ["ALU"],
-                                 LockInfo(True, False), [])
-        mid1 = UnitModel(
-            ICaseString("middle 1"), 1, ["ALU"], LockInfo(False, False), [])
-        small_input2 = UnitModel(ICaseString("small input 2"), 1, ["ALU"],
-                                 LockInfo(True, False), [])
-        mid2 = UnitModel(
-            ICaseString("middle 2"), 2, ["ALU"], LockInfo(False, False), [])
-        out_unit = UnitModel(
-            ICaseString("output"), 2, ["ALU"], LockInfo(False, True), [])
+        big_input, small_input1, mid1, small_input2, mid2, out_unit = (
+            UnitModel(ICaseString(name), width, ["ALU"], LockInfo(
+                rd_lock, wr_lock), []) for name, width, rd_lock, wr_lock in
+            [("big input", 4, True, False), ("small input 1", 1, True, False),
+             ("middle 1", 1, False, False), ("small input 2", 1, True, False),
+             ("middle 2", 2, False, False), ("output", 2, False, True)])
         proc_desc = ProcessorDesc([big_input, small_input1, small_input2], [
             FuncUnit(out_unit, [big_input, mid2])], [], starmap(FuncUnit, [
                 [mid2, [mid1, small_input2]], [mid1, [small_input1]]]))
@@ -157,12 +151,11 @@ class StallTest(TestCase):
         `self` is this test case.
 
         """
-        in_unit = UnitModel(
-            ICaseString("input"), 2, ["ALU"], LockInfo(True, False), [])
-        mid = UnitModel(
-            ICaseString("middle"), 2, ["ALU"], LockInfo(False, False), [])
-        out_unit = UnitModel(
-            ICaseString("output"), 1, ["ALU"], LockInfo(False, True), [])
+        in_unit, mid, out_unit = (
+            UnitModel(ICaseString(name), width, ["ALU"],
+                      LockInfo(rd_lock, wr_lock), []) for
+            name, width, rd_lock, wr_lock in [("input", 2, True, False), (
+                "middle", 2, False, False), ("output", 1, False, True)])
         proc_desc = ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
                                   [FuncUnit(mid, [in_unit])])
         self.assertEqual(simulate(
@@ -181,14 +174,11 @@ class StallTest(TestCase):
         `self` is this test case.
 
         """
-        long_input = UnitModel(
-            ICaseString("long input"), 1, ["ALU"], LockInfo(False, False), [])
-        mid = UnitModel(
-            ICaseString("middle"), 1, ["ALU"], LockInfo(False, False), [])
-        short_input = UnitModel(
-            ICaseString("short input"), 1, ["ALU"], LockInfo(False, False), [])
-        out_unit = UnitModel(
-            ICaseString("output"), 1, ["ALU"], LockInfo(True, True), [])
+        long_input, mid, short_input, out_unit = (
+            UnitModel(ICaseString(name), 1, ["ALU"],
+                      LockInfo(rd_lock, wr_lock), []) for name, rd_lock,
+            wr_lock in [("long input", False, False), ("middle", False, False),
+                        ("short input", False, False), ("output", True, True)])
         proc_desc = ProcessorDesc([long_input, short_input], [FuncUnit(
             out_unit, [mid, short_input])], [], [FuncUnit(mid, [long_input])])
         with self.assertRaises(StallError) as ex_chk:

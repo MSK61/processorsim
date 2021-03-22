@@ -232,6 +232,10 @@ class TestMemAcl:
 
         """
         caplog.set_level(WARNING)
+        in_out_units = (
+            UnitModel(ICaseString(name), 1, [ICaseString("ALU")],
+                      LockInfo(True, True), map(ICaseString, capabilities)) for
+            name, capabilities in [(unit, []), ("core 2", ["ALU"])])
         assert load_proc_desc({
             "units":
             [{UNIT_NAME_KEY: unit, UNIT_WIDTH_KEY: 1, UNIT_CAPS_KEY: ["ALU"],
@@ -239,11 +243,7 @@ class TestMemAcl:
              {UNIT_NAME_KEY: "core 2", UNIT_WIDTH_KEY: 1,
               UNIT_CAPS_KEY: ["ALU"], **{attr: True for attr in [
                   UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}, UNIT_MEM_KEY: ["alu"]}],
-            "dataPath": []}) == ProcessorDesc(
-                [], [], [UnitModel(ICaseString(unit), 1, [
-                    ICaseString("ALU")], LockInfo(True, True), []), UnitModel(
-                        ICaseString("core 2"), 1, [ICaseString("ALU")],
-                        LockInfo(True, True), [ICaseString("ALU")])], [])
+            "dataPath": []}) == ProcessorDesc([], [], in_out_units, [])
         assert caplog.records
         warn_msg = caplog.records[0].getMessage()
 
@@ -364,16 +364,11 @@ class TestUnits:
         `self` is this test case.
 
         """
-        in_unit = UnitModel(
-            ICaseString("input"), 1, ["ALU"], LockInfo(True, False), [])
-        mid1_unit = UnitModel(
-            ICaseString("middle 1"), 1, ["ALU"], LockInfo(False, False), [])
-        mid2_unit = UnitModel(
-            ICaseString("middle 2"), 1, ["ALU"], LockInfo(False, False), [])
-        mid3_unit = UnitModel(
-            ICaseString("middle 3"), 1, ["ALU"], LockInfo(False, False), [])
-        out_unit = UnitModel(
-            ICaseString("output"), 1, ["ALU"], LockInfo(False, True), [])
+        in_unit, mid1_unit, mid2_unit, mid3_unit, out_unit = (UnitModel(
+            ICaseString(name), 1, ["ALU"], LockInfo(rd_lock, wr_lock),
+            []) for name, rd_lock, wr_lock in [("input", True, False), (
+                "middle 1", False, False), ("middle 2", False, False), (
+                    "middle 3", False, False), ("output", False, True)])
         assert ProcessorDesc(
             [in_unit], [FuncUnit(out_unit, [mid3_unit])], [],
             (FuncUnit(model, [pred]) for model, pred in
