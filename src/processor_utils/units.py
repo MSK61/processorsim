@@ -40,10 +40,10 @@
 
 import operator
 import typing
-from typing import Tuple
+from typing import Iterable, Tuple
 
 import attr
-import fastcore.foundation
+from fastcore.foundation import Self
 
 from container_utils import sorted_tuple
 import str_utils
@@ -55,6 +55,16 @@ UNIT_NAME_KEY = "name"
 UNIT_RLOCK_KEY = "readLock"
 UNIT_WLOCK_KEY = "writeLock"
 UNIT_WIDTH_KEY = "width"
+
+
+@attr.s(auto_attribs=True, frozen=True)
+class CapabilityInfo:
+
+    """Capability information"""
+
+    name: object
+
+    mem_access: bool
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -70,7 +80,7 @@ class LockInfo:
 @attr.s(frozen=True)
 class UnitModel:
 
-    """Functional unit model"""
+    """Legacy functional unit model"""
 
     def needs_mem(self, cap: object) -> bool:
         """Test if the given capability will require memory access.
@@ -91,13 +101,13 @@ class UnitModel:
     _mem_acl: Tuple[object, ...] = attr.ib(converter=sorted_tuple)
 
 
-def sorted_models(models: typing.Iterable[object]) -> Tuple[UnitModel, ...]:
+def sorted_models(models: Iterable[object]) -> Tuple[UnitModel, ...]:
     """Create a sorted list of the given models.
 
     `models` are the models to create a sorted list of.
 
     """
-    return sorted_tuple(models, key=fastcore.foundation.Self.name())
+    return sorted_tuple(models, key=Self.name())
 
 
 @attr.s(eq=False, frozen=True)
@@ -120,3 +130,37 @@ class FuncUnit:
     model: UnitModel = attr.ib()
 
     predecessors: Tuple[UnitModel, ...] = attr.ib(converter=sorted_models)
+
+
+def _sorted_caps(capabilities: Iterable[object]) -> Tuple[CapabilityInfo, ...]:
+    """Create a sorted list of the given capabilities.
+
+    `capabilities` are the capabilities to create a sorted list of.
+
+    """
+    return sorted_tuple(capabilities, key=Self.name())
+
+
+@attr.s(frozen=True)
+class UnitModel2:
+
+    """Functional unit model"""
+
+    name: str_utils.ICaseString = attr.ib()
+
+    width: int = attr.ib()
+
+    capabilities: Tuple[CapabilityInfo, ...] = attr.ib(converter=_sorted_caps)
+
+    lock_info: LockInfo = attr.ib()
+
+
+def make_unit_model(unit2: UnitModel2) -> UnitModel:
+    """Create a unit model.
+
+    `unit2` is the new unit model.
+
+    """
+    return UnitModel(unit2.name, unit2.width, map(
+        Self.name(), unit2.capabilities), unit2.lock_info, (
+            cap.name for cap in unit2.capabilities if cap.mem_access))
