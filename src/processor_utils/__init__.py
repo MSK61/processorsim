@@ -539,7 +539,7 @@ def _prep_proc_desc(processor: DiGraph) -> None:
     _checks.chk_caps(processor)
 
 
-def _sorted_units(hw_units: Iterable[FuncUnit]) -> Tuple[FuncUnit, ...]:
+def _sorted_units(hw_units: Iterable[object]) -> Tuple[FuncUnit, ...]:
     """Create a sorted list of the given units.
 
     `hw_units` are the units to create a sorted list of.
