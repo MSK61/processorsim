@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.54.3, python 3.8.7, Fedora release
+# environment:  Visual Studdio Code 1.55.0, python 3.9.2, Fedora release
 #               33 (Thirty Three)
 #
 # notes:        This is a private program.
@@ -50,8 +50,9 @@ from test_utils import chk_error, chk_two_units, chk_warn, read_proc_file, \
 import errors
 from hw_loading import make_unit_dict
 from processor_utils import exception, load_proc_desc, ProcessorDesc
-from processor_utils.units import FuncUnit, LockInfo, UNIT_CAPS_KEY, \
-    UnitModel, UNIT_NAME_KEY, UNIT_RLOCK_KEY, UNIT_WIDTH_KEY, UNIT_WLOCK_KEY
+from processor_utils.units import CapabilityInfo, FuncUnit, LockInfo, \
+    make_unit_model, UNIT_CAPS_KEY, UnitModel2, UNIT_NAME_KEY, \
+    UNIT_RLOCK_KEY, UNIT_WIDTH_KEY, UNIT_WLOCK_KEY
 from str_utils import ICaseString
 
 
@@ -65,9 +66,10 @@ class MemAclTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        full_sys_unit = UnitModel(
-            ICaseString("full system"), 1, map(ICaseString, ["ALU", "MEM"]),
-            LockInfo(True, True), [ICaseString("MEM")])
+        full_sys_unit = make_unit_model(UnitModel2(
+            ICaseString("full system"), 1, (CapabilityInfo(ICaseString(
+                name), mem_access) for name, mem_access in [("ALU", False), (
+                    "MEM", True)]), LockInfo(True, True)))
         self.assertEqual(load_proc_desc(
             {"units":
              [make_unit_dict(unit_desc) for unit_desc in
@@ -108,9 +110,10 @@ class TestCaps:
         """
         caplog.set_level(WARNING)
         in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits.yaml"
-        processor = (UnitModel(
-            ICaseString(unit_name), 1, [ICaseString("ALU")],
-            LockInfo(True, True), []) for unit_name in ["core 1", "core 2"])
+        processor = (make_unit_model(UnitModel2(
+            ICaseString(unit_name), 1,
+            [CapabilityInfo(ICaseString("ALU"), False)],
+            LockInfo(True, True))) for unit_name in ["core 1", "core 2"])
         assert read_proc_file("capabilities", in_file) == ProcessorDesc(
             [], [], processor, [])
         chk_warn(["ALU", "core 1", "alu", "core 2"], caplog.records)
@@ -254,20 +257,21 @@ class TestProcessors:
         """
         proc_desc = read_proc_file(
             "processors", "4ConnectedUnitsProcessor.yaml")
-        alu_cap = ICaseString("ALU")
+        alu_cap = CapabilityInfo(ICaseString("ALU"), False)
         wr_lock = LockInfo(False, True)
         out_ports = tuple(
-            FuncUnit(UnitModel(name, 1, [alu_cap], wr_lock, []),
+            FuncUnit(make_unit_model(UnitModel2(name, 1, [alu_cap], wr_lock)),
                      predecessors) for name, predecessors in
             [(ICaseString("output 1"), proc_desc.in_ports),
              (ICaseString("output 2"),
               (unit.model for unit in proc_desc.internal_units))])
         in_unit = ICaseString("input")
-        internal_unit = UnitModel(
-            ICaseString("middle"), 1, [alu_cap], LockInfo(False, False), [])
+        internal_unit = make_unit_model(UnitModel2(
+            ICaseString("middle"), 1, [alu_cap], LockInfo(False, False)))
         assert proc_desc == ProcessorDesc(
-            [UnitModel(in_unit, 1, [alu_cap], LockInfo(True, False), [])],
-            out_ports, [], [FuncUnit(internal_unit, proc_desc.in_ports)])
+            [make_unit_model(UnitModel2(in_unit, 1, [alu_cap], LockInfo(
+                True, False)))], out_ports, [],
+            [FuncUnit(internal_unit, proc_desc.in_ports)])
 
     @mark.parametrize(
         "in_file", ["twoConnectedUnitsProcessor.yaml",
@@ -312,11 +316,12 @@ class TestUnits:
         `self` is this test case.
 
         """
-        in_unit, mid1_unit, mid2_unit, mid3_unit, out_unit = (UnitModel(
-            ICaseString(name), 1, ["ALU"], LockInfo(rd_lock, wr_lock),
-            []) for name, rd_lock, wr_lock in [("input", True, False), (
-                "middle 1", False, False), ("middle 2", False, False), (
-                    "middle 3", False, False), ("output", False, True)])
+        in_unit, mid1_unit, mid2_unit, mid3_unit, out_unit = (
+            make_unit_model(UnitModel2(ICaseString(name), 1, [CapabilityInfo(
+                "ALU", False)], LockInfo(rd_lock, wr_lock))) for name, rd_lock,
+            wr_lock in [("input", True, False), ("middle 1", False, False),
+                        ("middle 2", False, False), ("middle 3", False, False),
+                        ("output", False, True)])
         assert ProcessorDesc(
             [in_unit], [FuncUnit(out_unit, [mid3_unit])], [],
             (FuncUnit(model, [pred]) for model, pred in
@@ -337,9 +342,9 @@ class TestUnits:
                  UNIT_CAPS_KEY: [{"name": "ALU", "memoryAccess": True}],
                  **{attr: True for attr in
                     [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]}})],
-             "dataPath": []}) == ProcessorDesc([], [], [
-                 UnitModel(ICaseString("full system"), 1, [ICaseString(
-                     "ALU")], LockInfo(True, True), [ICaseString("ALU")])], [])
+             "dataPath": []}) == ProcessorDesc([], [], [make_unit_model(
+                 UnitModel2(ICaseString("full system"), 1, [CapabilityInfo(
+                     ICaseString("ALU"), True)], LockInfo(True, True)))], [])
 
     # pylint: disable=invalid-name
     @mark.parametrize("in_file, dup_unit", [
@@ -375,8 +380,9 @@ def _chk_one_unit(proc_dir, proc_file):
 
     """
     assert read_proc_file(proc_dir, proc_file) == ProcessorDesc(
-        [], [], [UnitModel(ICaseString("full system"), 1, [ICaseString("ALU")],
-                           LockInfo(True, True), [])], [])
+        [], [], [make_unit_model(
+            UnitModel2(ICaseString("full system"), 1, [CapabilityInfo(
+                ICaseString("ALU"), False)], LockInfo(True, True)))], [])
 
 
 if __name__ == '__main__':
