@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.54.3, python 3.8.7, Fedora release
-#               33 (Thirty Three)
+# environment:  Visual Studdio Code 1.57.1, python 3.9.5, Fedora release
+#               34 (Thirty Four)
 #
 # notes:        This is a private program.
 #
@@ -44,7 +44,7 @@ from logging import WARNING
 import pytest
 from pytest import mark, raises
 
-from test_utils import chk_error, chk_two_units, chk_warn, read_proc_file, \
+from .test_utils import chk_error, chk_two_units, chk_warn, read_proc_file, \
     ValInStrCheck
 import errors
 from processor_utils import exception, load_proc_desc, ProcessorDesc

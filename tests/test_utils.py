@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.52.1, python 3.8.7, Fedora release
-#               33 (Thirty Three)
+# environment:  Visual Studdio Code 1.57.1, python 3.9.5, Fedora release
+#               34 (Thirty Four)
 #
 # notes:        This is a private program.
 #
@@ -42,7 +42,7 @@ from os.path import join
 
 import yaml
 
-import test_env
+from . import test_env
 import processor_utils
 from processor_utils.units import LockInfo, UnitModel
 import program_utils
