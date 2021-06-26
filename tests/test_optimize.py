@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.52.1, python 3.8.7, Fedora release
-#               33 (Thirty Three)
+# environment:  Visual Studdio Code 1.57.1, python 3.9.5, Fedora release
+#               34 (Thirty Four)
 #
 # notes:        This is a private program.
 #
@@ -45,8 +45,8 @@ from logging import WARNING
 import more_itertools
 import pytest
 
-import test_utils
-from test_utils import chk_warn, read_proc_file
+from . import test_utils
+from .test_utils import chk_warn, read_proc_file
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from str_utils import ICaseString

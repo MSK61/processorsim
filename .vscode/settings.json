@@ -25,5 +25,6 @@
         ".coverage": true,
         ".venv": true,
         "**/.pytest_cache": true
-    }
+    },
+    "python.linting.pylintEnabled": true
 }

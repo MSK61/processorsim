@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.55.0, python 3.9.2, Fedora release
-#               33 (Thirty Three)
+# environment:  Visual Studdio Code 1.57.1, python 3.9.5, Fedora release
+#               34 (Thirty Four)
 #
 # notes:        This is a private program.
 #
@@ -45,7 +45,7 @@ from unittest.mock import patch
 
 import pytest
 
-import test_utils
+from . import test_utils
 import hw_loading
 import processor_utils
 from processor_utils import units

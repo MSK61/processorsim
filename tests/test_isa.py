@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.52.1, python 3.8.7, Fedora release
-#               33 (Thirty Three)
+# environment:  Visual Studdio Code 1.57.1, python 3.9.5, Fedora release
+#               34 (Thirty Four)
 #
 # notes:        This is a private program.
 #
@@ -42,7 +42,7 @@
 import pytest
 from pytest import raises
 
-from test_utils import chk_error, read_isa_file, ValInStrCheck
+from .test_utils import chk_error, read_isa_file, ValInStrCheck
 import errors
 import processor_utils.exception
 from str_utils import ICaseString
