@@ -38,8 +38,8 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.52.1, python 3.8.7, Fedora release
-#               33 (Thirty Three)
+# environment:  Visual Studdio Code 1.57.1, python 3.9.5, Fedora release
+#               34 (Thirty Four)
 #
 # notes:        This is a private program.
 #
@@ -140,12 +140,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     """
     processor_file, program_file = get_in_files(argv)
     logging.basicConfig(level=logging.INFO)
-    with processor_file, program_file:
-        run(processor_file, program_file)
+    run(processor_file, program_file)
     return 0        # success
 
 
-def run(processor_file: IO[str], program_file: Iterable[str]) -> None:
+def run(processor_file: IO[str], program_file: IO[str]) -> None:
     """Simulate the program on the given processor.
 
     `processor_file` is the file containing the processor architecture.
@@ -155,7 +154,8 @@ def run(processor_file: IO[str], program_file: Iterable[str]) -> None:
     processor description file.
 
     """
-    _ResultWriter.print_sim_res(get_sim_res(processor_file, program_file))
+    with processor_file, program_file:
+        _ResultWriter.print_sim_res(get_sim_res(processor_file, program_file))
 
 
 @attr.s(auto_attribs=True, frozen=True)
