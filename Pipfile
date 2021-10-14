@@ -12,6 +12,7 @@ coveralls = "*"
 pytest-flake8 = "*"
 nbconvert = "*"
 ipykernel = "*"
+types-pyyaml = "*"
 
 [packages]
 networkx = "*"

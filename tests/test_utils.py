@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.57.1, python 3.9.5, Fedora release
+# environment:  Visual Studdio Code 1.61.1, python 3.9.7, Fedora release
 #               34 (Thirty Four)
 #
 # notes:        This is a private program.
@@ -173,7 +173,8 @@ def read_prog_file(file_name):
     The function returns the loaded program.
 
     """
-    with open(join(TEST_DATA_DIR, "programs", file_name)) as prog_file:
+    with open(join(TEST_DATA_DIR, "programs", file_name),
+              encoding="utf-8") as prog_file:
         return program_utils.read_program(prog_file)
 
 
@@ -185,5 +186,6 @@ def _load_yaml(test_dir, file_name):
     The function returns the loaded YAML object.
 
     """
-    with open(join(TEST_DATA_DIR, test_dir, file_name)) as test_file:
+    with open(join(TEST_DATA_DIR, test_dir, file_name),
+              encoding="utf-8") as test_file:
         return yaml.safe_load(test_file)

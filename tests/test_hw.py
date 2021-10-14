@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.57.1, python 3.9.5, Fedora release
+# environment:  Visual Studdio Code 1.61.1, python 3.9.7, Fedora release
 #               34 (Thirty Four)
 #
 # notes:        This is a private program.
@@ -76,7 +76,7 @@ class TestHwDescLoad:
         lock_info = units.LockInfo(True, True)
         with open(os.path.join(
                 test_utils.TEST_DATA_DIR, "fullHwDesc",
-                hw_file)) as hw_src, patch(
+                hw_file), encoding="utf-8") as hw_src, patch(
                     "processor_utils.load_proc_desc",
                     return_value=processor_utils.ProcessorDesc(
                         [], [], [units.UnitModel(

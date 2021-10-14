@@ -38,7 +38,7 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.57.1, python 3.9.5, Fedora release
+# environment:  Visual Studdio Code 1.61.1, python 3.9.7, Fedora release
 #               34 (Thirty Four)
 #
 # notes:        This is a private program.
@@ -169,9 +169,9 @@ class _InstrPosition:
         `self` is this instruction position.
 
         """
-        return "{}:{}".format(
-            {StallState.NO_STALL: 'U', StallState.STRUCTURAL: 'S',
-             StallState.DATA: 'D'}[self._stalled], self._unit)
+        stall_map = {StallState.NO_STALL: 'U', StallState.STRUCTURAL: 'S',
+                     StallState.DATA: 'D'}
+        return f"{stall_map[self._stalled]}:{self._unit}"
 
     _unit: object
 
