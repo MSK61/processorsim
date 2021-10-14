@@ -310,7 +310,7 @@ class UnitSink(IInstrSink):
             instr_info.host][instr_info.index_in_host].instr)
 
     @property
-    def _donors(self) -> Iterator[ICaseString]:
+    def _donors(self) -> "map[ICaseString]":
         """Retrieve the predecessor names.
 
         `self` is this unit sink.
