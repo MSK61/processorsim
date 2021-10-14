@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.54.1, python 3.8.7, Fedora release
+# environment:  Visual Studdio Code 1.61.1, python 3.9.7, Fedora release
 #               33 (Thirty Three)
 #
 # notes:        This is a private program.
@@ -162,7 +162,7 @@ class IInstrSink(abc.ABC):
 
     @property
     @abstractmethod
-    def _donors(self) -> Iterator[ICaseString]:
+    def _donors(self) -> Iterable[ICaseString]:
         """Retrieve the names of the units ready to supply instructions.
 
         `self` is this instruction sink.
