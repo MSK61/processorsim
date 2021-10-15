@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.54.1, python 3.8.7, Fedora release
-#               33 (Thirty Three)
+# environment:  Visual Studdio Code 1.61.1, python 3.9.7, Fedora release
+#               34 (Thirty Four)
 #
 # notes:        This is a private program.
 #
@@ -527,7 +527,7 @@ def _fill_unit(unit: IInstrSink, util_info:
     return mov_res.mem_used
 
 
-def _get_out_ports(processor: ProcessorDesc) -> Iterator[ICaseString]:
+def _get_out_ports(processor: ProcessorDesc) -> "map[ICaseString]":
     """Find all units at the processor output boundary.
 
     `processor` is the processor to find whose output ports.

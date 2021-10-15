@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.54.3, python 3.8.7, Fedora release
-#               33 (Thirty Three)
+# environment:  Visual Studdio Code 1.61.1, python 3.9.7, Fedora release
+#               34 (Thirty Four)
 #
 # notes:        This is a private program.
 #
@@ -44,8 +44,8 @@ from operator import itemgetter
 import os
 import sys
 import typing
-from typing import Any, Collection, Dict, Generator, Iterable, Iterator, \
-    List, Mapping, MutableSequence, Tuple
+from typing import Any, Collection, Dict, Generator, Iterable, List, Mapping, \
+    MutableSequence, Tuple
 
 import attr
 import fastcore.foundation
@@ -374,7 +374,7 @@ def _get_frozen_lst(obj_lst: Iterable[object]) -> Tuple[object, ...]:
 
 
 def _get_preds(processor: DiGraph, unit: object,
-               unit_map: Mapping[object, _T]) -> Iterator[_T]:
+               unit_map: Mapping[object, _T]) -> typing.Iterator[_T]:
     """Retrieve the predecessor units of the given unit.
 
     `processor` is the processor containing the unit.
@@ -496,7 +496,7 @@ def _load_caps(unit: Mapping[object, Any],
 
 
 def _load_mem_acl(unit: Mapping[object, Any], cap_registry:
-                  IndexedSet[_CapabilityInfo]) -> Iterator[ICaseString]:
+                  IndexedSet[_CapabilityInfo]) -> "map[ICaseString]":
     """Load the given unit memory ACL.
 
     `unit` is the unit to load whose memory ACL.

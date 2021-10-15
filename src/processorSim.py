@@ -52,8 +52,8 @@ import operator
 import sys
 import argparse
 import typing
-from typing import Collection, Dict, IO, Iterable, Iterator, List, Mapping, \
-    Optional, Sequence, Sized, TextIO, Tuple
+from typing import Collection, Dict, IO, Iterable, List, Mapping, Optional, \
+    Sequence, Sized, TextIO, Tuple
 
 import attr
 import fastcore.foundation
@@ -273,7 +273,7 @@ def _create_flight(instr_util: Mapping[int, _InstrPosition]) -> _InstrFlight:
 
 
 def _cui_to_flights(cxuxi: Iterable[Tuple[int, BagValDict[_T, InstrState]]],
-                    instructions: int) -> Iterator[_InstrFlight]:
+                    instructions: int) -> "map[_InstrFlight]":
     """Convert a CxUxI utilization map to instruction flights.
 
     `cxuxi` is the ClockxUnitxInstruction utilization map to convert.
@@ -338,8 +338,8 @@ def _get_sim_rows(sim_res: Iterable[Tuple[int, BagValDict[_T, InstrState]]],
     return [_get_flight_row(flight) for flight in flights]
 
 
-def _icu_to_flights(ixcxu: Iterable[Mapping[int, _InstrPosition]]) -> Iterator[
-        _InstrFlight]:
+def _icu_to_flights(
+        ixcxu: Iterable[Mapping[int, _InstrPosition]]) -> "map[_InstrFlight]":
     """Convert a IxCxU utilization map to instruction flights.
 
     `ixcxu` is the InstructionxClockxUnit utilization map to convert.
