@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.57.1, python 3.9.5, Fedora release
+# environment:  Visual Studdio Code 1.61.1, python 3.9.7, Fedora release
 #               34 (Thirty Four)
 #
 # notes:        This is a private program.
@@ -59,7 +59,8 @@ class ExampleTest(unittest.TestCase):
 
         """
         examples_dir = join(test_paths.TEST_DIR, "../examples")
-        with open(join(examples_dir, "unified memory.ipynb")) as nb_file:
+        with open(join(examples_dir, "unified memory.ipynb"),
+                  encoding="utf-8") as nb_file:
             nbconvert.preprocessors.ExecutePreprocessor().preprocess(
                 nbformat.read(nb_file, nbformat.NO_CONVERT),
                 {"metadata": {"path": examples_dir}})

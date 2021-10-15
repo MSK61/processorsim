@@ -38,8 +38,8 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.52.1, python 3.8.7, Fedora release
-#               33 (Thirty Three)
+# environment:  Visual Studdio Code 1.61.1, python 3.9.7, Fedora release
+#               34 (Thirty Four)
 #
 # notes:        This is a private program.
 #
@@ -52,8 +52,8 @@ import operator
 import sys
 import argparse
 import typing
-from typing import Collection, Dict, IO, Iterable, Iterator, List, Mapping, \
-    Optional, Sequence, Sized, TextIO, Tuple
+from typing import Collection, Dict, IO, Iterable, List, Mapping, Optional, \
+    Sequence, Sized, TextIO, Tuple
 
 import attr
 import fastcore.foundation
@@ -140,12 +140,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     """
     processor_file, program_file = get_in_files(argv)
     logging.basicConfig(level=logging.INFO)
-    with processor_file, program_file:
-        run(processor_file, program_file)
+    run(processor_file, program_file)
     return 0        # success
 
 
-def run(processor_file: IO[str], program_file: Iterable[str]) -> None:
+def run(processor_file: IO[str], program_file: IO[str]) -> None:
     """Simulate the program on the given processor.
 
     `processor_file` is the file containing the processor architecture.
@@ -155,7 +154,8 @@ def run(processor_file: IO[str], program_file: Iterable[str]) -> None:
     processor description file.
 
     """
-    _ResultWriter.print_sim_res(get_sim_res(processor_file, program_file))
+    with processor_file, program_file:
+        _ResultWriter.print_sim_res(get_sim_res(processor_file, program_file))
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -169,9 +169,9 @@ class _InstrPosition:
         `self` is this instruction position.
 
         """
-        return "{}:{}".format(
-            {StallState.NO_STALL: 'U', StallState.STRUCTURAL: 'S',
-             StallState.DATA: 'D'}[self._stalled], self._unit)
+        stall_map = {StallState.NO_STALL: 'U', StallState.STRUCTURAL: 'S',
+                     StallState.DATA: 'D'}
+        return f"{stall_map[self._stalled]}:{self._unit}"
 
     _unit: object
 
@@ -273,7 +273,7 @@ def _create_flight(instr_util: Mapping[int, _InstrPosition]) -> _InstrFlight:
 
 
 def _cui_to_flights(cxuxi: Iterable[Tuple[int, BagValDict[_T, InstrState]]],
-                    instructions: int) -> Iterator[_InstrFlight]:
+                    instructions: int) -> "map[_InstrFlight]":
     """Convert a CxUxI utilization map to instruction flights.
 
     `cxuxi` is the ClockxUnitxInstruction utilization map to convert.
@@ -338,8 +338,8 @@ def _get_sim_rows(sim_res: Iterable[Tuple[int, BagValDict[_T, InstrState]]],
     return [_get_flight_row(flight) for flight in flights]
 
 
-def _icu_to_flights(ixcxu: Iterable[Mapping[int, _InstrPosition]]) -> Iterator[
-        _InstrFlight]:
+def _icu_to_flights(
+        ixcxu: Iterable[Mapping[int, _InstrPosition]]) -> "map[_InstrFlight]":
     """Convert a IxCxU utilization map to instruction flights.
 
     `ixcxu` is the InstructionxClockxUnit utilization map to convert.

@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.54.1, python 3.8.7, Fedora release
-#               33 (Thirty Three)
+# environment:  Visual Studdio Code 1.61.1, python 3.9.7, Fedora release
+#               34 (Thirty Four)
 #
 # notes:        This is a private program.
 #
@@ -162,7 +162,7 @@ class IInstrSink(abc.ABC):
 
     @property
     @abstractmethod
-    def _donors(self) -> Iterator[ICaseString]:
+    def _donors(self) -> Iterable[ICaseString]:
         """Retrieve the names of the units ready to supply instructions.
 
         `self` is this instruction sink.
@@ -310,7 +310,7 @@ class UnitSink(IInstrSink):
             instr_info.host][instr_info.index_in_host].instr)
 
     @property
-    def _donors(self) -> Iterator[ICaseString]:
+    def _donors(self) -> "map[ICaseString]":
         """Retrieve the predecessor names.
 
         `self` is this unit sink.
