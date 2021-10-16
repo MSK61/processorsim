@@ -17,6 +17,7 @@
 # along with processorSim.  If not, see <http://www.gnu.org/licenses/>.
 #
 ############################################################
+os: linux
 language: python
 dist: xenial
 python: 3.9
