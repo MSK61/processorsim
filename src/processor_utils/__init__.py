@@ -40,7 +40,7 @@
 
 from itertools import chain
 from logging import warning
-from operator import itemgetter
+import operator
 import os
 import sys
 import typing
@@ -49,7 +49,7 @@ from typing import Any, Collection, Dict, Generator, Iterable, List, Mapping, \
 
 import attr
 import fastcore.foundation
-from fastcore.foundation import Self
+from fastcore.foundation import map_ex, Self
 import networkx
 from networkx import DiGraph, Graph
 
@@ -268,7 +268,8 @@ def _chk_unit_width(unit: Mapping[object, Any]) -> None:
     if unit[UNIT_WIDTH_KEY] <= 0:
         raise BadWidthError(f"Functional unit ${BadWidthError.UNIT_KEY} has a "
                             f"bad width ${BadWidthError.WIDTH_KEY}.",
-                            *(itemgetter(UNIT_NAME_KEY, UNIT_WIDTH_KEY)(unit)))
+                            *(map_ex([UNIT_NAME_KEY, UNIT_WIDTH_KEY], unit,
+                                     gen=True)))
 
 
 def _create_graph(hw_units: Iterable[Mapping[object, object]],
@@ -377,7 +378,7 @@ def _get_preds(processor: DiGraph, unit: object,
     The function returns an iterator over predecessor units.
 
     """
-    return fastcore.foundation.map_ex(processor.predecessors(unit), unit_map)
+    return map_ex(processor.predecessors(unit), unit_map, gen=True)
 
 
 def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
@@ -416,7 +417,7 @@ def _get_unit_entry(
     The function returns the unit model.
 
     """
-    lock_attrs = itemgetter(UNIT_RLOCK_KEY, UNIT_WLOCK_KEY)(attrs)
+    lock_attrs = map_ex([UNIT_RLOCK_KEY, UNIT_WLOCK_KEY], attrs, gen=True)
     return UnitModel(name, attrs[UNIT_WIDTH_KEY], attrs[UNIT_CAPS_KEY],
                      units.LockInfo(*lock_attrs), attrs[UNIT_MEM_KEY])
 
@@ -514,8 +515,9 @@ def _post_order(internal_units: Iterable[FuncUnit]) -> Tuple[FuncUnit, ...]:
 
     """
     rev_graph = _get_unit_graph(internal_units)
-    return tuple(fastcore.foundation.maps(rev_graph.nodes.get, itemgetter(
-        _UNIT_KEY), networkx.topological_sort(rev_graph)))
+    return tuple(fastcore.foundation.maps(
+        rev_graph.nodes.get, operator.itemgetter(_UNIT_KEY),
+        networkx.topological_sort(rev_graph)))
 
 
 def _prep_proc_desc(processor: DiGraph) -> None:

@@ -32,19 +32,19 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.54.3, python 3.8.7, Fedora release
-#               33 (Thirty Three)
+# environment:  Visual Studdio Code 1.61.1, python 3.9.7, Fedora release
+#               34 (Thirty Four)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import operator
 import typing
 from typing import AbstractSet, Callable, Dict, Iterable, Iterator, List, \
     Mapping, MutableMapping, Sequence, Tuple
 
 import attr
+import fastcore.foundation
 from fastcore.foundation import Self
 import iteration_utilities
 import more_itertools
@@ -529,8 +529,8 @@ def _get_anal_graph(processor: Graph) -> DiGraph:
     for idx, unit in hw_units:
         _update_graph(idx, unit, processor, width_graph, new_nodes)
 
-    width_graph.add_edges_from(
-        operator.itemgetter(*edge)(new_nodes) for edge in processor.edges)
+    width_graph.add_edges_from(fastcore.foundation.map_ex(edge, new_nodes) for
+                               edge in processor.edges)
     return width_graph
 
 
