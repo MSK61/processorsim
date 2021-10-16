@@ -384,7 +384,7 @@ def _get_preds(processor: DiGraph, unit: object,
     The function returns an iterator over predecessor units.
 
     """
-    return map_ex(processor.predecessors(unit), unit_map)
+    return map_ex(processor.predecessors(unit), unit_map, gen=True)
 
 
 def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:

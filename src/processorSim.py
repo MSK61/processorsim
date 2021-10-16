@@ -269,7 +269,7 @@ def _create_flight(instr_util: Mapping[int, _InstrPosition]) -> _InstrFlight:
     start_time = min(instr_util.keys())
     time_span = len(instr_util)
     return _InstrFlight(start_time, fastcore.foundation.map_ex(
-        range(start_time, start_time + time_span), instr_util))
+        range(start_time, start_time + time_span), instr_util, gen=True))
 
 
 def _cui_to_flights(cxuxi: Iterable[Tuple[int, BagValDict[_T, InstrState]]],
