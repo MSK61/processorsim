@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.57.1, python 3.9.5, Fedora release
-#               34 (Thirty Four)
+# environment:  Visual Studdio Code 1.63.0, python 3.9.7, Fedora release
+#               35 (Thirty Five)
 #
 # notes:        This is a private program.
 #
@@ -48,7 +48,8 @@ import pytest
 from . import test_utils
 from .test_utils import chk_warn, read_proc_file
 from processor_utils import ProcessorDesc
-from processor_utils.units import FuncUnit, LockInfo, UnitModel
+from processor_utils.units import CapabilityInfo, FuncUnit, LockInfo, \
+    make_unit_model, UnitModel2
 from str_utils import ICaseString
 
 
@@ -72,10 +73,11 @@ class TestClean:
             "optimization", "pathThatGetsCutOffItsOutput.yaml")
         out1_unit = ICaseString("output 1")
         alu_cap = ICaseString("ALU")
-        assert proc_desc == ProcessorDesc([UnitModel(
-            ICaseString("input"), 1, [alu_cap], LockInfo(True, False),
-            [])], [FuncUnit(UnitModel(out1_unit, 1, [alu_cap], LockInfo(
-                False, True), []), proc_desc.in_ports)], [], [])
+        assert proc_desc == ProcessorDesc([make_unit_model(UnitModel2(
+            ICaseString("input"), 1, [CapabilityInfo(alu_cap, False)],
+            LockInfo(True, False)))], [FuncUnit(make_unit_model(UnitModel2(
+                out1_unit, 1, [CapabilityInfo(alu_cap, False)],
+                LockInfo(False, True))), proc_desc.in_ports)], [], [])
         chk_warn(["middle"], caplog.records)
 
     def test_incompatible_edge_is_removed(self, caplog):
@@ -88,17 +90,19 @@ class TestClean:
         caplog.set_level(WARNING)
         proc_desc = read_proc_file(
             "optimization", "incompatibleEdgeProcessor.yaml")
-        in_units = starmap(lambda name, categ: UnitModel(
-            name, 1, [categ], LockInfo(True, False), []),
+        in_units = starmap(lambda name, categ: make_unit_model(UnitModel2(
+            name, 1, [CapabilityInfo(categ, False)], LockInfo(True, False))),
                            (map(ICaseString, unit_params) for unit_params in
                             [["input 1", "ALU"], ["input 2", "MEM"]]))
         wr_lock = LockInfo(False, True)
-        out_units = starmap(lambda name, categ, in_unit: FuncUnit(UnitModel(
-            name, 1, [categ], wr_lock, []), [more_itertools.first_true(
-                proc_desc.in_ports, pred=lambda in_port: in_port.name ==
-                in_unit)]), (map(ICaseString, unit_params) for unit_params in
-                             [["output 1", "ALU", "input 1"],
-                              ["output 2", "MEM", "input 2"]]))
+        out_units = starmap(
+            lambda name, categ, in_unit: FuncUnit(make_unit_model(UnitModel2(
+                name, 1, [CapabilityInfo(categ, False)], wr_lock)), [
+                    more_itertools.first_true(
+                        proc_desc.in_ports,
+                        pred=lambda in_port: in_port.name == in_unit)]),
+            (map(ICaseString, unit_params) for unit_params in
+             [["output 1", "ALU", "input 1"], ["output 2", "MEM", "input 2"]]))
         assert proc_desc == ProcessorDesc(in_units, out_units, [], [])
         chk_warn(["input 2", "output 1"], caplog.records)
 
@@ -112,8 +116,9 @@ class TestClean:
         caplog.set_level(WARNING)
         assert read_proc_file(
             "optimization", "unitWithNoCapabilities.yaml") == ProcessorDesc(
-                [], [], [UnitModel(ICaseString("core 1"), 1, [
-                    ICaseString("ALU")], LockInfo(True, True), [])], [])
+                [], [], [make_unit_model(UnitModel2(
+                    ICaseString("core 1"), 1, [CapabilityInfo(ICaseString(
+                        "ALU"), False)], LockInfo(True, True)))], [])
         chk_warn(["core 2"], caplog.records)
 
 
