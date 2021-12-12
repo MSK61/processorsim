@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.57.1, python 3.9.5, Fedora release
-#               34 (Thirty Four)
+# environment:  Visual Studdio Code 1.63.0, python 3.9.7, Fedora release
+#               35 (Thirty Five)
 #
 # notes:        This is a private program.
 #
@@ -51,7 +51,8 @@ from .test_utils import read_proc_file
 from container_utils import BagValDict
 import processor_utils
 from processor_utils import ProcessorDesc
-from processor_utils.units import FuncUnit, LockInfo, UnitModel
+from processor_utils.units import CapabilityInfo, FuncUnit, LockInfo, \
+    make_unit_model, UnitModel2
 from program_defs import HwInstruction
 from sim_services import HwSpec, simulate, StallError
 from sim_services.sim_defs import InstrState, StallState
@@ -68,11 +69,12 @@ class FlowTest(TestCase):
         `self` is this test case.
 
         """
-        in_units = [UnitModel(
-            ICaseString(name), 1, [categ], LockInfo(True, False), []) for name,
+        in_units = [make_unit_model(UnitModel2(ICaseString(name), 1, [
+            CapabilityInfo(categ, False)], LockInfo(True, False))) for name,
                     categ in [("ALU input", "ALU"), ("MEM input", "MEM")]]
-        out_unit = UnitModel(ICaseString("output"), 1, ["ALU", "MEM"],
-                             LockInfo(False, True), [])
+        out_unit = make_unit_model(
+            UnitModel2(ICaseString("output"), 1, (CapabilityInfo(
+                cap, False) for cap in ["ALU", "MEM"]), LockInfo(False, True)))
         proc_desc = ProcessorDesc(
             in_units, [FuncUnit(out_unit, in_units)], [], [])
         self.assertEqual(simulate([HwInstruction(
@@ -96,13 +98,14 @@ class PipelineTest(TestCase):
         `self` is this test case.
 
         """
-        in_unit, out_unit = (UnitModel(ICaseString(name), 1, ["ALU"], LockInfo(
-            rd_lock, wr_lock), mem_acl) for name, rd_lock, wr_lock, mem_acl in
-                             [("input 1", True, False, []),
-                              ("output 1", False, True, ["ALU"])])
-        proc_desc = ProcessorDesc(
-            [in_unit], [FuncUnit(out_unit, [in_unit])], [UnitModel(ICaseString(
-                "input 2"), 1, ["ALU"], LockInfo(True, False), [])], [])
+        in_unit, out_unit = (
+            make_unit_model(UnitModel2(ICaseString(name), 1, [CapabilityInfo(
+                "ALU", mem_access)], LockInfo(rd_lock, wr_lock))) for
+            name, rd_lock, wr_lock, mem_access in
+            [("input 1", True, False, False), ("output 1", False, True, True)])
+        proc_desc = ProcessorDesc([in_unit], [FuncUnit(out_unit, [in_unit])], [
+            make_unit_model(UnitModel2(ICaseString("input 2"), 1, [
+                CapabilityInfo("ALU", False)], LockInfo(True, False)))], [])
         self.assertEqual(simulate(
             [HwInstruction([], "R1", "ALU")], HwSpec(proc_desc)), [BagValDict(
                 cp_util) for cp_util in [{ICaseString("input 1"): [InstrState(
@@ -115,8 +118,9 @@ class PipelineTest(TestCase):
 
         """
         big_input, small_input1, mid1, small_input2, mid2, out_unit = (
-            UnitModel(ICaseString(name), width, ["ALU"], LockInfo(
-                rd_lock, wr_lock), []) for name, width, rd_lock, wr_lock in
+            make_unit_model(UnitModel2(ICaseString(name), width, [
+                CapabilityInfo("ALU", False)], LockInfo(rd_lock, wr_lock))) for
+            name, width, rd_lock, wr_lock in
             [("big input", 4, True, False), ("small input 1", 1, True, False),
              ("middle 1", 1, False, False), ("small input 2", 1, True, False),
              ("middle 2", 2, False, False), ("output", 2, False, True)])
@@ -152,8 +156,8 @@ class StallTest(TestCase):
 
         """
         in_unit, mid, out_unit = (
-            UnitModel(ICaseString(name), width, ["ALU"],
-                      LockInfo(rd_lock, wr_lock), []) for
+            make_unit_model(UnitModel2(ICaseString(name), width, [
+                CapabilityInfo("ALU", False)], LockInfo(rd_lock, wr_lock))) for
             name, width, rd_lock, wr_lock in [("input", 2, True, False), (
                 "middle", 2, False, False), ("output", 1, False, True)])
         proc_desc = ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
@@ -175,8 +179,8 @@ class StallTest(TestCase):
 
         """
         long_input, mid, short_input, out_unit = (
-            UnitModel(ICaseString(name), 1, ["ALU"],
-                      LockInfo(rd_lock, wr_lock), []) for name, rd_lock,
+            make_unit_model(UnitModel2(ICaseString(name), 1, [CapabilityInfo(
+                "ALU", False)], LockInfo(rd_lock, wr_lock))) for name, rd_lock,
             wr_lock in [("long input", False, False), ("middle", False, False),
                         ("short input", False, False), ("output", True, True)])
         proc_desc = ProcessorDesc([long_input, short_input], [FuncUnit(
@@ -237,8 +241,9 @@ class TestOutputFlush:
         program = starmap(HwInstruction, chain(
             [[[], "R1", "ALU"], [["R1"], "R2", "ALU"]], extra_instr_lst))
         extra_instr_len = len(extra_instr_lst)
-        cores = starmap(lambda name, width: UnitModel(
-            ICaseString(name), width, ["ALU"], LockInfo(True, True), []),
+        cores = starmap(lambda name, width: make_unit_model(
+            UnitModel2(ICaseString(name), width,
+                       [CapabilityInfo("ALU", False)], LockInfo(True, True))),
                         [("core 1", 1), ("core 2", 1 + extra_instr_len)])
         extra_instr_seq = range(2, 2 + extra_instr_len)
         assert simulate(
