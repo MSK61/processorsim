@@ -4,7 +4,7 @@
 
 ############################################################
 #
-# Copyright 2017, 2019, 2020, 2021 Mohammed El-Afifi
+# Copyright 2017, 2019, 2020, 2021, 2022 Mohammed El-Afifi
 # This file is part of processorSim.
 #
 # processorSim is free software: you can redistribute it and/or modify
@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.61.1, python 3.9.7, Fedora release
-#               34 (Thirty Four)
+# environment:  Visual Studdio Code 1.72.2, python 3.10.7, Fedora
+#               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
@@ -176,7 +176,6 @@ class OutSink(IInstrSink):
     """Dummy sink for flushing output ports"""
 
     # pylint: disable=unused-argument
-    # pylint: disable=no-self-use
     def _accepts_cap(self, instr: int) -> bool:
         """Always accept all instructions.
 
@@ -209,7 +208,6 @@ class OutSink(IInstrSink):
 
         """
         return tuple(candidates)
-    # pylint: enable=no-self-use
     # pylint: enable=unused-argument
 
     @property

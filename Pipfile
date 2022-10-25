@@ -13,6 +13,7 @@ pytest-flake8 = "*"
 nbconvert = "*"
 ipykernel = "*"
 types-pyyaml = "*"
+flake8 = "<5"
 
 [packages]
 networkx = "*"
