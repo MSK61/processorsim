@@ -32,14 +32,15 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.70.1, python 3.9.7, Fedora release
-#               36 (Thirty Six)
+# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
+#               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
 from string import Template
+from typing import Final
 
 import attr
 
@@ -71,7 +72,7 @@ class BadEdgeError(RuntimeError):
         """
         return self._edge
 
-    EDGE_KEY = "edge"  # parameter key in message format
+    EDGE_KEY: Final[str] = "edge"  # parameter key in message format
 
 
 class BadWidthError(RuntimeError):
@@ -116,9 +117,9 @@ class BadWidthError(RuntimeError):
         return self._width
 
     # parameter keys in message format
-    UNIT_KEY = "unit"
+    UNIT_KEY: Final[str] = "unit"
 
-    WIDTH_KEY = "width"
+    WIDTH_KEY: Final[str] = "width"
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -186,9 +187,9 @@ class BlockedCapError(RuntimeError):
         return self._port
 
     # parameter keys in message format
-    CAPABILITY_KEY = "capability"
+    CAPABILITY_KEY: Final[str] = "capability"
 
-    PORT_KEY = "port"
+    PORT_KEY: Final[str] = "port"
 
 
 class DeadInputError(RuntimeError):
@@ -221,7 +222,7 @@ class DeadInputError(RuntimeError):
         """
         return self._port
 
-    PORT_KEY = "port"  # parameter key in message format
+    PORT_KEY: Final[str] = "port"  # parameter key in message format
 
 
 class DupElemError(RuntimeError):
@@ -263,9 +264,9 @@ class DupElemError(RuntimeError):
         return self._old_elem
 
     # parameter keys in message format
-    OLD_ELEM_KEY = "old_elem"
+    OLD_ELEM_KEY: Final[str] = "old_elem"
 
-    NEW_ELEM_KEY = "new_elem"
+    NEW_ELEM_KEY: Final[str] = "new_elem"
 
 
 class EmptyProcError(RuntimeError):
@@ -324,8 +325,8 @@ class PathLockError(RuntimeError):
         return self._start
 
     # parameter keys in message format
-    CAP_KEY = "capability"
+    CAP_KEY: Final[str] = "capability"
 
-    LOCK_TYPE_KEY = "lock_type"
+    LOCK_TYPE_KEY: Final[str] = "lock_type"
 
-    START_KEY = "start"
+    START_KEY: Final[str] = "start"

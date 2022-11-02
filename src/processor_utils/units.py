@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.70.1, python 3.9.7, Fedora release
-#               36 (Thirty Six)
+# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
+#               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
@@ -40,7 +40,7 @@
 
 import operator
 import typing
-from typing import Tuple
+from typing import Final, Tuple
 
 import attr
 import fastcore.foundation
@@ -48,13 +48,13 @@ import fastcore.foundation
 from container_utils import sorted_tuple
 import str_utils
 # unit attributes
-UNIT_CAPS_KEY = "capabilities"
-UNIT_MEM_KEY = "memoryAccess"
-UNIT_NAME_KEY = "name"
+UNIT_CAPS_KEY: Final[str] = "capabilities"
+UNIT_MEM_KEY: Final[str] = "memoryAccess"
+UNIT_NAME_KEY: Final[str] = "name"
 # unit lock attributes
-UNIT_RLOCK_KEY = "readLock"
-UNIT_WLOCK_KEY = "writeLock"
-UNIT_WIDTH_KEY = "width"
+UNIT_RLOCK_KEY: Final[str] = "readLock"
+UNIT_WLOCK_KEY: Final[str] = "writeLock"
+UNIT_WIDTH_KEY: Final[str] = "width"
 
 
 @attr.s(auto_attribs=True, frozen=True)

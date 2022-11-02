@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.70.1, python 3.9.7, Fedora release
-#               36 (Thirty Six)
+# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
+#               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
@@ -57,7 +57,7 @@ from .exception import BlockedCapError, ComponentInfo, PathLockError
 from . import units
 from .units import UNIT_CAPS_KEY, UNIT_WIDTH_KEY
 from . import _port_defs
-_OLD_NODE_KEY = "old_node"
+_OLD_NODE_KEY: typing.Final[str] = "old_node"
 _T = typing.TypeVar("_T")
 
 

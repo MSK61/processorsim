@@ -31,14 +31,15 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.70.1, python 3.9.7, Fedora release
-#               36 (Thirty Six)
+# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
+#               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
 import string
+import typing
 
 
 class UndefElemError(RuntimeError):
@@ -67,4 +68,4 @@ class UndefElemError(RuntimeError):
         """
         return self._elem
 
-    ELEM_KEY = "elem"  # parameter key in message format
+    ELEM_KEY: typing.Final[str] = "elem"  # parameter key in message format

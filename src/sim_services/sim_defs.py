@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.70.1, python 3.9.7, Fedora release
-#               36 (Thirty Six)
+# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
+#               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
@@ -40,6 +40,7 @@
 
 import enum
 from enum import auto
+from typing import Final
 
 import attr
 
@@ -48,11 +49,11 @@ class StallState(enum.Enum):
 
     """Instruction stalling state"""
 
-    NO_STALL = auto()
+    NO_STALL: Final[auto] = auto()
 
-    STRUCTURAL = auto()
+    STRUCTURAL: Final[auto] = auto()
 
-    DATA = auto()
+    DATA: Final[auto] = auto()
 
 
 @attr.s

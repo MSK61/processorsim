@@ -31,12 +31,13 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.70.1, python 3.9.7, Fedora release
-#               36 (Thirty Six)
+# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
+#               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
 import os.path
-TEST_DIR = os.path.dirname(__file__)
+import typing
+TEST_DIR: typing.Final[str] = os.path.dirname(__file__)

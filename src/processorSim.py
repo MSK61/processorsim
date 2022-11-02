@@ -38,8 +38,8 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.70.1, python 3.9.7, Fedora release
-#               36 (Thirty Six)
+# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
+#               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
@@ -52,8 +52,8 @@ import operator
 import sys
 import argparse
 import typing
-from typing import Collection, Dict, IO, Iterable, List, Mapping, Optional, \
-    Sequence, Sized, TextIO, Tuple
+from typing import Collection, Dict, Final, IO, Iterable, List, Mapping, \
+    Optional, Sequence, Sized, TextIO, Tuple
 
 import attr
 import fastcore.foundation
@@ -67,8 +67,8 @@ import sim_services
 from sim_services.sim_defs import InstrState, StallState
 # command-line option variables
 # variable to receive the processor architecture file
-_PROC_OPT_VAR = "processor_file"
-_PROG_OPT_VAR = "prog_file"  # variable to receive the program file
+_PROC_OPT_VAR: Final[str] = "processor_file"
+_PROG_OPT_VAR: Final[str] = "prog_file"  # variable to receive the program file
 _T = typing.TypeVar("_T")
 
 

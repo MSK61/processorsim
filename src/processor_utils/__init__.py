@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.70.1, python 3.9.7, Fedora release
-#               36 (Thirty Six)
+# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
+#               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
@@ -65,7 +65,7 @@ from . import _checks
 from . import _optimization
 from . import _port_defs
 _T = typing.TypeVar("_T")
-_UNIT_KEY = "unit"
+_UNIT_KEY: typing.Final[str] = "unit"
 
 
 def load_isa(raw_isa: Iterable[Tuple[str, str]],

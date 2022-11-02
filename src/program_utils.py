@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.70.1, python 3.9.7, Fedora release
-#               36 (Thirty Six)
+# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
+#               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
@@ -42,7 +42,7 @@ import logging
 from re import split
 import string
 import typing
-from typing import Iterable, List, Mapping
+from typing import Final, Iterable, List, Mapping
 
 import attr
 import fastcore.foundation
@@ -93,9 +93,9 @@ class CodeError(RuntimeError):
         return self._line
 
     # parameter keys in message format
-    INSTR_KEY = "instruction"
+    INSTR_KEY: Final[str] = "instruction"
 
-    LINE_NUM_KEY = "line"
+    LINE_NUM_KEY: Final[str] = "line"
 
 
 def compile_program(prog: Iterable[ProgInstruction],
