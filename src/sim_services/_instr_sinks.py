@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.72.2, python 3.10.7, Fedora
+# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
 #               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
@@ -176,7 +176,7 @@ class OutSink(IInstrSink):
     """Dummy sink for flushing output ports"""
 
     # pylint: disable=unused-argument
-    def _accepts_cap(self, instr: int) -> bool:
+    def _accepts_cap(self, instr: int) -> typing.Literal[True]:
         """Always accept all instructions.
 
         `self` is this output sink.

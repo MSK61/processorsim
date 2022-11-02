@@ -131,7 +131,7 @@ def process_command_line(argv: Optional[Sequence[str]]) -> argparse.Namespace:
     return args
 
 
-def main(argv: Optional[Sequence[str]] = None) -> int:
+def main(argv: Optional[Sequence[str]] = None) -> typing.Literal[0]:
     """Run the program.
 
     `argv` is the command-line arguments, defaulting to None.
