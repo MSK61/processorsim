@@ -40,8 +40,8 @@
 ############################################################
 
 import typing
-from typing import AbstractSet, Callable, Dict, Iterable, Iterator, List, \
-    Mapping, MutableMapping, Sequence, Tuple
+from typing import AbstractSet, Callable, Dict, Iterable, List, Mapping, \
+    MutableMapping, Sequence, Tuple
 
 import attr
 import fastcore.foundation
@@ -502,7 +502,7 @@ def _do_cap_checks(processor: DiGraph, cap_checks: Iterable[
 
 
 def _filter_by_cap(post_ord: Iterable[object], capability: object,
-                   processor: Graph) -> Iterator[object]:
+                   processor: Graph) -> typing.Iterator[object]:
     """Filter the given units by the specified capability.
 
     `post_ord` is the post-order of the processor functional units.
