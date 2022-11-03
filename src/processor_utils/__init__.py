@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.70.1, python 3.9.7, Fedora release
-#               36 (Thirty Six)
+# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
+#               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
@@ -65,7 +65,7 @@ from . import _checks
 from . import _optimization
 from . import _port_defs
 _T = typing.TypeVar("_T")
-_UNIT_KEY = "unit"
+_UNIT_KEY: typing.Final = "unit"
 
 
 def load_isa(raw_isa: Iterable[Tuple[str, str]],
@@ -490,8 +490,8 @@ def _load_caps(unit: Mapping[object, Any],
     return cap_list
 
 
-def _load_mem_acl(unit: Mapping[object, Any], cap_registry:
-                  IndexedSet[_CapabilityInfo]) -> "map[ICaseString]":
+def _load_mem_acl(unit: Mapping[object, Any], cap_registry: IndexedSet[
+        _CapabilityInfo]) -> Generator[ICaseString, None, None]:
     """Load the given unit memory ACL.
 
     `unit` is the unit to load whose memory ACL.
@@ -500,8 +500,8 @@ def _load_mem_acl(unit: Mapping[object, Any], cap_registry:
     capabilities.
 
     """
-    return map(lambda cap: _get_acl_cap(
-        unit[UNIT_NAME_KEY], cap, cap_registry), unit.get(UNIT_MEM_KEY, []))
+    return (_get_acl_cap(unit[UNIT_NAME_KEY], cap, cap_registry) for cap in
+            unit.get(UNIT_MEM_KEY, []))
 
 
 def _post_order(internal_units: Iterable[FuncUnit]) -> Tuple[FuncUnit, ...]:

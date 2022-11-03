@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.70.1, python 3.9.7, Fedora release
-#               36 (Thirty Six)
+# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
+#               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
@@ -131,8 +131,8 @@ def _clean_unit(processor: Graph, unit: object) -> None:
     """
     processor.nodes[unit][UNIT_CAPS_KEY] = frozenset(
         processor.nodes[unit][UNIT_CAPS_KEY])
-    pred_caps = map(lambda edge: _chk_edge(processor, edge),
-                    tuple(processor.in_edges(unit)))
+    pred_caps = (
+        _chk_edge(processor, edge) for edge in tuple(processor.in_edges(unit)))
     processor.nodes[unit][UNIT_CAPS_KEY] = typing.cast(
         FrozenSet[ICaseString], frozenset()).union(*pred_caps)
 

@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.70.1, python 3.9.7, Fedora release
-#               36 (Thirty Six)
+# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
+#               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
@@ -41,7 +41,7 @@
 import enum
 from enum import auto
 import typing
-from typing import List
+from typing import Final, List
 
 import attr
 
@@ -50,9 +50,9 @@ class AccessType(enum.Enum):
 
     """Access type"""
 
-    READ = auto()
+    READ: Final = auto()
 
-    WRITE = auto()
+    WRITE: Final = auto()
 
 
 @attr.s(frozen=True)

@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.70.1, python 3.9.7, Fedora release
-#               36 (Thirty Six)
+# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
+#               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
@@ -89,7 +89,7 @@ class StallError(RuntimeError):
         """
         return self._stalled_state
 
-    STATE_KEY = "state"  # parameter key in message format
+    STATE_KEY: typing.Final = "state"  # parameter key in message format
 
 
 @attr.s(frozen=True)
@@ -480,8 +480,8 @@ def _fill_cp_util(
     """
     in_units = chain(processor.in_out_ports, processor.in_ports)
     dst_units = more_itertools.prepend(_instr_sinks.OutSink(_get_out_ports(
-        processor)), map(lambda dst: _instr_sinks.UnitSink(dst, program),
-                         chain(processor.out_ports, processor.internal_units)))
+        processor)), (_instr_sinks.UnitSink(dst, program) for dst in
+                      chain(processor.out_ports, processor.internal_units)))
     _fill_inputs(
         _build_cap_map(processor_utils.units.sorted_models(in_units)), program,
         util_info, _mov_flights(dst_units, util_info), issue_rec)
@@ -535,8 +535,8 @@ def _get_out_ports(processor: ProcessorDesc) -> "map[ICaseString]":
     boundary.
 
     """
-    return map(Self.name(), chain(processor.in_out_ports, map(
-        lambda port: port.model, processor.out_ports)))
+    return map(Self.name(), chain(
+        processor.in_out_ports, (port.model for port in processor.out_ports)))
 
 
 def _issue_instr(instr_lst: MutableSequence[InstrState], mem_access: bool,

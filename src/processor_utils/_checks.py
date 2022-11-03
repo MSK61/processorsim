@@ -32,15 +32,15 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.70.1, python 3.9.7, Fedora release
-#               36 (Thirty Six)
+# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
+#               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
 import typing
-from typing import AbstractSet, Callable, Dict, Iterable, Iterator, List, \
+from typing import AbstractSet, Callable, Dict, Generator, Iterable, List, \
     Mapping, MutableMapping, Sequence, Tuple
 
 import attr
@@ -57,7 +57,7 @@ from .exception import BlockedCapError, ComponentInfo, PathLockError
 from . import units
 from .units import UNIT_CAPS_KEY, UNIT_WIDTH_KEY
 from . import _port_defs
-_OLD_NODE_KEY = "old_node"
+_OLD_NODE_KEY: typing.Final = "old_node"
 _T = typing.TypeVar("_T")
 
 
@@ -502,7 +502,7 @@ def _do_cap_checks(processor: DiGraph, cap_checks: Iterable[
 
 
 def _filter_by_cap(post_ord: Iterable[object], capability: object,
-                   processor: Graph) -> Iterator[object]:
+                   processor: Graph) -> Generator[object, None, None]:
     """Filter the given units by the specified capability.
 
     `post_ord` is the post-order of the processor functional units.
@@ -512,8 +512,8 @@ def _filter_by_cap(post_ord: Iterable[object], capability: object,
     given capability.
 
     """
-    return filter(
-        lambda unit: _cap_in_unit(processor, capability, unit), post_ord)
+    return (
+        unit for unit in post_ord if _cap_in_unit(processor, capability, unit))
 
 
 def _get_anal_graph(processor: Graph) -> DiGraph:
@@ -560,8 +560,7 @@ def _get_cap_units(processor: DiGraph) -> AbstractSet[
 
     """
     cap_unit_map: Dict[ICaseString, List[_T]] = {}
-    in_ports: typing.Generator[_T, None, None] = _port_defs.get_in_ports(
-        processor)
+    in_ports: Generator[_T, None, None] = _port_defs.get_in_ports(processor)
 
     for cur_port in in_ports:
         for cur_cap in processor.nodes[cur_port][UNIT_CAPS_KEY]:
