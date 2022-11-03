@@ -480,8 +480,8 @@ def _fill_cp_util(
     """
     in_units = chain(processor.in_out_ports, processor.in_ports)
     dst_units = more_itertools.prepend(_instr_sinks.OutSink(_get_out_ports(
-        processor)), map(lambda dst: _instr_sinks.UnitSink(dst, program),
-                         chain(processor.out_ports, processor.internal_units)))
+        processor)), (_instr_sinks.UnitSink(dst, program) for dst in
+                      chain(processor.out_ports, processor.internal_units)))
     _fill_inputs(
         _build_cap_map(processor_utils.units.sorted_models(in_units)), program,
         util_info, _mov_flights(dst_units, util_info), issue_rec)
@@ -535,8 +535,8 @@ def _get_out_ports(processor: ProcessorDesc) -> "map[ICaseString]":
     boundary.
 
     """
-    return map(Self.name(), chain(processor.in_out_ports, map(
-        lambda port: port.model, processor.out_ports)))
+    return map(Self.name(), chain(
+        processor.in_out_ports, (port.model for port in processor.out_ports)))
 
 
 def _issue_instr(instr_lst: MutableSequence[InstrState], mem_access: bool,

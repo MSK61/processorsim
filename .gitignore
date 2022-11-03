@@ -20,3 +20,4 @@
 .coverage
 __pycache__
 .vscode/.ropeproject/objectdb
+.dccache
