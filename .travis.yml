@@ -24,5 +24,6 @@ python: 3.10
 install:
   - pip install pipenv
   - PIPENV_VERBOSITY=-1 pipenv sync -d
+  - npm install -g snyk
 script: ./test.sh
 after_success: coveralls
