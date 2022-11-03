@@ -40,5 +40,5 @@ pytest --cov src --flake8 --pylint $*
     pytest -m "mypy or pylint" --mypy --pylint $*
 
 )
-snyk code -d test
+snyk code test
 snyk test
