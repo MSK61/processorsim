@@ -72,7 +72,7 @@ class BadEdgeError(RuntimeError):
         """
         return self._edge
 
-    EDGE_KEY: Final[str] = "edge"  # parameter key in message format
+    EDGE_KEY: Final = "edge"  # parameter key in message format
 
 
 class BadWidthError(RuntimeError):
@@ -117,9 +117,9 @@ class BadWidthError(RuntimeError):
         return self._width
 
     # parameter keys in message format
-    UNIT_KEY: Final[str] = "unit"
+    UNIT_KEY: Final = "unit"
 
-    WIDTH_KEY: Final[str] = "width"
+    WIDTH_KEY: Final = "width"
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -187,9 +187,9 @@ class BlockedCapError(RuntimeError):
         return self._port
 
     # parameter keys in message format
-    CAPABILITY_KEY: Final[str] = "capability"
+    CAPABILITY_KEY: Final = "capability"
 
-    PORT_KEY: Final[str] = "port"
+    PORT_KEY: Final = "port"
 
 
 class DeadInputError(RuntimeError):
@@ -222,7 +222,7 @@ class DeadInputError(RuntimeError):
         """
         return self._port
 
-    PORT_KEY: Final[str] = "port"  # parameter key in message format
+    PORT_KEY: Final = "port"  # parameter key in message format
 
 
 class DupElemError(RuntimeError):
@@ -264,9 +264,9 @@ class DupElemError(RuntimeError):
         return self._old_elem
 
     # parameter keys in message format
-    OLD_ELEM_KEY: Final[str] = "old_elem"
+    OLD_ELEM_KEY: Final = "old_elem"
 
-    NEW_ELEM_KEY: Final[str] = "new_elem"
+    NEW_ELEM_KEY: Final = "new_elem"
 
 
 class EmptyProcError(RuntimeError):
@@ -325,8 +325,8 @@ class PathLockError(RuntimeError):
         return self._start
 
     # parameter keys in message format
-    CAP_KEY: Final[str] = "capability"
+    CAP_KEY: Final = "capability"
 
-    LOCK_TYPE_KEY: Final[str] = "lock_type"
+    LOCK_TYPE_KEY: Final = "lock_type"
 
-    START_KEY: Final[str] = "start"
+    START_KEY: Final = "start"

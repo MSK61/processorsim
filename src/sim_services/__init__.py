@@ -89,7 +89,7 @@ class StallError(RuntimeError):
         """
         return self._stalled_state
 
-    STATE_KEY: typing.Final[str] = "state"  # parameter key in message format
+    STATE_KEY: typing.Final = "state"  # parameter key in message format
 
 
 @attr.s(frozen=True)

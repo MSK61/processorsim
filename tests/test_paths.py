@@ -40,4 +40,4 @@
 
 import os.path
 import typing
-TEST_DIR: typing.Final[str] = os.path.dirname(__file__)
+TEST_DIR: typing.Final = os.path.dirname(__file__)

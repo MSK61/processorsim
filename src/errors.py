@@ -68,4 +68,4 @@ class UndefElemError(RuntimeError):
         """
         return self._elem
 
-    ELEM_KEY: typing.Final[str] = "elem"  # parameter key in message format
+    ELEM_KEY: typing.Final = "elem"  # parameter key in message format

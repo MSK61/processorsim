@@ -65,7 +65,7 @@ from . import _checks
 from . import _optimization
 from . import _port_defs
 _T = typing.TypeVar("_T")
-_UNIT_KEY: typing.Final[str] = "unit"
+_UNIT_KEY: typing.Final = "unit"
 
 
 def load_isa(raw_isa: Iterable[Tuple[str, str]],

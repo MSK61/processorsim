@@ -48,13 +48,13 @@ import fastcore.foundation
 from container_utils import sorted_tuple
 import str_utils
 # unit attributes
-UNIT_CAPS_KEY: Final[str] = "capabilities"
-UNIT_MEM_KEY: Final[str] = "memoryAccess"
-UNIT_NAME_KEY: Final[str] = "name"
+UNIT_CAPS_KEY: Final = "capabilities"
+UNIT_MEM_KEY: Final = "memoryAccess"
+UNIT_NAME_KEY: Final = "name"
 # unit lock attributes
-UNIT_RLOCK_KEY: Final[str] = "readLock"
-UNIT_WLOCK_KEY: Final[str] = "writeLock"
-UNIT_WIDTH_KEY: Final[str] = "width"
+UNIT_RLOCK_KEY: Final = "readLock"
+UNIT_WLOCK_KEY: Final = "writeLock"
+UNIT_WIDTH_KEY: Final = "width"
 
 
 @attr.s(auto_attribs=True, frozen=True)

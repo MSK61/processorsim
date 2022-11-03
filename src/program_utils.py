@@ -93,9 +93,9 @@ class CodeError(RuntimeError):
         return self._line
 
     # parameter keys in message format
-    INSTR_KEY: Final[str] = "instruction"
+    INSTR_KEY: Final = "instruction"
 
-    LINE_NUM_KEY: Final[str] = "line"
+    LINE_NUM_KEY: Final = "line"
 
 
 def compile_program(prog: Iterable[ProgInstruction],

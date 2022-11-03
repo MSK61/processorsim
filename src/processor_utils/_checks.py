@@ -57,7 +57,7 @@ from .exception import BlockedCapError, ComponentInfo, PathLockError
 from . import units
 from .units import UNIT_CAPS_KEY, UNIT_WIDTH_KEY
 from . import _port_defs
-_OLD_NODE_KEY: typing.Final[str] = "old_node"
+_OLD_NODE_KEY: typing.Final = "old_node"
 _T = typing.TypeVar("_T")
 
 

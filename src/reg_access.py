@@ -50,9 +50,9 @@ class AccessType(enum.Enum):
 
     """Access type"""
 
-    READ: Final[auto] = auto()
+    READ: Final = auto()
 
-    WRITE: Final[auto] = auto()
+    WRITE: Final = auto()
 
 
 @attr.s(frozen=True)

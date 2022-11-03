@@ -49,11 +49,11 @@ class StallState(enum.Enum):
 
     """Instruction stalling state"""
 
-    NO_STALL: Final[auto] = auto()
+    NO_STALL: Final = auto()
 
-    STRUCTURAL: Final[auto] = auto()
+    STRUCTURAL: Final = auto()
 
-    DATA: Final[auto] = auto()
+    DATA: Final = auto()
 
 
 @attr.s

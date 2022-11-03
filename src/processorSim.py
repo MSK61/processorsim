@@ -67,8 +67,8 @@ import sim_services
 from sim_services.sim_defs import InstrState, StallState
 # command-line option variables
 # variable to receive the processor architecture file
-_PROC_OPT_VAR: Final[str] = "processor_file"
-_PROG_OPT_VAR: Final[str] = "prog_file"  # variable to receive the program file
+_PROC_OPT_VAR: Final = "processor_file"
+_PROG_OPT_VAR: Final = "prog_file"  # variable to receive the program file
 _T = typing.TypeVar("_T")
 
 
