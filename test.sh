@@ -34,11 +34,5 @@
 ############################################################
 set -e
 pytest --cov src --flake8 --pylint $*
-(
-
-    cd src
-    pytest -m "mypy or pylint" --mypy --pylint $*
-
-)
-snyk code test
-snyk test
+cd src
+pytest -m "mypy or pylint" --mypy --pylint $*
