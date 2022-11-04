@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.70.1, python 3.9.7, Fedora release
-#               36 (Thirty Six)
+# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
+#               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
@@ -189,15 +189,6 @@ class BagValDict(Generic[_KT, _VT]):
 
         """
         return more_itertools.ilen(self.items())
-
-    def __ne__(self, other: object) -> bool:
-        """Test if the two dictionaries are different.
-
-        `self` is this dictionary.
-        `other` is the other dictionary.
-
-        """
-        return not self == other
 
     def __repr__(self) -> str:
         """Return the official string of this dictionary.
