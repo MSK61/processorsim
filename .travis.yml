@@ -26,7 +26,9 @@ install:
   - PIPENV_VERBOSITY=-1 pipenv sync -d
   - npm install --location global snyk
 script: ./test.sh
-after_success: coveralls
+after_success:
+  - coveralls
+  - snyk monitor
 env:
   global:
     secure: ZZOpPopFf+mM0czWK/vTsuVBHzllNGsU3GNWQ+Mvcacs+ik5nQ8HbkDhLDR6K/7ZYB1nkMuqMGEVnsGkz/J+PFTuCk2bk3axQb+ouYUqfpw0lLdmN/kTtdO+xlwsMzTgOdd00X/oKz/LLC/X/PaaxtcyYm0z1LGvpLPaFuF20UwxxsQTrKF9him5oc1c98bS4i+iU9df+h7f5FsFflmWAkR4WS//cJKGfK5r5yhk1S025ZwvWrX/VSEQ/e1jcgUr1ZhPOJG1pYDc+W8lKzl6EB2d/8bbKq/N0E4zeIA+troWwdGdHgbcfUYMTlpOVs7ODkL1gC5AzpMk5SLK9F7mGsSers22ZwdURN8gNXnDDMhdld2QROwgN8dRSu/KCFzOG9WW8nhPmIDB3jMV2oVQDdgX50qccqob+bgs7Tg6lYIaILfVjuKRYAN1F7i10sUhBkFLUjwq8PwxSRcbamjKYCf6ibPE8JaMKbdu2frLA8JpbyO+hTeKpFN/pwjulrF5tQyklSmcoEtLwBzJw9RyD5ZrVU3ci4ucl0YQHpoDtcVLQJc/QkPvW5a0jSXTeLaCVcVixf8CATiW6e3RLarj4rGZ/FbMRKSkoN8/sJRGYTNsADg9yJJZnoKZ0l9FWjfP2eKZf5Qlc7WuvXduM5/MNjmYEBQb5gbgH+o/hjEB6TE=
