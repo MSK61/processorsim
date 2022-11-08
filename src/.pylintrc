@@ -36,4 +36,4 @@ disable=all
 # it should appear only once). See also the "--disable" option for examples.
 enable=duplicate-code,
        no-self-use,
-        wrong-import-order
+       wrong-import-order
