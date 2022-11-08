@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.70.1, python 3.9.7, Fedora release
-#               36 (Thirty Six)
+# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
+#               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
@@ -67,7 +67,7 @@ class CoverageTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        repr(BagValDict())
+        self.assertTrue(repr(BagValDict()))
 
     def test_IndexedSet_repr(self):
         """Test IndexedSet representation.
@@ -75,7 +75,7 @@ class CoverageTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        repr(container_utils.IndexedSet(lambda elem: elem))
+        self.assertTrue(repr(container_utils.IndexedSet(lambda elem: elem)))
 
 
 def main():
