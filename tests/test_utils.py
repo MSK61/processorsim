@@ -45,7 +45,8 @@ import yaml
 
 from . import test_env
 import processor_utils
-from processor_utils.units import LockInfo, UnitModel
+from processor_utils.units import CapabilityInfo, LockInfo, make_unit_model, \
+    UnitModel2
 import program_utils
 from str_utils import ICaseString
 TEST_DATA_DIR: typing.Final = join(test_env.TEST_DIR, "data")
@@ -111,10 +112,11 @@ def chk_two_units(proc_dir, proc_file):
     alu_cap = ICaseString("ALU")
     out_unit = ICaseString("output")
     assert proc_desc == processor_utils.ProcessorDesc(
-        [UnitModel(
-            ICaseString("input"), 1, [alu_cap], LockInfo(True, False), [])],
-        [processor_utils.units.FuncUnit(UnitModel(out_unit, 1, [
-            alu_cap], LockInfo(False, True), []), proc_desc.in_ports)], [], [])
+        [make_unit_model(UnitModel2(ICaseString("input"), 1, [
+            CapabilityInfo(alu_cap, False)], LockInfo(True, False)))],
+        [processor_utils.units.FuncUnit(make_unit_model(
+            UnitModel2(out_unit, 1, [CapabilityInfo(alu_cap, False)],
+                       LockInfo(False, True))), proc_desc.in_ports)], [], [])
 
 
 def chk_warn(tokens, warn_calls):
