@@ -102,7 +102,8 @@ def chk_error(verify_points, error):
 def chk_two_units(proc_dir, proc_file):
     """Verify a two-unit processor.
 
-    `proc_dir` is the directory containing the processor description file.
+    `proc_dir` is the directory containing the processor description
+               file.
     `proc_file` is the processor description file.
     The function asserts the order and descriptions of units and links
     among them.
@@ -161,7 +162,8 @@ def read_isa_file(file_name, capabilities):
 def read_proc_file(proc_dir, file_name):
     """Read a processor description file.
 
-    `proc_dir` is the directory containing the processor description file.
+    `proc_dir` is the directory containing the processor description
+               file.
     `file_name` is the processor description file name.
     The function returns the processor description.
 
