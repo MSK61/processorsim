@@ -1,0 +1,14 @@
+units:
+    - name: core 1
+      width: 1
+      capabilities:
+        - name: ALU
+      readLock: True
+      writeLock: True
+    - name: core 2
+      width: 1
+      capabilities:
+        - name: MEM
+      readLock: True
+      writeLock: True
+dataPath: []

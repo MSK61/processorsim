@@ -1,0 +1,8 @@
+units:
+    - name: full system
+      width: 1
+      capabilities:
+        - name: MEM
+      readLock: True
+      writeLock: True
+dataPath: []

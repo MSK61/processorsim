@@ -31,13 +31,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
+# environment:  Visual Studdio Code 1.73.1, python 3.10.7, Fedora
 #               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import operator
 from os.path import join
 import typing
 
@@ -46,7 +47,7 @@ import yaml
 from . import test_env
 import processor_utils
 from processor_utils.units import CapabilityInfo, LockInfo, make_unit_model, \
-    UnitModel2
+    UNIT_CAPS_KEY, UnitModel2
 import program_utils
 from str_utils import ICaseString
 TEST_DATA_DIR: typing.Final = join(test_env.TEST_DIR, "data")
@@ -169,6 +170,24 @@ def read_proc_file(proc_dir, file_name):
 
     """
     return processor_utils.load_proc_desc(_load_yaml(proc_dir, file_name))
+
+
+def read_proc_file2(proc_dir, file_name):
+    """Read a processor description file.
+
+    `proc_dir` is the directory containing the processor description
+               file.
+    `file_name` is the processor description file name.
+    The function returns the processor description.
+
+    """
+    proc_yaml = _load_yaml(proc_dir, file_name)
+
+    for cur_unit in proc_yaml["units"]:
+        cur_unit[UNIT_CAPS_KEY] = tuple(
+            map(operator.itemgetter("name"), cur_unit[UNIT_CAPS_KEY]))
+
+    return processor_utils.load_proc_desc(proc_yaml)
 
 
 def read_prog_file(file_name):

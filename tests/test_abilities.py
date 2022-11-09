@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.70.1, python 3.9.7, Fedora release
-#               36 (Thirty Six)
+# environment:  Visual Studdio Code 1.73.1, python 3.10.7, Fedora
+#               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
@@ -50,10 +50,11 @@ class TestAbilities:
 
     """Test case for extracting processor capabilities"""
 
-    @pytest.mark.parametrize("in_file, capabilities", [
-        ("singleALUProcessor.yaml", ["ALU"]), ("singleMemUnitProcessor.yaml", [
-            "MEM"]), ("dualCoreALUMemProcessor.yaml", ["ALU", "MEM"]),
-        ("twoConnectedUnitsProcessor.yaml", ["ALU"])])
+    @pytest.mark.parametrize(
+        "in_file, capabilities", [("singleALUProcessor2.yaml", ["ALU"]), (
+            "singleMemUnitProcessor2.yaml", ["MEM"]), (
+                "dualCoreALUMemProcessor2.yaml", ["ALU", "MEM"]), (
+                    "twoConnectedUnitsProcessor2.yaml", ["ALU"])])
     def test_abilities(self, in_file, capabilities):
         """Test extracting abilities from a processor.
 
@@ -63,7 +64,7 @@ class TestAbilities:
 
         """
         assert processor_utils.get_abilities(
-            test_utils.read_proc_file("processors", in_file)) == frozenset(
+            test_utils.read_proc_file2("processors", in_file)) == frozenset(
                 str_utils.ICaseString(cap) for cap in capabilities)
 
 

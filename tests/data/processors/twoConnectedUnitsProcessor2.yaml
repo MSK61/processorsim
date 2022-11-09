@@ -1,0 +1,13 @@
+units:
+    - name: input
+      width: 1
+      capabilities:
+        - name: ALU
+      readLock: True
+    - name: output
+      width: 1
+      capabilities:
+        - name: ALU
+      writeLock: True
+dataPath:
+    - [input, output]
