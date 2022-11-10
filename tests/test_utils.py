@@ -38,7 +38,6 @@
 #
 ############################################################
 
-import operator
 from os.path import join
 import typing
 
@@ -184,8 +183,8 @@ def read_proc_file2(proc_dir, file_name):
     proc_yaml = _load_yaml(proc_dir, file_name)
 
     for cur_unit in proc_yaml["units"]:
-        cur_unit[UNIT_CAPS_KEY] = tuple(
-            map(operator.itemgetter("name"), cur_unit[UNIT_CAPS_KEY]))
+        for idx, cap in enumerate(cur_unit[UNIT_CAPS_KEY]):
+            cur_unit[UNIT_CAPS_KEY][idx] = cap["name"]
 
     return processor_utils.load_proc_desc(proc_yaml)
 
