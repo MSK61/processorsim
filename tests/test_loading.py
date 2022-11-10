@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.70.1, python 3.9.7, Fedora release
-#               36 (Thirty Six)
+# environment:  Visual Studdio Code 1.73.1, python 3.10.7, Fedora
+#               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
@@ -46,7 +46,7 @@ import pytest
 from pytest import mark, raises
 
 from .test_utils import chk_error, chk_two_units, chk_warn, read_proc_file, \
-    ValInStrCheck
+    read_proc_file2, ValInStrCheck
 import errors
 from hw_loading import make_unit_dict
 from processor_utils import exception, load_proc_desc, ProcessorDesc
@@ -85,8 +85,8 @@ class TestCaps:
 
     # pylint: disable=invalid-name
     @mark.parametrize("in_file", [
-        "processorWithNoCapableInputs.yaml",
-        "singleUnitWithNoCapabilities.yaml", "emptyProcessor.yaml"])
+        "processorWithNoCapableInputs2.yaml",
+        "singleUnitWithNoCapabilities2.yaml", "emptyProcessor2.yaml"])
     def test_processor_with_incapable_ports_raises_EmptyProcError(
             self, in_file):
         """Test a processor with no capable ports.
@@ -96,7 +96,7 @@ class TestCaps:
 
         """
         assert "input" in ICaseString(
-            str(raises(exception.EmptyProcError, read_proc_file,
+            str(raises(exception.EmptyProcError, read_proc_file2,
                        "capabilities", in_file).value))
     # pylint: enable=invalid-name
 

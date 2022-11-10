@@ -1,0 +1,5 @@
+units:
+    - name: full system
+      width: 1
+      capabilities: []
+dataPath: []
