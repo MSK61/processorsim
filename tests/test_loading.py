@@ -109,12 +109,12 @@ class TestCaps:
 
         """
         caplog.set_level(WARNING)
-        in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits.yaml"
+        in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits2.yaml"
         processor = (make_unit_model(UnitModel2(
             ICaseString(unit_name), 1,
             [CapabilityInfo(ICaseString("ALU"), False)],
             LockInfo(True, True))) for unit_name in ["core 1", "core 2"])
-        assert read_proc_file("capabilities", in_file) == ProcessorDesc(
+        assert read_proc_file2("capabilities", in_file) == ProcessorDesc(
             [], [], processor, [])
         chk_warn(["ALU", "core 1", "alu", "core 2"], caplog.records)
         assert ICaseString.__name__ not in caplog.records[0].getMessage()
