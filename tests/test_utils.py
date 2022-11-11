@@ -184,7 +184,7 @@ def read_proc_file2(proc_dir, file_name):
 
     for cur_unit in proc_yaml["units"]:
         for idx, cap in enumerate(cur_unit[UNIT_CAPS_KEY]):
-            cur_unit[UNIT_CAPS_KEY][idx] = _make_cap(cap)
+            cur_unit[UNIT_CAPS_KEY][idx] = _make_cap_name(cap)
 
     return processor_utils.load_proc_desc(proc_yaml)
 
@@ -214,7 +214,7 @@ def _load_yaml(test_dir, file_name):
         return yaml.safe_load(test_file)
 
 
-def _make_cap(cap):
+def _make_cap_name(cap):
     """Extract the capability name.
 
     `cap` is the capability to extract whose name.
