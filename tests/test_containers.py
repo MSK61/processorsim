@@ -47,8 +47,8 @@ import container_utils
 class CoverageTest(unittest.TestCase):
 
     """Test case for fulfilling complete code coverage"""
-    # pylint: disable=invalid-name
 
+    # pylint: disable=invalid-name
     def test_BagValDict_repr(self):
         """Test BagValDict representation.
 
