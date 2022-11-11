@@ -43,13 +43,13 @@ import typing
 
 import yaml
 
-import test_env
+import test_paths
 import processor_utils
 from processor_utils.units import CapabilityInfo, LockInfo, make_unit_model, \
     UNIT_CAPS_KEY, UnitModel2
 import program_utils
 from str_utils import ICaseString
-TEST_DATA_DIR: typing.Final = join(test_env.TEST_DIR, "data")
+TEST_DATA_DIR: typing.Final = join(test_paths.TEST_DIR, "data")
 
 
 class ValInStrCheck:

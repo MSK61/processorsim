@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.70.1, python 3.9.7, Fedora release
-#               36 (Thirty Six)
+# environment:  Visual Studdio Code 1.73.1, python 3.10.7, Fedora
+#               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
@@ -46,7 +46,6 @@ import more_itertools
 import pytest
 from pytest import mark
 
-from test_env import TEST_DIR
 from container_utils import BagValDict
 import hw_loading
 import processor_utils
@@ -69,13 +68,13 @@ class RarTest(TestCase):
         `self` is this test case.
 
         """
-        proc_desc = ProcessorDesc(
-            [], [], [make_unit_model(UnitModel2(ICaseString(TEST_DIR), 2, [
+        proc_desc = ProcessorDesc([], [], [
+            make_unit_model(UnitModel2(ICaseString("full system"), 2, [
                 CapabilityInfo("ALU", False)], LockInfo(True, True)))], [])
         self.assertEqual(
             simulate([HwInstruction(["R1"], out_reg, "ALU") for out_reg in
-                      ["R2", "R3"]], HwSpec(proc_desc)),
-            [BagValDict({ICaseString(TEST_DIR): map(InstrState, [0, 1])})])
+                      ["R2", "R3"]], HwSpec(proc_desc)), [BagValDict({
+                        ICaseString("full system"): map(InstrState, [0, 1])})])
 
 
 class RawTest(TestCase):
@@ -122,15 +121,16 @@ class TestDataHazards:
         `instr_regs` are the registers accessed by each instruction.
 
         """
-        full_sys_unit = make_unit_model(UnitModel2(ICaseString(TEST_DIR), 2, [
-            CapabilityInfo("ALU", False)], LockInfo(True, True)))
+        full_sys_unit = make_unit_model(
+            UnitModel2(ICaseString("full system"), 2,
+                       [CapabilityInfo("ALU", False)], LockInfo(True, True)))
         assert simulate(
             [HwInstruction(*regs, "ALU") for regs in instr_regs],
             HwSpec(ProcessorDesc([], [], [full_sys_unit], []))) == [
                 BagValDict(cp_util) for cp_util in
-                [{ICaseString(TEST_DIR):
+                [{ICaseString("full system"):
                   starmap(InstrState, [[0], [1, StallState.DATA]])},
-                 {ICaseString(TEST_DIR): [InstrState(1)]}]]
+                 {ICaseString("full system"): [InstrState(1)]}]]
 
 
 class TestStructural:
