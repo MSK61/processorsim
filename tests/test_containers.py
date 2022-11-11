@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
+# environment:  Visual Studdio Code 1.73.1, python 3.10.7, Fedora
 #               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
@@ -42,7 +42,6 @@
 import itertools
 import unittest
 
-import test_env
 import container_utils
 from container_utils import BagValDict
 
@@ -59,7 +58,7 @@ class CoverageTest(unittest.TestCase):
 
         """
         self.assertNotEqual(
-            *(itertools.starmap(BagValDict, [[], [{test_env.TEST_DIR: [0]}]])))
+            *(itertools.starmap(BagValDict, [[], [{"": [0]}]])))
 
     def test_BagValDict_repr(self):
         """Test BagValDict representation.
