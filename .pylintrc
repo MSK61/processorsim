@@ -30,5 +30,4 @@
 # --disable=W".
 disable=duplicate-code,
         no-self-use,
-        too-few-public-methods,
-        wrong-import-order
+        too-few-public-methods

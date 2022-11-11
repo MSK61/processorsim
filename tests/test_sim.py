@@ -46,8 +46,8 @@ import more_itertools
 import pytest
 from pytest import mark, raises
 
-from . import test_utils
-from .test_utils import read_proc_file
+import test_utils
+from test_utils import read_proc_file
 from container_utils import BagValDict
 import processor_utils
 from processor_utils import ProcessorDesc

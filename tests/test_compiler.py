@@ -45,8 +45,8 @@ from logging import WARNING
 import pytest
 from pytest import mark, raises
 
-from . import test_utils
-from .test_utils import read_prog_file
+import test_utils
+from test_utils import read_prog_file
 import errors
 import program_defs
 from program_defs import ProgInstruction

@@ -45,7 +45,7 @@ import unittest
 import nbconvert.preprocessors
 import nbformat
 
-from . import test_paths
+import test_paths
 
 
 class ExampleTest(unittest.TestCase):

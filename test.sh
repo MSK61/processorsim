@@ -27,12 +27,15 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.73.0, Fedora release 36 (Thirty Six)
+# environment:  Visual Studdio Code 1.73.1, Fedora release 36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
 ############################################################
 set -e
+# just running a sample test module to make sure test modules are executable on
+# their own
+tests/test_containers.py
 pytest --cov src --flake8 --pylint $*
 cd src
 pytest -m "mypy or pylint" --mypy --pylint $*

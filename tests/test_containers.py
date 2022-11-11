@@ -42,7 +42,7 @@
 import itertools
 import unittest
 
-from . import test_env
+import test_env
 import container_utils
 from container_utils import BagValDict
 

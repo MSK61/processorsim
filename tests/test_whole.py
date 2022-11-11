@@ -43,7 +43,7 @@ from os.path import join
 
 import pytest
 
-from .test_utils import TEST_DATA_DIR
+from test_utils import TEST_DATA_DIR
 import processorSim
 
 

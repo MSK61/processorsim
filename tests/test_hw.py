@@ -45,7 +45,7 @@ from unittest.mock import patch
 
 import pytest
 
-from . import test_utils
+import test_utils
 import hw_loading
 import processor_utils
 from processor_utils import units

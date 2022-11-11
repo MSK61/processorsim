@@ -43,7 +43,7 @@ import typing
 
 import yaml
 
-from . import test_env
+import test_env
 import processor_utils
 from processor_utils.units import CapabilityInfo, LockInfo, make_unit_model, \
     UNIT_CAPS_KEY, UnitModel2

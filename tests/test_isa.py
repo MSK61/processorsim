@@ -42,7 +42,7 @@
 import pytest
 from pytest import raises
 
-from .test_utils import chk_error, read_isa_file, ValInStrCheck
+from test_utils import chk_error, read_isa_file, ValInStrCheck
 import errors
 import processor_utils.exception
 from str_utils import ICaseString

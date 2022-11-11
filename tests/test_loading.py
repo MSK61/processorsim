@@ -45,7 +45,7 @@ import unittest
 import pytest
 from pytest import mark, raises
 
-from .test_utils import chk_error, chk_two_units, chk_warn, read_proc_file, \
+from test_utils import chk_error, chk_two_units, chk_warn, read_proc_file, \
     read_proc_file2, ValInStrCheck
 import errors
 from hw_loading import make_unit_dict
