@@ -139,8 +139,8 @@ class TestCaps:
 
     # pylint: disable=invalid-name
     @mark.parametrize(
-        "in_file, bad_width", [("singleUnitWithZeroWidth.yaml", 0),
-                               ("singleUnitWithNegativeWidth.yaml", -1)])
+        "in_file, bad_width", [("singleUnitWithZeroWidth2.yaml", 0),
+                               ("singleUnitWithNegativeWidth2.yaml", -1)])
     def test_unit_with_non_positive_width_raises_BadWidthError(
             self, in_file, bad_width):
         """Test loading a unit with a non-positive width.
@@ -151,7 +151,7 @@ class TestCaps:
 
         """
         ex_chk = raises(
-            exception.BadWidthError, read_proc_file, "capabilities", in_file)
+            exception.BadWidthError, read_proc_file2, "capabilities", in_file)
         chk_error([ValInStrCheck(*chk_params) for chk_params in
                    [(ex_chk.value.unit, "full system"),
                     (ex_chk.value.width, bad_width)]], ex_chk.value)
