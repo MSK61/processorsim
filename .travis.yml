@@ -26,7 +26,7 @@ install:
   - PIPENV_VERBOSITY=-1 pipenv sync -d
   - npm install --location global snyk
 script:
-  - ./test.sh
+  - pipenv run ./test.sh
   - snyk code test
   - snyk test
 after_success:
