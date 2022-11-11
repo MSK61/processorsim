@@ -49,14 +49,6 @@ class CoverageTest(unittest.TestCase):
     """Test case for fulfilling complete code coverage"""
 
     # pylint: disable=invalid-name
-    def test_BagValDict_repr(self):
-        """Test BagValDict representation.
-
-        `self` is this test case.
-
-        """
-        self.assertTrue(repr(container_utils.BagValDict()))
-
     def test_IndexedSet_repr(self):
         """Test IndexedSet representation.
 
