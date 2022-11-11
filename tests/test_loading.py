@@ -168,13 +168,13 @@ class TestEdges:
         `self` is this test case.
 
         """
-        ex_chk = raises(errors.UndefElemError, read_proc_file, "edges",
-                        "edgeWithUnknownUnit.yaml")
+        ex_chk = raises(errors.UndefElemError, read_proc_file2, "edges",
+                        "edgeWithUnknownUnit2.yaml")
         chk_error([ValInStrCheck(ex_chk.value.element, ICaseString("input"))],
                   ex_chk.value)
 
-    @mark.parametrize("in_file, bad_edge", [("emptyEdge.yaml", []), (
-        "3UnitEdge.yaml", ["input", "middle", "output"])])
+    @mark.parametrize("in_file, bad_edge", [("emptyEdge2.yaml", []), (
+        "3UnitEdge2.yaml", ["input", "middle", "output"])])
     def test_edge_with_wrong_number_of_units_raises_BadEdgeError(
             self, in_file, bad_edge):
         """Test loading an edge with wrong number of units.
@@ -185,7 +185,7 @@ class TestEdges:
 
         """
         ex_chk = raises(
-            exception.BadEdgeError, read_proc_file, "edges", in_file)
+            exception.BadEdgeError, read_proc_file2, "edges", in_file)
         chk_error([ValInStrCheck(ex_chk.value.edge, bad_edge)], ex_chk.value)
     # pylint: enable=invalid-name
 
