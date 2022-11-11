@@ -39,11 +39,9 @@
 #
 ############################################################
 
-import itertools
 import unittest
 
 import container_utils
-from container_utils import BagValDict
 
 
 class CoverageTest(unittest.TestCase):
@@ -51,22 +49,13 @@ class CoverageTest(unittest.TestCase):
     """Test case for fulfilling complete code coverage"""
     # pylint: disable=invalid-name
 
-    def test_BagValDict_ne_operator(self):
-        """Test BagValDict != operator.
-
-        `self` is this test case.
-
-        """
-        self.assertNotEqual(
-            *(itertools.starmap(BagValDict, [[], [{"": [0]}]])))
-
     def test_BagValDict_repr(self):
         """Test BagValDict representation.
 
         `self` is this test case.
 
         """
-        self.assertTrue(repr(BagValDict()))
+        self.assertTrue(repr(container_utils.BagValDict()))
 
     def test_IndexedSet_repr(self):
         """Test IndexedSet representation.
