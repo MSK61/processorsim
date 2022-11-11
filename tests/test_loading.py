@@ -44,7 +44,7 @@ from logging import WARNING
 import pytest
 from pytest import mark, raises
 
-from .test_utils import chk_error, chk_two_units, chk_warn, read_proc_file, \
+from test_utils import chk_error, chk_two_units, chk_warn, read_proc_file, \
     ValInStrCheck
 import errors
 from processor_utils import exception, load_proc_desc, ProcessorDesc

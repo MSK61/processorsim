@@ -41,7 +41,7 @@
 
 import pytest
 
-from . import test_utils
+import test_utils
 import processor_utils
 import str_utils
 

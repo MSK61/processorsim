@@ -44,7 +44,7 @@ import networkx
 import pytest
 from pytest import mark, raises
 
-from .test_utils import chk_error, read_proc_file, ValInStrCheck
+from test_utils import chk_error, read_proc_file, ValInStrCheck
 from processor_utils import exception, load_proc_desc
 from processor_utils.exception import PathLockError
 from processor_utils.units import UNIT_CAPS_KEY, UNIT_NAME_KEY, \

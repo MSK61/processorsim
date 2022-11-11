@@ -43,7 +43,7 @@ import typing
 
 import yaml
 
-from . import test_env
+import test_env
 import processor_utils
 from processor_utils.units import LockInfo, UnitModel
 import program_utils

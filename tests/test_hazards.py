@@ -46,7 +46,7 @@ import more_itertools
 import pytest
 from pytest import mark
 
-from .test_env import TEST_DIR
+from test_env import TEST_DIR
 from container_utils import BagValDict
 import processor_utils
 from processor_utils import ProcessorDesc, units

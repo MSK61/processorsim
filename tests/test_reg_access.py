@@ -42,7 +42,7 @@
 import pytest
 from pytest import mark
 
-from .test_env import TEST_DIR
+from test_env import TEST_DIR
 import reg_access
 from reg_access import AccessGroup, AccessType, RegAccessQueue
 

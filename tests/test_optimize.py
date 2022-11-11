@@ -45,8 +45,8 @@ from logging import WARNING
 import more_itertools
 import pytest
 
-from . import test_utils
-from .test_utils import chk_warn, read_proc_file
+import test_utils
+from test_utils import chk_warn, read_proc_file
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from str_utils import ICaseString
