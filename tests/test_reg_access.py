@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.73.1, python 3.10.7, Fedora
-#               release 36 (Thirty Six)
+# environment:  Visual Studdio Code 1.70.1, python 3.9.7, Fedora release
+#               36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
@@ -42,6 +42,7 @@
 import pytest
 from pytest import mark
 
+from test_env import TEST_DIR
 import reg_access
 from reg_access import AccessGroup, AccessType, RegAccessQueue
 
@@ -67,7 +68,8 @@ class TestAccessPlan:
         assert RegAccessQueue(queue).can_access(AccessType.READ, 0) == result
 
     @mark.parametrize("reqs, result_queue", [
-        ([[AccessType.READ, 0]], [AccessGroup(AccessType.READ, [0])]),
+        ([[AccessType.READ, len(TEST_DIR)]],
+         [AccessGroup(AccessType.READ, [len(TEST_DIR)])]),
         ([[AccessType.WRITE, 0]], [AccessGroup(AccessType.WRITE, [0])]),
         ([[AccessType.READ, 0], [AccessType.WRITE, 1]],
          [AccessGroup(*gr_params) for gr_params in

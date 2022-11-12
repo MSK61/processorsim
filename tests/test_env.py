@@ -1,7 +1,6 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""container utilities tests"""
+"""test environment setup"""
 
 ############################################################
 #
@@ -24,47 +23,31 @@
 #
 # program:      processor simulator
 #
-# file:         test_containers.py
+# file:         test_env.py
 #
-# function:     container utilities tests
+# function:     test environment initialization
 #
-# description:  tests container auxiliary classes and functions
+# description:  initializes logging and prepares for importing source
+#               modules inside the test environment
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
-#               release 36 (Thirty Six)
+# environment:  Visual Studdio Code 1.70.1, python 3.9.7, Fedora release
+#               36 (Thirty Six)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import unittest
+import logging
 
-import test_env
-import container_utils
-
-
-class CoverageTest(unittest.TestCase):
-
-    """Test case for fulfilling complete code coverage"""
-
-    # pylint: disable=invalid-name
-    def test_IndexedSet_repr(self):
-        """Test IndexedSet representation.
-
-        `self` is this test case.
-
-        """
-        indexed_set = container_utils.IndexedSet(lambda elem: elem)
-        indexed_set.add(test_env.TEST_DIR)
-        self.assertTrue(repr(indexed_set))
+from test_paths import TEST_DIR
+__all__ = ["TEST_DIR"]
 
 
-def main():
-    """entry point for running test in this module"""
-    unittest.main()
+def _init():
+    """Initialize the test environment."""
+    logging.basicConfig(level=logging.INFO)
 
 
-if __name__ == '__main__':
-    main()
+_init()

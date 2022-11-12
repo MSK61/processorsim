@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.73.1, python 3.10.7, Fedora
+# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
 #               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
@@ -43,13 +43,13 @@ import typing
 
 import yaml
 
-import test_paths
+import test_env
 import processor_utils
 from processor_utils.units import CapabilityInfo, LockInfo, make_unit_model, \
     UNIT_CAPS_KEY, UnitModel2
 import program_utils
 from str_utils import ICaseString
-TEST_DATA_DIR: typing.Final = join(test_paths.TEST_DIR, "data")
+TEST_DATA_DIR: typing.Final = join(test_env.TEST_DIR, "data")
 
 
 class ValInStrCheck:
