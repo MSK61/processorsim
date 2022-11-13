@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
+# environment:  Visual Studdio Code 1.73.1, python 3.10.8, Fedora
 #               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
@@ -181,11 +181,7 @@ def read_proc_file2(proc_dir, file_name):
 
     """
     proc_yaml = _load_yaml(proc_dir, file_name)
-
-    for cur_unit in proc_yaml["units"]:
-        for idx, cap in enumerate(cur_unit[UNIT_CAPS_KEY]):
-            cur_unit[UNIT_CAPS_KEY][idx] = _make_cap_name(cap)
-
+    _fix_proc_yaml(proc_yaml)
     return processor_utils.load_proc_desc(proc_yaml)
 
 
@@ -201,6 +197,19 @@ def read_prog_file(file_name):
         return program_utils.read_program(prog_file)
 
 
+def _fix_proc_yaml(proc_yaml):
+    """Fix a processor YAML description.
+
+    `proc_yaml` is the processor YAML description.
+    The function converts the provided processor YAML description
+    in-place.
+
+    """
+    for cur_unit in proc_yaml["units"]:
+        for idx, cap in enumerate(cur_unit[UNIT_CAPS_KEY]):
+            cur_unit[UNIT_CAPS_KEY][idx] = cap["name"]
+
+
 def _load_yaml(test_dir, file_name):
     """Read a test YAML file.
 
@@ -212,12 +221,3 @@ def _load_yaml(test_dir, file_name):
     with open(join(TEST_DATA_DIR, test_dir, file_name),
               encoding="utf-8") as test_file:
         return yaml.safe_load(test_file)
-
-
-def _make_cap_name(cap):
-    """Extract the capability name.
-
-    `cap` is the capability to extract whose name.
-
-    """
-    return cap["name"]
