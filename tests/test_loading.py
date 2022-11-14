@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.73.1, python 3.10.7, Fedora
+# environment:  Visual Studdio Code 1.73.1, python 3.10.8, Fedora
 #               release 36 (Thirty Six)
 #
 # notes:        This is a private program.
@@ -255,8 +255,8 @@ class TestProcessors:
         `self` is this test case.
 
         """
-        proc_desc = read_proc_file(
-            "processors", "4ConnectedUnitsProcessor.yaml")
+        proc_desc = read_proc_file2(
+            "processors", "4ConnectedUnitsProcessor2.yaml")
         alu_cap = CapabilityInfo(ICaseString("ALU"), False)
         wr_lock = LockInfo(False, True)
         out_ports = tuple(
@@ -294,8 +294,8 @@ class TestProcessors:
         _chk_one_unit("processors", "singleALUProcessor.yaml")
 
     @mark.parametrize(
-        "in_file", ["oneInputTwoOutputProcessor.yaml",
-                    "inputPortWithPartiallyConsumedCapability.yaml"])
+        "in_file", ["oneInputTwoOutputProcessor2.yaml",
+                    "inputPortWithPartiallyConsumedCapability2.yaml"])
     def test_valid_processor_raises_no_exceptions(self, in_file):
         """Test loading a valid processor raises no exceptions.
 
@@ -303,7 +303,7 @@ class TestProcessors:
         `in_file` is the processor description file.
 
         """
-        read_proc_file("processors", in_file)
+        read_proc_file2("processors", in_file)
 
 
 class TestUnits:

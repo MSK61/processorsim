@@ -1,0 +1,13 @@
+units:
+    - name: input
+      width: 2
+      capabilities:
+        - name: MEM
+      readLock: True
+    - name: output
+      width: 1
+      capabilities:
+        - name: MEM
+      writeLock: True
+dataPath:
+    - [input, output]
