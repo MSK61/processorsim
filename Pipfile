@@ -14,6 +14,7 @@ nbconvert = "*"
 ipykernel = "*"
 types-pyyaml = "*"
 flake8 = "<5"
+rope = "*"
 
 [packages]
 networkx = "*"
