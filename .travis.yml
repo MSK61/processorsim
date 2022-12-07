@@ -23,7 +23,7 @@ dist: bionic
 python: 3.10
 install:
   - pip install pipenv
-  - pipenv sync -d
+  - PIPENV_VERBOSITY=-1 pipenv sync -d
   - npm install --location global snyk
 script:
   - pipenv run ./test.sh
