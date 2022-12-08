@@ -6,7 +6,6 @@ verify_ssl = true
 [dev-packages]
 pytest-cov = "*"
 pytest-pylint = "*"
-pytest-travis-fold = "*"
 pytest-mypy = "*"
 coveralls = "*"
 pytest-flake8 = "*"
