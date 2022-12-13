@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
-#               release 36 (Thirty Six)
+# environment:  Visual Studdio Code 1.74.0, python 3.10.8, Fedora
+#               release 37 (Thirty Seven)
 #
 # notes:        This is a private program.
 #
@@ -67,12 +67,12 @@ def chk_caps(processor: DiGraph) -> None:
     `processor` is the processor to check whose capabilities.
 
     """
-    cap_checks = [lambda cap_graph, post_ord, cap, in_ports, out_ports:
+    cap_checks = [lambda cap_graph, post_ord, cap, in_ports, _:
                   _chk_multilock(cap_graph, post_ord, cap, in_ports)]
 
     if processor.number_of_nodes() > 1:
         cap_checks.append(
-            lambda cap_graph, post_ord, cap, in_ports, out_ports:
+            lambda cap_graph, _, cap, in_ports, out_ports:
             _chk_cap_flow(_get_anal_graph(cap_graph),
                           ComponentInfo(cap, "Capability " + cap), in_ports,
                           out_ports, lambda port: "port " + port))
