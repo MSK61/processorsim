@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
-#               release 36 (Thirty Six)
+# environment:  Visual Studdio Code 1.74.1, python 3.10.8, Fedora
+#               release 37 (Thirty Seven)
 #
 # notes:        This is a private program.
 #
@@ -176,11 +176,11 @@ class OutSink(IInstrSink):
     """Dummy sink for flushing output ports"""
 
     # pylint: disable=unused-argument
-    def _accepts_cap(self, instr: int) -> typing.Literal[True]:
+    def _accepts_cap(self, _: int) -> typing.Literal[True]:
         """Always accept all instructions.
 
         `self` is this output sink.
-        `instr` is unused.
+        `_` is unused.
 
         """
         return True
@@ -197,14 +197,13 @@ class OutSink(IInstrSink):
         """
         return InstrMovStatus(list(candidates))
 
-    def _pick_guests(
-            self, candidates: Iterable[HostedInstr], util_info:
-            BagValDict[ICaseString, InstrState]) -> Iterable[HostedInstr]:
+    def _pick_guests(self, candidates: Iterable[HostedInstr], _: BagValDict[
+            ICaseString, InstrState]) -> Iterable[HostedInstr]:
         """Pick all prospective instructions unconditionally.
 
         `self` is this output sink.
         `candidates` are a list of candidate instructions.
-        `util_info` is unused.
+        `_` is unused.
 
         """
         return tuple(candidates)
