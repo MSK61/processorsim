@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.74.0, python 3.10.8, Fedora
-#               release 37 (Thirty Seven)
+# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
+#               37 (Thirty Seven)
 #
 # notes:        This is a private program.
 #
