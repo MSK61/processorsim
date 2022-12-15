@@ -78,9 +78,7 @@ class ICaseString:
         `other` is the other case-insensitive string.
 
         """
-        return operator.eq(
-            *(self._get_canonical(other.raw_str))) if isinstance(
-                other, ICaseString) else NotImplemented
+        return operator.eq(*(self._get_canonical(other.raw_str)))
 
     def __hash__(self) -> int:
         """Get the has value of this case-insensitive string.
