@@ -50,37 +50,6 @@ from str_utils import ICaseString
 TEST_DATA_DIR = join(test_env.TEST_DIR, "data")
 
 
-class ValInStrCheck:
-
-    """Verification point for checking a string contains a value"""
-
-    def __init__(self, real_val, exp_val):
-        """Create a verification point.
-
-        `self` is this verification point.
-        `real_val` is the actual value.
-        `exp_val` is the expected value.
-        The constructor asserts that the real and expected values match.
-
-        """
-        assert real_val == exp_val
-        self._value = exp_val
-
-    def check(self, msg, start_index):
-        """Check that the message contains the associated value.
-
-        `self` is this verification point.
-        `msg` is the message to be checked.
-        `start_index` is the index to start searching after.
-        The method returns the index of the associated value in the
-        given message after the specified index.
-
-        """
-        start_index = msg.find(str(self._value), start_index + 1)
-        assert start_index >= 0
-        return start_index
-
-
 def chk_error(verify_points, error):
     """Check the specifications of an error.
 
@@ -178,6 +147,37 @@ def read_prog_file(file_name):
     with open(join(TEST_DATA_DIR, "programs", file_name),
               encoding="utf-8") as prog_file:
         return program_utils.read_program(prog_file)
+
+
+class ValInStrCheck:
+
+    """Verification point for checking a string contains a value"""
+
+    def __init__(self, real_val, exp_val):
+        """Create a verification point.
+
+        `self` is this verification point.
+        `real_val` is the actual value.
+        `exp_val` is the expected value.
+        The constructor asserts that the real and expected values match.
+
+        """
+        assert real_val == exp_val
+        self._value = exp_val
+
+    def check(self, msg, start_index):
+        """Check that the message contains the associated value.
+
+        `self` is this verification point.
+        `msg` is the message to be checked.
+        `start_index` is the index to start searching after.
+        The method returns the index of the associated value in the
+        given message after the specified index.
+
+        """
+        start_index = msg.find(str(self._value), start_index + 1)
+        assert start_index >= 0
+        return start_index
 
 
 def _load_yaml(test_dir, file_name):
