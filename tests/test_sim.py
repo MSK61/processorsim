@@ -90,7 +90,7 @@ class PipelineTest(TestCase):
 
     """Test case for instruction flow in the pipeline"""
 
-    def test_instructions_are_loaded_to_lexicographically_inputs_first(self):
+    def test_inputs_are_lexicographically_sorted(self):
         """Test instructions are fed into sorted input units.
 
         `self` is this test case.
