@@ -47,6 +47,7 @@ import fastcore.foundation
 
 from container_utils import sorted_tuple
 import str_utils
+
 # unit attributes
 UNIT_CAPS_KEY: Final = "capabilities"
 UNIT_MEM_KEY: Final = "memoryAccess"
@@ -112,10 +113,16 @@ class FuncUnit:
         `other` is the other functional unit.
 
         """
-        criteria = ((model, len(predecessors)) for model, predecessors in [(
-            self.model, self.predecessors), (other.model, other.predecessors)])
+        criteria = (
+            (model, len(predecessors))
+            for model, predecessors in [
+                (self.model, self.predecessors),
+                (other.model, other.predecessors),
+            ]
+        )
         return operator.eq(*criteria) and all(
-            map(operator.is_, self.predecessors, other.predecessors))
+            map(operator.is_, self.predecessors, other.predecessors)
+        )
 
     model: UnitModel = attr.ib()
 

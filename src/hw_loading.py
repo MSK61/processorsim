@@ -69,5 +69,10 @@ def read_processor(proc_file: typing.IO[str]) -> HwDesc:
     microarch_key = "microarch"
     processor = processor_utils.load_proc_desc(yaml_desc[microarch_key])
     isa_key = "ISA"
-    return HwDesc(processor, processor_utils.load_isa(
-        yaml_desc[isa_key].items(), processor_utils.get_abilities(processor)))
+    return HwDesc(
+        processor,
+        processor_utils.load_isa(
+            yaml_desc[isa_key].items(),
+            processor_utils.get_abilities(processor),
+        ),
+    )

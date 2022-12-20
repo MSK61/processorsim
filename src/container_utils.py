@@ -43,21 +43,32 @@ from itertools import starmap
 import operator
 from operator import eq
 import typing
-from typing import Any, Callable, DefaultDict, Generic, List, Optional, \
-    Tuple, TypeVar
+from typing import (
+    Any,
+    Callable,
+    DefaultDict,
+    Generic,
+    List,
+    Optional,
+    Tuple,
+    TypeVar,
+)
+
 
 import attr
 import iteration_utilities
 import more_itertools
 
 from str_utils import format_obj
+
 _KT = TypeVar("_KT")
 _T = TypeVar("_T")
 _VT = TypeVar("_VT")
 
 
-def sorted_tuple(elems: typing.Iterable[Any], key:
-                 Optional[Callable[[Any], Any]] = None) -> Tuple[Any, ...]:
+def sorted_tuple(
+    elems: typing.Iterable[Any], key: Optional[Callable[[Any], Any]] = None
+) -> Tuple[Any, ...]:
     """Sort the elements.
 
     `elems` are the elements to sort.
@@ -142,15 +153,17 @@ class SelfIndexSet(_IndexedSetBase[_T]):
         super().__init__(lambda elem: elem)
 
 
-def _val_lst_dict(val_iter_dict: typing.Mapping[
-        object, object]) -> DefaultDict[object, List[object]]:
+def _val_lst_dict(
+    val_iter_dict: typing.Mapping[object, object]
+) -> DefaultDict[object, List[object]]:
     """Convert the given value iterable dictionary to a value list one.
 
     `val_iter_dict` is the dictionary containing value iterables.
 
     """
     val_lst_dict = starmap(
-        lambda key, val_lst: (key, list(val_lst)), val_iter_dict.items())
+        lambda key, val_lst: (key, list(val_lst)), val_iter_dict.items()
+    )
     return collections.defaultdict(list, val_lst_dict)
 
 
@@ -169,10 +182,12 @@ class BagValDict(Generic[_KT, _VT]):
         assert type(other) is type(self)
         other_items = tuple(other.items())
         lst_pairs = (
-            map(sorted, [val_lst, self[key]]) for key, val_lst in other_items)
+            map(sorted, [val_lst, self[key]]) for key, val_lst in other_items
+        )
         item_lst_pair: List[typing.Sized] = [self, other_items]
         return eq(*(len(item_lst) for item_lst in item_lst_pair)) and all(
-            starmap(eq, lst_pairs))
+            starmap(eq, lst_pairs)
+        )
 
     def __getitem__(self, key: _KT) -> List[_VT]:
         """Retrieve the list of the given key.
@@ -214,11 +229,16 @@ class BagValDict(Generic[_KT, _VT]):
 
         """
         elems = starmap(
-            lambda key, val_lst: (key, sorted(val_lst)), self.items())
+            lambda key, val_lst: (key, sorted(val_lst)), self.items()
+        )
         sep = ", "
         key_getter = operator.itemgetter(0)
-        return sep.join(starmap(lambda key, val_lst: f"{key!r}: {val_lst}",
-                                sorted(elems, key=key_getter)))
+        return sep.join(
+            starmap(
+                lambda key, val_lst: f"{key!r}: {val_lst}",
+                sorted(elems, key=key_getter),
+            )
+        )
 
     def _useful_items(self) -> typing.Iterator[Tuple[_KT, List[_VT]]]:
         """Filter out items with empty value lists.
@@ -229,9 +249,11 @@ class BagValDict(Generic[_KT, _VT]):
 
         """
         return iteration_utilities.starfilter(
-            lambda _, val_lst: val_lst, self._dict.items())
+            lambda _, val_lst: val_lst, self._dict.items()
+        )
 
     items = _useful_items
 
     _dict: DefaultDict[_KT, List[_VT]] = attr.ib(
-        converter=_val_lst_dict, factory=dict)
+        converter=_val_lst_dict, factory=dict
+    )

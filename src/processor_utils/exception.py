@@ -93,8 +93,11 @@ class BadWidthError(RuntimeError):
         `width` is the bad width.
 
         """
-        super().__init__(Template(msg_tmpl).substitute(
-            {self.UNIT_KEY: unit, self.WIDTH_KEY: width}))
+        super().__init__(
+            Template(msg_tmpl).substitute(
+                {self.UNIT_KEY: unit, self.WIDTH_KEY: width}
+            )
+        )
         self._unit = unit
         self._width = width
 
@@ -162,10 +165,16 @@ class BlockedCapError(RuntimeError):
         `blocking_info` is the blocking information.
 
         """
-        super().__init__(Template(msg_tmpl).substitute(
-            {self.CAPABILITY_KEY: blocking_info.capability_info.reporting_name,
-             self.PORT_KEY: blocking_info.port_info.reporting_name}))
-        self._capability = blocking_info.capability_info.std_name
+        cap_info = blocking_info.capability_info
+        super().__init__(
+            Template(msg_tmpl).substitute(
+                {
+                    self.CAPABILITY_KEY: cap_info.reporting_name,
+                    self.PORT_KEY: blocking_info.port_info.reporting_name,
+                }
+            )
+        )
+        self._capability = cap_info.std_name
         self._port = blocking_info.port_info.std_name
 
     @property
@@ -230,7 +239,8 @@ class DupElemError(RuntimeError):
     """Duplicate set element error"""
 
     def __init__(
-            self, msg_tmpl: str, old_elem: object, new_elem: object) -> None:
+        self, msg_tmpl: str, old_elem: object, new_elem: object
+    ) -> None:
         """Create a duplicate element error.
 
         `self` is this duplicate element error.
@@ -240,8 +250,11 @@ class DupElemError(RuntimeError):
         `new_elem` is the element just discovered.
 
         """
-        super().__init__(Template(msg_tmpl).substitute(
-            {self.OLD_ELEM_KEY: old_elem, self.NEW_ELEM_KEY: new_elem}))
+        super().__init__(
+            Template(msg_tmpl).substitute(
+                {self.OLD_ELEM_KEY: old_elem, self.NEW_ELEM_KEY: new_elem}
+            )
+        )
         self._old_elem = old_elem
         self._new_elem = new_elem
 
@@ -278,8 +291,13 @@ class PathLockError(RuntimeError):
 
     """Path lock error"""
 
-    def __init__(self, msg_tmpl: str, start: object, lock_type: object,
-                 capability: object) -> None:
+    def __init__(
+        self,
+        msg_tmpl: str,
+        start: object,
+        lock_type: object,
+        capability: object,
+    ) -> None:
         """Create a multi-lock error.
 
         `self` is this multi-lock error.
@@ -290,9 +308,15 @@ class PathLockError(RuntimeError):
         `capability` is the capability for which the path was computed.
 
         """
-        super().__init__(Template(msg_tmpl).substitute(
-            {self.CAP_KEY: capability, self.LOCK_TYPE_KEY: lock_type,
-             self.START_KEY: start}))
+        super().__init__(
+            Template(msg_tmpl).substitute(
+                {
+                    self.CAP_KEY: capability,
+                    self.LOCK_TYPE_KEY: lock_type,
+                    self.START_KEY: start,
+                }
+            )
+        )
         self._start = start
         self._lock_type = lock_type
         self._capability = capability

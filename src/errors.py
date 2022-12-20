@@ -56,7 +56,8 @@ class UndefElemError(RuntimeError):
 
         """
         super().__init__(
-            string.Template(msg_tmpl).substitute({self.ELEM_KEY: elem}))
+            string.Template(msg_tmpl).substitute({self.ELEM_KEY: elem})
+        )
         self._elem = elem
 
     @property

@@ -52,7 +52,8 @@ from . import _port_defs
 
 
 def chk_terminals(
-        processor: DiGraph, orig_port_info: _port_defs.PortGroup) -> None:
+    processor: DiGraph, orig_port_info: _port_defs.PortGroup
+) -> None:
     """Check if new terminals have appeared after optimization.
 
     `processor` is the processor to check.
@@ -63,7 +64,8 @@ def chk_terminals(
 
     """
     new_out_ports = frozenset(_port_defs.get_out_ports(processor)).difference(
-        orig_port_info.out_ports)
+        orig_port_info.out_ports
+    )
 
     for out_port in new_out_ports:
         _rm_dead_end(processor, out_port, orig_port_info.in_ports)
@@ -99,8 +101,9 @@ def rm_empty_units(processor: Graph) -> None:
             _rm_empty_unit(processor, unit)
 
 
-def _chk_edge(processor: Graph,
-              edge: typing.Tuple[object, object]) -> FrozenSet[ICaseString]:
+def _chk_edge(
+    processor: Graph, edge: typing.Tuple[object, object]
+) -> FrozenSet[ICaseString]:
     """Check if the edge is useful.
 
     `processor` is the processor containing the edge.
@@ -110,7 +113,8 @@ def _chk_edge(processor: Graph,
 
     """
     common_caps = processor.nodes[edge[1]][UNIT_CAPS_KEY].intersection(
-        processor.nodes[edge[0]][UNIT_CAPS_KEY])
+        processor.nodes[edge[0]][UNIT_CAPS_KEY]
+    )
 
     if not common_caps:
         _rm_dummy_edge(processor, edge)
@@ -130,15 +134,19 @@ def _clean_unit(processor: Graph, unit: object) -> None:
 
     """
     processor.nodes[unit][UNIT_CAPS_KEY] = frozenset(
-        processor.nodes[unit][UNIT_CAPS_KEY])
+        processor.nodes[unit][UNIT_CAPS_KEY]
+    )
     pred_caps = (
-        _chk_edge(processor, edge) for edge in tuple(processor.in_edges(unit)))
+        _chk_edge(processor, edge) for edge in tuple(processor.in_edges(unit))
+    )
     processor.nodes[unit][UNIT_CAPS_KEY] = typing.cast(
-        FrozenSet[ICaseString], frozenset()).union(*pred_caps)
+        FrozenSet[ICaseString], frozenset()
+    ).union(*pred_caps)
 
 
-def _rm_dead_end(processor: Graph, dead_end: object,
-                 in_ports: typing.Container[object]) -> None:
+def _rm_dead_end(
+    processor: Graph, dead_end: object, in_ports: typing.Container[object]
+) -> None:
     """Remove a dead end from the given processor.
 
     `processor` is the processor to remove the dead end from.
@@ -149,9 +157,11 @@ def _rm_dead_end(processor: Graph, dead_end: object,
 
     """
     if dead_end in in_ports:  # an in-port turned in-out port
-        raise DeadInputError("No feasible path found from input port "
-                             f"${DeadInputError.PORT_KEY} to any output ports",
-                             dead_end)
+        raise DeadInputError(
+            "No feasible path found from input port "
+            f"${DeadInputError.PORT_KEY} to any output ports",
+            dead_end,
+        )
 
     warning("Dead end detected at unit %s, removing...", dead_end)
     processor.remove_node(dead_end)
@@ -164,8 +174,11 @@ def _rm_dummy_edge(processor: Graph, edge: typing.Collection[object]) -> None:
     `edge` is the edge to remove.
 
     """
-    warning("Units %s and %s have no capabilities in common, removing "
-            "connecting edge...", *edge)
+    warning(
+        "Units %s and %s have no capabilities in common, removing connecting "
+        "edge...",
+        *edge,
+    )
     processor.remove_edge(*edge)
 
 

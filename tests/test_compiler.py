@@ -55,28 +55,14 @@ from program_utils import CodeError, read_program
 from str_utils import ICaseString
 
 
-class TestProgLoad:
+class TestDupOperand:
 
-    """Test case for loading programs"""
-
-    @mark.parametrize(
-        "prog_file, inputs", [("duplicateInputsInstruction.asm", ["R11"]),
-                              ("lowerCaseInstruction.asm", ["R11", "R15"])])
-    def test_program(self, prog_file, inputs):
-        """Test loading a program.
-
-        `self` is this test case.
-        `prog_file` is the program file.
-        `inputs` are the instruction inputs.
-
-        """
-        assert test_utils.compile_prog(prog_file, {
-            "ADD": ICaseString("ALU")}) == [program_defs.HwInstruction(map(
-                ICaseString, inputs), ICaseString("R14"), ICaseString("ALU"))]
+    """Test case for loading instructions with duplicate operands"""
 
     @mark.parametrize("dup_reg", ["R2", "R3"])
     def test_same_operand_with_different_case_in_same_instruction_is_detected(
-            self, caplog, dup_reg):
+        self, caplog, dup_reg
+    ):
         """Test loading operands in different cases(same instruction).
 
         `self` is this test case.
@@ -89,7 +75,9 @@ class TestProgLoad:
         caplog.set_level(WARNING)
         assert read_program([f"ADD R1, {upper_reg}, {lower_reg}"]) == [
             ProgInstruction(
-                [ICaseString(dup_reg)], ICaseString("R1"), "ADD", 1)]
+                [ICaseString(dup_reg)], ICaseString("R1"), "ADD", 1
+            )
+        ]
         assert caplog.records
         warn_msg = caplog.records[0].getMessage()
 
@@ -98,7 +86,8 @@ class TestProgLoad:
 
     @mark.parametrize("preamble", [0, 2])
     def test_same_operand_with_different_case_in_two_instructions_is_detected(
-            self, caplog, preamble):
+        self, caplog, preamble
+    ):
         """Test loading operands in different cases(two instructions).
 
         `self` is this test case.
@@ -108,25 +97,68 @@ class TestProgLoad:
 
         """
         caplog.set_level(WARNING)
-        assert read_program(itertools.chain(itertools.repeat("", preamble), [
-            "ADD R1, R2, R3", "ADD R4, r2, R5"])) == [
-                ProgInstruction(map(ICaseString, in_regs), ICaseString(
-                    out_reg), "ADD", line_no) for in_regs, out_reg, line_no in
-                [(["R2", "R3"], "R1", preamble + 1),
-                 (["r2", "R5"], "R4", preamble + 2)]]
+        assert read_program(
+            itertools.chain(
+                itertools.repeat("", preamble),
+                ["ADD R1, R2, R3", "ADD R4, r2, R5"],
+            )
+        ) == [
+            ProgInstruction(
+                map(ICaseString, in_regs), ICaseString(out_reg), "ADD", line_no
+            )
+            for in_regs, out_reg, line_no in [
+                (["R2", "R3"], "R1", preamble + 1),
+                (["r2", "R5"], "R4", preamble + 2),
+            ]
+        ]
         assert caplog.records
         warn_msg = caplog.records[0].getMessage()
 
         for reg in ["r2", str(preamble + 2), "R2", str(preamble + 1)]:
             assert reg in warn_msg
 
+
+class TestProgLoad:
+
+    """Test case for loading programs"""
+
+    @mark.parametrize(
+        "prog_file, inputs",
+        [
+            ("duplicateInputsInstruction.asm", ["R11"]),
+            ("lowerCaseInstruction.asm", ["R11", "R15"]),
+        ],
+    )
+    def test_program(self, prog_file, inputs):
+        """Test loading a program.
+
+        `self` is this test case.
+        `prog_file` is the program file.
+        `inputs` are the instruction inputs.
+
+        """
+        assert test_utils.compile_prog(
+            prog_file, {"ADD": ICaseString("ALU")}
+        ) == [
+            program_defs.HwInstruction(
+                map(ICaseString, inputs),
+                ICaseString("R14"),
+                ICaseString("ALU"),
+            )
+        ]
+
     # pylint: disable=invalid-name
     @mark.parametrize(
         "prog_file, instr, line_num",
-        [("subtractProgram.asm", "SUB", 1), ("multiplyProgram.asm", "MUL", 2),
-         ("lowerCaseSubtractProgram.asm", "sub", 1)])
+        [
+            ("subtractProgram.asm", "SUB", 1),
+            ("multiplyProgram.asm", "MUL", 2),
+            ("lowerCaseSubtractProgram.asm", "sub", 1),
+        ],
+    )
     def test_unsupported_instruction_raises_UndefElemError(
-            self, prog_file, instr, line_num):
+        self, prog_file, instr, line_num
+    ):
         """Test loading a program with an unknown instruction.
 
         `self` is this test case.
@@ -136,8 +168,12 @@ class TestProgLoad:
                    unknown instruction missing operands.
 
         """
-        ex_chk = raises(errors.UndefElemError, program_utils.compile_program,
-                        read_prog_file(prog_file), {"ADD": ICaseString("ALU")})
+        ex_chk = raises(
+            errors.UndefElemError,
+            program_utils.compile_program,
+            read_prog_file(prog_file),
+            {"ADD": ICaseString("ALU")},
+        )
         assert ex_chk.value.element == instr
         ex_chk = str(ex_chk.value)
         err_contents = [instr, str(line_num)]
@@ -146,26 +182,21 @@ class TestProgLoad:
             assert part in ex_chk
 
 
-class TestSyntax:
+class TestSynErrors:
 
     """Test case for syntax errors"""
 
-    @mark.parametrize("prog_file", ["empty.asm", "emptyLineOnly.asm"])
-    def test_empty_program(self, prog_file):
-        """Test loading an empty program.
-
-        `self` is this test case.
-        `prog_file` is the program file.
-
-        """
-        self._test_program(prog_file, [])
-
     # pylint: disable=invalid-name
-    @mark.parametrize("prog_file, line_num, instr, operand", [
-        ("firstInstructionWithSecondOpernadEmpty.asm", 1, "ADD", 2),
-        ("secondInstructionWithFirstOpernadEmpty.asm", 2, "SUB", 1)])
+    @mark.parametrize(
+        "prog_file, line_num, instr, operand",
+        [
+            ("firstInstructionWithSecondOpernadEmpty.asm", 1, "ADD", 2),
+            ("secondInstructionWithFirstOpernadEmpty.asm", 2, "SUB", 1),
+        ],
+    )
     def test_instruction_with_empty_operand_raises_CodeError(
-            self, prog_file, line_num, instr, operand):
+        self, prog_file, line_num, instr, operand
+    ):
         """Test loading an instruction with an empty operand.
 
         `self` is this test case.
@@ -180,11 +211,16 @@ class TestSyntax:
         self._chk_syn_err(ex_chk.value, line_num, instr)
         assert str(operand) in str(ex_chk.value)
 
-    @mark.parametrize("prog_file, line_num, instr",
-                      [("firstInstructionWithNoOperands.asm", 1, "ADD"),
-                       ("secondInstructionWithNoOperands.asm", 2, "SUB")])
+    @mark.parametrize(
+        "prog_file, line_num, instr",
+        [
+            ("firstInstructionWithNoOperands.asm", 1, "ADD"),
+            ("secondInstructionWithNoOperands.asm", 2, "SUB"),
+        ],
+    )
     def test_instruction_with_no_operands_raises_CodeError(
-            self, prog_file, line_num, instr):
+        self, prog_file, line_num, instr
+    ):
         """Test loading an instruction with no operands.
 
         `self` is this test case.
@@ -194,32 +230,11 @@ class TestSyntax:
         `instr` is the instruction missing operands.
 
         """
-        self._chk_syn_err(raises(CodeError, read_prog_file, prog_file).value,
-                          line_num, instr)
+        self._chk_syn_err(
+            raises(CodeError, read_prog_file, prog_file).value, line_num, instr
+        )
+
     # pylint: enable=invalid-name
-
-    @mark.parametrize("prog_file", [
-        "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-        "instructionWithOneSpaceBeforeComma.asm",
-        "instructionWithOneSpaceAfterComma.asm",
-        "instructionWithTwoSpacesBeforeComma.asm",
-        "instructionWithTwoSpacesAfterComma.asm",
-        "instructionWithOneTabBeforeComma.asm",
-        "instructionWithOneTabAfterComma.asm",
-        "instructionWithTwoSpacesBeforeOperands.asm",
-        "instructionWithOneTabBeforeOperands.asm"])
-    def test_well_formed_instruction(self, caplog, prog_file):
-        """Test loading a single-instruction program.
-
-        `self` is this test case.
-        `caplog` is the log capture fixture.
-        `prog_file` is the program file.
-
-        """
-        caplog.set_level(WARNING)
-        self._test_program(prog_file, [ProgInstruction(
-            map(ICaseString, ["R11", "R15"]), ICaseString("R14"), "ADD", 1)])
-        assert not caplog.records
 
     @staticmethod
     def _chk_syn_err(syn_err, line_num, instr):
@@ -231,8 +246,64 @@ class TestSyntax:
         `instr` is the instruction with the syntax error.
 
         """
-        test_utils.chk_error(itertools.starmap(test_utils.ValInStrCheck, [
-            [syn_err.instr, instr], [syn_err.line, line_num]]), syn_err)
+        test_utils.chk_error(
+            itertools.starmap(
+                test_utils.ValInStrCheck,
+                [[syn_err.instr, instr], [syn_err.line, line_num]],
+            ),
+            syn_err,
+        )
+
+
+class TestValidSyntax:
+
+    """Test case for valid syntax"""
+
+    @mark.parametrize("prog_file", ["empty.asm", "emptyLineOnly.asm"])
+    def test_empty_program(self, prog_file):
+        """Test loading an empty program.
+
+        `self` is this test case.
+        `prog_file` is the program file.
+
+        """
+        self._test_program(prog_file, [])
+
+    @mark.parametrize(
+        "prog_file",
+        [
+            "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
+            "instructionWithOneSpaceBeforeComma.asm",
+            "instructionWithOneSpaceAfterComma.asm",
+            "instructionWithTwoSpacesBeforeComma.asm",
+            "instructionWithTwoSpacesAfterComma.asm",
+            "instructionWithOneTabBeforeComma.asm",
+            "instructionWithOneTabAfterComma.asm",
+            "instructionWithTwoSpacesBeforeOperands.asm",
+            "instructionWithOneTabBeforeOperands.asm",
+        ],
+    )
+    def test_well_formed_instruction(self, caplog, prog_file):
+        """Test loading a single-instruction program.
+
+        `self` is this test case.
+        `caplog` is the log capture fixture.
+        `prog_file` is the program file.
+
+        """
+        caplog.set_level(WARNING)
+        self._test_program(
+            prog_file,
+            [
+                ProgInstruction(
+                    map(ICaseString, ["R11", "R15"]),
+                    ICaseString("R14"),
+                    "ADD",
+                    1,
+                )
+            ],
+        )
+        assert not caplog.records
 
     @staticmethod
     def _test_program(prog_file, loaded_prog):
@@ -250,5 +321,5 @@ def main():
     pytest.main([__file__])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

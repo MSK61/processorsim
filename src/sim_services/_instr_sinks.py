@@ -80,8 +80,9 @@ class IInstrSink(abc.ABC):
 
     """Instruction sink"""
 
-    def fill_unit(self, util_info: BagValDict[ICaseString, InstrState],
-                  mem_busy: bool) -> InstrMovStatus:
+    def fill_unit(
+        self, util_info: BagValDict[ICaseString, InstrState], mem_busy: bool
+    ) -> InstrMovStatus:
         """Fill this sink with instructions from its donors.
 
         `self` is this instruction sink.
@@ -92,22 +93,30 @@ class IInstrSink(abc.ABC):
         """
         return self._fill(self._get_candidates(util_info), util_info, mem_busy)
 
-    def _get_candidates(self, util_info: BagValDict[
-            ICaseString, InstrState]) -> Iterable[HostedInstr]:
+    def _get_candidates(
+        self, util_info: BagValDict[ICaseString, InstrState]
+    ) -> Iterable[HostedInstr]:
         """Find candidate instructions in the donors of this sink.
 
         `self` is this instruction sink.
         `util_info` is the unit utilization information.
 
         """
-        candidates = (self._get_new_guests(pred, more_itertools.locate(
-            util_info[pred], self._valid_candid)) for pred in self._donors)
+        candidates = (
+            self._get_new_guests(
+                pred,
+                more_itertools.locate(util_info[pred], self._valid_candid),
+            )
+            for pred in self._donors
+        )
         return self._pick_guests(
-            itertools.chain.from_iterable(candidates), util_info)
+            itertools.chain.from_iterable(candidates), util_info
+        )
 
     @staticmethod
-    def _get_new_guests(src_unit: ICaseString, instructions: Iterable[
-            int]) -> typing.Generator[HostedInstr, None, None]:
+    def _get_new_guests(
+        src_unit: ICaseString, instructions: Iterable[int]
+    ) -> typing.Generator[HostedInstr, None, None]:
         """Prepare new hosted instructions.
 
         `src_unit` is the old host of instructions.
@@ -127,8 +136,12 @@ class IInstrSink(abc.ABC):
         """
 
     @abstractmethod
-    def _fill(self, candidates: Iterable[HostedInstr], util_info: BagValDict[
-            ICaseString, InstrState], mem_busy: bool) -> InstrMovStatus:
+    def _fill(
+        self,
+        candidates: Iterable[HostedInstr],
+        util_info: BagValDict[ICaseString, InstrState],
+        mem_busy: bool,
+    ) -> InstrMovStatus:
         """Fill this sink.
 
         `self` is this instruction sink.
@@ -140,8 +153,10 @@ class IInstrSink(abc.ABC):
 
     @abstractmethod
     def _pick_guests(
-            self, candidates: Iterable[HostedInstr], util_info:
-            BagValDict[ICaseString, InstrState]) -> Iterable[HostedInstr]:
+        self,
+        candidates: Iterable[HostedInstr],
+        util_info: BagValDict[ICaseString, InstrState],
+    ) -> Iterable[HostedInstr]:
         """Pick the instructions to be accepted.
 
         `self` is this instruction sink.
@@ -158,7 +173,8 @@ class IInstrSink(abc.ABC):
 
         """
         return instr.stalled != StallState.DATA and self._accepts_cap(
-            instr.instr)
+            instr.instr
+        )
 
     @property
     @abstractmethod
@@ -185,8 +201,12 @@ class OutSink(IInstrSink):
         """
         return True
 
-    def _fill(self, candidates: Iterable[HostedInstr], util_info: BagValDict[
-            ICaseString, InstrState], mem_busy: bool) -> InstrMovStatus:
+    def _fill(
+        self,
+        candidates: Iterable[HostedInstr],
+        util_info: BagValDict[ICaseString, InstrState],
+        mem_busy: bool,
+    ) -> InstrMovStatus:
         """Commit all candidate instructions to the output.
 
         `self` is this output sink.
@@ -197,8 +217,11 @@ class OutSink(IInstrSink):
         """
         return InstrMovStatus(list(candidates))
 
-    def _pick_guests(self, candidates: Iterable[HostedInstr], _: BagValDict[
-            ICaseString, InstrState]) -> Iterable[HostedInstr]:
+    def _pick_guests(
+        self,
+        candidates: Iterable[HostedInstr],
+        _: BagValDict[ICaseString, InstrState],
+    ) -> Iterable[HostedInstr]:
         """Pick all prospective instructions unconditionally.
 
         `self` is this output sink.
@@ -207,6 +230,7 @@ class OutSink(IInstrSink):
 
         """
         return tuple(candidates)
+
     # pylint: enable=unused-argument
 
     @property
@@ -234,10 +258,14 @@ class UnitSink(IInstrSink):
                 capability.
 
         """
-        return self._program[instr].categ in self._unit.model.capabilities
+        return self.program[instr].categ in self.unit.model.capabilities
 
-    def _fill(self, candidates: Iterable[HostedInstr], util_info: BagValDict[
-            ICaseString, InstrState], mem_busy: bool) -> InstrMovStatus:
+    def _fill(
+        self,
+        candidates: Iterable[HostedInstr],
+        util_info: BagValDict[ICaseString, InstrState],
+        mem_busy: bool,
+    ) -> InstrMovStatus:
         """Move candidate instructions between units.
 
         `self` is this unit sink.
@@ -248,53 +276,25 @@ class UnitSink(IInstrSink):
         """
         candid_iter = iter(candidates)
         mov_res = InstrMovStatus()
-        more_itertools.consume(iter(
-            lambda: self._mov_candidate(candid_iter, util_info, mem_busy or
-                                        mov_res.mem_used, mov_res), False))
+        more_itertools.consume(
+            iter(
+                lambda: _mov_candidate(
+                    self,
+                    candid_iter,
+                    util_info,
+                    mem_busy or mov_res.mem_used,
+                    mov_res,
+                ),
+                False,
+            )
+        )
         return mov_res
 
-    def _mov_candidate(self, candid_iter: Iterator[HostedInstr],
-                       util_info: BagValDict[ICaseString, InstrState],
-                       mem_busy: bool, mov_res: InstrMovStatus) -> bool:
-        """Move a candidate instruction between units.
-
-        `self` is this unit sink.
-        `candid_iter` is an iterator over the candidate instructions.
-        `util_info` is the unit utilization information.
-        `mem_busy` is the memory busy flag.
-        `mov_res` is the move result to update the moved instructions
-                  in.
-        The method returns a flag indicating if moving instructions is still
-        possible.
-
-        """
-        if _utils.unit_full(
-                self._unit.model.width, util_info[self._unit.model.name]):
-            return False
-
-        try:
-            candid = next(candid_iter)
-        except StopIteration:
-            return False
-        mem_access = self._unit.model.needs_mem(self._program[
-            util_info[candid.host][candid.index_in_host].instr].categ)
-
-        if _utils.mem_unavail(mem_busy, mem_access):
-            return True
-
-        if mem_access:
-            mov_res.mem_used = True
-
-        util_info[candid.host][
-            candid.index_in_host].stalled = StallState.NO_STALL
-        util_info[self._unit.model.name].append(
-            util_info[candid.host][candid.index_in_host])
-        mov_res.moved.append(candid)
-        return True
-
     def _pick_guests(
-            self, candidates: Iterable[HostedInstr], util_info:
-            BagValDict[ICaseString, InstrState]) -> Iterable[HostedInstr]:
+        self,
+        candidates: Iterable[HostedInstr],
+        util_info: BagValDict[ICaseString, InstrState],
+    ) -> Iterable[HostedInstr]:
         """Pick the instructions to be accepted.
 
         `self` is this unit sink.
@@ -303,8 +303,12 @@ class UnitSink(IInstrSink):
 
         """
         # Earlier instructions in the program are selected first.
-        return sorted(candidates, key=lambda instr_info: util_info[
-            instr_info.host][instr_info.index_in_host].instr)
+        return sorted(
+            candidates,
+            key=lambda instr_info: util_info[instr_info.host][
+                instr_info.index_in_host
+            ].instr,
+        )
 
     @property
     def _donors(self) -> "map[ICaseString]":
@@ -313,8 +317,55 @@ class UnitSink(IInstrSink):
         `self` is this unit sink.
 
         """
-        return map(fastcore.foundation.Self.name(), self._unit.predecessors)
+        return map(fastcore.foundation.Self.name(), self.unit.predecessors)
 
-    _unit: processor_utils.units.FuncUnit
+    unit: processor_utils.units.FuncUnit
 
-    _program: typing.Sequence[program_defs.HwInstruction]
+    program: typing.Sequence[program_defs.HwInstruction]
+
+
+def _mov_candidate(
+    unit_sink: UnitSink,
+    candid_iter: Iterator[HostedInstr],
+    util_info: BagValDict[ICaseString, InstrState],
+    mem_busy: bool,
+    mov_res: InstrMovStatus,
+) -> bool:
+    """Move a candidate instruction between units.
+
+    `unit_sink` is the unit sink.
+    `candid_iter` is an iterator over the candidate instructions.
+    `util_info` is the unit utilization information.
+    `mem_busy` is the memory busy flag.
+    `mov_res` is the move result to update the moved instructions in.
+    The method returns a flag indicating if moving instructions is still
+    possible.
+
+    """
+    if _utils.unit_full(
+        unit_sink.unit.model.width, util_info[unit_sink.unit.model.name]
+    ):
+        return False
+
+    try:
+        candid = next(candid_iter)
+    except StopIteration:
+        return False
+    mem_access = unit_sink.unit.model.needs_mem(
+        unit_sink.program[
+            util_info[candid.host][candid.index_in_host].instr
+        ].categ
+    )
+
+    if _utils.mem_unavail(mem_busy, mem_access):
+        return True
+
+    if mem_access:
+        mov_res.mem_used = True
+
+    util_info[candid.host][candid.index_in_host].stalled = StallState.NO_STALL
+    util_info[unit_sink.unit.model.name].append(
+        util_info[candid.host][candid.index_in_host]
+    )
+    mov_res.moved.append(candid)
+    return True

@@ -43,8 +43,17 @@ import copy
 from itertools import chain
 import string
 import typing
-from typing import Dict, Iterable, Iterator, List, Mapping, MutableMapping, \
-    MutableSequence, Sequence, Tuple
+from typing import (
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+    Tuple,
+)
 
 import attr
 from fastcore.foundation import Self
@@ -60,6 +69,7 @@ from str_utils import ICaseString
 from . import _instr_sinks, _utils
 from ._instr_sinks import IInstrSink
 from .sim_defs import InstrState, StallState
+
 _T = typing.TypeVar("_T")
 
 
@@ -76,8 +86,11 @@ class StallError(RuntimeError):
         `stalled_state` is the stalled processor state.
 
         """
-        super().__init__(string.Template(msg_tmpl).substitute(
-            {self.STATE_KEY: stalled_state}))
+        super().__init__(
+            string.Template(msg_tmpl).substitute(
+                {self.STATE_KEY: stalled_state}
+            )
+        )
         self._stalled_state = stalled_state
 
     @property
@@ -109,14 +122,22 @@ class HwSpec:
 
         """
         models = chain(
-            self.processor_desc.in_ports, self.processor_desc.in_out_ports,
-            map(Self.model(), chain(self.processor_desc.out_ports,
-                                    self.processor_desc.internal_units)))
+            self.processor_desc.in_ports,
+            self.processor_desc.in_out_ports,
+            map(
+                Self.model(),
+                chain(
+                    self.processor_desc.out_ports,
+                    self.processor_desc.internal_units,
+                ),
+            ),
+        )
         return {unit.name: unit for unit in models}
 
 
-def simulate(program: Sequence[HwInstruction], hw_info: HwSpec) -> List[
-        BagValDict[ICaseString, InstrState]]:
+def simulate(
+    program: Sequence[HwInstruction], hw_info: HwSpec
+) -> List[BagValDict[ICaseString, InstrState]]:
     """Run the given program on the processor.
 
     `program` is the program to run.
@@ -211,9 +232,12 @@ class _TransitionUtil:
 
 
 def _accept_instr(
-        issue_rec: _IssueInfo, instr_categ: object,
-        input_iter: Iterator[UnitModel], util_info: BagValDict[
-            ICaseString, InstrState], accept_res: _AcceptStatus) -> None:
+    issue_rec: _IssueInfo,
+    instr_categ: object,
+    input_iter: Iterator[UnitModel],
+    util_info: BagValDict[ICaseString, InstrState],
+    accept_res: _AcceptStatus,
+) -> None:
     """Try to accept the next instruction to an input unit.
 
     `issue_rec` is the issue record.
@@ -227,14 +251,23 @@ def _accept_instr(
 
     """
     accept_res.accepted = False
-    more_itertools.consume(iter(lambda: _accept_in_unit(
-        input_iter, instr_categ, accept_res, util_info, issue_rec), True))
+    more_itertools.consume(
+        iter(
+            lambda: _accept_in_unit(
+                input_iter, instr_categ, accept_res, util_info, issue_rec
+            ),
+            True,
+        )
+    )
 
 
 def _accept_in_unit(
-        input_iter: Iterator[UnitModel], instr_categ: object,
-        accept_res: _AcceptStatus, util_info:
-        BagValDict[ICaseString, InstrState], issue_rec: _IssueInfo) -> bool:
+    input_iter: Iterator[UnitModel],
+    instr_categ: object,
+    accept_res: _AcceptStatus,
+    util_info: BagValDict[ICaseString, InstrState],
+    issue_rec: _IssueInfo,
+) -> bool:
     """Try to accept the next instruction to the given unit.
 
     `input_iter` is an iterator over the input processing units to
@@ -254,7 +287,8 @@ def _accept_in_unit(
     mem_access = unit.needs_mem(instr_categ)
 
     if _utils.mem_unavail(accept_res.mem_used, mem_access) or _utils.unit_full(
-            unit.width, util_info[unit.name]):
+        unit.width, util_info[unit.name]
+    ):
         return False
 
     _issue_instr(util_info[unit.name], mem_access, issue_rec, accept_res)
@@ -262,8 +296,11 @@ def _accept_in_unit(
     return True
 
 
-def _add_access(instr: HwInstruction, instr_index: int,
-                builders: Mapping[object, RegAccQBuilder]) -> None:
+def _add_access(
+    instr: HwInstruction,
+    instr_index: int,
+    builders: Mapping[object, RegAccQBuilder],
+) -> None:
     """Append the instruction access to the given plan.
 
     `instr` is the instruction to append whose access to the access
@@ -276,8 +313,11 @@ def _add_access(instr: HwInstruction, instr_index: int,
     _add_wr_access(instr_index, builders[instr.destination])
 
 
-def _add_rd_access(instr: int, builders: Mapping[object, RegAccQBuilder],
-                   registers: Iterable[object]) -> None:
+def _add_rd_access(
+    instr: int,
+    builders: Mapping[object, RegAccQBuilder],
+    registers: Iterable[object],
+) -> None:
     """Register the read access of the given registers.
 
     `instr` is the instruction index.
@@ -299,8 +339,9 @@ def _add_wr_access(instr: int, builder: RegAccQBuilder) -> None:
     builder.append(AccessType.WRITE, instr)
 
 
-def _build_acc_plan(program: Iterable[Tuple[int, HwInstruction]]) -> Dict[
-        object, RegAccessQueue]:
+def _build_acc_plan(
+    program: Iterable[Tuple[int, HwInstruction]]
+) -> Dict[object, RegAccessQueue]:
     """Build the registry access plan through the program lifetime.
 
     `program` is the program to build a registry access plan for.
@@ -308,7 +349,8 @@ def _build_acc_plan(program: Iterable[Tuple[int, HwInstruction]]) -> Dict[
 
     """
     builders: typing.DefaultDict[
-        object, RegAccQBuilder] = collections.defaultdict(RegAccQBuilder)
+        object, RegAccQBuilder
+    ] = collections.defaultdict(RegAccQBuilder)
 
     for instr_index, instr in program:
         _add_access(instr, instr_index, builders)
@@ -316,8 +358,9 @@ def _build_acc_plan(program: Iterable[Tuple[int, HwInstruction]]) -> Dict[
     return {reg: builder.create() for reg, builder in builders.items()}
 
 
-def _build_cap_map(inputs: Iterable[UnitModel]) -> Dict[
-        object, List[UnitModel]]:
+def _build_cap_map(
+    inputs: Iterable[UnitModel],
+) -> Dict[object, List[UnitModel]]:
     """Build the capability map for input units.
 
     `inputs` are the input processing units.
@@ -340,13 +383,17 @@ def _calc_unstalled(instructions: Iterable[InstrState]) -> int:
 
     """
     return more_itertools.quantify(
-        instructions, lambda instr: instr.stalled == StallState.NO_STALL)
+        instructions, lambda instr: instr.stalled == StallState.NO_STALL
+    )
 
 
 def _chk_data_stall(
-        unit_locks: LockInfo, instr_index: object, instr: HwInstruction,
-        acc_queues: Mapping[object, RegAccessQueue], reqs_to_clear:
-        MutableMapping[object, MutableSequence[object]]) -> StallState:
+    unit_locks: LockInfo,
+    instr_index: object,
+    instr: HwInstruction,
+    acc_queues: Mapping[object, RegAccessQueue],
+    reqs_to_clear: MutableMapping[object, MutableSequence[object]],
+) -> StallState:
     """Check if the instruction should have a data stall.
 
     `unit_locks` are the unit lock information.
@@ -368,7 +415,8 @@ def _chk_data_stall(
 
 
 def _chk_full_stall(
-        old_util: object, new_util: object, util_tbl: object) -> None:
+    old_util: object, new_util: object, util_tbl: object
+) -> None:
     """Check if the whole processor has stalled.
 
     `old_util` is the utilization information of the previous clock
@@ -383,13 +431,17 @@ def _chk_full_stall(
     if new_util == old_util:
         raise StallError(
             f"Processor stalled with utilization ${StallError.STATE_KEY}",
-            util_tbl)
+            util_tbl,
+        )
 
 
-def _chk_hazards(old_util: BagValDict[_T, InstrState], new_util:
-                 Iterable[Tuple[_T, Iterable[InstrState]]], name_unit_map:
-                 Mapping[_T, UnitModel], program: Sequence[HwInstruction],
-                 acc_queues: Mapping[object, RegAccessQueue]) -> None:
+def _chk_hazards(
+    old_util: BagValDict[_T, InstrState],
+    new_util: Iterable[Tuple[_T, Iterable[InstrState]]],
+    name_unit_map: Mapping[_T, UnitModel],
+    program: Sequence[HwInstruction],
+    acc_queues: Mapping[object, RegAccessQueue],
+) -> None:
     """Check different types of hazards.
 
     `old_util` is the utilization information of the previous clock
@@ -406,8 +458,13 @@ def _chk_hazards(old_util: BagValDict[_T, InstrState], new_util:
     reqs_to_clear: Dict[object, MutableSequence[object]] = {}
 
     for unit, new_unit_util in new_util:
-        _stall_unit(name_unit_map[unit].lock_info, _TransitionUtil(
-            old_util[unit], new_unit_util), program, acc_queues, reqs_to_clear)
+        _stall_unit(
+            name_unit_map[unit].lock_info,
+            _TransitionUtil(old_util[unit], new_unit_util),
+            program,
+            acc_queues,
+            reqs_to_clear,
+        )
 
     items_to_clear = reqs_to_clear.items()
 
@@ -416,9 +473,13 @@ def _chk_hazards(old_util: BagValDict[_T, InstrState], new_util:
             acc_queues[reg].dequeue(cur_req)
 
 
-def _chk_avail_regs(avail_regs: MutableSequence[Sequence[object]], acc_queues:
-                    Mapping[object, RegAccessQueue], lock: bool, new_regs:
-                    Sequence[object], req_params: Iterable[object]) -> bool:
+def _chk_avail_regs(
+    avail_regs: MutableSequence[Sequence[object]],
+    acc_queues: Mapping[object, RegAccessQueue],
+    lock: bool,
+    new_regs: Sequence[object],
+    req_params: Iterable[object],
+) -> bool:
     """Check if the given registers can be accessed.
 
     `avail_regs` are the list of available registers.
@@ -439,8 +500,10 @@ def _chk_avail_regs(avail_regs: MutableSequence[Sequence[object]], acc_queues:
     return True
 
 
-def _clr_src_units(instructions: Iterable[_instr_sinks.HostedInstr],
-                   util_info: BagValDict[ICaseString, _T]) -> None:
+def _clr_src_units(
+    instructions: Iterable[_instr_sinks.HostedInstr],
+    util_info: BagValDict[ICaseString, _T],
+) -> None:
     """Clear the utilization of units releasing instructions.
 
     `instructions` are the information of instructions being moved from
@@ -455,8 +518,10 @@ def _clr_src_units(instructions: Iterable[_instr_sinks.HostedInstr],
         del util_info[cur_instr.host][cur_instr.index_in_host]
 
 
-def _count_outputs(outputs: Iterable[ICaseString],
-                   util_info: BagValDict[ICaseString, InstrState]) -> int:
+def _count_outputs(
+    outputs: Iterable[ICaseString],
+    util_info: BagValDict[ICaseString, InstrState],
+) -> int:
     """Count the number of unstalled outputs.
 
     `outputs` are all the output units.
@@ -467,8 +532,11 @@ def _count_outputs(outputs: Iterable[ICaseString],
 
 
 def _fill_cp_util(
-        processor: ProcessorDesc, program: Sequence[HwInstruction], util_info:
-        BagValDict[ICaseString, InstrState], issue_rec: _IssueInfo) -> None:
+    processor: ProcessorDesc,
+    program: Sequence[HwInstruction],
+    util_info: BagValDict[ICaseString, InstrState],
+    issue_rec: _IssueInfo,
+) -> None:
     """Calculate the utilization of a new clock pulse.
 
     `processor` is the processor to fill the utilization of whose units
@@ -479,18 +547,29 @@ def _fill_cp_util(
 
     """
     in_units = chain(processor.in_out_ports, processor.in_ports)
-    dst_units = more_itertools.prepend(_instr_sinks.OutSink(_get_out_ports(
-        processor)), (_instr_sinks.UnitSink(dst, program) for dst in
-                      chain(processor.out_ports, processor.internal_units)))
+    dst_units = more_itertools.prepend(
+        _instr_sinks.OutSink(_get_out_ports(processor)),
+        (
+            _instr_sinks.UnitSink(dst, program)
+            for dst in chain(processor.out_ports, processor.internal_units)
+        ),
+    )
     _fill_inputs(
-        _build_cap_map(processor_utils.units.sorted_models(in_units)), program,
-        util_info, _mov_flights(dst_units, util_info), issue_rec)
+        _build_cap_map(processor_utils.units.sorted_models(in_units)),
+        program,
+        util_info,
+        _mov_flights(dst_units, util_info),
+        issue_rec,
+    )
 
 
 def _fill_inputs(
-        cap_unit_map: Mapping[object, Iterable[UnitModel]], program: Sequence[
-            HwInstruction], util_info: BagValDict[ICaseString, InstrState],
-        mem_busy: bool, issue_rec: _IssueInfo) -> None:
+    cap_unit_map: Mapping[object, Iterable[UnitModel]],
+    program: Sequence[HwInstruction],
+    util_info: BagValDict[ICaseString, InstrState],
+    mem_busy: bool,
+    issue_rec: _IssueInfo,
+) -> None:
     """Fetch new program instructions into the pipeline.
 
     `cap_unit_map` is the mapping between capabilities and units.
@@ -506,12 +585,19 @@ def _fill_inputs(
 
     while issue_rec.entered < prog_len and accept_res.accepted:
         _accept_instr(
-            issue_rec, program[issue_rec.entered].categ, iter(cap_unit_map.get(
-                program[issue_rec.entered].categ, [])), util_info, accept_res)
+            issue_rec,
+            program[issue_rec.entered].categ,
+            iter(cap_unit_map.get(program[issue_rec.entered].categ, [])),
+            util_info,
+            accept_res,
+        )
 
 
-def _fill_unit(unit: IInstrSink, util_info:
-               BagValDict[ICaseString, InstrState], mem_busy: bool) -> bool:
+def _fill_unit(
+    unit: IInstrSink,
+    util_info: BagValDict[ICaseString, InstrState],
+    mem_busy: bool,
+) -> bool:
     """Fill an output with instructions from its predecessors.
 
     `unit` is the destination unit to fill.
@@ -522,8 +608,10 @@ def _fill_unit(unit: IInstrSink, util_info:
 
     """
     mov_res = unit.fill_unit(util_info, mem_busy)
-    _clr_src_units(sorted(
-        mov_res.moved, key=Self.index_in_host(), reverse=True), util_info)
+    _clr_src_units(
+        sorted(mov_res.moved, key=Self.index_in_host(), reverse=True),
+        util_info,
+    )
     return mov_res.mem_used
 
 
@@ -535,12 +623,21 @@ def _get_out_ports(processor: ProcessorDesc) -> "map[ICaseString]":
     boundary.
 
     """
-    return map(Self.name(), chain(
-        processor.in_out_ports, (port.model for port in processor.out_ports)))
+    return map(
+        Self.name(),
+        chain(
+            processor.in_out_ports,
+            (port.model for port in processor.out_ports),
+        ),
+    )
 
 
-def _issue_instr(instr_lst: MutableSequence[InstrState], mem_access: bool,
-                 issue_rec: _IssueInfo, accept_res: _AcceptStatus) -> None:
+def _issue_instr(
+    instr_lst: MutableSequence[InstrState],
+    mem_access: bool,
+    issue_rec: _IssueInfo,
+    accept_res: _AcceptStatus,
+) -> None:
     """Issue the next instruction to the issue list.
 
     `instr_lst` is the list of hosted instructions in  a unit.
@@ -556,8 +653,10 @@ def _issue_instr(instr_lst: MutableSequence[InstrState], mem_access: bool,
         accept_res.mem_used = True
 
 
-def _mov_flights(dst_units: Iterable[IInstrSink],
-                 util_info: BagValDict[ICaseString, InstrState]) -> bool:
+def _mov_flights(
+    dst_units: Iterable[IInstrSink],
+    util_info: BagValDict[ICaseString, InstrState],
+) -> bool:
     """Move the instructions inside the pipeline.
 
     `dst_units` are the destination processing units.
@@ -576,8 +675,11 @@ def _mov_flights(dst_units: Iterable[IInstrSink],
 
 
 def _regs_avail(
-        unit_locks: LockInfo, instr_index: object, instr: HwInstruction,
-        acc_queues: Mapping[object, RegAccessQueue]) -> _RegAvailState:
+    unit_locks: LockInfo,
+    instr_index: object,
+    instr: HwInstruction,
+    acc_queues: Mapping[object, RegAccessQueue],
+) -> _RegAvailState:
     """Check if all needed registers can be accessed.
 
     `unit_locks` are the unit lock information.
@@ -589,12 +691,25 @@ def _regs_avail(
 
     """
     avail_reg_lists: List[Sequence[object]] = []
-    return _RegAvailState(True, chain.from_iterable(avail_reg_lists)) if all(
-        _chk_avail_regs(avail_reg_lists, acc_queues, *chk_params) for
-        chk_params in
-        [(unit_locks.rd_lock, instr.sources, [AccessType.READ, instr_index]),
-         (unit_locks.wr_lock, [instr.destination],
-          [AccessType.WRITE, instr_index])]) else _RegAvailState(False, [])
+    return (
+        _RegAvailState(True, chain.from_iterable(avail_reg_lists))
+        if all(
+            _chk_avail_regs(avail_reg_lists, acc_queues, *chk_params)
+            for chk_params in [
+                (
+                    unit_locks.rd_lock,
+                    instr.sources,
+                    [AccessType.READ, instr_index],
+                ),
+                (
+                    unit_locks.wr_lock,
+                    [instr.destination],
+                    [AccessType.WRITE, instr_index],
+                ),
+            ]
+        )
+        else _RegAvailState(False, [])
+    )
 
 
 def _regs_loaded(old_unit_util: Iterable[InstrState], instr: object) -> bool:
@@ -606,15 +721,23 @@ def _regs_loaded(old_unit_util: Iterable[InstrState], instr: object) -> bool:
             checked for being previously loaded.
 
     """
-    return typing.cast(bool, more_itertools.first_true(
-        old_unit_util, pred=lambda old_instr:
-        old_instr.instr == instr and old_instr.stalled != StallState.DATA))
+    return typing.cast(
+        bool,
+        more_itertools.first_true(
+            old_unit_util,
+            pred=lambda old_instr: old_instr.instr == instr
+            and old_instr.stalled != StallState.DATA,
+        ),
+    )
 
 
-def _run_cycle(program: Sequence[HwInstruction],
-               acc_queues: Mapping[object, RegAccessQueue], hw_info: HwSpec,
-               util_tbl: MutableSequence[BagValDict[ICaseString, InstrState]],
-               issue_rec: _IssueInfo) -> None:
+def _run_cycle(
+    program: Sequence[HwInstruction],
+    acc_queues: Mapping[object, RegAccessQueue],
+    hw_info: HwSpec,
+    util_tbl: MutableSequence[BagValDict[ICaseString, InstrState]],
+    issue_rec: _IssueInfo,
+) -> None:
     """Run a single clock cycle.
 
     `program` is the program to run whose instructions.
@@ -628,17 +751,22 @@ def _run_cycle(program: Sequence[HwInstruction],
     cp_util = copy.deepcopy(old_util)
     _fill_cp_util(hw_info.processor_desc, program, cp_util, issue_rec)
     _chk_hazards(
-        old_util, cp_util.items(), hw_info.name_unit_map, program, acc_queues)
+        old_util, cp_util.items(), hw_info.name_unit_map, program, acc_queues
+    )
     _chk_full_stall(old_util, cp_util, util_tbl)
     issue_rec.pump_outputs(
-        _count_outputs(_get_out_ports(hw_info.processor_desc), cp_util))
+        _count_outputs(_get_out_ports(hw_info.processor_desc), cp_util)
+    )
     util_tbl.append(cp_util)
 
 
-def _stall_unit(unit_locks: LockInfo, trans_util: _TransitionUtil,
-                program: Sequence[HwInstruction],
-                acc_queues: Mapping[object, RegAccessQueue], reqs_to_clear:
-                MutableMapping[object, MutableSequence[object]]) -> None:
+def _stall_unit(
+    unit_locks: LockInfo,
+    trans_util: _TransitionUtil,
+    program: Sequence[HwInstruction],
+    acc_queues: Mapping[object, RegAccessQueue],
+    reqs_to_clear: MutableMapping[object, MutableSequence[object]],
+) -> None:
     """Mark instructions in the given unit as stalled as needed.
 
     `unit_locks` are the unit lock information.
@@ -651,14 +779,24 @@ def _stall_unit(unit_locks: LockInfo, trans_util: _TransitionUtil,
 
     """
     for instr in trans_util.new_util:
-        instr.stalled = StallState.STRUCTURAL if _regs_loaded(
-            trans_util.old_util, instr.instr) else _chk_data_stall(
-                unit_locks, instr.instr, program[instr.instr], acc_queues,
-                reqs_to_clear)
+        instr.stalled = (
+            StallState.STRUCTURAL
+            if _regs_loaded(trans_util.old_util, instr.instr)
+            else _chk_data_stall(
+                unit_locks,
+                instr.instr,
+                program[instr.instr],
+                acc_queues,
+                reqs_to_clear,
+            )
+        )
 
 
-def _update_clears(reqs_to_clear: MutableMapping[object, MutableSequence[
-        object]], regs: Iterable[object], instr: object) -> None:
+def _update_clears(
+    reqs_to_clear: MutableMapping[object, MutableSequence[object]],
+    regs: Iterable[object],
+    instr: object,
+) -> None:
     """Update the list of register accesses to be cleared.
 
     `reqs_to_clear` are the requests to be cleared from the access

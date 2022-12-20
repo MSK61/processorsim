@@ -59,18 +59,40 @@ class TestIsa:
         `self` is this test case.
 
         """
-        ex_chk = raises(errors.UndefElemError, read_isa_file,
-                        "singleInstructionISA.yaml", [ICaseString("MEM")])
-        chk_error([ValInStrCheck(ex_chk.value.element, ICaseString("ALU"))],
-                  ex_chk.value)
+        ex_chk = raises(
+            errors.UndefElemError,
+            read_isa_file,
+            "singleInstructionISA.yaml",
+            [ICaseString("MEM")],
+        )
+        chk_error(
+            [ValInStrCheck(ex_chk.value.element, ICaseString("ALU"))],
+            ex_chk.value,
+        )
+
     # pylint: enable=invalid-name
 
-    @pytest.mark.parametrize("in_file, supported_caps, exp_isa", [
-        ("emptyISA.yaml", ["ALU"], {}),
-        ("singleInstructionISA.yaml", ["ALU"], {"ADD": ICaseString("ALU")}),
-        ("singleInstructionISA.yaml", ["alu"], {"ADD": ICaseString("alu")}),
-        ("dualInstructionISA.yaml", ["ALU"],
-         {"ADD": ICaseString("ALU"), "SUB": ICaseString("ALU")})])
+    @pytest.mark.parametrize(
+        "in_file, supported_caps, exp_isa",
+        [
+            ("emptyISA.yaml", ["ALU"], {}),
+            (
+                "singleInstructionISA.yaml",
+                ["ALU"],
+                {"ADD": ICaseString("ALU")},
+            ),
+            (
+                "singleInstructionISA.yaml",
+                ["alu"],
+                {"ADD": ICaseString("alu")},
+            ),
+            (
+                "dualInstructionISA.yaml",
+                ["ALU"],
+                {"ADD": ICaseString("ALU"), "SUB": ICaseString("ALU")},
+            ),
+        ],
+    )
     def test_load_isa(self, in_file, supported_caps, exp_isa):
         """Test loading an instruction set.
 
@@ -80,8 +102,9 @@ class TestIsa:
         `exp_isa` is the expected instruction set.
 
         """
-        assert read_isa_file(
-            in_file, map(ICaseString, supported_caps)) == exp_isa
+        assert (
+            read_isa_file(in_file, map(ICaseString, supported_caps)) == exp_isa
+        )
 
     # pylint: disable=invalid-name
     def test_two_instructions_with_same_name_raise_DupElemError(self):
@@ -91,11 +114,18 @@ class TestIsa:
 
         """
         ex_chk = raises(
-            processor_utils.exception.DupElemError, read_isa_file,
-            "twoInstructionsWithSameNameAndCase.yaml", [ICaseString("ALU")])
-        chk_error([ValInStrCheck(ex_chk.value.new_element, ICaseString("add")),
-                   ValInStrCheck(ex_chk.value.old_element,
-                                 ICaseString("ADD"))], ex_chk.value)
+            processor_utils.exception.DupElemError,
+            read_isa_file,
+            "twoInstructionsWithSameNameAndCase.yaml",
+            [ICaseString("ALU")],
+        )
+        chk_error(
+            [
+                ValInStrCheck(ex_chk.value.new_element, ICaseString("add")),
+                ValInStrCheck(ex_chk.value.old_element, ICaseString("ADD")),
+            ],
+            ex_chk.value,
+        )
 
 
 def main():
@@ -103,5 +133,5 @@ def main():
     pytest.main([__file__])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -78,8 +78,8 @@ def _rev_list(lst: typing.Reversible[object]) -> List[object]:
 class RegAccessQueue:
 
     """Access request queue for a single register"""
-    # pylint: disable=unsubscriptable-object
 
+    # pylint: disable=unsubscriptable-object
     def can_access(self, req_type: object, req_owner: object) -> bool:
         """Request access to the register.
 
@@ -88,8 +88,10 @@ class RegAccessQueue:
         `req_owner` is the request owner.
 
         """
-        return req_type == self._queue[
-            -1].access_type and req_owner in self._queue[-1].reqs
+        return (
+            req_type == self._queue[-1].access_type
+            and req_owner in self._queue[-1].reqs
+        )
 
     def dequeue(self, req_owner: object) -> None:
         """Remove a request from this queue.
@@ -151,5 +153,8 @@ class RegAccQBuilder:
         `req_type` is the request type.
 
         """
-        return self._queue[-1].access_type == AccessType.READ if \
-            req_type == AccessType.READ and self._queue else False
+        return (
+            self._queue[-1].access_type == AccessType.READ
+            if req_type == AccessType.READ and self._queue
+            else False
+        )

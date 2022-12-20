@@ -56,6 +56,166 @@ from sim_services import HwSpec, simulate
 from sim_services.sim_defs import InstrState, StallState
 from str_utils import ICaseString
 
+_STRUCT_CASES = [
+    (
+        1,
+        ["ALU"],
+        [("output", 1, ["ALU"])],
+        [
+            {ICaseString("output"): [InstrState(0)]},
+            {ICaseString("input"): [InstrState(1)]},
+            {ICaseString("output"): [InstrState(1)]},
+        ],
+    ),
+    (
+        1,
+        [],
+        [("output", 1, ["ALU"])],
+        [
+            {
+                ICaseString("output"): [InstrState(0)],
+                ICaseString("input"): [InstrState(1)],
+            },
+            {ICaseString("output"): [InstrState(1)]},
+        ],
+    ),
+    (
+        2,
+        [],
+        [("output", 2, ["ALU"])],
+        [
+            {
+                ICaseString("output"): [InstrState(0)],
+                ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)],
+            },
+            {ICaseString("output"): [InstrState(1)]},
+        ],
+    ),
+    (
+        2,
+        [],
+        (
+            (name, 1, mem_access)
+            for name, mem_access in [("output 1", ["ALU"]), ("output 2", [])]
+        ),
+        [
+            {
+                ICaseString("output 1"): [InstrState(0)],
+                ICaseString("output 2"): [InstrState(1)],
+            }
+        ],
+    ),
+    (
+        2,
+        [],
+        ((name, 1, ["ALU"]) for name in ["output 1", "output 2"]),
+        [
+            {
+                ICaseString("output 1"): [InstrState(0)],
+                ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)],
+            },
+            {ICaseString("output 1"): [InstrState(1)]},
+        ],
+    ),
+]
+
+
+class InstrOfferTest(TestCase):
+
+    """Test case for offering instructions to units"""
+
+    def test_all_candidate_instructions_are_offered_to_the_destinaton_unit(
+        self,
+    ):
+        """Test candidate instructions aren't shortlisted.
+
+        `self` is this test case.
+
+        """
+        in_unit, out_unit = (
+            UnitModel(
+                ICaseString(name),
+                width,
+                ["ALU", "MEM"],
+                LockInfo(rd_lock, wr_lock),
+                mem_acl,
+            )
+            for name, width, rd_lock, wr_lock, mem_acl in [
+                ("input", 3, True, False, []),
+                ("output", 2, False, True, ["MEM"]),
+            ]
+        )
+        proc_desc = ProcessorDesc(
+            [in_unit], [FuncUnit(out_unit, [in_unit])], [], []
+        )
+        self.assertEqual(
+            simulate(
+                [
+                    HwInstruction([], *instr_params)
+                    for instr_params in [
+                        ["R1", "MEM"],
+                        ["R2", "MEM"],
+                        ["R3", "ALU"],
+                    ]
+                ],
+                HwSpec(proc_desc),
+            ),
+            [
+                BagValDict(cp_util)
+                for cp_util in [
+                    {ICaseString("input"): map(InstrState, [0, 1, 2])},
+                    {
+                        ICaseString("output"): map(InstrState, [0, 2]),
+                        ICaseString("input"): [
+                            InstrState(1, StallState.STRUCTURAL)
+                        ],
+                    },
+                    {ICaseString("output"): [InstrState(1)]},
+                ]
+            ],
+        )
+
+
+class MemAccessTest(TestCase):
+
+    """Test case for instructions with memory access"""
+
+    def test_only_mem_access_instructions_are_checked(self):
+        """Test always allowing instructions without memory access.
+
+        `self` is this test case.
+
+        """
+        in_unit, out_unit = (
+            UnitModel(
+                ICaseString(name),
+                2,
+                ["ALU", "MEM"],
+                LockInfo(rd_lock, wr_lock),
+                mem_acl,
+            )
+            for name, rd_lock, wr_lock, mem_acl in [
+                ("input", True, False, []),
+                ("output", False, True, ["MEM"]),
+            ]
+        )
+        proc_desc = ProcessorDesc(
+            [in_unit], [FuncUnit(out_unit, [in_unit])], [], []
+        )
+        self.assertEqual(
+            simulate(
+                [
+                    HwInstruction([], *instr_params)
+                    for instr_params in [["R1", "MEM"], ["R2", "ALU"]]
+                ],
+                HwSpec(proc_desc),
+            ),
+            [
+                BagValDict({ICaseString(unit): map(InstrState, [0, 1])})
+                for unit in ["input", "output"]
+            ],
+        )
+
 
 class RarTest(TestCase):
 
@@ -67,12 +227,26 @@ class RarTest(TestCase):
         `self` is this test case.
 
         """
-        proc_desc = ProcessorDesc([], [], [UnitModel(ICaseString(
-            TEST_DIR), 2, ["ALU"], LockInfo(True, True), [])], [])
+        proc_desc = ProcessorDesc(
+            [],
+            [],
+            [
+                UnitModel(
+                    ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), []
+                )
+            ],
+            [],
+        )
         self.assertEqual(
-            simulate([HwInstruction(["R1"], out_reg, "ALU") for out_reg in
-                      ["R2", "R3"]], HwSpec(proc_desc)),
-            [BagValDict({ICaseString(TEST_DIR): map(InstrState, [0, 1])})])
+            simulate(
+                [
+                    HwInstruction(["R1"], out_reg, "ALU")
+                    for out_reg in ["R2", "R3"]
+                ],
+                HwSpec(proc_desc),
+            ),
+            [BagValDict({ICaseString(TEST_DIR): map(InstrState, [0, 1])})],
+        )
 
 
 class RawTest(TestCase):
@@ -88,30 +262,107 @@ class RawTest(TestCase):
         """
         in_unit, mid, out_unit = (
             UnitModel(
-                ICaseString(name), 1, ["ALU"], LockInfo(rd_lock, wr_lock),
-                []) for name, rd_lock, wr_lock in [("input", False, False), (
-                    "middle", True, False), ("output", False, True)])
-        proc_desc = ProcessorDesc([in_unit], [FuncUnit(out_unit, [mid])], [],
-                                  [FuncUnit(mid, [in_unit])])
-        self.assertEqual(simulate(
-            [HwInstruction(*instr_regs, "ALU") for instr_regs in
-             [[[], "R1"], [["R1"], "R2"]]],
-            HwSpec(proc_desc)), [BagValDict(cp_util) for cp_util in [
-                {ICaseString("input"): [InstrState(0)]},
-                {ICaseString("input"): [InstrState(1)],
-                 ICaseString("middle"): [InstrState(0)]},
-                {ICaseString("middle"): [InstrState(1, StallState.DATA)],
-                 ICaseString("output"): [InstrState(0)]},
-                {ICaseString("middle"): [InstrState(1)]},
-                {ICaseString("output"): [InstrState(1)]}]])
+                ICaseString(name), 1, ["ALU"], LockInfo(rd_lock, wr_lock), []
+            )
+            for name, rd_lock, wr_lock in [
+                ("input", False, False),
+                ("middle", True, False),
+                ("output", False, True),
+            ]
+        )
+        proc_desc = ProcessorDesc(
+            [in_unit],
+            [FuncUnit(out_unit, [mid])],
+            [],
+            [FuncUnit(mid, [in_unit])],
+        )
+        self.assertEqual(
+            simulate(
+                [
+                    HwInstruction(*instr_regs, "ALU")
+                    for instr_regs in [[[], "R1"], [["R1"], "R2"]]
+                ],
+                HwSpec(proc_desc),
+            ),
+            [
+                BagValDict(cp_util)
+                for cp_util in [
+                    {ICaseString("input"): [InstrState(0)]},
+                    {
+                        ICaseString("input"): [InstrState(1)],
+                        ICaseString("middle"): [InstrState(0)],
+                    },
+                    {
+                        ICaseString("middle"): [
+                            InstrState(1, StallState.DATA)
+                        ],
+                        ICaseString("output"): [InstrState(0)],
+                    },
+                    {ICaseString("middle"): [InstrState(1)]},
+                    {ICaseString("output"): [InstrState(1)]},
+                ]
+            ],
+        )
+
+
+class StructuralTest(TestCase):
+
+    """Test case for structural hazards"""
+
+    # pylint: disable=invalid-name
+    def test_mem_ACL_is_correctly_matched_against_instructions(self):
+        """Test comparing memory ACL against instructions.
+
+        `self` is this test case.
+
+        """
+        res_util = (
+            BagValDict({ICaseString("full system"): [InstrState(instr)]})
+            for instr in [0, 1]
+        )
+        sim_res = simulate(
+            [
+                HwInstruction([], out_reg, ICaseString("ALU"))
+                for out_reg in ["R1", "R2"]
+            ],
+            HwSpec(
+                processor_utils.load_proc_desc(
+                    {
+                        "units": [
+                            {
+                                units.UNIT_NAME_KEY: "full system",
+                                units.UNIT_WIDTH_KEY: 2,
+                                units.UNIT_CAPS_KEY: ["ALU"],
+                                **{
+                                    attr: True
+                                    for attr in [
+                                        units.UNIT_RLOCK_KEY,
+                                        units.UNIT_WLOCK_KEY,
+                                    ]
+                                },
+                                units.UNIT_MEM_KEY: ["ALU"],
+                            }
+                        ],
+                        "dataPath": [],
+                    }
+                )
+            ),
+        )
+        self.assertEqual(sim_res, list(res_util))
 
 
 class TestDataHazards:
 
     """Test case for data hazards"""
 
-    @mark.parametrize("instr_regs", [[[["R1"], "R2"], [[], "R1"]], [
-        [[], "R1"], [["R1"], "R2"]], [[[], "R1"], [[], "R1"]]])
+    @mark.parametrize(
+        "instr_regs",
+        [
+            [[["R1"], "R2"], [[], "R1"]],
+            [[[], "R1"], [["R1"], "R2"]],
+            [[[], "R1"], [[], "R1"]],
+        ],
+    )
     def test_hazard(self, instr_regs):
         """Test detecting data hazards.
 
@@ -120,38 +371,31 @@ class TestDataHazards:
 
         """
         full_sys_unit = UnitModel(
-            ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), [])
+            ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), []
+        )
         assert simulate(
             [HwInstruction(*regs, "ALU") for regs in instr_regs],
-            HwSpec(ProcessorDesc([], [], [full_sys_unit], []))) == [
-                BagValDict(cp_util) for cp_util in
-                [{ICaseString(TEST_DIR):
-                  itertools.starmap(InstrState, [[0], [1, StallState.DATA]])},
-                 {ICaseString(TEST_DIR): [InstrState(1)]}]]
+            HwSpec(ProcessorDesc([], [], [full_sys_unit], [])),
+        ) == [
+            BagValDict(cp_util)
+            for cp_util in [
+                {
+                    ICaseString(TEST_DIR): itertools.starmap(
+                        InstrState, [[0], [1, StallState.DATA]]
+                    )
+                },
+                {ICaseString(TEST_DIR): [InstrState(1)]},
+            ]
+        ]
 
 
 class TestStructural:
 
     """Test case for structural hazards"""
 
-    @mark.parametrize("in_width, in_mem_util, out_unit_params, extra_util", [
-        (1, ["ALU"], [("output", 1, ["ALU"])],
-         [{ICaseString("output"): [InstrState(0)]}, {ICaseString("input"): [
-             InstrState(1)]}, {ICaseString("output"): [InstrState(1)]}]),
-        (1, [], [("output", 1, ["ALU"])],
-         [{ICaseString("output"): [InstrState(0)], ICaseString("input"):
-           [InstrState(1)]}, {ICaseString("output"): [InstrState(1)]}]),
-        (2, [], [("output", 2, ["ALU"])],
-         [{ICaseString("output"): [InstrState(0)],
-           ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)]},
-          {ICaseString("output"): [InstrState(1)]}]),
-        (2, [], ((name, 1, mem_access) for name, mem_access in [("output 1", [
-            "ALU"]), ("output 2", [])]), [{ICaseString("output 1"): [
-                InstrState(0)], ICaseString("output 2"): [InstrState(1)]}]),
-        (2, [], ((name, 1, ["ALU"]) for name in ["output 1", "output 2"]),
-         [{ICaseString("output 1"): [InstrState(0)],
-           ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)]},
-          {ICaseString("output 1"): [InstrState(1)]}])])
+    @mark.parametrize(
+        "in_width, in_mem_util, out_unit_params, extra_util", _STRUCT_CASES
+    )
     def test_hazard(self, in_width, in_mem_util, out_unit_params, extra_util):
         """Test detecting structural hazards.
 
@@ -164,36 +408,31 @@ class TestStructural:
                      pulse.
 
         """
-        in_unit = UnitModel(ICaseString("input"), in_width, ["ALU"],
-                            LockInfo(True, False), in_mem_util)
-        out_units = (UnitModel(
-            ICaseString(name), width, ["ALU"], LockInfo(False, True),
-            mem_access) for name, width, mem_access in out_unit_params)
+        in_unit = UnitModel(
+            ICaseString("input"),
+            in_width,
+            ["ALU"],
+            LockInfo(True, False),
+            in_mem_util,
+        )
+        out_units = (
+            UnitModel(
+                ICaseString(name),
+                width,
+                ["ALU"],
+                LockInfo(False, True),
+                mem_access,
+            )
+            for name, width, mem_access in out_unit_params
+        )
         out_units = (FuncUnit(out_unit, [in_unit]) for out_unit in out_units)
         cp1_util = {ICaseString("input"): map(InstrState, range(in_width))}
         assert simulate(
             [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
-            HwSpec(ProcessorDesc([in_unit], out_units, [], []))) == list(
-                map(BagValDict, more_itertools.prepend(cp1_util, extra_util)))
-
-    # pylint: disable=invalid-name
-    def test_mem_ACL_is_correctly_matched_against_instructions(self):
-        """Test comparing memory ACL against instructions.
-
-        `self` is this test case.
-
-        """
-        res_util = (BagValDict({ICaseString("full system"):
-                                [InstrState(instr)]}) for instr in [0, 1])
-        assert simulate(
-            [HwInstruction([], out_reg, ICaseString("ALU")) for out_reg in
-             ["R1", "R2"]], HwSpec(processor_utils.load_proc_desc({"units": [
-                 {units.UNIT_NAME_KEY: "full system", units.UNIT_WIDTH_KEY: 2,
-                  units.UNIT_CAPS_KEY: ["ALU"], **{attr: True for attr in [
-                      units.UNIT_RLOCK_KEY, units.UNIT_WLOCK_KEY]},
-                  units.UNIT_MEM_KEY: ["ALU"]}], "dataPath": []}))) == list(
-                      res_util)
-    # pylint: enable=invalid-name
+            HwSpec(ProcessorDesc([in_unit], out_units, [], [])),
+        ) == list(
+            map(BagValDict, more_itertools.prepend(cp1_util, extra_util))
+        )
 
     def test_mem_util_in_earlier_inputs_affects_later_ones(self):
         """Test propagation of memory utilization among inputs.
@@ -201,41 +440,26 @@ class TestStructural:
         `self` is this test case.
 
         """
-        full_sys_unit = UnitModel(ICaseString("full system"), 2, ["ALU"],
-                                  LockInfo(True, True), ["ALU"])
-        res_util = (BagValDict({ICaseString("full system"):
-                                [InstrState(instr)]}) for instr in [0, 1])
-        assert simulate([HwInstruction([], out_reg, "ALU") for out_reg in
-                         ["R1", "R2"]], HwSpec(ProcessorDesc(
-                             [], [], [full_sys_unit], []))) == list(res_util)
+        full_sys_unit = UnitModel(
+            ICaseString("full system"),
+            2,
+            ["ALU"],
+            LockInfo(True, True),
+            ["ALU"],
+        )
+        res_util = (
+            BagValDict({ICaseString("full system"): [InstrState(instr)]})
+            for instr in [0, 1]
+        )
+        assert simulate(
+            [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
+            HwSpec(ProcessorDesc([], [], [full_sys_unit], [])),
+        ) == list(res_util)
 
 
 class UnifiedMemTest(TestCase):
 
     """Test case for the unified memory architecture"""
-
-    def test_all_candidate_instructions_are_offered_to_the_destinaton_unit(
-            self):
-        """Test candidate instructions aren't shortlisted.
-
-        `self` is this test case.
-
-        """
-        in_unit, out_unit = (
-            UnitModel(ICaseString(name), width, ["ALU", "MEM"],
-                      LockInfo(rd_lock, wr_lock), mem_acl) for name, width,
-            rd_lock, wr_lock, mem_acl in [("input", 3, True, False, []),
-                                          ("output", 2, False, True, ["MEM"])])
-        proc_desc = ProcessorDesc(
-            [in_unit], [FuncUnit(out_unit, [in_unit])], [], [])
-        self.assertEqual(simulate([HwInstruction(
-            [], *instr_params) for instr_params in [["R1", "MEM"], [
-                "R2", "MEM"], ["R3", "ALU"]]], HwSpec(proc_desc)), [BagValDict(
-                    cp_util) for cp_util in [{ICaseString("input"): map(
-                        InstrState, [0, 1, 2])}, {ICaseString("output"): map(
-                            InstrState, [0, 2]), ICaseString("input"): [
-                                InstrState(1, StallState.STRUCTURAL)]}, {
-                                    ICaseString("output"): [InstrState(1)]}]])
 
     def test_hazard(self):
         """Test structural hazards in a unified memory architecture.
@@ -244,37 +468,41 @@ class UnifiedMemTest(TestCase):
 
         """
         in_unit, out_unit = (
-            UnitModel(ICaseString(name), 1, ["ALU", "MEM"],
-                      LockInfo(rd_lock, wr_lock), mem_acl) for
-            name, rd_lock, wr_lock, mem_acl in [("input", True, False, [
-                "ALU", "MEM"]), ("output", False, True, ["MEM"])])
+            UnitModel(
+                ICaseString(name),
+                1,
+                ["ALU", "MEM"],
+                LockInfo(rd_lock, wr_lock),
+                mem_acl,
+            )
+            for name, rd_lock, wr_lock, mem_acl in [
+                ("input", True, False, ["ALU", "MEM"]),
+                ("output", False, True, ["MEM"]),
+            ]
+        )
         proc_desc = ProcessorDesc(
-            [in_unit], [FuncUnit(out_unit, [in_unit])], [], [])
-        self.assertEqual(simulate(
-            [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
-            HwSpec(proc_desc)), [BagValDict(cp_util) for cp_util in [
-                {ICaseString("input"): [InstrState(0)]},
-                {ICaseString("output"): [InstrState(0)], ICaseString("input"):
-                 [InstrState(1)]}, {ICaseString("output"): [InstrState(1)]}]])
-
-    def test_only_mem_access_instructions_are_checked(self):
-        """Test always allowing instructions without memory access.
-
-        `self` is this test case.
-
-        """
-        in_unit, out_unit = (
-            UnitModel(ICaseString(name), 2, ["ALU", "MEM"],
-                      LockInfo(rd_lock, wr_lock), mem_acl) for
-            name, rd_lock, wr_lock, mem_acl in
-            [("input", True, False, []), ("output", False, True, ["MEM"])])
-        proc_desc = ProcessorDesc(
-            [in_unit], [FuncUnit(out_unit, [in_unit])], [], [])
+            [in_unit], [FuncUnit(out_unit, [in_unit])], [], []
+        )
         self.assertEqual(
-            simulate([HwInstruction([], *instr_params) for instr_params in
-                      [["R1", "MEM"], ["R2", "ALU"]]], HwSpec(proc_desc)),
-            [BagValDict({ICaseString(unit): map(InstrState, [0, 1])}) for
-             unit in ["input", "output"]])
+            simulate(
+                [
+                    HwInstruction([], out_reg, "ALU")
+                    for out_reg in ["R1", "R2"]
+                ],
+                HwSpec(proc_desc),
+            ),
+            [
+                BagValDict(cp_util)
+                for cp_util in [
+                    {ICaseString("input"): [InstrState(0)]},
+                    {
+                        ICaseString("output"): [InstrState(0)],
+                        ICaseString("input"): [InstrState(1)],
+                    },
+                    {ICaseString("output"): [InstrState(1)]},
+                ]
+            ],
+        )
 
 
 class WarTest(TestCase):
@@ -287,18 +515,38 @@ class WarTest(TestCase):
         `self` is this test case.
 
         """
-        in_unit, out_unit = (UnitModel(ICaseString(name), 1, ["ALU"], LockInfo(
-            rd_lock, wr_lock), []) for name, rd_lock, wr_lock in
-                             [("input", False, False), ("output", True, True)])
+        in_unit, out_unit = (
+            UnitModel(
+                ICaseString(name), 1, ["ALU"], LockInfo(rd_lock, wr_lock), []
+            )
+            for name, rd_lock, wr_lock in [
+                ("input", False, False),
+                ("output", True, True),
+            ]
+        )
         proc_desc = ProcessorDesc(
-            [in_unit], [FuncUnit(out_unit, [in_unit])], [], [])
+            [in_unit], [FuncUnit(out_unit, [in_unit])], [], []
+        )
         self.assertEqual(
-            simulate([HwInstruction(*instr_regs, "ALU") for instr_regs in
-                      [[["R1"], "R2"], [[], "R1"]]], HwSpec(proc_desc)),
-            [BagValDict(cp_util) for cp_util in
-             [{ICaseString("input"): [InstrState(0)]},
-              {ICaseString("input"): [InstrState(1)], ICaseString("output"):
-               [InstrState(0)]}, {ICaseString("output"): [InstrState(1)]}]])
+            simulate(
+                [
+                    HwInstruction(*instr_regs, "ALU")
+                    for instr_regs in [[["R1"], "R2"], [[], "R1"]]
+                ],
+                HwSpec(proc_desc),
+            ),
+            [
+                BagValDict(cp_util)
+                for cp_util in [
+                    {ICaseString("input"): [InstrState(0)]},
+                    {
+                        ICaseString("input"): [InstrState(1)],
+                        ICaseString("output"): [InstrState(0)],
+                    },
+                    {ICaseString("output"): [InstrState(1)]},
+                ]
+            ],
+        )
 
 
 def main():
@@ -306,5 +554,5 @@ def main():
     pytest.main([__file__])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

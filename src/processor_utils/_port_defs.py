@@ -43,6 +43,7 @@ from typing import Generator, Tuple
 
 from fastcore import foundation
 from networkx import DiGraph
+
 _T = typing.TypeVar("_T")
 
 
@@ -79,7 +80,8 @@ class PortGroup:
 
         """
         self._in_ports, self._out_ports = foundation.maps(
-            foundation.Self(processor), tuple, [get_in_ports, get_out_ports])
+            foundation.Self(processor), tuple, [get_in_ports, get_out_ports]
+        )
 
     @property
     def in_ports(self) -> Tuple[object, ...]:
@@ -100,8 +102,9 @@ class PortGroup:
         return self._out_ports
 
 
-def _get_ports(degrees: typing.Iterable[Tuple[_T, bool]]) -> Generator[
-        _T, None, None]:
+def _get_ports(
+    degrees: typing.Iterable[Tuple[_T, bool]]
+) -> Generator[_T, None, None]:
     """Find the ports with respect to the given degrees.
 
     `degrees` are the degrees of all units.

@@ -59,11 +59,13 @@ class ExampleTest(unittest.TestCase):
 
         """
         examples_dir = join(test_paths.TEST_DIR, "../examples")
-        with open(join(examples_dir, "unified memory.ipynb"),
-                  encoding="utf-8") as nb_file:
+        with open(
+            join(examples_dir, "unified memory.ipynb"), encoding="utf-8"
+        ) as nb_file:
             nbconvert.preprocessors.ExecutePreprocessor().preprocess(
                 nbformat.read(nb_file, nbformat.NO_CONVERT),
-                {"metadata": {"path": examples_dir}})
+                {"metadata": {"path": examples_dir}},
+            )
 
 
 def main():
@@ -71,5 +73,5 @@ def main():
     unittest.main()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

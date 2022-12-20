@@ -51,16 +51,32 @@ class TestWhole:
 
     """Test case for the whole program functionality"""
 
-    @pytest.mark.parametrize("proc_file_name, prog_file_name, sim_res", [
-        ("processorWithALUISA.yaml",
-         "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
-         [["U:full system"]]),
-        ("processorWithALUISA.yaml", "2InstructionProgram.asm",
-         [["U:full system"], ["", "U:full system"]]),
-        ("2WideInput1WideOutputProcessor.yaml", "2InstructionProgram.asm",
-         [["U:input", "U:output"], ["U:input", "S:input", "U:output"]]),
-        ("2WideALUProcessor.yaml", "RAW.asm",
-         [["U:full system"], ["D:full system", "U:full system"]])])
+    @pytest.mark.parametrize(
+        "proc_file_name, prog_file_name, sim_res",
+        [
+            (
+                "processorWithALUISA.yaml",
+                "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma."
+                "asm",
+                [["U:full system"]],
+            ),
+            (
+                "processorWithALUISA.yaml",
+                "2InstructionProgram.asm",
+                [["U:full system"], ["", "U:full system"]],
+            ),
+            (
+                "2WideInput1WideOutputProcessor.yaml",
+                "2InstructionProgram.asm",
+                [["U:input", "U:output"], ["U:input", "S:input", "U:output"]],
+            ),
+            (
+                "2WideALUProcessor.yaml",
+                "RAW.asm",
+                [["U:full system"], ["D:full system", "U:full system"]],
+            ),
+        ],
+    )
     def test_sim(self, proc_file_name, prog_file_name, sim_res):
         """Test executing a program.
 
@@ -70,11 +86,17 @@ class TestWhole:
 
         """
         processor_file, program_file = processorSim.get_in_files(
-            ["--processor", join(TEST_DATA_DIR, "fullHwDesc", proc_file_name),
-             join(TEST_DATA_DIR, "programs", prog_file_name)])
+            [
+                "--processor",
+                join(TEST_DATA_DIR, "fullHwDesc", proc_file_name),
+                join(TEST_DATA_DIR, "programs", prog_file_name),
+            ]
+        )
         with processor_file, program_file:
-            assert processorSim.get_sim_res(
-                processor_file, program_file) == sim_res
+            assert (
+                processorSim.get_sim_res(processor_file, program_file)
+                == sim_res
+            )
 
 
 def main():
@@ -82,5 +104,5 @@ def main():
     pytest.main([__file__])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

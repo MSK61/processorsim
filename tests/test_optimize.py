@@ -69,38 +69,32 @@ class TestClean:
         """
         caplog.set_level(WARNING)
         proc_desc = read_proc_file(
-            "optimization", "pathThatGetsCutOffItsOutput.yaml")
+            "optimization", "pathThatGetsCutOffItsOutput.yaml"
+        )
         out1_unit = ICaseString("output 1")
         alu_cap = ICaseString("ALU")
-        assert proc_desc == ProcessorDesc([UnitModel(
-            ICaseString("input"), 1, [alu_cap], LockInfo(True, False),
-            [])], [FuncUnit(UnitModel(out1_unit, 1, [alu_cap], LockInfo(
-                False, True), []), proc_desc.in_ports)], [], [])
+        assert proc_desc == ProcessorDesc(
+            [
+                UnitModel(
+                    ICaseString("input"),
+                    1,
+                    [alu_cap],
+                    LockInfo(True, False),
+                    [],
+                )
+            ],
+            [
+                FuncUnit(
+                    UnitModel(
+                        out1_unit, 1, [alu_cap], LockInfo(False, True), []
+                    ),
+                    proc_desc.in_ports,
+                )
+            ],
+            [],
+            [],
+        )
         chk_warn(["middle"], caplog.records)
-
-    def test_incompatible_edge_is_removed(self, caplog):
-        """Test an edge connecting two incompatible units.
-
-        `self` is this test case.
-        `caplog` is the log capture fixture.
-
-        """
-        caplog.set_level(WARNING)
-        proc_desc = read_proc_file(
-            "optimization", "incompatibleEdgeProcessor.yaml")
-        in_units = starmap(lambda name, categ: UnitModel(
-            name, 1, [categ], LockInfo(True, False), []),
-                           (map(ICaseString, unit_params) for unit_params in
-                            [["input 1", "ALU"], ["input 2", "MEM"]]))
-        wr_lock = LockInfo(False, True)
-        out_units = starmap(lambda name, categ, in_unit: FuncUnit(UnitModel(
-            name, 1, [categ], wr_lock, []), [more_itertools.first_true(
-                proc_desc.in_ports, pred=lambda in_port: in_port.name ==
-                in_unit)]), (map(ICaseString, unit_params) for unit_params in
-                             [["output 1", "ALU", "input 1"],
-                              ["output 2", "MEM", "input 2"]]))
-        assert proc_desc == ProcessorDesc(in_units, out_units, [], [])
-        chk_warn(["input 2", "output 1"], caplog.records)
 
     def test_unit_with_empty_capabilities_is_removed(self, caplog):
         """Test loading a unit with no capabilities.
@@ -111,10 +105,69 @@ class TestClean:
         """
         caplog.set_level(WARNING)
         assert read_proc_file(
-            "optimization", "unitWithNoCapabilities.yaml") == ProcessorDesc(
-                [], [], [UnitModel(ICaseString("core 1"), 1, [
-                    ICaseString("ALU")], LockInfo(True, True), [])], [])
+            "optimization", "unitWithNoCapabilities.yaml"
+        ) == ProcessorDesc(
+            [],
+            [],
+            [
+                UnitModel(
+                    ICaseString("core 1"),
+                    1,
+                    [ICaseString("ALU")],
+                    LockInfo(True, True),
+                    [],
+                )
+            ],
+            [],
+        )
         chk_warn(["core 2"], caplog.records)
+
+
+class TestEdgeRemoval:
+
+    """Test case for removing incompatible edges"""
+
+    def test_incompatible_edge_is_removed(self, caplog):
+        """Test an edge connecting two incompatible units.
+
+        `self` is this test case.
+        `caplog` is the log capture fixture.
+
+        """
+        caplog.set_level(WARNING)
+        proc_desc = read_proc_file(
+            "optimization", "incompatibleEdgeProcessor.yaml"
+        )
+        in_units = starmap(
+            lambda name, categ: UnitModel(
+                name, 1, [categ], LockInfo(True, False), []
+            ),
+            (
+                map(ICaseString, unit_params)
+                for unit_params in [["input 1", "ALU"], ["input 2", "MEM"]]
+            ),
+        )
+        wr_lock = LockInfo(False, True)
+        out_units = starmap(
+            lambda name, categ, in_unit: FuncUnit(
+                UnitModel(name, 1, [categ], wr_lock, []),
+                [
+                    more_itertools.first_true(
+                        proc_desc.in_ports,
+                        pred=lambda in_port: in_port.name == in_unit,
+                    )
+                ],
+            ),
+            (
+                map(ICaseString, unit_params)
+                for unit_params in [
+                    ["output 1", "ALU", "input 1"],
+                    ["output 2", "MEM", "input 2"],
+                ]
+            ),
+        )
+        assert proc_desc == ProcessorDesc(in_units, out_units, [], [])
+        chk_warn(["input 2", "output 1"], caplog.records)
 
 
 class TestWidth:
@@ -128,7 +181,8 @@ class TestWidth:
 
         """
         test_utils.chk_two_units(
-            "optimization", "oneCapabilityInputAndTwoCapabilitiesOutput.yaml")
+            "optimization", "oneCapabilityInputAndTwoCapabilitiesOutput.yaml"
+        )
 
 
 def main():
@@ -136,5 +190,5 @@ def main():
     pytest.main([__file__])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

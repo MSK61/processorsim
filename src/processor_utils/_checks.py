@@ -40,8 +40,18 @@
 ############################################################
 
 import typing
-from typing import AbstractSet, Callable, Dict, Generator, Iterable, List, \
-    Mapping, MutableMapping, Sequence, Tuple
+from typing import (
+    AbstractSet,
+    Callable,
+    Dict,
+    Generator,
+    Iterable,
+    List,
+    Mapping,
+    MutableMapping,
+    Sequence,
+    Tuple,
+)
 
 import attr
 import fastcore.foundation
@@ -57,6 +67,7 @@ from .exception import BlockedCapError, ComponentInfo, PathLockError
 from . import units
 from .units import UNIT_CAPS_KEY, UNIT_WIDTH_KEY
 from . import _port_defs
+
 _OLD_NODE_KEY: typing.Final = "old_node"
 _T = typing.TypeVar("_T")
 
@@ -67,15 +78,22 @@ def chk_caps(processor: DiGraph) -> None:
     `processor` is the processor to check whose capabilities.
 
     """
-    cap_checks = [lambda cap_graph, post_ord, cap, in_ports, _:
-                  _chk_multilock(cap_graph, post_ord, cap, in_ports)]
+    cap_checks = [
+        lambda cap_graph, post_ord, cap, in_ports, _: _chk_multilock(
+            cap_graph, post_ord, cap, in_ports
+        )
+    ]
 
     if processor.number_of_nodes() > 1:
         cap_checks.append(
-            lambda cap_graph, _, cap, in_ports, out_ports:
-            _chk_cap_flow(_get_anal_graph(cap_graph),
-                          ComponentInfo(cap, "Capability " + cap), in_ports,
-                          out_ports, lambda port: "port " + port))
+            lambda cap_graph, _, cap, in_ports, out_ports: _chk_cap_flow(
+                _get_anal_graph(cap_graph),
+                ComponentInfo(cap, "Capability " + cap),
+                in_ports,
+                out_ports,
+                lambda port: "port " + port,
+            )
+        )
 
     _do_cap_checks(processor, cap_checks)
 
@@ -92,8 +110,9 @@ def chk_cycles(processor: Graph) -> None:
         raise networkx.NetworkXUnfeasible
 
 
-def chk_non_empty(processor: typing.Container[object],
-                  in_ports: Iterable[object]) -> None:
+def chk_non_empty(
+    processor: typing.Container[object], in_ports: Iterable[object]
+) -> None:
     """Check if the processor still has input ports.
 
     `processor` is the processor to check.
@@ -102,7 +121,8 @@ def chk_non_empty(processor: typing.Container[object],
 
     """
     if not more_itertools.first_true(
-            in_ports, pred=lambda port: port in processor):
+        in_ports, pred=lambda port: port in processor
+    ):
         raise exception.EmptyProcError("No input ports found")
 
 
@@ -123,7 +143,8 @@ class _PathDescriptor:
 
     @classmethod
     def make_read_desc(
-            cls, capability: object, start: object) -> "_PathDescriptor":
+        cls, capability: object, start: object
+    ) -> "_PathDescriptor":
         """Create a read lock path description.
 
         `cls` is the created object class.
@@ -135,7 +156,8 @@ class _PathDescriptor:
 
     @classmethod
     def make_write_desc(
-            cls, capability: object, start: object) -> "_PathDescriptor":
+        cls, capability: object, start: object
+    ) -> "_PathDescriptor":
         """Create a write lock path description.
 
         `cls` is the created object class.
@@ -159,8 +181,11 @@ class _PathLockCalc:
 
     """Path lock calculator"""
 
-    def calc_lock(self, lock_key: object, path_desc_fact:
-                  Callable[[object, object], _PathDescriptor]) -> int:
+    def calc_lock(
+        self,
+        lock_key: object,
+        path_desc_fact: Callable[[object, object], _PathDescriptor],
+    ) -> int:
         """Calculate the path lock.
 
         `self` is this path lock calculator.
@@ -168,8 +193,10 @@ class _PathLockCalc:
         `path_desc_fact` is the path description factory function.
 
         """
-        return self._calc_path_lock(self._start_unit[lock_key], path_desc_fact(
-            self._capability, self._start_name))
+        return self._calc_path_lock(
+            self._start_unit[lock_key],
+            path_desc_fact(self._capability, self._start_name),
+        )
 
     def _get_tail_lock(self, path_desc: _PathDescriptor) -> int:
         """Get the common lock of tail paths.
@@ -185,13 +212,17 @@ class _PathLockCalc:
         one_lock = -1
 
         for cur_succ in self._succ_lst:
-            one_lock = self._update_lock(one_lock, path_desc.selector(
-                self._path_locks[cur_succ]), path_desc)
+            one_lock = _update_lock(
+                one_lock,
+                path_desc.selector(self._path_locks[cur_succ]),
+                path_desc,
+            )
 
         return one_lock
 
     def _calc_path_lock(
-            self, unit_lock: bool, path_desc: _PathDescriptor) -> int:
+        self, unit_lock: bool, path_desc: _PathDescriptor
+    ) -> int:
         """Calculate the path lock.
 
         `self` is this path lock calculator.
@@ -208,50 +239,8 @@ class _PathLockCalc:
         if tail_lock >= 0:
             path_lock += tail_lock
 
-        self._chk_seg_lock(path_lock, path_desc)
+        _chk_seg_lock(path_lock, path_desc)
         return path_lock
-
-    @staticmethod
-    def _chk_seg_lock(seg_lock: int, seg_desc: _PathDescriptor) -> None:
-        """Check if the segment has exceeded the maximum allowed lock.
-
-        `seg_desc` is the segment descriptor.
-        `seg_lock` is the segment lock.
-        The method raises a PathLockError if the segment has multiple
-        locks.
-
-        """
-        if seg_lock > 1:
-            raise PathLockError(
-                f"Found a path passing through ${PathLockError.START_KEY} "
-                f"with multiple ${PathLockError.LOCK_TYPE_KEY} locks for "
-                f"capability ${PathLockError.CAP_KEY}.", seg_desc.start,
-                seg_desc.lock_type, seg_desc.capability)
-
-    @staticmethod
-    def _update_lock(
-            old_lock: int, new_lock: int, path_desc: _PathDescriptor) -> int:
-        """Update the lock based on the current and proposed values.
-
-        `old_lock` is the lock value so far.
-        `new_lock` is the new proposed lock value.
-        `path_desc` is the descriptor of the path for which the lock is
-                    updated.
-        The method initializes the current lock value if it hasn't
-        already been initialized, otherwise it makes sure the new value
-        matches the old one. If the new value is different from the
-        current one, the method raises a PathLockError. The method
-        returns the updated lock.
-
-        """
-        if old_lock < 0 or new_lock == old_lock:
-            return new_lock
-
-        raise PathLockError(
-            f"Paths passing through ${PathLockError.START_KEY} have different"
-            f" ${PathLockError.LOCK_TYPE_KEY} locks for capability "
-            f"${PathLockError.CAP_KEY}.", path_desc.start,
-            path_desc.lock_type, path_desc.capability)
 
     _start_unit: Mapping[object, bool]
 
@@ -273,7 +262,8 @@ def _add_port_link(graph: Graph, old_port: object, new_port: object) -> None:
 
     """
     graph.nodes[new_port][UNIT_WIDTH_KEY] += graph.nodes[old_port][
-        UNIT_WIDTH_KEY]
+        UNIT_WIDTH_KEY
+    ]
     graph.add_edge(old_port, new_port)
 
 
@@ -302,7 +292,8 @@ def _aug_terminals(graph: Graph, ports: Sequence[object]) -> object:
 
 
 def _cap_in_edge(
-        processor: Graph, capability: object, edge: Iterable[object]) -> bool:
+    processor: Graph, capability: object, edge: Iterable[object]
+) -> bool:
     """Check if the given capability is supported by the edge.
 
     `processor` is the processor containing the edge.
@@ -324,9 +315,13 @@ def _cap_in_unit(processor: Graph, capability: object, unit: object) -> bool:
     return capability in processor.nodes[unit][UNIT_CAPS_KEY]
 
 
-def _chk_cap_flow(anal_graph: DiGraph, capability_info: ComponentInfo,
-                  in_ports: Iterable[ICaseString], out_ports: Iterable[object],
-                  port_name_func: Callable[[ICaseString], object]) -> None:
+def _chk_cap_flow(
+    anal_graph: DiGraph,
+    capability_info: ComponentInfo,
+    in_ports: Iterable[ICaseString],
+    out_ports: Iterable[object],
+    port_name_func: Callable[[ICaseString], object],
+) -> None:
     """Check the flow capacity for the given capability and ports.
 
     `anal_graph` is the analysis graph.
@@ -339,17 +334,24 @@ def _chk_cap_flow(anal_graph: DiGraph, capability_info: ComponentInfo,
     port to the output ports.
 
     """
-    unit_anal_map = {unit_attrs[_OLD_NODE_KEY]: unit for unit,
-                     unit_attrs in anal_graph.nodes(True)}
+    unit_anal_map = {
+        unit_attrs[_OLD_NODE_KEY]: unit
+        for unit, unit_attrs in anal_graph.nodes(True)
+    }
     unified_out = _aug_out_ports(
-        anal_graph, [unit_anal_map[port] for port in out_ports])
+        anal_graph, [unit_anal_map[port] for port in out_ports]
+    )
     unified_out = _split_nodes(anal_graph)[unified_out]
     _dist_edge_caps(anal_graph)
 
     for cur_port in in_ports:
-        _chk_unit_flow(networkx.maximum_flow_value(
-            anal_graph, unit_anal_map[cur_port], unified_out), capability_info,
-                       ComponentInfo(cur_port, port_name_func(cur_port)))
+        _chk_unit_flow(
+            networkx.maximum_flow_value(
+                anal_graph, unit_anal_map[cur_port], unified_out
+            ),
+            capability_info,
+            ComponentInfo(cur_port, port_name_func(cur_port)),
+        )
 
 
 def _chk_in_lock(in_lock_info: _SatInfo, path_desc: _PathDescriptor) -> None:
@@ -365,12 +367,18 @@ def _chk_in_lock(in_lock_info: _SatInfo, path_desc: _PathDescriptor) -> None:
         raise PathLockError(
             f"Found a path starting at input port ${PathLockError.START_KEY} "
             f"with no ${PathLockError.LOCK_TYPE_KEY} locks for capability "
-            f"${PathLockError.CAP_KEY}.", path_desc.start,
-            path_desc.lock_type, path_desc.capability)
+            f"${PathLockError.CAP_KEY}.",
+            path_desc.start,
+            path_desc.lock_type,
+            path_desc.capability,
+        )
 
 
-def _chk_in_locks(in_ports: Iterable[object], path_locks:
-                  Mapping[object, _SatInfo], capability: object) -> None:
+def _chk_in_locks(
+    in_ports: Iterable[object],
+    path_locks: Mapping[object, _SatInfo],
+    capability: object,
+) -> None:
     """Check if paths from input ports don't have exactly one lock.
 
     `in_ports` are the input ports to check whose locks.
@@ -382,14 +390,21 @@ def _chk_in_locks(in_ports: Iterable[object], path_locks:
 
     """
     for cur_port in in_ports:
-        for path_desc_fact in [_PathDescriptor.make_read_desc,
-                               _PathDescriptor.make_write_desc]:
+        for path_desc_fact in [
+            _PathDescriptor.make_read_desc,
+            _PathDescriptor.make_write_desc,
+        ]:
             _chk_in_lock(
-                path_locks[cur_port], path_desc_fact(capability, cur_port))
+                path_locks[cur_port], path_desc_fact(capability, cur_port)
+            )
 
 
-def _chk_multilock(processor: DiGraph, post_ord: Iterable[object],
-                   capability: object, in_ports: Iterable[object]) -> None:
+def _chk_multilock(
+    processor: DiGraph,
+    post_ord: Iterable[object],
+    capability: object,
+    in_ports: Iterable[object],
+) -> None:
     """Check if the processor has paths with multiple locks.
 
     `processor` is the processor to check for multi-lock paths.
@@ -409,8 +424,11 @@ def _chk_multilock(processor: DiGraph, post_ord: Iterable[object],
 
 
 def _chk_path_locks(
-        start: object, processor: DiGraph, path_locks:
-        MutableMapping[object, _SatInfo], capability: object) -> None:
+    start: object,
+    processor: DiGraph,
+    path_locks: MutableMapping[object, _SatInfo],
+    capability: object,
+) -> None:
     """Check if paths from the given start unit contains multiple locks.
 
     `start` is the starting unit of paths to check.
@@ -426,16 +444,43 @@ def _chk_path_locks(
     # because pylint can't detect packed as a member of
     # iteration_utilities
     # pylint: disable=no-member
-    sat_params = map(iteration_utilities.packed(_PathLockCalc(processor.nodes[
-        start], succ_lst, capability, start, path_locks).calc_lock),
-                     [(units.UNIT_RLOCK_KEY, _PathDescriptor.make_read_desc),
-                      (units.UNIT_WLOCK_KEY, _PathDescriptor.make_write_desc)])
+    sat_params = map(
+        iteration_utilities.packed(
+            _PathLockCalc(
+                processor.nodes[start], succ_lst, capability, start, path_locks
+            ).calc_lock
+        ),
+        [
+            (units.UNIT_RLOCK_KEY, _PathDescriptor.make_read_desc),
+            (units.UNIT_WLOCK_KEY, _PathDescriptor.make_write_desc),
+        ],
+    )
     # pylint: disable=no-member
     path_locks[start] = _SatInfo(*sat_params)
 
 
-def _chk_unit_flow(min_width: bool, capability_info: ComponentInfo,
-                   port_info: ComponentInfo) -> None:
+def _chk_seg_lock(seg_lock: int, seg_desc: _PathDescriptor) -> None:
+    """Check if the segment has exceeded the maximum allowed lock.
+
+    `seg_desc` is the segment descriptor.
+    `seg_lock` is the segment lock.
+    The method raises a PathLockError if the segment has multiple locks.
+
+    """
+    if seg_lock > 1:
+        raise PathLockError(
+            f"Found a path passing through ${PathLockError.START_KEY} with "
+            f"multiple ${PathLockError.LOCK_TYPE_KEY} locks for capability "
+            f"${PathLockError.CAP_KEY}.",
+            seg_desc.start,
+            seg_desc.lock_type,
+            seg_desc.capability,
+        )
+
+
+def _chk_unit_flow(
+    min_width: bool, capability_info: ComponentInfo, port_info: ComponentInfo
+) -> None:
     """Check the flow volume from an input port to outputs.
 
     `min_width` is the minimum bus width.
@@ -450,8 +495,9 @@ def _chk_unit_flow(min_width: bool, capability_info: ComponentInfo,
     if not min_width:
         raise BlockedCapError(
             f"${BlockedCapError.CAPABILITY_KEY} blocked from "
-            f"${BlockedCapError.PORT_KEY}", exception.CapPortInfo(
-                capability_info, port_info))
+            f"${BlockedCapError.PORT_KEY}",
+            exception.CapPortInfo(capability_info, port_info),
+        )
 
 
 def _coll_cap_edges(graph: DiGraph) -> typing.FrozenSet[_T]:
@@ -466,9 +512,12 @@ def _coll_cap_edges(graph: DiGraph) -> typing.FrozenSet[_T]:
     out_degrees = graph.out_degree()
     in_degrees = iteration_utilities.starfilter(
         lambda node, in_deg: in_deg == 1 or out_degrees[node] == 1,
-        graph.in_degree())
-    return frozenset(_get_cap_edge(
-        graph.in_edges(node), graph.out_edges(node)) for node, _ in in_degrees)
+        graph.in_degree(),
+    )
+    return frozenset(
+        _get_cap_edge(graph.in_edges(node), graph.out_edges(node))
+        for node, _ in in_degrees
+    )
 
 
 def _dist_edge_caps(graph: DiGraph) -> None:
@@ -481,9 +530,21 @@ def _dist_edge_caps(graph: DiGraph) -> None:
     _set_capacities(graph, _coll_cap_edges(graph))
 
 
-def _do_cap_checks(processor: DiGraph, cap_checks: Iterable[
-        Callable[[DiGraph, Iterable[object], ICaseString,
-                  Iterable[ICaseString], Iterable[object]], None]]) -> None:
+def _do_cap_checks(
+    processor: DiGraph,
+    cap_checks: Iterable[
+        Callable[
+            [
+                DiGraph,
+                Iterable[object],
+                ICaseString,
+                Iterable[ICaseString],
+                Iterable[object],
+            ],
+            None,
+        ]
+    ],
+) -> None:
     """Perform per-capability checks.
 
     `processor` is the processor to check.
@@ -491,18 +552,25 @@ def _do_cap_checks(processor: DiGraph, cap_checks: Iterable[
 
     """
     cap_units: AbstractSet[
-        Tuple[ICaseString, List[ICaseString]]] = _get_cap_units(processor)
+        Tuple[ICaseString, List[ICaseString]]
+    ] = _get_cap_units(processor)
     out_ports = tuple(_port_defs.get_out_ports(processor))
     post_ord = tuple(networkx.dfs_postorder_nodes(processor))
 
     for cap, in_ports in cap_units:
         for cur_chk in cap_checks:
-            cur_chk(_make_cap_graph(processor, cap), _filter_by_cap(
-                post_ord, cap, processor), cap, in_ports, out_ports)
+            cur_chk(
+                _make_cap_graph(processor, cap),
+                _filter_by_cap(post_ord, cap, processor),
+                cap,
+                in_ports,
+                out_ports,
+            )
 
 
-def _filter_by_cap(post_ord: Iterable[object], capability: object,
-                   processor: Graph) -> Generator[object, None, None]:
+def _filter_by_cap(
+    post_ord: Iterable[object], capability: object, processor: Graph
+) -> Generator[object, None, None]:
     """Filter the given units by the specified capability.
 
     `post_ord` is the post-order of the processor functional units.
@@ -513,7 +581,8 @@ def _filter_by_cap(post_ord: Iterable[object], capability: object,
 
     """
     return (
-        unit for unit in post_ord if _cap_in_unit(processor, capability, unit))
+        unit for unit in post_ord if _cap_in_unit(processor, capability, unit)
+    )
 
 
 def _get_anal_graph(processor: Graph) -> DiGraph:
@@ -529,8 +598,9 @@ def _get_anal_graph(processor: Graph) -> DiGraph:
     for idx, unit in hw_units:
         _update_graph(idx, unit, processor, width_graph, new_nodes)
 
-    width_graph.add_edges_from(fastcore.foundation.map_ex(edge, new_nodes) for
-                               edge in processor.edges)
+    width_graph.add_edges_from(
+        fastcore.foundation.map_ex(edge, new_nodes) for edge in processor.edges
+    )
     return width_graph
 
 
@@ -550,8 +620,9 @@ def _get_cap_edge(in_edges: Iterable[_T], out_edges: Iterable[_T]) -> _T:
         return more_itertools.first(out_edges)
 
 
-def _get_cap_units(processor: DiGraph) -> AbstractSet[
-        Tuple[ICaseString, List[_T]]]:
+def _get_cap_units(
+    processor: DiGraph,
+) -> AbstractSet[Tuple[ICaseString, List[_T]]]:
     """Create a mapping between capabilities and supporting input ports.
 
     `processor` is the processor to create a capability-port map for.
@@ -580,14 +651,18 @@ def _make_cap_graph(processor: Graph, capability: object) -> DiGraph:
     capability in common.
 
     """
-    cap_graph = DiGraph(edge for edge in processor.edges if
-                        _cap_in_edge(processor, capability, edge))
+    cap_graph = DiGraph(
+        edge
+        for edge in processor.edges
+        if _cap_in_edge(processor, capability, edge)
+    )
     cap_graph.add_nodes_from(processor.nodes(True))
     return cap_graph
 
 
 def _mov_out_link(
-        graph: Graph, link: Tuple[object, object], new_node: object) -> None:
+    graph: Graph, link: Tuple[object, object], new_node: object
+) -> None:
     """Move an outgoing link from an old node to a new one.
 
     `graph` is the graph containing the nodes.
@@ -599,8 +674,9 @@ def _mov_out_link(
     graph.remove_edge(*link)
 
 
-def _mov_out_links(graph: Graph, out_links: Iterable[Tuple[object, object]],
-                   new_node: object) -> None:
+def _mov_out_links(
+    graph: Graph, out_links: Iterable[Tuple[object, object]], new_node: object
+) -> None:
     """Move outgoing links from an old node to a new one.
 
     `graph` is the graph containing the nodes.
@@ -613,7 +689,8 @@ def _mov_out_links(graph: Graph, out_links: Iterable[Tuple[object, object]],
 
 
 def _set_capacities(
-        graph: Graph, cap_edges: Iterable[Tuple[object, object]]) -> None:
+    graph: Graph, cap_edges: Iterable[Tuple[object, object]]
+) -> None:
     """Assign capacities to capping edges.
 
     `graph` is the graph containing edges.
@@ -622,7 +699,8 @@ def _set_capacities(
     """
     for cur_edge in cap_edges:
         graph[cur_edge[0]][cur_edge[1]]["capacity"] = min(
-            graph.nodes[unit][UNIT_WIDTH_KEY] for unit in cur_edge)
+            graph.nodes[unit][UNIT_WIDTH_KEY] for unit in cur_edge
+        )
 
 
 def _split_node(graph: DiGraph, old_node: object, new_node: object) -> object:
@@ -635,7 +713,8 @@ def _split_node(graph: DiGraph, old_node: object, new_node: object) -> object:
 
     """
     graph.add_node(
-        new_node, **{UNIT_WIDTH_KEY: graph.nodes[old_node][UNIT_WIDTH_KEY]})
+        new_node, **{UNIT_WIDTH_KEY: graph.nodes[old_node][UNIT_WIDTH_KEY]}
+    )
     _mov_out_links(graph, tuple(graph.out_edges(old_node)), new_node)
     graph.add_edge(old_node, new_node)
     return new_node
@@ -654,9 +733,12 @@ def _split_nodes(graph: DiGraph) -> Dict[object, object]:
     """
     out_degrees = graph.out_degree()
     in_degrees = tuple(graph.in_degree())
-    return {unit: _split_node(graph, unit, len(
-        out_degrees) + unit) if twin != 1 and out_degrees[unit] != 1 and (
-            twin or out_degrees[unit]) else unit for unit, twin in in_degrees}
+    return {
+        unit: _split_node(graph, unit, len(out_degrees) + unit)
+        if twin != 1 and out_degrees[unit] != 1 and (twin or out_degrees[unit])
+        else unit
+        for unit, twin in in_degrees
+    }
 
 
 def _unify_ports(graph: Graph, ports: Iterable[object]) -> int:
@@ -676,8 +758,13 @@ def _unify_ports(graph: Graph, ports: Iterable[object]) -> int:
     return unified_port
 
 
-def _update_graph(idx: object, unit: object, processor: Graph, width_graph:
-                  Graph, unit_idx_map: MutableMapping[object, object]) -> None:
+def _update_graph(
+    idx: object,
+    unit: object,
+    processor: Graph,
+    width_graph: Graph,
+    unit_idx_map: MutableMapping[object, object],
+) -> None:
     """Update width graph structures.
 
     `idx` is the unit index.
@@ -689,3 +776,31 @@ def _update_graph(idx: object, unit: object, processor: Graph, width_graph:
     """
     width_graph.add_node(idx, **processor.nodes[unit], **{_OLD_NODE_KEY: unit})
     unit_idx_map[unit] = idx
+
+
+def _update_lock(
+    old_lock: int, new_lock: int, path_desc: _PathDescriptor
+) -> int:
+    """Update the lock based on the current and proposed values.
+
+    `old_lock` is the lock value so far.
+    `new_lock` is the new proposed lock value.
+    `path_desc` is the descriptor of the path for which the lock is
+                updated.
+    The method initializes the current lock value if it hasn't already
+    been initialized, otherwise it makes sure the new value matches the
+    old one. If the new value is different from the current one, the
+    method raises a PathLockError. The method returns the updated lock.
+
+    """
+    if old_lock < 0 or new_lock == old_lock:
+        return new_lock
+
+    raise PathLockError(
+        f"Paths passing through ${PathLockError.START_KEY} have different "
+        f"${PathLockError.LOCK_TYPE_KEY} locks for capability "
+        f"${PathLockError.CAP_KEY}.",
+        path_desc.start,
+        path_desc.lock_type,
+        path_desc.capability,
+    )

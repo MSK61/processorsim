@@ -44,9 +44,11 @@ import yaml
 
 import test_env
 import processor_utils
+from processor_utils import ProcessorDesc
 from processor_utils.units import LockInfo, UnitModel
 import program_utils
 from str_utils import ICaseString
+
 TEST_DATA_DIR = join(test_env.TEST_DIR, "data")
 
 
@@ -66,6 +68,29 @@ def chk_error(verify_points, error):
         idx = cur_point.check(error, idx)
 
 
+def chk_one_unit(proc_dir, proc_file):
+    """Verify a single unit processor.
+
+    `proc_dir` is the directory containing the processor description file.
+    `proc_file` is the processor description file.
+
+    """
+    assert read_proc_file(proc_dir, proc_file) == ProcessorDesc(
+        [],
+        [],
+        [
+            UnitModel(
+                ICaseString("full system"),
+                1,
+                [ICaseString("ALU")],
+                LockInfo(True, True),
+                [],
+            )
+        ],
+        [],
+    )
+
+
 def chk_two_units(proc_dir, proc_file):
     """Verify a two-unit processor.
 
@@ -79,11 +104,21 @@ def chk_two_units(proc_dir, proc_file):
     proc_desc = read_proc_file(proc_dir, proc_file)
     alu_cap = ICaseString("ALU")
     out_unit = ICaseString("output")
-    assert proc_desc == processor_utils.ProcessorDesc(
-        [UnitModel(
-            ICaseString("input"), 1, [alu_cap], LockInfo(True, False), [])],
-        [processor_utils.units.FuncUnit(UnitModel(out_unit, 1, [
-            alu_cap], LockInfo(False, True), []), proc_desc.in_ports)], [], [])
+    assert proc_desc == ProcessorDesc(
+        [
+            UnitModel(
+                ICaseString("input"), 1, [alu_cap], LockInfo(True, False), []
+            )
+        ],
+        [
+            processor_utils.units.FuncUnit(
+                UnitModel(out_unit, 1, [alu_cap], LockInfo(False, True), []),
+                proc_desc.in_ports,
+            )
+        ],
+        [],
+        [],
+    )
 
 
 def chk_warn(tokens, warn_calls):
@@ -122,7 +157,8 @@ def read_isa_file(file_name, capabilities):
     """
     test_dir = "ISA"
     return processor_utils.load_isa(
-        _load_yaml(test_dir, file_name).items(), capabilities)
+        _load_yaml(test_dir, file_name).items(), capabilities
+    )
 
 
 def read_proc_file(proc_dir, file_name):
@@ -144,8 +180,9 @@ def read_prog_file(file_name):
     The function returns the loaded program.
 
     """
-    with open(join(TEST_DATA_DIR, "programs", file_name),
-              encoding="utf-8") as prog_file:
+    with open(
+        join(TEST_DATA_DIR, "programs", file_name), encoding="utf-8"
+    ) as prog_file:
         return program_utils.read_program(prog_file)
 
 
@@ -188,6 +225,7 @@ def _load_yaml(test_dir, file_name):
     The function returns the loaded YAML object.
 
     """
-    with open(join(TEST_DATA_DIR, test_dir, file_name),
-              encoding="utf-8") as test_file:
+    with open(
+        join(TEST_DATA_DIR, test_dir, file_name), encoding="utf-8"
+    ) as test_file:
         return yaml.safe_load(test_file)

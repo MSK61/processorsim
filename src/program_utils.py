@@ -69,8 +69,11 @@ class CodeError(RuntimeError):
         `instr` is the instruction causing the error.
 
         """
-        super().__init__(string.Template(msg_tmpl).substitute(
-            {self.INSTR_KEY: instr, self.LINE_NUM_KEY: line}))
+        super().__init__(
+            string.Template(msg_tmpl).substitute(
+                {self.INSTR_KEY: instr, self.LINE_NUM_KEY: line}
+            )
+        )
         self._line = line
         self._instr = instr
 
@@ -98,8 +101,9 @@ class CodeError(RuntimeError):
     LINE_NUM_KEY: Final = "line"
 
 
-def compile_program(prog: Iterable[ProgInstruction],
-                    isa: Mapping[str, object]) -> List[HwInstruction]:
+def compile_program(
+    prog: Iterable[ProgInstruction], isa: Mapping[str, object]
+) -> List[HwInstruction]:
     """Compile the program using the given instruction set.
 
     `prog` is the program to compile.
@@ -110,8 +114,14 @@ def compile_program(prog: Iterable[ProgInstruction],
     UndefElemError if an unsupported instruction is encountered.
 
     """
-    return [HwInstruction(prog_instr.sources, prog_instr.destination,
-                          _get_cap(isa, prog_instr)) for prog_instr in prog]
+    return [
+        HwInstruction(
+            prog_instr.sources,
+            prog_instr.destination,
+            _get_cap(isa, prog_instr),
+        )
+        for prog_instr in prog
+    ]
 
 
 def read_program(prog_file: Iterable[str]) -> List[ProgInstruction]:
@@ -122,8 +132,10 @@ def read_program(prog_file: Iterable[str]) -> List[ProgInstruction]:
 
     """
     program: typing.Generator[
-        typing.Tuple[int, str], None, None] = iteration_utilities.starfilter(
-            lambda _, line: line, enumerate(map(str.strip, prog_file), 1))
+        typing.Tuple[int, str], None, None
+    ] = iteration_utilities.starfilter(
+        lambda _, line: line, enumerate(map(str.strip, prog_file), 1)
+    )
     reg_registry = IndexedSet[_OperandInfo](fastcore.foundation.Self.name())
     return [_create_instr(*line, reg_registry) for line in program]
 
@@ -148,8 +160,9 @@ class _OperandInfo:
     line: object
 
 
-def _create_instr(line_num: object, line_txt: str,
-                  reg_registry: IndexedSet[_OperandInfo]) -> ProgInstruction:
+def _create_instr(
+    line_num: object, line_txt: str, reg_registry: IndexedSet[_OperandInfo]
+) -> ProgInstruction:
     """Convert the source line to a program instruction.
 
     `line_num` is the line number in the original input.
@@ -178,7 +191,9 @@ def _get_cap(isa: Mapping[str, object], instr: ProgInstruction) -> object:
     except KeyError as err:  # unsupported instruction
         raise UndefElemError(
             f"Unsupported instruction ${UndefElemError.ELEM_KEY} at line "
-            f"{instr.line}", instr.name) from err
+            f"{instr.line}",
+            instr.name,
+        ) from err
 
 
 def _get_line_parts(line_num: object, line_txt: str) -> _LineInfo:
@@ -197,13 +212,19 @@ def _get_line_parts(line_num: object, line_txt: str) -> _LineInfo:
     if len(line_parts) == 1:
         raise CodeError(
             f"No operands provided for instruction ${CodeError.INSTR_KEY} at "
-            f"line ${CodeError.LINE_NUM_KEY}", line_num, line_parts[0])
+            f"line ${CodeError.LINE_NUM_KEY}",
+            line_num,
+            line_parts[0],
+        )
 
     return _LineInfo(*line_parts)
 
 
-def _get_operands(src_line_info: _LineInfo, line_num: object,
-                  reg_registry: IndexedSet[_OperandInfo]) -> List[ICaseString]:
+def _get_operands(
+    src_line_info: _LineInfo,
+    line_num: object,
+    reg_registry: IndexedSet[_OperandInfo],
+) -> List[ICaseString]:
     """Extract operands from the given line.
 
     `src_line_info` is the source line information.
@@ -219,15 +240,22 @@ def _get_operands(src_line_info: _LineInfo, line_num: object,
     valid_ops = []
 
     for cur_op in operands:
-        valid_ops.append(_get_reg_name(
-            *cur_op, line_num, src_line_info.instruction, reg_registry))
+        valid_ops.append(
+            _get_reg_name(
+                *cur_op, line_num, src_line_info.instruction, reg_registry
+            )
+        )
 
     return valid_ops
 
 
 def _get_reg_name(
-        op_idx: object, op_name: str, line_num: object, instr: object,
-        reg_registry: IndexedSet[_OperandInfo]) -> ICaseString:
+    op_idx: object,
+    op_name: str,
+    line_num: object,
+    instr: object,
+    reg_registry: IndexedSet[_OperandInfo],
+) -> ICaseString:
     """Extract the registry name.
 
     `op_idx` is the one-based operand index.
@@ -242,14 +270,23 @@ def _get_reg_name(
     if not op_name:
         raise CodeError(
             f"Operand {op_idx} empty for instruction ${CodeError.INSTR_KEY} at"
-            f" line ${CodeError.LINE_NUM_KEY}", line_num, instr)
+            f" line ${CodeError.LINE_NUM_KEY}",
+            line_num,
+            instr,
+        )
 
     std_reg = container_utils.get_from_set(
-        reg_registry, _OperandInfo(ICaseString(op_name), line_num))
+        reg_registry, _OperandInfo(ICaseString(op_name), line_num)
+    )
 
     if std_reg.name.raw_str != op_name:
-        logging.warning("Register %s on line %d previously referred to as %s "
-                        "on line %d, using original reference...", op_name,
-                        line_num, std_reg.name, std_reg.line)
+        logging.warning(
+            "Register %s on line %d previously referred to as %s on line %d, "
+            "using original reference...",
+            op_name,
+            line_num,
+            std_reg.name,
+            std_reg.line,
+        )
 
     return std_reg.name

@@ -56,11 +56,16 @@ class TestHwDescLoad:
 
     """Test case for loading complete hardware description files"""
 
-    @pytest.mark.parametrize("capability, instr, hw_file",
-                             [("ALU", "ADD", "processorWithALUISA.yaml"),
-                              ("MEM", "LW", "processorWithMemISA.yaml")])
+    @pytest.mark.parametrize(
+        "capability, instr, hw_file",
+        [
+            ("ALU", "ADD", "processorWithALUISA.yaml"),
+            ("MEM", "LW", "processorWithMemISA.yaml"),
+        ],
+    )
     def test_hw_load_calls_into_processor_and_isa_load_functions(
-            self, capability, instr, hw_file):
+        self, capability, instr, hw_file
+    ):
         """Test loading a full hardware description file.
 
         `self` is this test case.
@@ -74,34 +79,65 @@ class TestHwDescLoad:
         full_sys_unit = ICaseString("full system")
         icase_cap = ICaseString(capability)
         lock_info = units.LockInfo(True, True)
-        with open(os.path.join(
-                test_utils.TEST_DATA_DIR, "fullHwDesc",
-                hw_file), encoding="utf-8") as hw_src, patch(
-                    "processor_utils.load_proc_desc",
-                    return_value=processor_utils.ProcessorDesc(
-                        [], [], [units.UnitModel(
-                            full_sys_unit, 1, [icase_cap], lock_info, [])],
-                        [])) as proc_mock, patch(
-                            "processor_utils.get_abilities",
-                            return_value=frozenset(
-                                [icase_cap])) as ability_mock, patch(
-                                    "processor_utils.load_isa",
-                                    return_value={
-                                        instr: icase_cap}) as isa_mock:
+        with open(
+            os.path.join(test_utils.TEST_DATA_DIR, "fullHwDesc", hw_file),
+            encoding="utf-8",
+        ) as hw_src, patch(
+            "processor_utils.load_proc_desc",
+            return_value=processor_utils.ProcessorDesc(
+                [],
+                [],
+                [
+                    units.UnitModel(
+                        full_sys_unit, 1, [icase_cap], lock_info, []
+                    )
+                ],
+                [],
+            ),
+        ) as proc_mock, patch(
+            "processor_utils.get_abilities",
+            return_value=frozenset([icase_cap]),
+        ) as ability_mock, patch(
+            "processor_utils.load_isa", return_value={instr: icase_cap}
+        ) as isa_mock:
             assert hw_loading.read_processor(hw_src) == hw_loading.HwDesc(
-                proc_mock.return_value, isa_mock.return_value)
+                proc_mock.return_value, isa_mock.return_value
+            )
         isa_mock.assert_called()
         assert tuple(isa_mock.call_args.args[0]) == ((instr, capability),)
         assert isa_mock.call_args.args[1] == ability_mock.return_value
+        mock_checks = _get_checks(proc_mock, ability_mock, capability)
 
-        for mock_chk in [
-                [proc_mock,
-                 {"units":
-                  [{units.UNIT_NAME_KEY: "full system",
-                    units.UNIT_WIDTH_KEY: 1, units.UNIT_CAPS_KEY: [capability],
-                    units.UNIT_RLOCK_KEY: True, units.UNIT_WLOCK_KEY: True}],
-                  "dataPath": []}], [ability_mock, proc_mock.return_value]]:
+        for mock_chk in mock_checks:
             unittest.mock.MagicMock.assert_called_with(*mock_chk)
+
+
+def _get_checks(proc_mock, ability_mock, capability):
+    """Create the list of mock checks.
+
+    `proc_mock` is the processor loading mock.
+    `ability_mock` is the mock for retrieving abilities.
+    `capability` is the hardware sole capability.
+
+    """
+    return [
+        [
+            proc_mock,
+            {
+                "units": [
+                    {
+                        units.UNIT_NAME_KEY: "full system",
+                        units.UNIT_WIDTH_KEY: 1,
+                        units.UNIT_CAPS_KEY: [capability],
+                        units.UNIT_RLOCK_KEY: True,
+                        units.UNIT_WLOCK_KEY: True,
+                    }
+                ],
+                "dataPath": [],
+            },
+        ],
+        [ability_mock, proc_mock.return_value],
+    ]
 
 
 def main():
@@ -109,5 +145,5 @@ def main():
     pytest.main([__file__])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

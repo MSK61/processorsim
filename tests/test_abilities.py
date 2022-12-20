@@ -50,10 +50,15 @@ class TestAbilities:
 
     """Test case for extracting processor capabilities"""
 
-    @pytest.mark.parametrize("in_file, capabilities", [
-        ("singleALUProcessor.yaml", ["ALU"]), ("singleMemUnitProcessor.yaml", [
-            "MEM"]), ("dualCoreALUMemProcessor.yaml", ["ALU", "MEM"]),
-        ("twoConnectedUnitsProcessor.yaml", ["ALU"])])
+    @pytest.mark.parametrize(
+        "in_file, capabilities",
+        [
+            ("singleALUProcessor.yaml", ["ALU"]),
+            ("singleMemUnitProcessor.yaml", ["MEM"]),
+            ("dualCoreALUMemProcessor.yaml", ["ALU", "MEM"]),
+            ("twoConnectedUnitsProcessor.yaml", ["ALU"]),
+        ],
+    )
     def test_abilities(self, in_file, capabilities):
         """Test extracting abilities from a processor.
 
@@ -63,8 +68,8 @@ class TestAbilities:
 
         """
         assert processor_utils.get_abilities(
-            test_utils.read_proc_file("processors", in_file)) == frozenset(
-                str_utils.ICaseString(cap) for cap in capabilities)
+            test_utils.read_proc_file("processors", in_file)
+        ) == frozenset(str_utils.ICaseString(cap) for cap in capabilities)
 
 
 def main():
@@ -72,5 +77,5 @@ def main():
     pytest.main([__file__])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
