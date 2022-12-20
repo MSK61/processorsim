@@ -1,6 +1,7 @@
 # processorsim
 [![Build Status](https://travis-ci.org/MSK61/processorsim.svg?branch=master)](https://travis-ci.org/MSK61/processorsim)
 [![Coverage Status](https://coveralls.io/repos/github/MSK61/processorsim/badge.svg?branch=master)](https://coveralls.io/github/MSK61/processorsim?branch=master)
+![license](https://img.shields.io/github/license/MSK61/processorsim)
 [![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/MSK61/processorsim)
 
 simulator for program execution on pipelined processors
