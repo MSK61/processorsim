@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studdio Code 1.73.0, python 3.10.7, Fedora
-#               release 36 (Thirty Six)
+# environment:  Visual Studdio Code 1.73.1, python 3.10.8, Fedora
+#               release 37 (Thirty Seven)
 #
 # notes:        This is a private program.
 #
@@ -43,7 +43,8 @@ from itertools import starmap
 import operator
 from operator import eq
 import typing
-from typing import Any, Callable, DefaultDict, Generic, List, Tuple, TypeVar
+from typing import Any, Callable, DefaultDict, Generic, List, Optional, \
+    Tuple, TypeVar
 
 import attr
 import iteration_utilities
@@ -55,8 +56,8 @@ _T = TypeVar("_T")
 _VT = TypeVar("_VT")
 
 
-def sorted_tuple(elems: typing.Iterable[Any],
-                 key: Callable[[Any], Any] = None) -> Tuple[Any, ...]:
+def sorted_tuple(elems: typing.Iterable[Any], key:
+                 Optional[Callable[[Any], Any]] = None) -> Tuple[Any, ...]:
     """Sort the elements.
 
     `elems` are the elements to sort.
@@ -79,7 +80,7 @@ class _IndexedSetBase(Generic[_T]):
         """
         return format_obj(type(self).__name__, [repr(self._std_form_map)])
 
-    def get(self, elem: _T) -> typing.Optional[_T]:
+    def get(self, elem: _T) -> Optional[_T]:
         """Retrieve the elem in this set matching the given one.
 
         `self` is this set.

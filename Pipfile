@@ -6,14 +6,14 @@ verify_ssl = true
 [dev-packages]
 pytest-cov = "*"
 pytest-pylint = "*"
-pytest-travis-fold = "*"
 pytest-mypy = "*"
 coveralls = "*"
 pytest-flake8 = "*"
 nbconvert = "*"
 ipykernel = "*"
 types-pyyaml = "*"
-flake8 = "*"
+flake8 = "<5"
+rope = "*"
 
 [packages]
 networkx = "*"
