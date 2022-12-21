@@ -24,7 +24,7 @@ python: 3.11
 install:
   - pip install pipenv
   - pipenv sync -d
-  - pipenv run pip install pytest-travis-fold
+  - pipenv run pip install py{,test-travis-fold}
   - npm install --location global snyk
 script:
   - pipenv run ./test.sh
