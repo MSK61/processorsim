@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
+# environment:  Visual Studio Code 1.74.2, python 3.11.0, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
@@ -59,8 +59,8 @@ from str_utils import ICaseString
 _STRUCT_CASES = [
     (
         1,
-        ["ALU"],
-        [("output", 1, ["ALU"])],
+        True,
+        [("output", 1, True)],
         [
             {ICaseString("output"): [InstrState(0)]},
             {ICaseString("input"): [InstrState(1)]},
@@ -69,8 +69,8 @@ _STRUCT_CASES = [
     ),
     (
         1,
-        [],
-        [("output", 1, ["ALU"])],
+        False,
+        [("output", 1, True)],
         [
             {
                 ICaseString("output"): [InstrState(0)],
@@ -81,8 +81,8 @@ _STRUCT_CASES = [
     ),
     (
         2,
-        [],
-        [("output", 2, ["ALU"])],
+        False,
+        [("output", 2, True)],
         [
             {
                 ICaseString("output"): [InstrState(0)],
@@ -93,10 +93,10 @@ _STRUCT_CASES = [
     ),
     (
         2,
-        [],
+        False,
         (
             (name, 1, mem_access)
-            for name, mem_access in [("output 1", ["ALU"]), ("output 2", [])]
+            for name, mem_access in [("output 1", True), ("output 2", False)]
         ),
         [
             {
@@ -107,8 +107,8 @@ _STRUCT_CASES = [
     ),
     (
         2,
-        [],
-        ((name, 1, ["ALU"]) for name in ["output 1", "output 2"]),
+        False,
+        ((name, 1, True) for name in ["output 1", "output 2"]),
         [
             {
                 ICaseString("output 1"): [InstrState(0)],
@@ -136,13 +136,12 @@ class InstrOfferTest(TestCase):
             UnitModel(
                 ICaseString(name),
                 width,
-                ["ALU", "MEM"],
+                {"ALU": False, "MEM": mem_access},
                 LockInfo(rd_lock, wr_lock),
-                mem_acl,
             )
-            for name, width, rd_lock, wr_lock, mem_acl in [
-                ("input", 3, True, False, []),
-                ("output", 2, False, True, ["MEM"]),
+            for name, width, rd_lock, wr_lock, mem_access in [
+                ("input", 3, True, False, False),
+                ("output", 2, False, True, True),
             ]
         )
         proc_desc = ProcessorDesc(
@@ -190,13 +189,12 @@ class MemAccessTest(TestCase):
             UnitModel(
                 ICaseString(name),
                 2,
-                ["ALU", "MEM"],
+                {"ALU": False, "MEM": mem_access},
                 LockInfo(rd_lock, wr_lock),
-                mem_acl,
             )
-            for name, rd_lock, wr_lock, mem_acl in [
-                ("input", True, False, []),
-                ("output", False, True, ["MEM"]),
+            for name, rd_lock, wr_lock, mem_access in [
+                ("input", True, False, False),
+                ("output", False, True, True),
             ]
         )
         proc_desc = ProcessorDesc(
@@ -232,7 +230,10 @@ class RarTest(TestCase):
             [],
             [
                 UnitModel(
-                    ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), []
+                    ICaseString(TEST_DIR),
+                    2,
+                    {"ALU": False},
+                    LockInfo(True, True),
                 )
             ],
             [],
@@ -262,7 +263,10 @@ class RawTest(TestCase):
         """
         in_unit, mid, out_unit = (
             UnitModel(
-                ICaseString(name), 1, ["ALU"], LockInfo(rd_lock, wr_lock), []
+                ICaseString(name),
+                1,
+                {"ALU": False},
+                LockInfo(rd_lock, wr_lock),
             )
             for name, rd_lock, wr_lock in [
                 ("input", False, False),
@@ -371,7 +375,7 @@ class TestDataHazards:
 
         """
         full_sys_unit = UnitModel(
-            ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), []
+            ICaseString(TEST_DIR), 2, {"ALU": False}, LockInfo(True, True)
         )
         assert simulate(
             [HwInstruction(*regs, "ALU") for regs in instr_regs],
@@ -401,8 +405,8 @@ class TestStructural:
 
         `self` is this test case.
         `in_width` is the width of the input unit.
-        `in_mem_util` is the list of input unit capabilities requiring
-                      memory utilization.
+        `in_mem_util` is a flag indicating whether the input unit
+                      capabilities utilize memory.
         `out_unit_params` are the creation parameters of output units.
         `extra_util` is the extra utilization beyond the second clock
                      pulse.
@@ -411,17 +415,15 @@ class TestStructural:
         in_unit = UnitModel(
             ICaseString("input"),
             in_width,
-            ["ALU"],
+            {"ALU": in_mem_util},
             LockInfo(True, False),
-            in_mem_util,
         )
         out_units = (
             UnitModel(
                 ICaseString(name),
                 width,
-                ["ALU"],
+                {"ALU": mem_access},
                 LockInfo(False, True),
-                mem_access,
             )
             for name, width, mem_access in out_unit_params
         )
@@ -441,11 +443,7 @@ class TestStructural:
 
         """
         full_sys_unit = UnitModel(
-            ICaseString("full system"),
-            2,
-            ["ALU"],
-            LockInfo(True, True),
-            ["ALU"],
+            ICaseString("full system"), 2, {"ALU": True}, LockInfo(True, True)
         )
         res_util = (
             BagValDict({ICaseString("full system"): [InstrState(instr)]})
@@ -471,13 +469,12 @@ class UnifiedMemTest(TestCase):
             UnitModel(
                 ICaseString(name),
                 1,
-                ["ALU", "MEM"],
+                {"ALU": alu_mem_access, "MEM": True},
                 LockInfo(rd_lock, wr_lock),
-                mem_acl,
             )
-            for name, rd_lock, wr_lock, mem_acl in [
-                ("input", True, False, ["ALU", "MEM"]),
-                ("output", False, True, ["MEM"]),
+            for name, rd_lock, wr_lock, alu_mem_access in [
+                ("input", True, False, True),
+                ("output", False, True, False),
             ]
         )
         proc_desc = ProcessorDesc(
@@ -517,7 +514,10 @@ class WarTest(TestCase):
         """
         in_unit, out_unit = (
             UnitModel(
-                ICaseString(name), 1, ["ALU"], LockInfo(rd_lock, wr_lock), []
+                ICaseString(name),
+                1,
+                {"ALU": False},
+                LockInfo(rd_lock, wr_lock),
             )
             for name, rd_lock, wr_lock in [
                 ("input", False, False),

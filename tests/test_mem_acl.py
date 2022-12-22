@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
+# environment:  Visual Studio Code 1.74.2, python 3.11.0, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
@@ -72,9 +72,11 @@ class PartialMemTest(unittest.TestCase):
         full_sys_unit = UnitModel(
             ICaseString("full system"),
             1,
-            map(ICaseString, ["ALU", "MEM"]),
+            {
+                ICaseString(name): mem_access
+                for name, mem_access in [("ALU", False), ("MEM", True)]
+            },
             LockInfo(True, True),
-            [ICaseString("MEM")],
         )
         self.assertEqual(
             load_proc_desc(
@@ -115,11 +117,10 @@ class TestCapCase:
             UnitModel(
                 ICaseString(name),
                 1,
-                [ICaseString("ALU")],
+                {ICaseString("ALU"): mem_access},
                 LockInfo(True, True),
-                map(ICaseString, capabilities),
             )
-            for name, capabilities in [(unit, []), ("core 2", ["ALU"])]
+            for name, mem_access in [(unit, False), ("core 2", True)]
         )
         assert load_proc_desc(
             {
@@ -203,9 +204,8 @@ class TestStdCaseCap:
                 UnitModel(
                     ICaseString(unit),
                     1,
-                    [ICaseString(ref_cap)],
+                    {ICaseString(ref_cap): True},
                     LockInfo(True, True),
-                    [ICaseString(ref_cap)],
                 )
             ],
             [],

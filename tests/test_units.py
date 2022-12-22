@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
+# environment:  Visual Studio Code 1.74.2, python 3.11.0, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
@@ -63,9 +63,8 @@ class ExpAttrTest(TestCase):
         full_sys_unit = UnitModel(
             ICaseString("full system"),
             1,
-            [ICaseString("ALU")],
+            {ICaseString("ALU"): True},
             LockInfo(True, True),
-            [ICaseString("ALU")],
         )
         self.assertEqual(
             processor_utils.load_proc_desc(
@@ -104,7 +103,10 @@ class PostOrderTest(TestCase):
         """
         in_unit, mid1_unit, mid2_unit, mid3_unit, out_unit = (
             UnitModel(
-                ICaseString(name), 1, ["ALU"], LockInfo(rd_lock, wr_lock), []
+                ICaseString(name),
+                1,
+                {"ALU": False},
+                LockInfo(rd_lock, wr_lock),
             )
             for name, rd_lock, wr_lock in [
                 ("input", True, False),

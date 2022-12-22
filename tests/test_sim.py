@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
+# environment:  Visual Studio Code 1.74.2, python 3.11.0, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
@@ -137,11 +137,16 @@ class FlowTest(TestCase):
 
         """
         in_units = [
-            UnitModel(ICaseString(name), 1, [categ], LockInfo(True, False), [])
+            UnitModel(
+                ICaseString(name), 1, {categ: False}, LockInfo(True, False)
+            )
             for name, categ in [("ALU input", "ALU"), ("MEM input", "MEM")]
         ]
         out_unit = UnitModel(
-            ICaseString("output"), 1, ["ALU", "MEM"], LockInfo(False, True), []
+            ICaseString("output"),
+            1,
+            {name: False for name in ["ALU", "MEM"]},
+            LockInfo(False, True),
         )
         proc_desc = ProcessorDesc(
             in_units, [FuncUnit(out_unit, in_units)], [], []
@@ -190,13 +195,12 @@ class InSortTest(TestCase):
             UnitModel(
                 ICaseString(name),
                 1,
-                ["ALU"],
+                {"ALU": mem_access},
                 LockInfo(rd_lock, wr_lock),
-                mem_acl,
             )
-            for name, rd_lock, wr_lock, mem_acl in [
-                ("input 1", True, False, []),
-                ("output 1", False, True, ["ALU"]),
+            for name, rd_lock, wr_lock, mem_access in [
+                ("input 1", True, False, False),
+                ("output 1", False, True, True),
             ]
         )
         proc_desc = ProcessorDesc(
@@ -206,9 +210,8 @@ class InSortTest(TestCase):
                 UnitModel(
                     ICaseString("input 2"),
                     1,
-                    ["ALU"],
+                    {"ALU": False},
                     LockInfo(True, False),
-                    [],
                 )
             ],
             [],
@@ -288,7 +291,10 @@ class StallErrTest(TestCase):
         """
         long_input, mid, short_input, out_unit = (
             UnitModel(
-                ICaseString(name), 1, ["ALU"], LockInfo(rd_lock, wr_lock), []
+                ICaseString(name),
+                1,
+                {"ALU": False},
+                LockInfo(rd_lock, wr_lock),
             )
             for name, rd_lock, wr_lock in [
                 ("long input", False, False),
@@ -345,9 +351,8 @@ class StallTest(TestCase):
             UnitModel(
                 ICaseString(name),
                 width,
-                ["ALU"],
+                {"ALU": False},
                 LockInfo(rd_lock, wr_lock),
-                [],
             )
             for name, width, rd_lock, wr_lock in [
                 ("input", 2, True, False),
@@ -451,7 +456,7 @@ class TestOutputFlush:
         extra_instr_len = len(extra_instr_lst)
         cores = starmap(
             lambda name, width: UnitModel(
-                ICaseString(name), width, ["ALU"], LockInfo(True, True), []
+                ICaseString(name), width, {"ALU": False}, LockInfo(True, True)
             ),
             [("core 1", 1), ("core 2", 1 + extra_instr_len)],
         )
@@ -553,7 +558,10 @@ def _make_proc_desc(units_desc):
     """
     big_input, small_input1, mid1, small_input2, mid2, out_unit = (
         UnitModel(
-            ICaseString(name), width, ["ALU"], LockInfo(rd_lock, wr_lock), []
+            ICaseString(name),
+            width,
+            {"ALU": False},
+            LockInfo(rd_lock, wr_lock),
         )
         for name, width, rd_lock, wr_lock in units_desc
     )

@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
+# environment:  Visual Studio Code 1.74.2, python 3.11.0, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
@@ -75,6 +75,7 @@ from .units import (
     UnitModel,
     UNIT_NAME_KEY,
     UNIT_RLOCK_KEY,
+    UNIT_ROLES_KEY,
     UNIT_WIDTH_KEY,
     UNIT_WLOCK_KEY,
 )
@@ -507,13 +508,30 @@ def _get_unit_entry(
     The function returns the unit model.
 
     """
+    attrs2 = dict(attrs)
+    mem_acl_set = frozenset(attrs[UNIT_MEM_KEY])
+    attrs2[UNIT_ROLES_KEY] = {
+        cap: cap in mem_acl_set for cap in attrs[UNIT_CAPS_KEY]
+    }
+    return _get_unit_entry2(name, attrs2)
+
+
+def _get_unit_entry2(
+    name: ICaseString, attrs: Mapping[object, Any]
+) -> UnitModel:
+    """Create a unit map entry from the given attributes.
+
+    `name` is the unit name.
+    `attrs` are the unit attribute dictionary.
+    The function returns the unit model.
+
+    """
     lock_attrs = map_ex([UNIT_RLOCK_KEY, UNIT_WLOCK_KEY], attrs, gen=True)
     return UnitModel(
         name,
         attrs[UNIT_WIDTH_KEY],
-        attrs[UNIT_CAPS_KEY],
+        attrs[UNIT_ROLES_KEY],
         units.LockInfo(*lock_attrs),
-        attrs[UNIT_MEM_KEY],
     )
 
 

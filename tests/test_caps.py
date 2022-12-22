@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
+# environment:  Visual Studio Code 1.74.2, python 3.11.0, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
@@ -135,9 +135,8 @@ class TestDupCap:
             units.UnitModel(
                 ICaseString(unit_name),
                 1,
-                [ICaseString("ALU")],
+                {ICaseString("ALU"): False},
                 units.LockInfo(True, True),
-                [],
             )
             for unit_name in ["core 1", "core 2"]
         )

@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
+# environment:  Visual Studio Code 1.74.2, python 3.11.0, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
@@ -45,7 +45,7 @@ from typing import Final, Tuple
 import attr
 import fastcore.foundation
 
-from container_utils import sorted_tuple
+import container_utils
 import str_utils
 
 # unit attributes
@@ -55,6 +55,7 @@ UNIT_NAME_KEY: Final = "name"
 # unit lock attributes
 UNIT_RLOCK_KEY: Final = "readLock"
 UNIT_WLOCK_KEY: Final = "writeLock"
+UNIT_ROLES_KEY: Final = "roles"
 UNIT_WIDTH_KEY: Final = "width"
 
 
@@ -79,17 +80,24 @@ class UnitModel:
         `self` is this unit model.
 
         """
-        return cap in self._mem_acl
+        return self.roles[cap]
+
+    @property
+    def capabilities(self) -> typing.KeysView[object]:
+        """Unit capabilities
+
+        `self` is this unit model.
+
+        """
+        return self.roles.keys()
 
     name: str_utils.ICaseString = attr.ib()
 
     width: int = attr.ib()
 
-    capabilities: Tuple[object, ...] = attr.ib(converter=sorted_tuple)
+    roles: typing.Mapping[object, bool] = attr.ib()
 
     lock_info: LockInfo = attr.ib()
-
-    _mem_acl: Tuple[object, ...] = attr.ib(converter=sorted_tuple)
 
 
 def sorted_models(models: typing.Iterable[object]) -> Tuple[UnitModel, ...]:
@@ -98,7 +106,9 @@ def sorted_models(models: typing.Iterable[object]) -> Tuple[UnitModel, ...]:
     `models` are the models to create a sorted list of.
 
     """
-    return sorted_tuple(models, key=fastcore.foundation.Self.name())
+    return container_utils.sorted_tuple(
+        models, key=fastcore.foundation.Self.name()
+    )
 
 
 @attr.s(eq=False, frozen=True)

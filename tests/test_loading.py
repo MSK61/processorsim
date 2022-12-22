@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
+# environment:  Visual Studio Code 1.74.2, python 3.11.0, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
@@ -65,7 +65,9 @@ class TestProcessors:
         alu_cap = ICaseString("ALU")
         wr_lock = LockInfo(False, True)
         out_ports = tuple(
-            FuncUnit(UnitModel(name, 1, [alu_cap], wr_lock, []), predecessors)
+            FuncUnit(
+                UnitModel(name, 1, {alu_cap: False}, wr_lock), predecessors
+            )
             for name, predecessors in [
                 (ICaseString("output 1"), proc_desc.in_ports),
                 (
@@ -76,10 +78,10 @@ class TestProcessors:
         )
         in_unit = ICaseString("input")
         internal_unit = UnitModel(
-            ICaseString("middle"), 1, [alu_cap], LockInfo(False, False), []
+            ICaseString("middle"), 1, {alu_cap: False}, LockInfo(False, False)
         )
         assert proc_desc == processor_utils.ProcessorDesc(
-            [UnitModel(in_unit, 1, [alu_cap], LockInfo(True, False), [])],
+            [UnitModel(in_unit, 1, {alu_cap: False}, LockInfo(True, False))],
             out_ports,
             [],
             [FuncUnit(internal_unit, proc_desc.in_ports)],

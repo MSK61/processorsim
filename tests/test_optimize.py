@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
+# environment:  Visual Studio Code 1.74.2, python 3.11.0, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
@@ -78,15 +78,14 @@ class TestClean:
                 UnitModel(
                     ICaseString("input"),
                     1,
-                    [alu_cap],
+                    {alu_cap: False},
                     LockInfo(True, False),
-                    [],
                 )
             ],
             [
                 FuncUnit(
                     UnitModel(
-                        out1_unit, 1, [alu_cap], LockInfo(False, True), []
+                        out1_unit, 1, {alu_cap: False}, LockInfo(False, True)
                     ),
                     proc_desc.in_ports,
                 )
@@ -113,9 +112,8 @@ class TestClean:
                 UnitModel(
                     ICaseString("core 1"),
                     1,
-                    [ICaseString("ALU")],
+                    {ICaseString("ALU"): False},
                     LockInfo(True, True),
-                    [],
                 )
             ],
             [],
@@ -140,7 +138,7 @@ class TestEdgeRemoval:
         )
         in_units = starmap(
             lambda name, categ: UnitModel(
-                name, 1, [categ], LockInfo(True, False), []
+                name, 1, {categ: False}, LockInfo(True, False)
             ),
             (
                 map(ICaseString, unit_params)
@@ -150,7 +148,7 @@ class TestEdgeRemoval:
         wr_lock = LockInfo(False, True)
         out_units = starmap(
             lambda name, categ, in_unit: FuncUnit(
-                UnitModel(name, 1, [categ], wr_lock, []),
+                UnitModel(name, 1, {categ: False}, wr_lock),
                 [
                     more_itertools.first_true(
                         proc_desc.in_ports,
