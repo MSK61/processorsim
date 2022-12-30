@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
+# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
@@ -265,11 +265,11 @@ class _IoProcessor:
 
     """Single input, single output processor"""
 
-    in_unit: str
+    in_unit: object
 
-    out_unit: str
+    out_unit: object
 
-    capability: str
+    capability: object
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -277,9 +277,9 @@ class _LockTestData:
 
     """Lock test data"""
 
-    prop_name: str
+    prop_name: object
 
-    lock_type: str
+    lock_type: object
 
 
 class TestMultiLock:
