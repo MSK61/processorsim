@@ -316,10 +316,6 @@ class StructuralTest(TestCase):
         `self` is this test case.
 
         """
-        res_util = (
-            BagValDict({ICaseString("full system"): [InstrState(instr)]})
-            for instr in [0, 1]
-        )
         sim_res = simulate(
             [
                 HwInstruction([], out_reg, ICaseString("ALU"))
@@ -348,7 +344,13 @@ class StructuralTest(TestCase):
                 )
             ),
         )
-        self.assertEqual(sim_res, list(res_util))
+        self.assertEqual(
+            sim_res,
+            [
+                BagValDict({ICaseString("full system"): [InstrState(instr)]})
+                for instr in [0, 1]
+            ],
+        )
 
 
 class TestDataHazards:
@@ -447,14 +449,13 @@ class TestStructural:
             LockInfo(True, True),
             ["ALU"],
         )
-        res_util = (
-            BagValDict({ICaseString("full system"): [InstrState(instr)]})
-            for instr in [0, 1]
-        )
         assert simulate(
             [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
             HwSpec(ProcessorDesc([], [], [full_sys_unit], [])),
-        ) == list(res_util)
+        ) == [
+            BagValDict({ICaseString("full system"): [InstrState(instr)]})
+            for instr in [0, 1]
+        ]
 
 
 class UnifiedMemTest(TestCase):
