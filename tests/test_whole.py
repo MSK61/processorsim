@@ -32,14 +32,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
+# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-from os.path import join
+import os.path
 
 import pytest
 
@@ -88,8 +88,13 @@ class TestWhole:
         processor_file, program_file = processorSim.get_in_files(
             [
                 "--processor",
-                join(TEST_DATA_DIR, "fullHwDesc", proc_file_name),
-                join(TEST_DATA_DIR, "programs", prog_file_name),
+                *(
+                    os.path.join(TEST_DATA_DIR, *path_parts)
+                    for path_parts in [
+                        ["fullHwDesc", proc_file_name],
+                        ["programs", prog_file_name],
+                    ]
+                ),
             ]
         )
         with processor_file, program_file:
