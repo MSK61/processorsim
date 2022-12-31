@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
+# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
@@ -43,6 +43,7 @@ import os.path
 import unittest.mock
 from unittest.mock import patch
 
+import attr
 import pytest
 
 import test_utils
@@ -52,35 +53,64 @@ from processor_utils import units
 from str_utils import ICaseString
 
 
+@attr.s(auto_attribs=True, frozen=True)
+class _TestExpResults:
+
+    """Hardware loading test expected results"""
+
+    raw_isa: object
+
+    proc_srvc_cap: object
+
+
+@attr.s(auto_attribs=True, frozen=True)
+class _TestInParams:
+
+    """Hardware loading test input parameters"""
+
+    capability: object
+
+    instr: object
+
+    hw_file: object
+
+
+_HW_CASES = [
+    (
+        _TestInParams("ALU", "ADD", "processorWithALUISA.yaml"),
+        _TestExpResults(("ADD", "ALU"), "ALU"),
+    ),
+    (
+        _TestInParams("MEM", "LW", "processorWithMemISA.yaml"),
+        _TestExpResults(("LW", "MEM"), "MEM"),
+    ),
+]
+
+
 class TestHwDescLoad:
 
     """Test case for loading complete hardware description files"""
 
-    @pytest.mark.parametrize(
-        "capability, instr, hw_file",
-        [
-            ("ALU", "ADD", "processorWithALUISA.yaml"),
-            ("MEM", "LW", "processorWithMemISA.yaml"),
-        ],
-    )
+    @pytest.mark.parametrize("in_params, exp_results", _HW_CASES)
     def test_hw_load_calls_into_processor_and_isa_load_functions(
-        self, capability, instr, hw_file
+        self, in_params, exp_results
     ):
         """Test loading a full hardware description file.
 
         `self` is this test case.
-        `capability` is the hardware sole capability.
-        `instr` is the sole supported instruction.
-        `hw_file` is the hardware description file.
+        `in_params` are the test input parameters.
+        `exp_results` are the test expected results.
         The method tests appropriate calls are made to load the
         processor and ISA descriptions.
 
         """
         full_sys_unit = ICaseString("full system")
-        icase_cap = ICaseString(capability)
+        icase_cap = ICaseString(in_params.capability)
         lock_info = units.LockInfo(True, True)
         with open(
-            os.path.join(test_utils.TEST_DATA_DIR, "fullHwDesc", hw_file),
+            os.path.join(
+                test_utils.TEST_DATA_DIR, "fullHwDesc", in_params.hw_file
+            ),
             encoding="utf-8",
         ) as hw_src, patch(
             "processor_utils.load_proc_desc",
@@ -98,15 +128,18 @@ class TestHwDescLoad:
             "processor_utils.get_abilities",
             return_value=frozenset([icase_cap]),
         ) as ability_mock, patch(
-            "processor_utils.load_isa", return_value={instr: icase_cap}
+            "processor_utils.load_isa",
+            return_value={in_params.instr: icase_cap},
         ) as isa_mock:
             assert hw_loading.read_processor(hw_src) == hw_loading.HwDesc(
                 proc_mock.return_value, isa_mock.return_value
             )
         isa_mock.assert_called()
-        assert tuple(isa_mock.call_args.args[0]) == ((instr, capability),)
+        assert tuple(isa_mock.call_args.args[0]) == (exp_results.raw_isa,)
         assert isa_mock.call_args.args[1] == ability_mock.return_value
-        mock_checks = _get_checks(proc_mock, ability_mock, capability)
+        mock_checks = _get_checks(
+            proc_mock, ability_mock, exp_results.proc_srvc_cap
+        )
 
         for mock_chk in mock_checks:
             unittest.mock.MagicMock.assert_called_with(*mock_chk)

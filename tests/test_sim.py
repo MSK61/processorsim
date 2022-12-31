@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
+# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
@@ -435,27 +435,31 @@ class TestOutputFlush:
 
     """Test case for flushing instructions at output ports"""
 
-    @mark.parametrize("extra_instr_lst", [[], [[[], "R3", "ALU"]]])
-    def test_stalled_outputs_are_not_flushed(self, extra_instr_lst):
+    @mark.parametrize(
+        "extra_instr_lst, last_instr", [([], 2), ([[[], "R3", "ALU"]], 3)]
+    )
+    def test_stalled_outputs_are_not_flushed(
+        self, extra_instr_lst, last_instr
+    ):
         """Test data hazards at output ports.
 
         `self` is this test case.
         `extra_instr_lst` is the extra instructions to execute after the
                           ones causing the hazard.
+        `last_instr` is the last instruction number.
 
         """
         program = starmap(
             HwInstruction,
             chain([[[], "R1", "ALU"], [["R1"], "R2", "ALU"]], extra_instr_lst),
         )
-        extra_instr_len = len(extra_instr_lst)
         cores = starmap(
             lambda name, width: UnitModel(
                 ICaseString(name), width, ["ALU"], LockInfo(True, True), []
             ),
-            [("core 1", 1), ("core 2", 1 + extra_instr_len)],
+            [("core 1", 1), ("core 2", 1 + len(extra_instr_lst))],
         )
-        extra_instr_seq = range(2, 2 + extra_instr_len)
+        extra_instr_seq = range(2, last_instr)
         assert simulate(
             tuple(program), HwSpec(ProcessorDesc([], [], cores, []))
         ) == [
