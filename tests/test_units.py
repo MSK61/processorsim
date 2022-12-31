@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.0, Fedora release
+# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
@@ -41,6 +41,7 @@
 
 from unittest import TestCase
 
+from fastcore.foundation import Self
 import pytest
 
 import test_utils
@@ -170,16 +171,16 @@ class TestDupName:
             "units",
             in_file,
         )
-        test_utils.chk_error(
-            [
-                test_utils.ValInStrCheck(*chk_params)
-                for chk_params in [
-                    (ex_chk.value.new_element, ICaseString(dup_unit)),
-                    (ex_chk.value.old_element, ICaseString("full system")),
-                ]
-            ],
-            ex_chk.value,
+        chk_points = (
+            test_utils.ValInStrCheck(
+                elem_getter(ex_chk.value), ICaseString(unit)
+            )
+            for elem_getter, unit in [
+                (Self.new_element(), dup_unit),
+                (Self.old_element(), "full system"),
+            ]
         )
+        test_utils.chk_error(chk_points, ex_chk.value)
 
 
 def main():

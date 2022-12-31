@@ -32,13 +32,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
+# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+from fastcore.foundation import Self
 import pytest
 from pytest import raises
 
@@ -46,6 +47,33 @@ from test_utils import chk_error, read_isa_file, ValInStrCheck
 import errors
 import processor_utils.exception
 from str_utils import ICaseString
+
+
+class TestDupInstr:
+
+    """Test case for loading duplicate instructions"""
+
+    # pylint: disable=invalid-name
+    def test_two_instructions_with_same_name_raise_DupElemError(self):
+        """Test loading two instructions with the same name.
+
+        `self` is this test case.
+
+        """
+        ex_chk = raises(
+            processor_utils.exception.DupElemError,
+            read_isa_file,
+            "twoInstructionsWithSameNameAndCase.yaml",
+            [ICaseString("ALU")],
+        )
+        chk_points = (
+            ValInStrCheck(elem_getter(ex_chk.value), ICaseString(unit))
+            for elem_getter, unit in [
+                (Self.new_element(), "add"),
+                (Self.old_element(), "ADD"),
+            ]
+        )
+        chk_error(chk_points, ex_chk.value)
 
 
 class TestIsa:
@@ -104,27 +132,6 @@ class TestIsa:
         """
         assert (
             read_isa_file(in_file, map(ICaseString, supported_caps)) == exp_isa
-        )
-
-    # pylint: disable=invalid-name
-    def test_two_instructions_with_same_name_raise_DupElemError(self):
-        """Test loading two instructions with the same name.
-
-        `self` is this test case.
-
-        """
-        ex_chk = raises(
-            processor_utils.exception.DupElemError,
-            read_isa_file,
-            "twoInstructionsWithSameNameAndCase.yaml",
-            [ICaseString("ALU")],
-        )
-        chk_error(
-            [
-                ValInStrCheck(ex_chk.value.new_element, ICaseString("add")),
-                ValInStrCheck(ex_chk.value.old_element, ICaseString("ADD")),
-            ],
-            ex_chk.value,
         )
 
 

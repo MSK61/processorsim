@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""tests program simulation"""
+"""tests pipeline hazards"""
 
 ############################################################
 #
@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.0, Fedora release
+# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
@@ -42,82 +42,16 @@
 import itertools
 from unittest import TestCase
 
-import more_itertools
 import pytest
-from pytest import mark
 
 from test_env import TEST_DIR
 from container_utils import BagValDict
-import processor_utils
-from processor_utils import ProcessorDesc, units
+from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from program_defs import HwInstruction
 from sim_services import HwSpec, simulate
 from sim_services.sim_defs import InstrState, StallState
 from str_utils import ICaseString
-
-_STRUCT_CASES = [
-    (
-        1,
-        True,
-        [("output", 1, True)],
-        [
-            {ICaseString("output"): [InstrState(0)]},
-            {ICaseString("input"): [InstrState(1)]},
-            {ICaseString("output"): [InstrState(1)]},
-        ],
-    ),
-    (
-        1,
-        False,
-        [("output", 1, True)],
-        [
-            {
-                ICaseString("output"): [InstrState(0)],
-                ICaseString("input"): [InstrState(1)],
-            },
-            {ICaseString("output"): [InstrState(1)]},
-        ],
-    ),
-    (
-        2,
-        False,
-        [("output", 2, True)],
-        [
-            {
-                ICaseString("output"): [InstrState(0)],
-                ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)],
-            },
-            {ICaseString("output"): [InstrState(1)]},
-        ],
-    ),
-    (
-        2,
-        False,
-        (
-            (name, 1, mem_access)
-            for name, mem_access in [("output 1", True), ("output 2", False)]
-        ),
-        [
-            {
-                ICaseString("output 1"): [InstrState(0)],
-                ICaseString("output 2"): [InstrState(1)],
-            }
-        ],
-    ),
-    (
-        2,
-        False,
-        ((name, 1, True) for name in ["output 1", "output 2"]),
-        [
-            {
-                ICaseString("output 1"): [InstrState(0)],
-                ICaseString("input"): [InstrState(1, StallState.STRUCTURAL)],
-            },
-            {ICaseString("output 1"): [InstrState(1)]},
-        ],
-    ),
-]
 
 
 class InstrOfferTest(TestCase):
@@ -309,57 +243,11 @@ class RawTest(TestCase):
         )
 
 
-class StructuralTest(TestCase):
-
-    """Test case for structural hazards"""
-
-    # pylint: disable=invalid-name
-    def test_mem_ACL_is_correctly_matched_against_instructions(self):
-        """Test comparing memory ACL against instructions.
-
-        `self` is this test case.
-
-        """
-        res_util = (
-            BagValDict({ICaseString("full system"): [InstrState(instr)]})
-            for instr in [0, 1]
-        )
-        sim_res = simulate(
-            [
-                HwInstruction([], out_reg, ICaseString("ALU"))
-                for out_reg in ["R1", "R2"]
-            ],
-            HwSpec(
-                processor_utils.load_proc_desc(
-                    {
-                        "units": [
-                            {
-                                units.UNIT_NAME_KEY: "full system",
-                                units.UNIT_WIDTH_KEY: 2,
-                                units.UNIT_CAPS_KEY: ["ALU"],
-                                **{
-                                    attr: True
-                                    for attr in [
-                                        units.UNIT_RLOCK_KEY,
-                                        units.UNIT_WLOCK_KEY,
-                                    ]
-                                },
-                                units.UNIT_MEM_KEY: ["ALU"],
-                            }
-                        ],
-                        "dataPath": [],
-                    }
-                )
-            ),
-        )
-        self.assertEqual(sim_res, list(res_util))
-
-
 class TestDataHazards:
 
     """Test case for data hazards"""
 
-    @mark.parametrize(
+    @pytest.mark.parametrize(
         "instr_regs",
         [
             [[["R1"], "R2"], [[], "R1"]],
@@ -391,68 +279,6 @@ class TestDataHazards:
                 {ICaseString(TEST_DIR): [InstrState(1)]},
             ]
         ]
-
-
-class TestStructural:
-
-    """Test case for structural hazards"""
-
-    @mark.parametrize(
-        "in_width, in_mem_util, out_unit_params, extra_util", _STRUCT_CASES
-    )
-    def test_hazard(self, in_width, in_mem_util, out_unit_params, extra_util):
-        """Test detecting structural hazards.
-
-        `self` is this test case.
-        `in_width` is the width of the input unit.
-        `in_mem_util` is a flag indicating whether the input unit
-                      capabilities utilize memory.
-        `out_unit_params` are the creation parameters of output units.
-        `extra_util` is the extra utilization beyond the second clock
-                     pulse.
-
-        """
-        in_unit = UnitModel(
-            ICaseString("input"),
-            in_width,
-            {"ALU": in_mem_util},
-            LockInfo(True, False),
-        )
-        out_units = (
-            UnitModel(
-                ICaseString(name),
-                width,
-                {"ALU": mem_access},
-                LockInfo(False, True),
-            )
-            for name, width, mem_access in out_unit_params
-        )
-        out_units = (FuncUnit(out_unit, [in_unit]) for out_unit in out_units)
-        cp1_util = {ICaseString("input"): map(InstrState, range(in_width))}
-        assert simulate(
-            [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
-            HwSpec(ProcessorDesc([in_unit], out_units, [], [])),
-        ) == list(
-            map(BagValDict, more_itertools.prepend(cp1_util, extra_util))
-        )
-
-    def test_mem_util_in_earlier_inputs_affects_later_ones(self):
-        """Test propagation of memory utilization among inputs.
-
-        `self` is this test case.
-
-        """
-        full_sys_unit = UnitModel(
-            ICaseString("full system"), 2, {"ALU": True}, LockInfo(True, True)
-        )
-        res_util = (
-            BagValDict({ICaseString("full system"): [InstrState(instr)]})
-            for instr in [0, 1]
-        )
-        assert simulate(
-            [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
-            HwSpec(ProcessorDesc([], [], [full_sys_unit], [])),
-        ) == list(res_util)
 
 
 class UnifiedMemTest(TestCase):

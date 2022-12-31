@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
+# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
@@ -42,6 +42,7 @@
 import unittest
 
 import attr
+from fastcore.foundation import Self
 import networkx
 import pytest
 from pytest import mark, raises
@@ -249,13 +250,15 @@ class TestWidth:
             "widths",
             "inputPortWithUnconsumedCapability.yaml",
         )
+        chk_params = [
+            ("Capability", Self.capability(), "Capability MEM"),
+            ("port", Self.port(), "port input"),
+        ]
         chk_error(
-            [
-                ValInStrCheck(
-                    "Capability " + ex_chk.value.capability, "Capability MEM"
-                ),
-                ValInStrCheck("port " + ex_chk.value.port, "port input"),
-            ],
+            (
+                ValInStrCheck(f"{prefix} {val_getter(ex_chk.value)}", exp_val)
+                for prefix, val_getter, exp_val in chk_params
+            ),
             ex_chk.value,
         )
 
@@ -265,11 +268,11 @@ class _IoProcessor:
 
     """Single input, single output processor"""
 
-    in_unit: str
+    in_unit: object
 
-    out_unit: str
+    out_unit: object
 
-    capability: str
+    capability: object
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -277,9 +280,19 @@ class _LockTestData:
 
     """Lock test data"""
 
-    prop_name: str
+    prop_name: object
 
-    lock_type: str
+    lock_type: object
+
+
+@attr.s(auto_attribs=True, frozen=True)
+class _TestExpResults:
+
+    """Multi-lock test expected results"""
+
+    in_unit: object
+
+    capability: object
 
 
 class TestMultiLock:
@@ -288,54 +301,59 @@ class TestMultiLock:
 
     # pylint: disable=invalid-name
     @mark.parametrize(
-        "proc_desc, lock_data",
+        "in_proc_desc, lock_data, exp_proc_desc",
         [
             (
                 _IoProcessor("input", "output", "ALU"),
                 _LockTestData(UNIT_RLOCK_KEY, "read"),
+                _TestExpResults("input", "ALU"),
             ),
             (
                 _IoProcessor("in_unit", "out_unit", "MEM"),
                 _LockTestData(UNIT_WLOCK_KEY, "write"),
+                _TestExpResults("in_unit", "MEM"),
             ),
         ],
     )
     def test_path_with_multiple_locks_raises_PathLockError(
-        self, proc_desc, lock_data
+        self, in_proc_desc, lock_data, exp_proc_desc
     ):
         """Test loading a processor with multiple locks in paths.
 
         `self` is this test case.
-        `proc_desc` is the processor description.
+        `in_proc_desc` is the input processor description.
         `lock_data` is the lock test data.
+        `exp_proc_desc` is the expected processor description.
 
         """
         ex_info = raises(
             PathLockError,
             load_proc_desc,
             {
-                "units": _get_test_units(proc_desc, lock_data),
-                "dataPath": [[proc_desc.in_unit, proc_desc.out_unit]],
+                "units": _get_test_units(in_proc_desc, lock_data.prop_name),
+                "dataPath": [[in_proc_desc.in_unit, in_proc_desc.out_unit]],
             },
         )
-        assert ex_info.value.start == ICaseString(proc_desc.in_unit)
+        assert ex_info.value.start == ICaseString(exp_proc_desc.in_unit)
         assert ex_info.value.lock_type == lock_data.lock_type
-        assert ex_info.value.capability == ICaseString(proc_desc.capability)
+        assert ex_info.value.capability == ICaseString(
+            exp_proc_desc.capability
+        )
         ex_info = str(ex_info.value)
 
         for part in [
             lock_data.lock_type,
-            proc_desc.capability,
-            proc_desc.in_unit,
+            exp_proc_desc.capability,
+            exp_proc_desc.in_unit,
         ]:
             assert part in ex_info
 
 
-def _get_test_units(proc_desc, lock_data):
+def _get_test_units(proc_desc, lock_prop):
     """Create test units.
 
     `proc_desc` is the processor description.
-    `lock_data` is the lock test data.
+    `lock_prop` is the name of the lock property to set.
 
     """
     return [
@@ -343,19 +361,13 @@ def _get_test_units(proc_desc, lock_data):
             UNIT_NAME_KEY: proc_desc.in_unit,
             UNIT_WIDTH_KEY: 1,
             UNIT_CAPS_KEY: [proc_desc.capability],
-            **{
-                lock_prop: True
-                for lock_prop in [UNIT_RLOCK_KEY, lock_data.prop_name]
-            },
+            **{lock_prop: True for lock_prop in [UNIT_RLOCK_KEY, lock_prop]},
         },
         {
             UNIT_NAME_KEY: proc_desc.out_unit,
             UNIT_WIDTH_KEY: 1,
             UNIT_CAPS_KEY: [proc_desc.capability],
-            **{
-                lock_prop: True
-                for lock_prop in [UNIT_WLOCK_KEY, lock_data.prop_name]
-            },
+            **{lock_prop: True for lock_prop in [UNIT_WLOCK_KEY, lock_prop]},
         },
     ]
 

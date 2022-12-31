@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
+# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
@@ -42,6 +42,7 @@
 import itertools
 from logging import WARNING
 
+from fastcore.foundation import Self
 import pytest
 from pytest import mark, raises
 
@@ -84,9 +85,11 @@ class TestDupOperand:
         for reg in [lower_reg, upper_reg]:
             assert reg in warn_msg
 
-    @mark.parametrize("preamble", [0, 2])
+    @mark.parametrize(
+        "preamble, instr1_line, instr2_line", [(0, 1, 2), (2, 3, 4)]
+    )
     def test_same_operand_with_different_case_in_two_instructions_is_detected(
-        self, caplog, preamble
+        self, caplog, preamble, instr1_line, instr2_line
     ):
         """Test loading operands in different cases(two instructions).
 
@@ -94,6 +97,8 @@ class TestDupOperand:
         `caplog` is the log capture fixture.
         `preamble` is the number of lines preceding the instructions
                    containing registers.
+        `instr1_line` is the line number of the first instruction.
+        `instr2_line` is the line number of the second instruction.
 
         """
         caplog.set_level(WARNING)
@@ -107,14 +112,14 @@ class TestDupOperand:
                 map(ICaseString, in_regs), ICaseString(out_reg), "ADD", line_no
             )
             for in_regs, out_reg, line_no in [
-                (["R2", "R3"], "R1", preamble + 1),
-                (["r2", "R5"], "R4", preamble + 2),
+                (["R2", "R3"], "R1", instr1_line),
+                (["r2", "R5"], "R4", instr2_line),
             ]
         ]
         assert caplog.records
         warn_msg = caplog.records[0].getMessage()
 
-        for reg in ["r2", str(preamble + 2), "R2", str(preamble + 1)]:
+        for reg in ["r2", str(instr2_line), "R2", str(instr1_line)]:
             assert reg in warn_msg
 
 
@@ -246,13 +251,14 @@ class TestSynErrors:
         `instr` is the instruction with the syntax error.
 
         """
-        test_utils.chk_error(
-            itertools.starmap(
-                test_utils.ValInStrCheck,
-                [[syn_err.instr, instr], [syn_err.line, line_num]],
-            ),
-            syn_err,
+        chk_points = (
+            test_utils.ValInStrCheck(val_getter(syn_err), exp_val)
+            for val_getter, exp_val in [
+                (Self.instr(), instr),
+                (Self.line(), line_num),
+            ]
         )
+        test_utils.chk_error(chk_points, syn_err)
 
 
 class TestValidSyntax:

@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.0, Fedora release
+# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
@@ -41,6 +41,7 @@
 
 from logging import WARNING
 
+from fastcore.foundation import Self
 import pytest
 from pytest import mark, raises
 
@@ -104,16 +105,14 @@ class TestCaps:
         ex_chk = raises(
             exception.BadWidthError, read_proc_file, "capabilities", in_file
         )
-        test_utils.chk_error(
-            [
-                test_utils.ValInStrCheck(*chk_params)
-                for chk_params in [
-                    (ex_chk.value.unit, "full system"),
-                    (ex_chk.value.width, bad_width),
-                ]
-            ],
-            ex_chk.value,
+        chk_points = (
+            test_utils.ValInStrCheck(val_getter(ex_chk.value), exp_val)
+            for val_getter, exp_val in [
+                (Self.unit(), "full system"),
+                (Self.width(), bad_width),
+            ]
         )
+        test_utils.chk_error(chk_points, ex_chk.value)
 
 
 class TestDupCap:
