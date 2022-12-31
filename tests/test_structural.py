@@ -157,9 +157,9 @@ class _TestInParams:
 
     """Structural test input parameters"""
 
-    in_width: object
+    width: object
 
-    in_mem_util: object
+    mem_util: object
 
     out_unit_params: object
 
@@ -261,10 +261,10 @@ class TestHazards:
         """
         in_unit = UnitModel(
             ICaseString("input"),
-            in_params.in_width,
+            in_params.width,
             ["ALU"],
             LockInfo(True, False),
-            in_params.in_mem_util,
+            in_params.mem_util,
         )
         out_units = (
             UnitModel(
