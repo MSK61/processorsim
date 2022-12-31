@@ -42,6 +42,7 @@
 import unittest
 
 import attr
+from fastcore.foundation import Self
 import networkx
 import pytest
 from pytest import mark, raises
@@ -249,13 +250,15 @@ class TestWidth:
             "widths",
             "inputPortWithUnconsumedCapability.yaml",
         )
+        chk_params = [
+            ("Capability", Self.capability(), "Capability MEM"),
+            ("port", Self.port(), "port input"),
+        ]
         chk_error(
-            [
-                ValInStrCheck(
-                    "Capability " + ex_chk.value.capability, "Capability MEM"
-                ),
-                ValInStrCheck("port " + ex_chk.value.port, "port input"),
-            ],
+            (
+                ValInStrCheck(f"{prefix} {val_getter(ex_chk.value)}", exp_val)
+                for prefix, val_getter, exp_val in chk_params
+            ),
             ex_chk.value,
         )
 

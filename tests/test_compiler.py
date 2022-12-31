@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
+# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
@@ -42,6 +42,7 @@
 import itertools
 from logging import WARNING
 
+from fastcore.foundation import Self
 import pytest
 from pytest import mark, raises
 
@@ -246,13 +247,14 @@ class TestSynErrors:
         `instr` is the instruction with the syntax error.
 
         """
-        test_utils.chk_error(
-            itertools.starmap(
-                test_utils.ValInStrCheck,
-                [[syn_err.instr, instr], [syn_err.line, line_num]],
-            ),
-            syn_err,
+        chk_points = (
+            test_utils.ValInStrCheck(val_getter(syn_err), exp_val)
+            for val_getter, exp_val in [
+                (Self.instr(), instr),
+                (Self.line(), line_num),
+            ]
         )
+        test_utils.chk_error(chk_points, syn_err)
 
 
 class TestValidSyntax:
