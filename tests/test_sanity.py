@@ -314,7 +314,7 @@ class TestMultiLock:
             PathLockError,
             load_proc_desc,
             {
-                "units": _get_test_units(proc_desc, lock_data),
+                "units": _get_test_units(proc_desc, lock_data.prop_name),
                 "dataPath": [[proc_desc.in_unit, proc_desc.out_unit]],
             },
         )
@@ -331,11 +331,11 @@ class TestMultiLock:
             assert part in ex_info
 
 
-def _get_test_units(proc_desc, lock_data):
+def _get_test_units(proc_desc, lock_prop):
     """Create test units.
 
     `proc_desc` is the processor description.
-    `lock_data` is the lock test data.
+    `lock_prop` is the name of the lock property to set.
 
     """
     return [
@@ -343,19 +343,13 @@ def _get_test_units(proc_desc, lock_data):
             UNIT_NAME_KEY: proc_desc.in_unit,
             UNIT_WIDTH_KEY: 1,
             UNIT_CAPS_KEY: [proc_desc.capability],
-            **{
-                lock_prop: True
-                for lock_prop in [UNIT_RLOCK_KEY, lock_data.prop_name]
-            },
+            **{lock_prop: True for lock_prop in [UNIT_RLOCK_KEY, lock_prop]},
         },
         {
             UNIT_NAME_KEY: proc_desc.out_unit,
             UNIT_WIDTH_KEY: 1,
             UNIT_CAPS_KEY: [proc_desc.capability],
-            **{
-                lock_prop: True
-                for lock_prop in [UNIT_WLOCK_KEY, lock_data.prop_name]
-            },
+            **{lock_prop: True for lock_prop in [UNIT_WLOCK_KEY, lock_prop]},
         },
     ]
 
