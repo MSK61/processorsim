@@ -27,7 +27,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, Fedora release 37 (Thirty Seven)
+# environment:  Visual Studio Code 1.74.2, Fedora release 37 (Thirty Seven)
 #
 # notes:        This is a private program.
 #
