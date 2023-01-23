@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.0, Fedora release
+# environment:  Visual Studio Code 1.74.3, python 3.11.1, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
@@ -508,12 +508,16 @@ def _get_unit_entry(
     The function returns the unit model.
 
     """
-    attrs2 = dict(attrs)
     mem_acl_set = frozenset(attrs[UNIT_MEM_KEY])
-    attrs2[UNIT_ROLES_KEY] = {
-        cap: cap in mem_acl_set for cap in attrs[UNIT_CAPS_KEY]
-    }
-    return _get_unit_entry2(name, attrs2)
+    return _get_unit_entry2(
+        name,
+        {
+            **attrs,
+            UNIT_ROLES_KEY: {
+                cap: cap in mem_acl_set for cap in attrs[UNIT_CAPS_KEY]
+            },
+        },
+    )
 
 
 def _get_unit_entry2(
