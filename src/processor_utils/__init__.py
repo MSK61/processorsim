@@ -336,6 +336,23 @@ def _chk_unit_width(unit: Mapping[object, Any]) -> None:
         )
 
 
+def _conv_attrs2(
+    attrs: Mapping[object, Iterable[object]]
+) -> Dict[object, object]:
+    """Convert unit attributes.
+
+    `attrs` are the unit attribute dictionary.
+
+    """
+    mem_acl_set = frozenset(attrs[UNIT_MEM_KEY])
+    return {
+        **attrs,
+        UNIT_ROLES_KEY: {
+            cap: cap in mem_acl_set for cap in attrs[UNIT_CAPS_KEY]
+        },
+    }
+
+
 def _create_graph(
     hw_units: Iterable[Mapping[object, object]],
     links: Iterable[Collection[str]],
@@ -499,7 +516,7 @@ def _get_std_edge(
 
 
 def _get_unit_entry(
-    name: ICaseString, attrs: Mapping[object, Any]
+    name: ICaseString, attrs: Mapping[object, Iterable[object]]
 ) -> UnitModel:
     """Create a unit map entry from the given attributes.
 
@@ -508,16 +525,7 @@ def _get_unit_entry(
     The function returns the unit model.
 
     """
-    mem_acl_set = frozenset(attrs[UNIT_MEM_KEY])
-    return _get_unit_entry2(
-        name,
-        {
-            **attrs,
-            UNIT_ROLES_KEY: {
-                cap: cap in mem_acl_set for cap in attrs[UNIT_CAPS_KEY]
-            },
-        },
-    )
+    return _get_unit_entry2(name, _conv_attrs2(attrs))
 
 
 def _get_unit_entry2(
