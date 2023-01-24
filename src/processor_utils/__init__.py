@@ -336,6 +336,21 @@ def _chk_unit_width(unit: Mapping[object, Any]) -> None:
         )
 
 
+def _conv_graph2(graph: DiGraph) -> DiGraph:
+    """Convert the processor graph.
+
+    `graph` is the processor.
+
+    """
+    graph2 = DiGraph(graph)
+    node_attrs = graph2.nodes.values()
+
+    for attrs in node_attrs:
+        attrs[UNIT_ROLES_KEY] = _get_cap_dict2(attrs)
+
+    return graph2
+
+
 def _create_graph(
     hw_units: Iterable[Mapping[object, object]],
     links: Iterable[Collection[str]],
@@ -487,13 +502,7 @@ def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
     units.
 
     """
-    graph2 = DiGraph(graph)
-    node_attrs = graph2.nodes.values()
-
-    for attrs in node_attrs:
-        attrs[UNIT_ROLES_KEY] = _get_cap_dict2(attrs)
-
-    return _get_proc_units2(graph2)
+    return _get_proc_units2(_conv_graph2(graph))
 
 
 def _get_proc_units2(graph: DiGraph) -> Generator[FuncUnit, None, None]:
