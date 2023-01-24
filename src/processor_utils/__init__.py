@@ -336,23 +336,6 @@ def _chk_unit_width(unit: Mapping[object, Any]) -> None:
         )
 
 
-def _conv_attrs2(
-    attrs: Mapping[object, Iterable[object]]
-) -> Dict[object, object]:
-    """Convert unit attributes.
-
-    `attrs` are the unit attribute dictionary.
-
-    """
-    mem_acl_set = frozenset(attrs[UNIT_MEM_KEY])
-    return {
-        **attrs,
-        UNIT_ROLES_KEY: {
-            cap: cap in mem_acl_set for cap in attrs[UNIT_CAPS_KEY]
-        },
-    }
-
-
 def _create_graph(
     hw_units: Iterable[Mapping[object, object]],
     links: Iterable[Collection[str]],
@@ -427,6 +410,18 @@ def _get_acl_cap(
     return std_cap.name
 
 
+def _get_cap_dict2(
+    attrs: Mapping[object, Iterable[object]]
+) -> Dict[object, bool]:
+    """Build the capabilities dictionary out of the unit attributes.
+
+    `attrs` are the unit attribute dictionary.
+
+    """
+    mem_acl_set = frozenset(attrs[UNIT_MEM_KEY])
+    return {cap: cap in mem_acl_set for cap in attrs[UNIT_CAPS_KEY]}
+
+
 def _get_cap_name(
     capability: object, cap_registry: SelfIndexSet[object]
 ) -> object:
@@ -492,8 +487,25 @@ def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
     units.
 
     """
+    graph2 = DiGraph(graph)
+    node_attrs = graph2.nodes.values()
+
+    for attrs in node_attrs:
+        attrs[UNIT_ROLES_KEY] = _get_cap_dict2(attrs)
+
+    return _get_proc_units2(graph2)
+
+
+def _get_proc_units2(graph: DiGraph) -> Generator[FuncUnit, None, None]:
+    """Create units for the given processor graph.
+
+    `graph` is the processor.
+    The function returns an iterator over the processor functional
+    units.
+
+    """
     unit_map = {
-        unit: _get_unit_entry(unit, graph.nodes[unit]) for unit in graph
+        unit: _get_unit_entry2(unit, graph.nodes[unit]) for unit in graph
     }
     return (
         FuncUnit(unit_map[name], _get_preds(graph, name, unit_map))
@@ -513,19 +525,6 @@ def _get_std_edge(
 
     """
     return (_get_unit_name(ICaseString(unit), unit_registry) for unit in edge)
-
-
-def _get_unit_entry(
-    name: ICaseString, attrs: Mapping[object, Iterable[object]]
-) -> UnitModel:
-    """Create a unit map entry from the given attributes.
-
-    `name` is the unit name.
-    `attrs` are the unit attribute dictionary.
-    The function returns the unit model.
-
-    """
-    return _get_unit_entry2(name, _conv_attrs2(attrs))
 
 
 def _get_unit_entry2(
