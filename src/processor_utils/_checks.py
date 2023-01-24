@@ -334,9 +334,9 @@ def _chk_cap_flow(
     port to the output ports.
 
     """
-    node_dict = anal_graph.nodes(True)
+    node_items = anal_graph.nodes.items()
     unit_anal_map = {
-        unit_attrs[_OLD_NODE_KEY]: unit for unit, unit_attrs in node_dict
+        unit_attrs[_OLD_NODE_KEY]: unit for unit, unit_attrs in node_items
     }
     unified_out = _aug_out_ports(
         anal_graph, [unit_anal_map[port] for port in out_ports]
@@ -656,7 +656,7 @@ def _make_cap_graph(processor: Graph, capability: object) -> DiGraph:
         for edge in processor.edges
         if _cap_in_edge(processor, capability, edge)
     )
-    cap_graph.add_nodes_from(processor.nodes(True))
+    cap_graph.add_nodes_from(processor.nodes.items())
     return cap_graph
 
 
