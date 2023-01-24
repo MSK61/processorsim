@@ -505,7 +505,7 @@ def _get_proc_units2(graph: DiGraph) -> Generator[FuncUnit, None, None]:
 
     """
     unit_map = {
-        unit: _get_unit_entry2(unit, graph.nodes[unit]) for unit in graph
+        unit: _get_unit_entry(unit, graph.nodes[unit]) for unit in graph
     }
     return (
         FuncUnit(unit_map[name], _get_preds(graph, name, unit_map))
@@ -527,7 +527,7 @@ def _get_std_edge(
     return (_get_unit_name(ICaseString(unit), unit_registry) for unit in edge)
 
 
-def _get_unit_entry2(
+def _get_unit_entry(
     name: ICaseString, attrs: Mapping[object, Any]
 ) -> UnitModel:
     """Create a unit map entry from the given attributes.
