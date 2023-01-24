@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
+# environment:  Visual Studio Code 1.74.3, python 3.11.1, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
@@ -334,9 +334,9 @@ def _chk_cap_flow(
     port to the output ports.
 
     """
+    node_dict = anal_graph.nodes(True)
     unit_anal_map = {
-        unit_attrs[_OLD_NODE_KEY]: unit
-        for unit, unit_attrs in anal_graph.nodes(True)
+        unit_attrs[_OLD_NODE_KEY]: unit for unit, unit_attrs in node_dict
     }
     unified_out = _aug_out_ports(
         anal_graph, [unit_anal_map[port] for port in out_ports]
