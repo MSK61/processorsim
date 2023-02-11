@@ -48,6 +48,7 @@ from typing import (
     Callable,
     DefaultDict,
     Generic,
+    Iterable,
     List,
     Optional,
     Tuple,
@@ -67,7 +68,7 @@ _VT = TypeVar("_VT")
 
 
 def sorted_tuple(
-    elems: typing.Iterable[Any], key: Optional[Callable[[Any], Any]] = None
+    elems: Iterable[Any], key: Optional[Callable[[Any], Any]] = None
 ) -> Tuple[Any, ...]:
     """Sort the elements.
 
@@ -228,15 +229,12 @@ class BagValDict(Generic[_KT, _VT]):
         `self` is this dictionary.
 
         """
-        elems = starmap(
+        elems: Iterable[Tuple[_KT, List[_VT]]] = starmap(
             lambda key, val_lst: (key, sorted(val_lst)), self.items()
         )
-        key_getter = operator.itemgetter(0)
+        elems = sorted(elems, key=operator.itemgetter(0))
         return ", ".join(
-            starmap(
-                lambda key, val_lst: f"{key!r}: {val_lst}",
-                sorted(elems, key=key_getter),
-            )
+            starmap(lambda key, val_lst: f"{key!r}: {val_lst}", elems)
         )
 
     def _useful_items(self) -> typing.Iterator[Tuple[_KT, List[_VT]]]:
