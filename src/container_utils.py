@@ -233,8 +233,7 @@ class BagValDict(Generic[_KT, _VT]):
             lambda key, val_lst: (key, sorted(val_lst)), self.items()
         )
         elems = sorted(elems, key=operator.itemgetter(0))
-        sep = ", "
-        return sep.join(
+        return ", ".join(
             starmap(lambda key, val_lst: f"{key!r}: {val_lst}", elems)
         )
 
