@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
+# environment:  Visual Studio Code 1.75.1, python 3.11.1, Fedora release
 #               37 (Thirty Seven)
 #
 # notes:        This is a private program.
@@ -231,9 +231,8 @@ class BagValDict(Generic[_KT, _VT]):
         elems = starmap(
             lambda key, val_lst: (key, sorted(val_lst)), self.items()
         )
-        sep = ", "
         key_getter = operator.itemgetter(0)
-        return sep.join(
+        return ", ".join(
             starmap(
                 lambda key, val_lst: f"{key!r}: {val_lst}",
                 sorted(elems, key=key_getter),
