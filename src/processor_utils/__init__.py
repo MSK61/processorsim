@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.0, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -41,6 +41,7 @@
 from itertools import chain
 from logging import warning
 import operator
+from operator import itemgetter
 import os
 import sys
 import typing
@@ -57,8 +58,7 @@ from typing import (
 )
 
 import attr
-import fastcore.foundation
-from fastcore.foundation import map_ex, Self
+from fastcore.foundation import map_ex, maps, Self
 import networkx
 from networkx import DiGraph, Graph
 
@@ -623,9 +623,9 @@ def _post_order(internal_units: Iterable[FuncUnit]) -> Tuple[FuncUnit, ...]:
     """
     rev_graph = _get_unit_graph(internal_units)
     return tuple(
-        fastcore.foundation.maps(
+        maps(
             rev_graph.nodes.get,
-            operator.itemgetter(_UNIT_KEY),
+            itemgetter(_UNIT_KEY),
             networkx.topological_sort(rev_graph),
         )
     )
@@ -712,18 +712,27 @@ def _make_processor(proc_graph: DiGraph) -> ProcessorDesc:
     in_ports = []
     internal_units = []
     out_ports = []
-    in_degrees = proc_graph.in_degree()
-    out_degrees = proc_graph.out_degree()
 
     for unit in unit_graph:
-        if in_degrees[unit.model.name] and out_degrees[unit.model.name]:
-            internal_units.append(unit)
-        elif in_degrees[unit.model.name]:
-            out_ports.append(unit)
-        elif out_degrees[unit.model.name]:
-            in_ports.append(unit.model)
-        else:
-            in_out_ports.append(unit.model)
+        match tuple(
+            maps(
+                operator.call,
+                itemgetter(unit.model.name),
+                bool,
+                [proc_graph.in_degree, proc_graph.out_degree],
+            )
+        ):
+            case (True, True):
+                internal_units.append(unit)
+
+            case (True, False):
+                out_ports.append(unit)
+
+            case (False, True):
+                in_ports.append(unit.model)
+
+            case _:
+                in_out_ports.append(unit.model)
 
     return ProcessorDesc(in_ports, out_ports, in_out_ports, internal_units)
 
