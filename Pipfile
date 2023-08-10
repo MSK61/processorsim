@@ -7,7 +7,6 @@ verify_ssl = true
 pytest-cov = "*"
 pytest-pylint = "*"
 pytest-mypy = "*"
-coveralls = "*"
 pytest-flake8 = "*"
 nbconvert = "*"
 ipykernel = "*"
