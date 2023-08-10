@@ -41,7 +41,6 @@
 from itertools import chain
 from logging import warning
 import operator
-from operator import itemgetter
 import os
 import sys
 import typing
@@ -58,7 +57,8 @@ from typing import (
 )
 
 import attr
-from fastcore.foundation import map_ex, maps, Self
+import fastcore.foundation
+from fastcore.foundation import map_ex, Self
 import networkx
 from networkx import DiGraph, Graph
 
@@ -623,9 +623,9 @@ def _post_order(internal_units: Iterable[FuncUnit]) -> Tuple[FuncUnit, ...]:
     """
     rev_graph = _get_unit_graph(internal_units)
     return tuple(
-        maps(
+        fastcore.foundation.maps(
             rev_graph.nodes.get,
-            itemgetter(_UNIT_KEY),
+            operator.itemgetter(_UNIT_KEY),
             networkx.topological_sort(rev_graph),
         )
     )
@@ -715,11 +715,12 @@ def _make_processor(proc_graph: DiGraph) -> ProcessorDesc:
 
     for unit in unit_graph:
         match tuple(
-            maps(
-                operator.call,
-                itemgetter(unit.model.name),
+            map(
                 bool,
-                [proc_graph.in_degree, proc_graph.out_degree],
+                [
+                    proc_graph.in_degree(unit.model.name),
+                    proc_graph.out_degree(unit.model.name),
+                ],
             )
         ):
             case True, True:

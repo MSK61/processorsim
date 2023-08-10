@@ -510,10 +510,9 @@ def _coll_cap_edges(graph: DiGraph) -> typing.FrozenSet[_T]:
     the node.
 
     """
-    out_degrees = graph.out_degree()
     in_degrees = iteration_utilities.starfilter(
-        lambda node, in_deg: in_deg == 1 or out_degrees[node] == 1,
-        graph.in_degree(),
+        lambda node, in_deg: in_deg == 1 or graph.out_degree(node) == 1,
+        graph.in_degree,
     )
     return frozenset(
         _get_cap_edge(graph.in_edges(node), graph.out_edges(node))
