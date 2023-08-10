@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.0, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -54,7 +54,7 @@ def get_in_ports(processor: DiGraph) -> Generator[_T, None, None]:
     The function returns an iterator over the processor input ports.
 
     """
-    return _get_ports(processor.in_degree())
+    return _get_ports(processor.in_degree)
 
 
 def get_out_ports(processor: DiGraph) -> Generator[object, None, None]:
@@ -64,7 +64,7 @@ def get_out_ports(processor: DiGraph) -> Generator[object, None, None]:
     The function returns an iterator over the processor output ports.
 
     """
-    return _get_ports(processor.out_degree())
+    return _get_ports(processor.out_degree)
 
 
 class PortGroup:
