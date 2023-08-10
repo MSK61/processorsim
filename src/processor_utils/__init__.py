@@ -722,13 +722,13 @@ def _make_processor(proc_graph: DiGraph) -> ProcessorDesc:
                 [proc_graph.in_degree, proc_graph.out_degree],
             )
         ):
-            case (True, True):
+            case True, True:
                 internal_units.append(unit)
 
-            case (True, False):
+            case True, False:
                 out_ports.append(unit)
 
-            case (False, True):
+            case False, True:
                 in_ports.append(unit.model)
 
             case _:
