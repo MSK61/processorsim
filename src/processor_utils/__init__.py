@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.0, python 3.11.4, Fedora release
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
 #               38 (Thirty Eight)
 #
 # notes:        This is a private program.
@@ -66,8 +66,8 @@ import container_utils
 from container_utils import IndexedSet, SelfIndexSet
 from errors import UndefElemError
 from str_utils import ICaseString
+from . import _checks, _optimization, _port_defs, units
 from .exception import BadEdgeError, BadWidthError, DupElemError
-from . import units
 from .units import (
     FuncUnit,
     UNIT_CAPS_KEY,
@@ -78,9 +78,6 @@ from .units import (
     UNIT_WIDTH_KEY,
     UNIT_WLOCK_KEY,
 )
-from . import _checks
-from . import _optimization
-from . import _port_defs
 
 _T = typing.TypeVar("_T")
 _UNIT_KEY: typing.Final = "unit"

@@ -62,12 +62,9 @@ import networkx
 from networkx import DiGraph, Graph
 
 from str_utils import ICaseString
-from . import cap_anal_utils
-from . import exception
+from . import cap_anal_utils, exception, _port_defs, units
 from .exception import BlockedCapError, ComponentInfo, PathLockError
-from . import units
 from .units import UNIT_CAPS_KEY, UNIT_WIDTH_KEY
-from . import _port_defs
 
 _OLD_NODE_KEY: typing.Final = "old_node"
 _T = typing.TypeVar("_T")

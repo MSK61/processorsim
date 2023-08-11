@@ -47,8 +47,8 @@ from networkx import DiGraph, Graph
 
 from str_utils import ICaseString
 from .exception import DeadInputError
-from .units import UNIT_CAPS_KEY
 from . import _port_defs
+from .units import UNIT_CAPS_KEY
 
 
 def chk_terminals(
