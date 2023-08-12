@@ -39,10 +39,10 @@
 #
 ############################################################
 
+from collections.abc import Callable
 import typing
 from typing import (
     AbstractSet,
-    Callable,
     Dict,
     Generator,
     Iterable,

@@ -31,21 +31,21 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.75.1, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
 import collections
+from collections.abc import Callable
 from itertools import starmap
 import operator
 from operator import eq
 import typing
 from typing import (
     Any,
-    Callable,
     DefaultDict,
     Generic,
     Iterable,
