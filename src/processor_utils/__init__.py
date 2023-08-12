@@ -45,15 +45,7 @@ import operator
 import os
 import sys
 import typing
-from typing import (
-    Any,
-    Collection,
-    Dict,
-    Generator,
-    Mapping,
-    MutableSequence,
-    Tuple,
-)
+from typing import Any, Collection, Dict, Generator, Mapping, MutableSequence
 
 import attr
 import fastcore.foundation
@@ -83,7 +75,7 @@ _UNIT_KEY: typing.Final = "unit"
 
 
 def load_isa(
-    raw_isa: Iterable[Tuple[str, str]], capabilities: Iterable[object]
+    raw_isa: Iterable[tuple[str, str]], capabilities: Iterable[object]
 ) -> Dict[str, object]:
     """Transform the given raw description into an instruction set.
 
@@ -361,7 +353,7 @@ def _create_graph(
 
 
 def _create_isa(
-    isa_spec: Iterable[Tuple[str, str]], cap_registry: SelfIndexSet[object]
+    isa_spec: Iterable[tuple[str, str]], cap_registry: SelfIndexSet[object]
 ) -> Dict[str, object]:
     """Create an instruction set of the given ISA dictionary.
 
@@ -427,7 +419,7 @@ def _get_cap_name(
     return std_cap
 
 
-def _get_frozen_lst(obj_lst: Iterable[object]) -> Tuple[object, ...]:
+def _get_frozen_lst(obj_lst: Iterable[object]) -> tuple[object, ...]:
     """Return a read-only list of the given objects.
 
     `obj_lst` is an iterable over the objects to be stored in the
@@ -596,7 +588,7 @@ def _load_mem_acl(
     )
 
 
-def _post_order(internal_units: Iterable[FuncUnit]) -> Tuple[FuncUnit, ...]:
+def _post_order(internal_units: Iterable[FuncUnit]) -> tuple[FuncUnit, ...]:
     """Create a post-order for internal units.
 
     `internal_units` are the internal units.
@@ -637,7 +629,7 @@ def _prep_proc_desc(processor: DiGraph) -> None:
     _checks.chk_caps(processor)
 
 
-def _sorted_units(hw_units: Iterable[object]) -> Tuple[FuncUnit, ...]:
+def _sorted_units(hw_units: Iterable[object]) -> tuple[FuncUnit, ...]:
     """Create a sorted list of the given units.
 
     `hw_units` are the units to create a sorted list of.
@@ -651,13 +643,13 @@ class ProcessorDesc:
 
     """Processor description"""
 
-    in_ports: Tuple[UnitModel, ...] = attr.ib(converter=_get_frozen_lst)
+    in_ports: tuple[UnitModel, ...] = attr.ib(converter=_get_frozen_lst)
 
-    out_ports: Tuple[FuncUnit, ...] = attr.ib(converter=_sorted_units)
+    out_ports: tuple[FuncUnit, ...] = attr.ib(converter=_sorted_units)
 
-    in_out_ports: Tuple[UnitModel, ...] = attr.ib(converter=_get_frozen_lst)
+    in_out_ports: tuple[UnitModel, ...] = attr.ib(converter=_get_frozen_lst)
 
-    internal_units: Tuple[FuncUnit, ...] = attr.ib(converter=_post_order)
+    internal_units: tuple[FuncUnit, ...] = attr.ib(converter=_post_order)
 
 
 def get_abilities(processor: ProcessorDesc) -> typing.FrozenSet[object]:

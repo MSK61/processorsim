@@ -44,7 +44,7 @@ from itertools import starmap
 import operator
 from operator import eq
 import typing
-from typing import Any, Generic, Optional, Tuple, TypeVar
+from typing import Any, Generic, Optional, TypeVar
 
 
 import attr
@@ -60,7 +60,7 @@ _VT = TypeVar("_VT")
 
 def sorted_tuple(
     elems: Iterable[Any], key: Optional[Callable[[Any], Any]] = None
-) -> Tuple[Any, ...]:
+) -> tuple[Any, ...]:
     """Sort the elements.
 
     `elems` are the elements to sort.
@@ -220,7 +220,7 @@ class BagValDict(Generic[_KT, _VT]):
         `self` is this dictionary.
 
         """
-        elems: Iterable[Tuple[_KT, list[_VT]]] = starmap(
+        elems: Iterable[tuple[_KT, list[_VT]]] = starmap(
             lambda key, val_lst: (key, sorted(val_lst)), self.items()
         )
         elems = sorted(elems, key=operator.itemgetter(0))
@@ -228,7 +228,7 @@ class BagValDict(Generic[_KT, _VT]):
             starmap(lambda key, val_lst: f"{key!r}: {val_lst}", elems)
         )
 
-    def _useful_items(self) -> typing.Iterator[Tuple[_KT, list[_VT]]]:
+    def _useful_items(self) -> typing.Iterator[tuple[_KT, list[_VT]]]:
         """Filter out items with empty value lists.
 
         `self` is this dictionary.

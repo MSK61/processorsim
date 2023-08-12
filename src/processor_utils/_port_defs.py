@@ -40,7 +40,7 @@
 
 import collections.abc
 import typing
-from typing import Generator, Tuple
+from typing import Generator
 
 from fastcore import foundation
 from networkx import DiGraph
@@ -85,7 +85,7 @@ class PortGroup:
         )
 
     @property
-    def in_ports(self) -> Tuple[object, ...]:
+    def in_ports(self) -> tuple[object, ...]:
         """Input ports
 
         `self` is this port group.
@@ -94,7 +94,7 @@ class PortGroup:
         return self._in_ports
 
     @property
-    def out_ports(self) -> Tuple[object, ...]:
+    def out_ports(self) -> tuple[object, ...]:
         """Output ports
 
         `self` is this port group.
@@ -104,7 +104,7 @@ class PortGroup:
 
 
 def _get_ports(
-    degrees: collections.abc.Iterable[Tuple[_T, bool]]
+    degrees: collections.abc.Iterable[tuple[_T, bool]]
 ) -> Generator[_T, None, None]:
     """Find the ports with respect to the given degrees.
 

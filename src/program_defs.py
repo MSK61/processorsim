@@ -39,7 +39,6 @@
 ############################################################
 
 import collections.abc
-from typing import Tuple
 
 import attr
 
@@ -48,7 +47,7 @@ import container_utils
 
 def _sorted_uniq(
     elems: collections.abc.Iterable[object],
-) -> Tuple[object, ...]:
+) -> tuple[object, ...]:
     """Sort the elements after filtering out duplicates.
 
     `elems` are the elements to filter and sort.
@@ -62,7 +61,7 @@ class _Instruction:
 
     """Instruction"""
 
-    sources: Tuple[object, ...] = attr.ib(converter=_sorted_uniq)
+    sources: tuple[object, ...] = attr.ib(converter=_sorted_uniq)
 
     destination: object = attr.ib()
 

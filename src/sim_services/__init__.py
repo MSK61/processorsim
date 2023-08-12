@@ -51,7 +51,6 @@ from typing import (
     MutableMapping,
     MutableSequence,
     Sequence,
-    Tuple,
 )
 
 import attr
@@ -339,7 +338,7 @@ def _add_wr_access(instr: int, builder: RegAccQBuilder) -> None:
 
 
 def _build_acc_plan(
-    program: Iterable[Tuple[int, HwInstruction]]
+    program: Iterable[tuple[int, HwInstruction]]
 ) -> Dict[object, RegAccessQueue]:
     """Build the registry access plan through the program lifetime.
 
@@ -434,7 +433,7 @@ def _chk_full_stall(
 
 def _chk_hazards(
     old_util: BagValDict[_T, InstrState],
-    new_util: Iterable[Tuple[_T, Iterable[InstrState]]],
+    new_util: Iterable[tuple[_T, Iterable[InstrState]]],
     name_unit_map: Mapping[_T, UnitModel],
     program: Sequence[HwInstruction],
     acc_queues: Mapping[object, RegAccessQueue],

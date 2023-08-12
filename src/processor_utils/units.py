@@ -41,7 +41,7 @@
 import collections.abc
 import operator
 import typing
-from typing import Final, Tuple
+from typing import Final
 
 import attr
 import fastcore.foundation
@@ -86,16 +86,16 @@ class UnitModel:
 
     width: int = attr.ib()
 
-    capabilities: Tuple[object, ...] = attr.ib(converter=sorted_tuple)
+    capabilities: tuple[object, ...] = attr.ib(converter=sorted_tuple)
 
     lock_info: LockInfo = attr.ib()
 
-    _mem_acl: Tuple[object, ...] = attr.ib(converter=sorted_tuple)
+    _mem_acl: tuple[object, ...] = attr.ib(converter=sorted_tuple)
 
 
 def sorted_models(
     models: collections.abc.Iterable[object],
-) -> Tuple[UnitModel, ...]:
+) -> tuple[UnitModel, ...]:
     """Create a sorted list of the given models.
 
     `models` are the models to create a sorted list of.
@@ -129,4 +129,4 @@ class FuncUnit:
 
     model: UnitModel = attr.ib()
 
-    predecessors: Tuple[UnitModel, ...] = attr.ib(converter=sorted_models)
+    predecessors: tuple[UnitModel, ...] = attr.ib(converter=sorted_models)

@@ -40,7 +40,6 @@
 
 import collections.abc
 import typing
-from typing import Tuple
 
 from networkx import DiGraph, Graph
 
@@ -70,7 +69,7 @@ def split_nodes(graph: DiGraph) -> typing.Dict[object, object]:
 
 
 def _mov_out_link(
-    graph: Graph, link: Tuple[object, object], new_node: object
+    graph: Graph, link: tuple[object, object], new_node: object
 ) -> None:
     """Move an outgoing link from an old node to a new one.
 
@@ -85,7 +84,7 @@ def _mov_out_link(
 
 def _mov_out_links(
     graph: Graph,
-    out_links: collections.abc.Iterable[Tuple[object, object]],
+    out_links: collections.abc.Iterable[tuple[object, object]],
     new_node: object,
 ) -> None:
     """Move outgoing links from an old node to a new one.

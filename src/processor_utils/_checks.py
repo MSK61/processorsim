@@ -48,7 +48,6 @@ from typing import (
     Mapping,
     MutableMapping,
     Sequence,
-    Tuple,
 )
 
 import attr
@@ -547,7 +546,7 @@ def _do_cap_checks(
 
     """
     cap_units: AbstractSet[
-        Tuple[ICaseString, list[ICaseString]]
+        tuple[ICaseString, list[ICaseString]]
     ] = _get_cap_units(processor)
     out_ports = tuple(_port_defs.get_out_ports(processor))
     post_ord = tuple(networkx.dfs_postorder_nodes(processor))
@@ -617,7 +616,7 @@ def _get_cap_edge(in_edges: Iterable[_T], out_edges: Iterable[_T]) -> _T:
 
 def _get_cap_units(
     processor: DiGraph,
-) -> AbstractSet[Tuple[ICaseString, list[_T]]]:
+) -> AbstractSet[tuple[ICaseString, list[_T]]]:
     """Create a mapping between capabilities and supporting input ports.
 
     `processor` is the processor to create a capability-port map for.
@@ -656,7 +655,7 @@ def _make_cap_graph(processor: Graph, capability: object) -> DiGraph:
 
 
 def _set_capacities(
-    graph: Graph, cap_edges: Iterable[Tuple[object, object]]
+    graph: Graph, cap_edges: Iterable[tuple[object, object]]
 ) -> None:
     """Assign capacities to capping edges.
 

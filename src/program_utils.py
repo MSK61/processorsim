@@ -133,7 +133,7 @@ def read_program(prog_file: Iterable[str]) -> list[ProgInstruction]:
 
     """
     program: typing.Generator[
-        typing.Tuple[int, str], None, None
+        tuple[int, str], None, None
     ] = iteration_utilities.starfilter(
         lambda _, line: line, enumerate(map(str.strip, prog_file), 1)
     )

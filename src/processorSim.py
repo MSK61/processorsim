@@ -65,7 +65,6 @@ from typing import (
     Optional,
     Sequence,
     Sized,
-    Tuple,
 )
 
 import attr
@@ -86,7 +85,7 @@ _PROG_OPT_VAR: Final = "prog_file"  # variable to receive the program file
 _T = typing.TypeVar("_T")
 
 
-def get_in_files(argv: Optional[Sequence[str]]) -> Tuple[Any, Any]:
+def get_in_files(argv: Optional[Sequence[str]]) -> tuple[Any, Any]:
     """Create input file objects from the given arguments.
 
     `argv` is the list of arguments.
@@ -261,7 +260,7 @@ class _ResultWriter:
 
     @classmethod
     def _print_tbl_data(
-        cls, sim_res: Iterable[Tuple[int, Iterable[object]]]
+        cls, sim_res: Iterable[tuple[int, Iterable[object]]]
     ) -> None:
         """Print the simulation table rows.
 
@@ -302,7 +301,7 @@ def _create_flight(instr_util: Mapping[int, _InstrPosition]) -> _InstrFlight:
 
 
 def _cui_to_flights(
-    cxuxi: Iterable[Tuple[int, BagValDict[_T, InstrState]]], instructions: int
+    cxuxi: Iterable[tuple[int, BagValDict[_T, InstrState]]], instructions: int
 ) -> "map[_InstrFlight]":
     """Convert a CxUxI utilization map to instruction flights.
 
@@ -314,7 +313,7 @@ def _cui_to_flights(
 
 
 def _cui_to_icu(
-    cxuxi: Iterable[Tuple[int, BagValDict[_T, InstrState]]], instructions: int
+    cxuxi: Iterable[tuple[int, BagValDict[_T, InstrState]]], instructions: int
 ) -> list[Dict[int, _InstrPosition]]:
     """Convert a CxUxI utilization map to IxCxU format.
 
@@ -334,7 +333,7 @@ def _cui_to_icu(
 
 def _fill_cp_util(
     clock_pulse: int,
-    cp_util: Iterable[Tuple[object, Iterable[InstrState]]],
+    cp_util: Iterable[tuple[object, Iterable[InstrState]]],
     ixcxu: Sequence[typing.MutableMapping[int, _InstrPosition]],
 ) -> None:
     """Fill the given clock utilization into the IxCxU map.
@@ -364,7 +363,7 @@ def _get_flight_row(flight: _InstrFlight) -> list[str]:
 
 
 def _get_sim_rows(
-    sim_res: Iterable[Tuple[int, BagValDict[_T, InstrState]]],
+    sim_res: Iterable[tuple[int, BagValDict[_T, InstrState]]],
     instructions: int,
 ) -> list[list[str]]:
     """Calculate the simulation rows.
