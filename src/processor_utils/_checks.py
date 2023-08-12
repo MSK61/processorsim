@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.3, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -62,6 +62,7 @@ import networkx
 from networkx import DiGraph, Graph
 
 from str_utils import ICaseString
+from . import cap_anal_utils
 from . import exception
 from .exception import BlockedCapError, ComponentInfo, PathLockError
 from . import units
@@ -341,7 +342,7 @@ def _chk_cap_flow(
     unified_out = _aug_out_ports(
         anal_graph, [unit_anal_map[port] for port in out_ports]
     )
-    unified_out = _split_nodes(anal_graph)[unified_out]
+    unified_out = cap_anal_utils.split_nodes(anal_graph)[unified_out]
     _dist_edge_caps(anal_graph)
 
     for cur_port in in_ports:
@@ -660,34 +661,6 @@ def _make_cap_graph(processor: Graph, capability: object) -> DiGraph:
     return cap_graph
 
 
-def _mov_out_link(
-    graph: Graph, link: Tuple[object, object], new_node: object
-) -> None:
-    """Move an outgoing link from an old node to a new one.
-
-    `graph` is the graph containing the nodes.
-    `link` is the outgoing link to move.
-    `new_node` is the node to move the outgoing link to.
-
-    """
-    graph.add_edge(new_node, link[1])
-    graph.remove_edge(*link)
-
-
-def _mov_out_links(
-    graph: Graph, out_links: Iterable[Tuple[object, object]], new_node: object
-) -> None:
-    """Move outgoing links from an old node to a new one.
-
-    `graph` is the graph containing the nodes.
-    `out_links` are the outgoing links to move.
-    `new_node` is the node to move the outgoing links to.
-
-    """
-    for cur_link in out_links:
-        _mov_out_link(graph, cur_link, new_node)
-
-
 def _set_capacities(
     graph: Graph, cap_edges: Iterable[Tuple[object, object]]
 ) -> None:
@@ -701,44 +674,6 @@ def _set_capacities(
         graph[cur_edge[0]][cur_edge[1]]["capacity"] = min(
             graph.nodes[unit][UNIT_WIDTH_KEY] for unit in cur_edge
         )
-
-
-def _split_node(graph: DiGraph, old_node: object, new_node: object) -> object:
-    """Split a node into old and new ones.
-
-    `graph` is the graph containing the node to be split.
-    `old_node` is the existing node.
-    `new_node` is the node added after splitting.
-    The function returns the new node.
-
-    """
-    graph.add_node(
-        new_node, **{UNIT_WIDTH_KEY: graph.nodes[old_node][UNIT_WIDTH_KEY]}
-    )
-    _mov_out_links(graph, tuple(graph.out_edges(old_node)), new_node)
-    graph.add_edge(old_node, new_node)
-    return new_node
-
-
-def _split_nodes(graph: DiGraph) -> Dict[object, object]:
-    """Split nodes in the given graph as necessary.
-
-    `graph` is the graph containing nodes.
-    The function splits nodes having multiple links on one side and a
-    non-capping link on the other. A link on one side is capping if it's
-    the only link on this side.
-    The function returns a dictionary mapping each unit to its output
-    twin(if one was created) or itself if it wasn't split.
-
-    """
-    out_degrees = graph.out_degree()
-    in_degrees = tuple(graph.in_degree())
-    return {
-        unit: _split_node(graph, unit, len(out_degrees) + unit)
-        if twin != 1 and out_degrees[unit] != 1 and (twin or out_degrees[unit])
-        else unit
-        for unit, twin in in_degrees
-    }
 
 
 def _unify_ports(graph: Graph, ports: Iterable[object]) -> int:
