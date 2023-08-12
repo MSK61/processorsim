@@ -165,7 +165,7 @@ class _PathDescriptor:
         """
         return cls(Self.write_lock(), "write", capability, start)
 
-    selector: typing.Callable[[_SatInfo], int]
+    selector: Callable[[_SatInfo], int]
 
     lock_type: object
 
