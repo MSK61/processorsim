@@ -50,7 +50,6 @@ from typing import (
     Collection,
     Dict,
     Generator,
-    List,
     Mapping,
     MutableSequence,
     Tuple,
@@ -557,7 +556,7 @@ def _init_cap_reg(capabilities: Iterable[object]) -> SelfIndexSet[object]:
 
 def _load_caps(
     unit: Mapping[object, Any], cap_registry: IndexedSet[_CapabilityInfo]
-) -> List[object]:
+) -> list[object]:
     """Load the given unit capabilities.
 
     `unit` is the unit to load whose capabilities.
@@ -565,7 +564,7 @@ def _load_caps(
     The function returns a list of loaded capabilities.
 
     """
-    cap_list: List[object] = []
+    cap_list: list[object] = []
     unit_cap_reg = SelfIndexSet[object]()
 
     for cur_cap in unit[UNIT_CAPS_KEY]:

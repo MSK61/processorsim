@@ -44,7 +44,7 @@ from itertools import starmap
 import operator
 from operator import eq
 import typing
-from typing import Any, Generic, List, Optional, Tuple, TypeVar
+from typing import Any, Generic, Optional, Tuple, TypeVar
 
 
 import attr
@@ -147,7 +147,7 @@ class SelfIndexSet(_IndexedSetBase[_T]):
 
 def _val_lst_dict(
     val_iter_dict: typing.Mapping[object, object]
-) -> defaultdict[object, List[object]]:
+) -> defaultdict[object, list[object]]:
     """Convert the given value iterable dictionary to a value list one.
 
     `val_iter_dict` is the dictionary containing value iterables.
@@ -176,12 +176,12 @@ class BagValDict(Generic[_KT, _VT]):
         lst_pairs = (
             map(sorted, [val_lst, self[key]]) for key, val_lst in other_items
         )
-        item_lst_pair: List[typing.Sized] = [self, other_items]
+        item_lst_pair: list[typing.Sized] = [self, other_items]
         return eq(*(len(item_lst) for item_lst in item_lst_pair)) and all(
             starmap(eq, lst_pairs)
         )
 
-    def __getitem__(self, key: _KT) -> List[_VT]:
+    def __getitem__(self, key: _KT) -> list[_VT]:
         """Retrieve the list of the given key.
 
         `self` is this dictionary.
@@ -220,7 +220,7 @@ class BagValDict(Generic[_KT, _VT]):
         `self` is this dictionary.
 
         """
-        elems: Iterable[Tuple[_KT, List[_VT]]] = starmap(
+        elems: Iterable[Tuple[_KT, list[_VT]]] = starmap(
             lambda key, val_lst: (key, sorted(val_lst)), self.items()
         )
         elems = sorted(elems, key=operator.itemgetter(0))
@@ -228,7 +228,7 @@ class BagValDict(Generic[_KT, _VT]):
             starmap(lambda key, val_lst: f"{key!r}: {val_lst}", elems)
         )
 
-    def _useful_items(self) -> typing.Iterator[Tuple[_KT, List[_VT]]]:
+    def _useful_items(self) -> typing.Iterator[Tuple[_KT, list[_VT]]]:
         """Filter out items with empty value lists.
 
         `self` is this dictionary.
@@ -242,6 +242,6 @@ class BagValDict(Generic[_KT, _VT]):
 
     items = _useful_items
 
-    _dict: defaultdict[_KT, List[_VT]] = attr.ib(
+    _dict: defaultdict[_KT, list[_VT]] = attr.ib(
         converter=_val_lst_dict, factory=dict
     )

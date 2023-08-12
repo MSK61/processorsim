@@ -43,7 +43,7 @@ import logging
 from re import split
 import string
 import typing
-from typing import Final, List, Mapping
+from typing import Final, Mapping
 
 import attr
 import fastcore.foundation
@@ -104,7 +104,7 @@ class CodeError(RuntimeError):
 
 def compile_program(
     prog: Iterable[ProgInstruction], isa: Mapping[str, object]
-) -> List[HwInstruction]:
+) -> list[HwInstruction]:
     """Compile the program using the given instruction set.
 
     `prog` is the program to compile.
@@ -125,7 +125,7 @@ def compile_program(
     ]
 
 
-def read_program(prog_file: Iterable[str]) -> List[ProgInstruction]:
+def read_program(prog_file: Iterable[str]) -> list[ProgInstruction]:
     """Read the program stored in the given file.
 
     `prog_file` is the file containing the assembly program.
@@ -225,7 +225,7 @@ def _get_operands(
     src_line_info: _LineInfo,
     line_num: object,
     reg_registry: IndexedSet[_OperandInfo],
-) -> List[ICaseString]:
+) -> list[ICaseString]:
     """Extract operands from the given line.
 
     `src_line_info` is the source line information.

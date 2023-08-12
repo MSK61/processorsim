@@ -41,7 +41,7 @@
 import enum
 from enum import auto
 import typing
-from typing import Final, List
+from typing import Final
 
 import attr
 
@@ -65,7 +65,7 @@ class AccessGroup:
     reqs: typing.MutableSet[object] = attr.ib(converter=set, factory=set)
 
 
-def _rev_list(lst: typing.Reversible[object]) -> List[object]:
+def _rev_list(lst: typing.Reversible[object]) -> list[object]:
     """Return the reversed list of the given one.
 
     `lst` is the list to reverse.
@@ -109,7 +109,7 @@ class RegAccessQueue:
     # removal only without addition, we reverse the given queue to make
     # the queue front at the list tail and make use of the fast access
     # to the list tail.
-    _queue: List[AccessGroup] = attr.ib(converter=_rev_list)
+    _queue: list[AccessGroup] = attr.ib(converter=_rev_list)
 
 
 class RegAccQBuilder:
@@ -122,7 +122,7 @@ class RegAccQBuilder:
         `self` is this access queue builder.
 
         """
-        self._queue: List[AccessGroup] = []
+        self._queue: list[AccessGroup] = []
 
     def append(self, req_type: AccessType, req_owner: int) -> None:
         """Append a new read request to the built queue.

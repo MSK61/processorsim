@@ -47,7 +47,6 @@ import typing
 from typing import (
     Dict,
     Iterator,
-    List,
     Mapping,
     MutableMapping,
     MutableSequence,
@@ -137,7 +136,7 @@ class HwSpec:
 
 def simulate(
     program: Sequence[HwInstruction], hw_info: HwSpec
-) -> List[BagValDict[ICaseString, InstrState]]:
+) -> list[BagValDict[ICaseString, InstrState]]:
     """Run the given program on the processor.
 
     `program` is the program to run.
@@ -145,7 +144,7 @@ def simulate(
     The function returns the pipeline diagram.
 
     """
-    util_tbl: List[BagValDict[ICaseString, InstrState]] = []
+    util_tbl: list[BagValDict[ICaseString, InstrState]] = []
     acc_queues = _build_acc_plan(enumerate(program))
     issue_rec = _IssueInfo()
     prog_len = len(program)
@@ -358,13 +357,13 @@ def _build_acc_plan(
 
 def _build_cap_map(
     inputs: Iterable[UnitModel],
-) -> Dict[object, List[UnitModel]]:
+) -> Dict[object, list[UnitModel]]:
     """Build the capability map for input units.
 
     `inputs` are the input processing units.
 
     """
-    cap_map: Dict[object, List[UnitModel]] = {}
+    cap_map: Dict[object, list[UnitModel]] = {}
 
     for unit in inputs:
         for cap in unit.capabilities:
@@ -688,7 +687,7 @@ def _regs_avail(
     The function returns the registers availability state.
 
     """
-    avail_reg_lists: List[Sequence[object]] = []
+    avail_reg_lists: list[Sequence[object]] = []
     return (
         _RegAvailState(True, chain.from_iterable(avail_reg_lists))
         if all(

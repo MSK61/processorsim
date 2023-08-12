@@ -45,7 +45,6 @@ from typing import (
     AbstractSet,
     Dict,
     Generator,
-    List,
     Mapping,
     MutableMapping,
     Sequence,
@@ -548,7 +547,7 @@ def _do_cap_checks(
 
     """
     cap_units: AbstractSet[
-        Tuple[ICaseString, List[ICaseString]]
+        Tuple[ICaseString, list[ICaseString]]
     ] = _get_cap_units(processor)
     out_ports = tuple(_port_defs.get_out_ports(processor))
     post_ord = tuple(networkx.dfs_postorder_nodes(processor))
@@ -618,7 +617,7 @@ def _get_cap_edge(in_edges: Iterable[_T], out_edges: Iterable[_T]) -> _T:
 
 def _get_cap_units(
     processor: DiGraph,
-) -> AbstractSet[Tuple[ICaseString, List[_T]]]:
+) -> AbstractSet[Tuple[ICaseString, list[_T]]]:
     """Create a mapping between capabilities and supporting input ports.
 
     `processor` is the processor to create a capability-port map for.
@@ -626,7 +625,7 @@ def _get_cap_units(
     capability and its supporting units.
 
     """
-    cap_unit_map: Dict[ICaseString, List[_T]] = {}
+    cap_unit_map: Dict[ICaseString, list[_T]] = {}
     in_ports: Generator[_T, None, None] = _port_defs.get_in_ports(processor)
 
     for cur_port in in_ports:

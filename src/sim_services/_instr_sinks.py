@@ -72,7 +72,7 @@ class InstrMovStatus:
 
     """Status of moving instructions"""
 
-    moved: typing.List[HostedInstr] = attr.ib(factory=list)
+    moved: list[HostedInstr] = attr.ib(factory=list)
 
     mem_used: bool = attr.ib(False, init=False)
 

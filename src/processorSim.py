@@ -61,7 +61,6 @@ from typing import (
     Dict,
     Final,
     IO,
-    List,
     Mapping,
     Optional,
     Sequence,
@@ -99,7 +98,7 @@ def get_in_files(argv: Optional[Sequence[str]]) -> Tuple[Any, Any]:
 
 def get_sim_res(
     processor_file: IO[str], program_file: Iterable[str]
-) -> List[List[str]]:
+) -> list[list[str]]:
     """Calculate the simulation result table.
 
     `processor_file` is the file containing the processor architecture.
@@ -316,14 +315,14 @@ def _cui_to_flights(
 
 def _cui_to_icu(
     cxuxi: Iterable[Tuple[int, BagValDict[_T, InstrState]]], instructions: int
-) -> List[Dict[int, _InstrPosition]]:
+) -> list[Dict[int, _InstrPosition]]:
     """Convert a CxUxI utilization map to IxCxU format.
 
     `cxuxi` is the ClockxUnitxInstruction utilization map to convert.
     `instructions` are the total number of instructions.
 
     """
-    ixcxu: List[Dict[int, _InstrPosition]] = list(
+    ixcxu: list[Dict[int, _InstrPosition]] = list(
         more_itertools.repeatfunc(dict, instructions)
     )
 
@@ -352,7 +351,7 @@ def _fill_cp_util(
             )
 
 
-def _get_flight_row(flight: _InstrFlight) -> List[str]:
+def _get_flight_row(flight: _InstrFlight) -> list[str]:
     """Convert the given flight to a row.
 
     `flight` is the flight to convert.
@@ -367,7 +366,7 @@ def _get_flight_row(flight: _InstrFlight) -> List[str]:
 def _get_sim_rows(
     sim_res: Iterable[Tuple[int, BagValDict[_T, InstrState]]],
     instructions: int,
-) -> List[List[str]]:
+) -> list[list[str]]:
     """Calculate the simulation rows.
 
     `sim_res` is the simulation result.
