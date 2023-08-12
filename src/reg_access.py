@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -79,7 +79,6 @@ class RegAccessQueue:
 
     """Access request queue for a single register"""
 
-    # pylint: disable=unsubscriptable-object
     def can_access(self, req_type: object, req_owner: object) -> bool:
         """Request access to the register.
 
@@ -103,7 +102,7 @@ class RegAccessQueue:
         self._queue[-1].reqs.remove(req_owner)
 
         if not self._queue[-1].reqs:
-            del self._queue[-1]  # pylint: disable=unsupported-delete-operation
+            del self._queue[-1]
 
     # Typically a queue pushes new elements at the back and removes old
     # elements from the front. Since this queue is going to support

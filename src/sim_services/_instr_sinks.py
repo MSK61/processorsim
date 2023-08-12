@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -191,7 +191,6 @@ class OutSink(IInstrSink):
 
     """Dummy sink for flushing output ports"""
 
-    # pylint: disable=unused-argument
     def _accepts_cap(self, _: int) -> typing.Literal[True]:
         """Always accept all instructions.
 
@@ -230,8 +229,6 @@ class OutSink(IInstrSink):
 
         """
         return tuple(candidates)
-
-    # pylint: enable=unused-argument
 
     @property
     def _donors(self) -> Iterator[ICaseString]:
