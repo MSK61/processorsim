@@ -57,8 +57,7 @@ from typing import (
 )
 
 import attr
-import fastcore.foundation
-from fastcore.foundation import map_ex, Self
+from fastcore.foundation import map_ex, maps, Self
 import networkx
 from networkx import DiGraph, Graph
 
@@ -429,14 +428,14 @@ def _get_cap_name(
 
 def _get_edge_units(
     edge: Iterable[str], unit_registry: SelfIndexSet[object]
-) -> Generator[object, None, None]:
+) -> "map[object]":
     """Return the units of an edge.
 
     `edge` is the edge to retrieve whose units.
     `unit_registry` is the store of units.
 
     """
-    return (unit_registry.get(ICaseString(unit)) for unit in edge)
+    return maps(ICaseString, unit_registry.get, edge)
 
 
 def _get_frozen_lst(obj_lst: Iterable[object]) -> Tuple[object, ...]:
@@ -620,7 +619,7 @@ def _post_order(internal_units: Iterable[FuncUnit]) -> Tuple[FuncUnit, ...]:
     """
     rev_graph = _get_unit_graph(internal_units)
     return tuple(
-        fastcore.foundation.maps(
+        maps(
             rev_graph.nodes.get,
             operator.itemgetter(_UNIT_KEY),
             networkx.topological_sort(rev_graph),
