@@ -453,7 +453,7 @@ def _chk_path_locks(
             (units.UNIT_WLOCK_KEY, _PathDescriptor.make_write_desc),
         ],
     )
-    # pylint: disable=no-member
+    # pylint: enable=no-member
     path_locks[start] = _SatInfo(*sat_params)
 
 
