@@ -57,7 +57,8 @@ from typing import (
 )
 
 import attr
-from fastcore.foundation import map_ex, maps, Self
+import fastcore.foundation
+from fastcore.foundation import map_ex, Self
 import networkx
 from networkx import DiGraph, Graph
 
@@ -345,8 +346,9 @@ def _create_graph(
     """
     flow_graph = DiGraph()
     unit_registry = SelfIndexSet[object]()
+    unit_getter = fastcore.foundation.compose(ICaseString, unit_registry.get)
     edge_registry = IndexedSet[Collection[str]](
-        lambda edge: tuple(_get_edge_units(edge, unit_registry))
+        lambda edge: tuple(map(unit_getter, edge))
     )
     cap_registry = IndexedSet[_CapabilityInfo](Self.name())
 
@@ -424,18 +426,6 @@ def _get_cap_name(
         )
 
     return std_cap
-
-
-def _get_edge_units(
-    edge: Iterable[str], unit_registry: SelfIndexSet[object]
-) -> "map[object]":
-    """Return the units of an edge.
-
-    `edge` is the edge to retrieve whose units.
-    `unit_registry` is the store of units.
-
-    """
-    return maps(ICaseString, unit_registry.get, edge)
 
 
 def _get_frozen_lst(obj_lst: Iterable[object]) -> Tuple[object, ...]:
@@ -619,7 +609,7 @@ def _post_order(internal_units: Iterable[FuncUnit]) -> Tuple[FuncUnit, ...]:
     """
     rev_graph = _get_unit_graph(internal_units)
     return tuple(
-        maps(
+        fastcore.foundation.maps(
             rev_graph.nodes.get,
             operator.itemgetter(_UNIT_KEY),
             networkx.topological_sort(rev_graph),
