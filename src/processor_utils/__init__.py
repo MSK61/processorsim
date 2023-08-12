@@ -38,14 +38,14 @@
 #
 ############################################################
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from itertools import chain
 from logging import warning
 import operator
 import os
 import sys
 import typing
-from typing import Any, Collection, Generator, Mapping, MutableSequence
+from typing import Any, Collection, Generator, MutableSequence
 
 import attr
 import fastcore.foundation

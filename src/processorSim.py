@@ -47,7 +47,7 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 ############################################################
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 import csv
 import itertools
 import logging
@@ -55,16 +55,7 @@ import operator
 import sys
 import argparse
 import typing
-from typing import (
-    Any,
-    Collection,
-    Final,
-    IO,
-    Mapping,
-    Optional,
-    Sequence,
-    Sized,
-)
+from typing import Any, Collection, Final, IO, Optional, Sequence, Sized
 
 import attr
 import fastcore.foundation

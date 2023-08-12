@@ -31,13 +31,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import collections.abc
 import typing
 
 import attr
@@ -53,7 +54,7 @@ class HwDesc:
 
     processor: processor_utils.ProcessorDesc
 
-    isa: typing.Mapping[str, object]
+    isa: collections.abc.Mapping[str, object]
 
 
 def read_processor(proc_file: typing.IO[str]) -> HwDesc:

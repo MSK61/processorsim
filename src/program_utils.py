@@ -38,12 +38,12 @@
 #
 ############################################################
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 import logging
 from re import split
 import string
 import typing
-from typing import Final, Mapping
+from typing import Final
 
 import attr
 import fastcore.foundation

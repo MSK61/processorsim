@@ -39,6 +39,7 @@
 ############################################################
 
 from collections import defaultdict
+import collections.abc
 from collections.abc import Callable, Iterable
 from itertools import starmap
 import operator
@@ -146,7 +147,7 @@ class SelfIndexSet(_IndexedSetBase[_T]):
 
 
 def _val_lst_dict(
-    val_iter_dict: typing.Mapping[object, object]
+    val_iter_dict: collections.abc.Mapping[object, object]
 ) -> defaultdict[object, list[object]]:
     """Convert the given value iterable dictionary to a value list one.
 

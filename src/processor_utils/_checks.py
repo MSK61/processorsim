@@ -39,9 +39,9 @@
 #
 ############################################################
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Mapping
 import typing
-from typing import AbstractSet, Generator, Mapping, MutableMapping, Sequence
+from typing import AbstractSet, Generator, MutableMapping, Sequence
 
 import attr
 import fastcore.foundation
