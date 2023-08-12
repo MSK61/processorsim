@@ -38,6 +38,7 @@
 #
 ############################################################
 
+import collections.abc
 from logging import warning
 import typing
 from typing import FrozenSet
@@ -165,7 +166,9 @@ def _rm_dead_end(
     processor.remove_node(dead_end)
 
 
-def _rm_dummy_edge(processor: Graph, edge: typing.Collection[object]) -> None:
+def _rm_dummy_edge(
+    processor: Graph, edge: collections.abc.Collection[object]
+) -> None:
     """Remove an edge from the given processor.
 
     `processor` is the processor to remove the edge from.

@@ -39,6 +39,7 @@
 ############################################################
 
 from collections import defaultdict
+import collections.abc
 from collections.abc import Iterable, Iterator, Mapping
 import copy
 from itertools import chain
@@ -217,7 +218,7 @@ class _TransitionUtil:
 
     """Utilization transition of a single unit between two pulses"""
 
-    old_util: typing.Collection[InstrState]
+    old_util: collections.abc.Collection[InstrState]
 
     new_util: Iterable[InstrState]
 

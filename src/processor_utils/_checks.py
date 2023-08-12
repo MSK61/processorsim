@@ -39,6 +39,7 @@
 #
 ############################################################
 
+import collections.abc
 from collections.abc import Callable, Iterable, Mapping
 import typing
 from typing import AbstractSet, Generator, MutableMapping, Sequence
@@ -232,7 +233,7 @@ class _PathLockCalc:
 
     _start_unit: Mapping[object, bool]
 
-    _succ_lst: typing.Collection[object]
+    _succ_lst: collections.abc.Collection[object]
 
     _capability: object
 
