@@ -58,7 +58,6 @@ import typing
 from typing import (
     Any,
     Collection,
-    Dict,
     Final,
     IO,
     Mapping,
@@ -314,14 +313,14 @@ def _cui_to_flights(
 
 def _cui_to_icu(
     cxuxi: Iterable[tuple[int, BagValDict[_T, InstrState]]], instructions: int
-) -> list[Dict[int, _InstrPosition]]:
+) -> list[dict[int, _InstrPosition]]:
     """Convert a CxUxI utilization map to IxCxU format.
 
     `cxuxi` is the ClockxUnitxInstruction utilization map to convert.
     `instructions` are the total number of instructions.
 
     """
-    ixcxu: list[Dict[int, _InstrPosition]] = list(
+    ixcxu: list[dict[int, _InstrPosition]] = list(
         more_itertools.repeatfunc(dict, instructions)
     )
 

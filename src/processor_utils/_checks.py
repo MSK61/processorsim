@@ -41,14 +41,7 @@
 
 from collections.abc import Callable, Iterable
 import typing
-from typing import (
-    AbstractSet,
-    Dict,
-    Generator,
-    Mapping,
-    MutableMapping,
-    Sequence,
-)
+from typing import AbstractSet, Generator, Mapping, MutableMapping, Sequence
 
 import attr
 import fastcore.foundation
@@ -410,7 +403,7 @@ def _chk_multilock(
     exist.
 
     """
-    path_locks: Dict[object, _SatInfo] = {}
+    path_locks: dict[object, _SatInfo] = {}
 
     for unit in post_ord:
         _chk_path_locks(unit, processor, path_locks, capability)
@@ -587,7 +580,7 @@ def _get_anal_graph(processor: Graph) -> DiGraph:
     """
     width_graph = DiGraph()
     hw_units = enumerate(processor)
-    new_nodes: Dict[object, object] = {}
+    new_nodes: dict[object, object] = {}
 
     for idx, unit in hw_units:
         _update_graph(idx, unit, processor, width_graph, new_nodes)
@@ -624,7 +617,7 @@ def _get_cap_units(
     capability and its supporting units.
 
     """
-    cap_unit_map: Dict[ICaseString, list[_T]] = {}
+    cap_unit_map: dict[ICaseString, list[_T]] = {}
     in_ports: Generator[_T, None, None] = _port_defs.get_in_ports(processor)
 
     for cur_port in in_ports:

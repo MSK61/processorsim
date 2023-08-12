@@ -44,14 +44,7 @@ import copy
 from itertools import chain
 import string
 import typing
-from typing import (
-    Dict,
-    Iterator,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    Sequence,
-)
+from typing import Iterator, Mapping, MutableMapping, MutableSequence, Sequence
 
 import attr
 from fastcore.foundation import Self
@@ -110,10 +103,10 @@ class HwSpec:
 
     processor_desc: ProcessorDesc = attr.ib()
 
-    name_unit_map: Dict[ICaseString, UnitModel] = attr.ib(init=False)
+    name_unit_map: dict[ICaseString, UnitModel] = attr.ib(init=False)
 
     @name_unit_map.default
-    def _(self) -> Dict[ICaseString, UnitModel]:
+    def _(self) -> dict[ICaseString, UnitModel]:
         """Build the name-to-unit mapping.
 
         `self` is this hardware specification.
@@ -339,7 +332,7 @@ def _add_wr_access(instr: int, builder: RegAccQBuilder) -> None:
 
 def _build_acc_plan(
     program: Iterable[tuple[int, HwInstruction]]
-) -> Dict[object, RegAccessQueue]:
+) -> dict[object, RegAccessQueue]:
     """Build the registry access plan through the program lifetime.
 
     `program` is the program to build a registry access plan for.
@@ -356,13 +349,13 @@ def _build_acc_plan(
 
 def _build_cap_map(
     inputs: Iterable[UnitModel],
-) -> Dict[object, list[UnitModel]]:
+) -> dict[object, list[UnitModel]]:
     """Build the capability map for input units.
 
     `inputs` are the input processing units.
 
     """
-    cap_map: Dict[object, list[UnitModel]] = {}
+    cap_map: dict[object, list[UnitModel]] = {}
 
     for unit in inputs:
         for cap in unit.capabilities:
@@ -451,7 +444,7 @@ def _chk_hazards(
     stalled instructions appropriately according to idientified hazards.
 
     """
-    reqs_to_clear: Dict[object, MutableSequence[object]] = {}
+    reqs_to_clear: dict[object, MutableSequence[object]] = {}
 
     for unit, new_unit_util in new_util:
         _stall_unit(

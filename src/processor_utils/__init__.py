@@ -45,7 +45,7 @@ import operator
 import os
 import sys
 import typing
-from typing import Any, Collection, Dict, Generator, Mapping, MutableSequence
+from typing import Any, Collection, Generator, Mapping, MutableSequence
 
 import attr
 import fastcore.foundation
@@ -76,7 +76,7 @@ _UNIT_KEY: typing.Final = "unit"
 
 def load_isa(
     raw_isa: Iterable[tuple[str, str]], capabilities: Iterable[object]
-) -> Dict[str, object]:
+) -> dict[str, object]:
     """Transform the given raw description into an instruction set.
 
     `raw_isa` is the raw description to extract an instruction set from.
@@ -354,7 +354,7 @@ def _create_graph(
 
 def _create_isa(
     isa_spec: Iterable[tuple[str, str]], cap_registry: SelfIndexSet[object]
-) -> Dict[str, object]:
+) -> dict[str, object]:
     """Create an instruction set of the given ISA dictionary.
 
     `isa_spec` is the ISA specification to normalize.

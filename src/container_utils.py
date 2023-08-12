@@ -106,7 +106,7 @@ class _IndexedSetBase(Generic[_T]):
 
     _index_func: Callable[[_T], object] = attr.ib()
 
-    _std_form_map: typing.Dict[object, _T] = attr.ib(factory=dict, init=False)
+    _std_form_map: dict[object, _T] = attr.ib(factory=dict, init=False)
 
 
 class IndexedSet(_IndexedSetBase[_T]):
