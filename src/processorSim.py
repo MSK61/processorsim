@@ -47,6 +47,7 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 ############################################################
 
+from collections.abc import Iterable
 import csv
 import itertools
 import logging
@@ -60,7 +61,6 @@ from typing import (
     Dict,
     Final,
     IO,
-    Iterable,
     List,
     Mapping,
     Optional,

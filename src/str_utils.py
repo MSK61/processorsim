@@ -31,13 +31,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import collections.abc
 import functools
 import operator
 import typing
@@ -45,7 +46,9 @@ import typing
 import attr
 
 
-def format_obj(cls_name: object, field_strings: typing.Iterable[str]) -> str:
+def format_obj(
+    cls_name: object, field_strings: collections.abc.Iterable[str]
+) -> str:
     """Construct a string representation for the given object.
 
     `cls_name` is the class name.

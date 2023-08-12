@@ -31,14 +31,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import typing
+import collections.abc
 from typing import Tuple
 
 import attr
@@ -46,7 +46,9 @@ import attr
 import container_utils
 
 
-def _sorted_uniq(elems: typing.Iterable[object]) -> Tuple[object, ...]:
+def _sorted_uniq(
+    elems: collections.abc.Iterable[object],
+) -> Tuple[object, ...]:
     """Sort the elements after filtering out duplicates.
 
     `elems` are the elements to filter and sort.

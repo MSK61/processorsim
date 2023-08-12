@@ -39,13 +39,12 @@
 #
 ############################################################
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 import typing
 from typing import (
     AbstractSet,
     Dict,
     Generator,
-    Iterable,
     List,
     Mapping,
     MutableMapping,

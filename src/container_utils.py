@@ -39,12 +39,12 @@
 ############################################################
 
 from collections import defaultdict
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from itertools import starmap
 import operator
 from operator import eq
 import typing
-from typing import Any, Generic, Iterable, List, Optional, Tuple, TypeVar
+from typing import Any, Generic, List, Optional, Tuple, TypeVar
 
 
 import attr

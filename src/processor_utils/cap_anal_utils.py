@@ -38,6 +38,7 @@
 #
 ############################################################
 
+import collections.abc
 import typing
 from typing import Tuple
 
@@ -84,7 +85,7 @@ def _mov_out_link(
 
 def _mov_out_links(
     graph: Graph,
-    out_links: typing.Iterable[Tuple[object, object]],
+    out_links: collections.abc.Iterable[Tuple[object, object]],
     new_node: object,
 ) -> None:
     """Move outgoing links from an old node to a new one.

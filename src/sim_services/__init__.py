@@ -39,13 +39,13 @@
 ############################################################
 
 from collections import defaultdict
+from collections.abc import Iterable
 import copy
 from itertools import chain
 import string
 import typing
 from typing import (
     Dict,
-    Iterable,
     Iterator,
     List,
     Mapping,

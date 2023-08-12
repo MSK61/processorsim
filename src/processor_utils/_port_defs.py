@@ -31,13 +31,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.0, python 3.11.4, Fedora release
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
 #               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import collections.abc
 import typing
 from typing import Generator, Tuple
 
@@ -103,7 +104,7 @@ class PortGroup:
 
 
 def _get_ports(
-    degrees: typing.Iterable[Tuple[_T, bool]]
+    degrees: collections.abc.Iterable[Tuple[_T, bool]]
 ) -> Generator[_T, None, None]:
     """Find the ports with respect to the given degrees.
 

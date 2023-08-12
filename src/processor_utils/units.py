@@ -31,13 +31,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import collections.abc
 import operator
 import typing
 from typing import Final, Tuple
@@ -92,7 +93,9 @@ class UnitModel:
     _mem_acl: Tuple[object, ...] = attr.ib(converter=sorted_tuple)
 
 
-def sorted_models(models: typing.Iterable[object]) -> Tuple[UnitModel, ...]:
+def sorted_models(
+    models: collections.abc.Iterable[object],
+) -> Tuple[UnitModel, ...]:
     """Create a sorted list of the given models.
 
     `models` are the models to create a sorted list of.

@@ -38,6 +38,7 @@
 #
 ############################################################
 
+from collections.abc import Iterable
 from itertools import chain
 from logging import warning
 import operator
@@ -49,7 +50,6 @@ from typing import (
     Collection,
     Dict,
     Generator,
-    Iterable,
     List,
     Mapping,
     MutableSequence,
