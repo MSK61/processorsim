@@ -40,10 +40,9 @@
 
 import abc
 from abc import abstractmethod
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 import itertools
 import typing
-from typing import Iterator
 
 import attr
 import fastcore.foundation

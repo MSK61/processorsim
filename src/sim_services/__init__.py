@@ -39,12 +39,12 @@
 ############################################################
 
 from collections import defaultdict
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Iterator, Mapping
 import copy
 from itertools import chain
 import string
 import typing
-from typing import Iterator, MutableMapping, MutableSequence, Sequence
+from typing import MutableMapping, MutableSequence, Sequence
 
 import attr
 from fastcore.foundation import Self

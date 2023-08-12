@@ -38,6 +38,7 @@
 #
 ############################################################
 
+import collections.abc
 from collections.abc import Iterable, Mapping
 from itertools import chain
 from logging import warning
@@ -431,7 +432,7 @@ def _get_frozen_lst(obj_lst: Iterable[object]) -> tuple[object, ...]:
 
 def _get_preds(
     processor: DiGraph, unit: object, unit_map: Mapping[object, _T]
-) -> typing.Iterator[_T]:
+) -> collections.abc.Iterator[_T]:
     """Retrieve the predecessor units of the given unit.
 
     `processor` is the processor containing the unit.

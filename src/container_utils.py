@@ -44,7 +44,6 @@ from collections.abc import Callable, Iterable
 from itertools import starmap
 import operator
 from operator import eq
-import typing
 from typing import Any, Generic, Optional, TypeVar
 
 
@@ -229,7 +228,7 @@ class BagValDict(Generic[_KT, _VT]):
             starmap(lambda key, val_lst: f"{key!r}: {val_lst}", elems)
         )
 
-    def _useful_items(self) -> typing.Iterator[tuple[_KT, list[_VT]]]:
+    def _useful_items(self) -> collections.abc.Iterator[tuple[_KT, list[_VT]]]:
         """Filter out items with empty value lists.
 
         `self` is this dictionary.
