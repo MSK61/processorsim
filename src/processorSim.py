@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# Disabling then immediately enabling again the invalid-name pylint
+# check allows to skip pylint checking for the module name.
 # pylint: disable=invalid-name
 # pylint: enable=invalid-name
 
