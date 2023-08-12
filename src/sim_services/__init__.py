@@ -38,7 +38,7 @@
 #
 ############################################################
 
-import collections
+from collections import defaultdict
 import copy
 from itertools import chain
 import string
@@ -348,9 +348,7 @@ def _build_acc_plan(
     The function returns the registry access plan.
 
     """
-    builders: typing.DefaultDict[
-        object, RegAccQBuilder
-    ] = collections.defaultdict(RegAccQBuilder)
+    builders: defaultdict[object, RegAccQBuilder] = defaultdict(RegAccQBuilder)
 
     for instr_index, instr in program:
         _add_access(instr, instr_index, builders)

@@ -38,22 +38,13 @@
 #
 ############################################################
 
-import collections
+from collections import defaultdict
 from collections.abc import Callable
 from itertools import starmap
 import operator
 from operator import eq
 import typing
-from typing import (
-    Any,
-    DefaultDict,
-    Generic,
-    Iterable,
-    List,
-    Optional,
-    Tuple,
-    TypeVar,
-)
+from typing import Any, Generic, Iterable, List, Optional, Tuple, TypeVar
 
 
 import attr
@@ -156,7 +147,7 @@ class SelfIndexSet(_IndexedSetBase[_T]):
 
 def _val_lst_dict(
     val_iter_dict: typing.Mapping[object, object]
-) -> DefaultDict[object, List[object]]:
+) -> defaultdict[object, List[object]]:
     """Convert the given value iterable dictionary to a value list one.
 
     `val_iter_dict` is the dictionary containing value iterables.
@@ -165,7 +156,7 @@ def _val_lst_dict(
     val_lst_dict = starmap(
         lambda key, val_lst: (key, list(val_lst)), val_iter_dict.items()
     )
-    return collections.defaultdict(list, val_lst_dict)
+    return defaultdict(list, val_lst_dict)
 
 
 @attr.s(eq=False, frozen=True, repr=False)
@@ -251,6 +242,6 @@ class BagValDict(Generic[_KT, _VT]):
 
     items = _useful_items
 
-    _dict: DefaultDict[_KT, List[_VT]] = attr.ib(
+    _dict: defaultdict[_KT, List[_VT]] = attr.ib(
         converter=_val_lst_dict, factory=dict
     )
