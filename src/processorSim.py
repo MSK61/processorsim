@@ -38,8 +38,8 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -53,6 +53,7 @@ import sys
 import argparse
 import typing
 from typing import (
+    Any,
     Collection,
     Dict,
     Final,
@@ -63,7 +64,6 @@ from typing import (
     Optional,
     Sequence,
     Sized,
-    TextIO,
     Tuple,
 )
 
@@ -85,17 +85,14 @@ _PROG_OPT_VAR: Final = "prog_file"  # variable to receive the program file
 _T = typing.TypeVar("_T")
 
 
-def get_in_files(argv: Optional[Sequence[str]]) -> Tuple[TextIO, TextIO]:
+def get_in_files(argv: Optional[Sequence[str]]) -> Tuple[Any, Any]:
     """Create input file objects from the given arguments.
 
     `argv` is the list of arguments.
 
     """
     args = process_command_line(argv)
-    return typing.cast(
-        Tuple[TextIO, TextIO],
-        operator.attrgetter(_PROC_OPT_VAR, _PROG_OPT_VAR)(args),
-    )
+    return operator.attrgetter(_PROC_OPT_VAR, _PROG_OPT_VAR)(args)
 
 
 def get_sim_res(

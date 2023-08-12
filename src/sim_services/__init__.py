@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -712,7 +712,9 @@ def _regs_avail(
     )
 
 
-def _regs_loaded(old_unit_util: Iterable[InstrState], instr: object) -> bool:
+def _regs_loaded(
+    old_unit_util: Iterable[InstrState], instr: object
+) -> typing.Optional[InstrState]:
     """Check if the registers were previously loaded.
 
     `old_unit_util` is the unit utilization information of the previous
@@ -721,13 +723,10 @@ def _regs_loaded(old_unit_util: Iterable[InstrState], instr: object) -> bool:
             checked for being previously loaded.
 
     """
-    return typing.cast(
-        bool,
-        more_itertools.first_true(
-            old_unit_util,
-            pred=lambda old_instr: old_instr.instr == instr
-            and old_instr.stalled != StallState.DATA,
-        ),
+    return more_itertools.first_true(
+        old_unit_util,
+        pred=lambda old_instr: old_instr.instr == instr
+        and old_instr.stalled != StallState.DATA,
     )
 
 

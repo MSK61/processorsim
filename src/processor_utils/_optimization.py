@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -139,9 +139,7 @@ def _clean_unit(processor: Graph, unit: object) -> None:
     pred_caps = (
         _chk_edge(processor, edge) for edge in tuple(processor.in_edges(unit))
     )
-    processor.nodes[unit][UNIT_CAPS_KEY] = typing.cast(
-        FrozenSet[ICaseString], frozenset()
-    ).union(*pred_caps)
+    processor.nodes[unit][UNIT_CAPS_KEY] = frozenset().union(*pred_caps)
 
 
 def _rm_dead_end(
