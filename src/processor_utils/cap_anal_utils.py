@@ -60,7 +60,7 @@ def split_nodes(graph: DiGraph) -> typing.Dict[object, object]:
     out_degrees = graph.out_degree()
     in_degrees = tuple(graph.in_degree())
     return {
-        unit: _split_node(graph, unit, len(out_degrees) + unit)
+        unit: _split_node(graph, unit, len(in_degrees) + unit)
         if twin != 1 and out_degrees[unit] != 1 and (twin or out_degrees[unit])
         else unit
         for unit, twin in in_degrees
