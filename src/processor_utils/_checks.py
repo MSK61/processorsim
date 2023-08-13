@@ -107,7 +107,7 @@ def chk_cycles(processor: Graph) -> None:
 
 
 def chk_non_empty(
-    processor: typing.Container[object], in_ports: Iterable[object]
+    processor: collections.abc.Container[object], in_ports: Iterable[object]
 ) -> None:
     """Check if the processor still has input ports.
 

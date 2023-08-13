@@ -40,7 +40,6 @@
 
 import collections.abc
 from logging import warning
-import typing
 
 import networkx
 from networkx import DiGraph, Graph
@@ -143,7 +142,9 @@ def _clean_unit(processor: Graph, unit: object) -> None:
 
 
 def _rm_dead_end(
-    processor: Graph, dead_end: object, in_ports: typing.Container[object]
+    processor: Graph,
+    dead_end: object,
+    in_ports: collections.abc.Container[object],
 ) -> None:
     """Remove a dead end from the given processor.
 
