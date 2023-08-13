@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -449,7 +449,7 @@ class TestOutputFlush:
         `last_instr` is the last instruction number.
 
         """
-        program = starmap(
+        prog = starmap(
             HwInstruction,
             chain([[[], "R1", "ALU"], [["R1"], "R2", "ALU"]], extra_instr_lst),
         )
@@ -461,7 +461,7 @@ class TestOutputFlush:
         )
         extra_instr_seq = range(2, last_instr)
         assert simulate(
-            tuple(program), HwSpec(ProcessorDesc([], [], cores, []))
+            tuple(prog), HwSpec(ProcessorDesc([], [], cores, []))
         ) == [
             BagValDict(cp_util)
             for cp_util in [
