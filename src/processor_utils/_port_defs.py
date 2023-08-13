@@ -39,8 +39,8 @@
 ############################################################
 
 import collections.abc
+from collections.abc import Generator
 import typing
-from typing import Generator
 
 from fastcore import foundation
 from networkx import DiGraph

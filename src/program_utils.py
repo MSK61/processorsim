@@ -38,11 +38,11 @@
 #
 ############################################################
 
+import collections.abc
 from collections.abc import Iterable, Mapping
 import logging
 from re import split
 import string
-import typing
 from typing import Final
 
 import attr
@@ -132,7 +132,7 @@ def read_program(prog_file: Iterable[str]) -> list[ProgInstruction]:
     The function returns the program instructions.
 
     """
-    program: typing.Generator[
+    program: collections.abc.Generator[
         tuple[int, str], None, None
     ] = iteration_utilities.starfilter(
         lambda _, line: line, enumerate(map(str.strip, prog_file), 1)

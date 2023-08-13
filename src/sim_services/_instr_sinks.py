@@ -117,7 +117,7 @@ class IInstrSink(abc.ABC):
     @staticmethod
     def _get_new_guests(
         src_unit: ICaseString, instructions: Iterable[int]
-    ) -> typing.Generator[HostedInstr, None, None]:
+    ) -> collections.abc.Generator[HostedInstr, None, None]:
         """Prepare new hosted instructions.
 
         `src_unit` is the old host of instructions.

@@ -42,13 +42,14 @@
 import collections.abc
 from collections.abc import (
     Callable,
+    Generator,
     Iterable,
     Mapping,
     MutableMapping,
     Sequence,
 )
 import typing
-from typing import AbstractSet, Generator
+from typing import AbstractSet
 
 import attr
 import fastcore.foundation
