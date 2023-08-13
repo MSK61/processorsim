@@ -41,7 +41,6 @@
 import collections.abc
 from logging import warning
 import typing
-from typing import FrozenSet
 
 import networkx
 from networkx import DiGraph, Graph
@@ -104,7 +103,7 @@ def rm_empty_units(processor: Graph) -> None:
 
 def _chk_edge(
     processor: Graph, edge: tuple[object, object]
-) -> FrozenSet[ICaseString]:
+) -> typing.FrozenSet[ICaseString]:
     """Check if the edge is useful.
 
     `processor` is the processor containing the edge.
