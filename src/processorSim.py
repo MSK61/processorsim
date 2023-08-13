@@ -47,6 +47,7 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 ############################################################
 
+import collections.abc
 from collections.abc import Collection, Iterable, Mapping, Sequence, Sized
 import csv
 import itertools
@@ -324,7 +325,7 @@ def _cui_to_icu(
 def _fill_cp_util(
     clock_pulse: int,
     cp_util: Iterable[tuple[object, Iterable[InstrState]]],
-    ixcxu: Sequence[typing.MutableMapping[int, _InstrPosition]],
+    ixcxu: Sequence[collections.abc.MutableMapping[int, _InstrPosition]],
 ) -> None:
     """Fill the given clock utilization into the IxCxU map.
 

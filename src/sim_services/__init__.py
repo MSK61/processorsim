@@ -40,12 +40,18 @@
 
 from collections import defaultdict
 import collections.abc
-from collections.abc import Iterable, Iterator, Mapping, Sequence
+from collections.abc import (
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    Sequence,
+)
 import copy
 from itertools import chain
 import string
 import typing
-from typing import MutableMapping, MutableSequence
+from typing import MutableSequence
 
 import attr
 from fastcore.foundation import Self
