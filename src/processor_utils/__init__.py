@@ -429,16 +429,6 @@ def _get_cap_name(
     return std_cap
 
 
-def _get_frozen_lst(obj_lst: Iterable[object]) -> tuple[object, ...]:
-    """Return a read-only list of the given objects.
-
-    `obj_lst` is an iterable over the objects to be stored in the
-              read-only list.
-
-    """
-    return tuple(obj_lst)
-
-
 def _get_preds(
     processor: DiGraph, unit: object, unit_map: Mapping[object, _T]
 ) -> collections.abc.Iterator[_T]:
@@ -650,11 +640,11 @@ class ProcessorDesc:
 
     """Processor description"""
 
-    in_ports: tuple[UnitModel, ...] = attr.ib(converter=_get_frozen_lst)
+    in_ports: tuple[UnitModel, ...] = attr.ib(converter=tuple)
 
     out_ports: tuple[FuncUnit, ...] = attr.ib(converter=_sorted_units)
 
-    in_out_ports: tuple[UnitModel, ...] = attr.ib(converter=_get_frozen_lst)
+    in_out_ports: tuple[UnitModel, ...] = attr.ib(converter=tuple)
 
     internal_units: tuple[FuncUnit, ...] = attr.ib(converter=_post_order)
 
@@ -692,8 +682,8 @@ def _make_processor(proc_graph: DiGraph) -> ProcessorDesc:
 
     """
     unit_graph = _get_proc_units(proc_graph)
-    in_out_ports = []
-    in_ports: list[UnitModel] = []
+    in_out_ports: list[Any] = []
+    in_ports: list[Any] = []
     internal_units: list[FuncUnit] = []
     out_ports: list[FuncUnit] = []
 
