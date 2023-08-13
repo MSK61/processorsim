@@ -55,8 +55,7 @@ import typing
 from typing import Any
 
 import attr
-import fastcore.foundation
-from fastcore.foundation import map_ex, Self
+from fastcore.foundation import compose, map_ex, mapt, Self
 import networkx
 from networkx import DiGraph, Graph
 
@@ -344,9 +343,8 @@ def _create_graph(
     """
     flow_graph = DiGraph()
     unit_registry = SelfIndexSet[object]()
-    unit_getter = fastcore.foundation.compose(ICaseString, unit_registry.get)
     edge_registry = IndexedSet[Collection[str]](
-        lambda edge: tuple(map(unit_getter, edge))
+        lambda edge: mapt(compose(ICaseString, unit_registry.get), edge)
     )
     cap_registry = IndexedSet[_CapabilityInfo](Self.name())
 
@@ -606,12 +604,9 @@ def _post_order(internal_units: Iterable[FuncUnit]) -> tuple[FuncUnit, ...]:
 
     """
     rev_graph = _get_unit_graph(internal_units)
-    return tuple(
-        fastcore.foundation.maps(
-            rev_graph.nodes.get,
-            operator.itemgetter(_UNIT_KEY),
-            networkx.topological_sort(rev_graph),
-        )
+    return mapt(
+        compose(rev_graph.nodes.get, operator.itemgetter(_UNIT_KEY)),
+        networkx.topological_sort(rev_graph),
     )
 
 
@@ -693,19 +688,17 @@ def _make_processor(proc_graph: DiGraph) -> ProcessorDesc:
     """
     unit_graph = _get_proc_units(proc_graph)
     in_out_ports = []
-    in_ports = []
-    internal_units = []
-    out_ports = []
+    in_ports: list[UnitModel] = []
+    internal_units: list[FuncUnit] = []
+    out_ports: list[FuncUnit] = []
 
     for unit in unit_graph:
-        match tuple(
-            map(
-                bool,
-                [
-                    proc_graph.in_degree(unit.model.name),
-                    proc_graph.out_degree(unit.model.name),
-                ],
-            )
+        match mapt(
+            bool,
+            [
+                proc_graph.in_degree(unit.model.name),
+                proc_graph.out_degree(unit.model.name),
+            ],
         ):
             case True, True:
                 internal_units.append(unit)
