@@ -132,13 +132,13 @@ def read_program(prog_file: Iterable[str]) -> list[ProgInstruction]:
     The function returns the program instructions.
 
     """
-    program: collections.abc.Generator[
+    prog: collections.abc.Generator[
         tuple[int, str], None, None
     ] = iteration_utilities.starfilter(
         lambda _, line: line, enumerate(map(str.strip, prog_file), 1)
     )
     reg_registry = IndexedSet[_OperandInfo](fastcore.foundation.Self.name())
-    return [_create_instr(*line, reg_registry) for line in program]
+    return [_create_instr(*line, reg_registry) for line in prog]
 
 
 @attr.s(auto_attribs=True, frozen=True)
