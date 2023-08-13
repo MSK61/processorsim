@@ -39,14 +39,20 @@
 ############################################################
 
 import collections.abc
-from collections.abc import Collection, Generator, Iterable, Mapping
+from collections.abc import (
+    Collection,
+    Generator,
+    Iterable,
+    Mapping,
+    MutableSequence,
+)
 from itertools import chain
 from logging import warning
 import operator
 import os
 import sys
 import typing
-from typing import Any, MutableSequence
+from typing import Any
 
 import attr
 import fastcore.foundation

@@ -45,13 +45,13 @@ from collections.abc import (
     Iterator,
     Mapping,
     MutableMapping,
+    MutableSequence,
     Sequence,
 )
 import copy
 from itertools import chain
 import string
 import typing
-from typing import MutableSequence
 
 import attr
 from fastcore.foundation import Self
