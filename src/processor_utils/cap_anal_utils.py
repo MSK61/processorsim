@@ -39,13 +39,14 @@
 ############################################################
 
 import collections.abc
+import typing
 
 from networkx import DiGraph, Graph
 
 from .units import UNIT_WIDTH_KEY
 
 
-def split_nodes(graph: DiGraph) -> dict[object, object]:
+def split_nodes(graph: DiGraph) -> dict[typing.Any, object]:
     """Split nodes in the given graph as necessary.
 
     `graph` is the graph containing nodes.

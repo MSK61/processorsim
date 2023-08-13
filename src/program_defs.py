@@ -39,6 +39,7 @@
 ############################################################
 
 import collections.abc
+import typing
 
 import attr
 
@@ -47,7 +48,7 @@ import container_utils
 
 def _sorted_uniq(
     elems: collections.abc.Iterable[object],
-) -> tuple[object, ...]:
+) -> tuple[typing.Any, ...]:
     """Sort the elements after filtering out duplicates.
 
     `elems` are the elements to filter and sort.

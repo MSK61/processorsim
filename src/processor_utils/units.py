@@ -40,8 +40,7 @@
 
 import collections.abc
 import operator
-import typing
-from typing import Final
+from typing import Any, Final
 
 import attr
 import fastcore.foundation
@@ -93,9 +92,7 @@ class UnitModel:
     _mem_acl: tuple[object, ...] = attr.ib(converter=sorted_tuple)
 
 
-def sorted_models(
-    models: collections.abc.Iterable[object],
-) -> tuple[UnitModel, ...]:
+def sorted_models(models: collections.abc.Iterable[object]) -> tuple[Any, ...]:
     """Create a sorted list of the given models.
 
     `models` are the models to sort.
@@ -109,7 +106,7 @@ class FuncUnit:
 
     """Processing functional unit"""
 
-    def __eq__(self, other: typing.Any) -> bool:
+    def __eq__(self, other: Any) -> bool:
         """Test if the two functional units are identical.
 
         `self` is this functional unit.

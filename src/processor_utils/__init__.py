@@ -83,7 +83,7 @@ _UNIT_KEY: typing.Final = "unit"
 
 def load_isa(
     raw_isa: Iterable[tuple[str, str]], capabilities: Iterable[object]
-) -> dict[str, object]:
+) -> dict[str, Any]:
     """Transform the given raw description into an instruction set.
 
     `raw_isa` is the raw description to extract an instruction set from.
@@ -178,7 +178,7 @@ def _add_instr(
     cap_registry: SelfIndexSet[object],
     instr: object,
     cap: object,
-) -> object:
+) -> Any:
     """Add an instruction to the instruction set.
 
     `instr_registry` is the store of previously added instructions.
@@ -364,7 +364,7 @@ def _create_graph(
 
 def _create_isa(
     isa_spec: Iterable[tuple[str, str]], cap_registry: SelfIndexSet[object]
-) -> dict[str, object]:
+) -> dict[str, Any]:
     """Create an instruction set of the given ISA dictionary.
 
     `isa_spec` is the ISA specification to normalize.
@@ -588,7 +588,7 @@ def _load_mem_acl(
     )
 
 
-def _post_order(internal_units: Iterable[FuncUnit]) -> tuple[FuncUnit, ...]:
+def _post_order(internal_units: Iterable[FuncUnit]) -> tuple[Any, ...]:
     """Create a post-order for internal units.
 
     `internal_units` are the internal units.
@@ -626,7 +626,7 @@ def _prep_proc_desc(processor: DiGraph) -> None:
     _checks.chk_caps(processor)
 
 
-def _sorted_units(hw_units: Iterable[object]) -> tuple[FuncUnit, ...]:
+def _sorted_units(hw_units: Iterable[object]) -> tuple[Any, ...]:
     """Create a sorted list of the given units.
 
     `hw_units` are the units to sort.

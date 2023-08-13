@@ -41,6 +41,7 @@
 import collections.abc
 from collections.abc import Generator
 import typing
+from typing import Any
 
 from fastcore import foundation
 from networkx import DiGraph
@@ -58,7 +59,7 @@ def get_in_ports(processor: DiGraph) -> Generator[_T, None, None]:
     return _get_ports(processor.in_degree)
 
 
-def get_out_ports(processor: DiGraph) -> Generator[object, None, None]:
+def get_out_ports(processor: DiGraph) -> Generator[Any, None, None]:
     """Find the output ports.
 
     `processor` is the processor to find whose output ports.
@@ -85,7 +86,7 @@ class PortGroup:
         )
 
     @property
-    def in_ports(self) -> tuple[object, ...]:
+    def in_ports(self) -> Any:
         """Input ports
 
         `self` is this port group.
@@ -94,7 +95,7 @@ class PortGroup:
         return self._in_ports
 
     @property
-    def out_ports(self) -> tuple[object, ...]:
+    def out_ports(self) -> Any:
         """Output ports
 
         `self` is this port group.
