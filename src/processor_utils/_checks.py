@@ -40,9 +40,9 @@
 ############################################################
 
 import collections.abc
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping, Sequence
 import typing
-from typing import AbstractSet, Generator, MutableMapping, Sequence
+from typing import AbstractSet, Generator, MutableMapping
 
 import attr
 import fastcore.foundation

@@ -40,6 +40,7 @@
 
 import abc
 from abc import abstractmethod
+import collections.abc
 from collections.abc import Iterable, Iterator
 import itertools
 import typing
@@ -318,7 +319,7 @@ class UnitSink(IInstrSink):
 
     unit: processor_utils.units.FuncUnit
 
-    program: typing.Sequence[program_defs.HwInstruction]
+    program: collections.abc.Sequence[program_defs.HwInstruction]
 
 
 def _mov_candidate(
