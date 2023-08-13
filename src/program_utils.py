@@ -38,7 +38,6 @@
 #
 ############################################################
 
-import collections.abc
 from collections.abc import Iterable, Mapping
 import logging
 from re import split
@@ -47,7 +46,6 @@ from typing import Final
 
 import attr
 import fastcore.foundation
-import iteration_utilities
 
 import container_utils
 from container_utils import IndexedSet
@@ -132,13 +130,13 @@ def read_program(prog_file: Iterable[str]) -> list[ProgInstruction]:
     The function returns the program instructions.
 
     """
-    prog: collections.abc.Generator[
-        tuple[int, str], None, None
-    ] = iteration_utilities.starfilter(
-        lambda _, line: line, enumerate(map(str.strip, prog_file), 1)
-    )
+    prog = enumerate(map(str.strip, prog_file), 1)
     reg_registry = IndexedSet[_OperandInfo](fastcore.foundation.Self.name())
-    return [_create_instr(*line, reg_registry) for line in prog]
+    return [
+        _create_instr(line_no, line, reg_registry)
+        for line_no, line in prog
+        if line
+    ]
 
 
 @attr.s(auto_attribs=True, frozen=True)
