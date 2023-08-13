@@ -47,9 +47,9 @@ from collections.abc import (
     Mapping,
     MutableMapping,
     Sequence,
+    Set,
 )
 import typing
-from typing import AbstractSet
 
 import attr
 import fastcore.foundation
@@ -546,9 +546,9 @@ def _do_cap_checks(
     `cap_checks` are the checks to perform.
 
     """
-    cap_units: AbstractSet[
-        tuple[ICaseString, list[ICaseString]]
-    ] = _get_cap_units(processor)
+    cap_units: Set[tuple[ICaseString, list[ICaseString]]] = _get_cap_units(
+        processor
+    )
     out_ports = tuple(_port_defs.get_out_ports(processor))
     post_ord = tuple(networkx.dfs_postorder_nodes(processor))
 
@@ -615,9 +615,7 @@ def _get_cap_edge(in_edges: Iterable[_T], out_edges: Iterable[_T]) -> _T:
         return more_itertools.first(out_edges)
 
 
-def _get_cap_units(
-    processor: DiGraph,
-) -> AbstractSet[tuple[ICaseString, list[_T]]]:
+def _get_cap_units(processor: DiGraph) -> Set[tuple[ICaseString, list[_T]]]:
     """Create a mapping between capabilities and supporting input ports.
 
     `processor` is the processor to create a capability-port map for.
