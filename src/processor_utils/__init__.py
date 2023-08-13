@@ -46,6 +46,7 @@ from collections.abc import (
     Mapping,
     MutableSequence,
 )
+import itertools
 from itertools import chain
 from logging import warning
 import operator
@@ -287,11 +288,15 @@ def _add_rev_edges(graph: Graph) -> None:
     `graph` is the graph to add edges to.
 
     """
-    edges = chain.from_iterable(
-        ((name, pred.name) for pred in unit.predecessors if pred.name in graph)
-        for name, unit in graph.nodes(_UNIT_KEY)
+    edges = itertools.starmap(
+        lambda name, unit: (
+            (name, pred.name)
+            for pred in unit.predecessors
+            if pred.name in graph
+        ),
+        graph.nodes(_UNIT_KEY),
     )
-    graph.add_edges_from(edges)
+    graph.add_edges_from(chain.from_iterable(edges))
 
 
 def _chk_unit_name(name: object, name_registry: SelfIndexSet[object]) -> None:
