@@ -659,7 +659,7 @@ class ProcessorDesc:
     internal_units: tuple[FuncUnit, ...] = attr.ib(converter=_post_order)
 
 
-def get_abilities(processor: ProcessorDesc) -> typing.FrozenSet[object]:
+def get_abilities(processor: ProcessorDesc) -> frozenset[object]:
     """Retrieve all capabilities supported by the given processor.
 
     `processor` is the processor to retrieve whose capabilities.

@@ -496,7 +496,7 @@ def _chk_unit_flow(
         )
 
 
-def _coll_cap_edges(graph: DiGraph) -> typing.FrozenSet[_T]:
+def _coll_cap_edges(graph: DiGraph) -> frozenset[_T]:
     """Collect capping edges from the given graph.
 
     `graph` is the graph to collect edges from.

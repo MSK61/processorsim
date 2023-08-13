@@ -103,7 +103,7 @@ def rm_empty_units(processor: Graph) -> None:
 
 def _chk_edge(
     processor: Graph, edge: tuple[object, object]
-) -> typing.FrozenSet[ICaseString]:
+) -> frozenset[ICaseString]:
     """Check if the edge is useful.
 
     `processor` is the processor containing the edge.
