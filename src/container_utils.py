@@ -48,8 +48,8 @@ from typing import Any, Generic, Optional, TypeVar
 
 
 import attr
-import iteration_utilities
 import more_itertools
+import pydash.functions
 
 from str_utils import format_obj
 
@@ -228,7 +228,7 @@ class BagValDict(Generic[_KT, _VT]):
             starmap(lambda key, val_lst: f"{key!r}: {val_lst}", elems)
         )
 
-    def _useful_items(self) -> collections.abc.Iterator[tuple[_KT, list[_VT]]]:
+    def _useful_items(self) -> "filter[tuple[_KT, list[_VT]]]":
         """Filter out items with empty value lists.
 
         `self` is this dictionary.
@@ -236,8 +236,9 @@ class BagValDict(Generic[_KT, _VT]):
         non-empty lists.
 
         """
-        return iteration_utilities.starfilter(
-            lambda _, val_lst: val_lst, self._dict.items()
+        return filter(
+            pydash.functions.Spread(lambda _, val_lst: val_lst),
+            self._dict.items(),
         )
 
     items = _useful_items
