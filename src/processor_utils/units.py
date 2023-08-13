@@ -98,7 +98,7 @@ def sorted_models(
 ) -> tuple[UnitModel, ...]:
     """Create a sorted list of the given models.
 
-    `models` are the models to create a sorted list of.
+    `models` are the models to sort.
 
     """
     return sorted_tuple(models, key=fastcore.foundation.Self.name())

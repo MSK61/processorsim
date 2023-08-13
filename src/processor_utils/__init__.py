@@ -634,7 +634,7 @@ def _prep_proc_desc(processor: DiGraph) -> None:
 def _sorted_units(hw_units: Iterable[object]) -> tuple[FuncUnit, ...]:
     """Create a sorted list of the given units.
 
-    `hw_units` are the units to create a sorted list of.
+    `hw_units` are the units to sort.
 
     """
     return container_utils.sorted_tuple(hw_units, key=Self.model.name())
