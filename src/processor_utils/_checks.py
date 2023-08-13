@@ -49,6 +49,7 @@ from collections.abc import (
     Sequence,
     Set,
 )
+import itertools
 import typing
 
 import attr
@@ -437,21 +438,15 @@ def _chk_path_locks(
 
     """
     succ_lst = tuple(processor.successors(start))
-    # because pylint can't detect packed as a member of
-    # iteration_utilities
-    # pylint: disable=no-member
-    sat_params = map(
-        iteration_utilities.packed(
-            _PathLockCalc(
-                processor.nodes[start], succ_lst, capability, start, path_locks
-            ).calc_lock
-        ),
+    sat_params = itertools.starmap(
+        _PathLockCalc(
+            processor.nodes[start], succ_lst, capability, start, path_locks
+        ).calc_lock,
         [
             (units.UNIT_RLOCK_KEY, _PathDescriptor.make_read_desc),
             (units.UNIT_WLOCK_KEY, _PathDescriptor.make_write_desc),
         ],
     )
-    # pylint: enable=no-member
     path_locks[start] = _SatInfo(*sat_params)
 
 
