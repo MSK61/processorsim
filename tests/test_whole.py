@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -43,7 +43,7 @@ import os.path
 
 import pytest
 
-from test_utils import TEST_DATA_DIR
+import test_utils
 import processorSim
 
 
@@ -89,7 +89,7 @@ class TestWhole:
             [
                 "--processor",
                 *(
-                    os.path.join(TEST_DATA_DIR, *path_parts)
+                    os.path.join(test_utils.TEST_DATA_DIR, *path_parts)
                     for path_parts in [
                         ["fullHwDesc", proc_file_name],
                         ["programs", prog_file_name],
