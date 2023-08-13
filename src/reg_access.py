@@ -41,7 +41,6 @@
 import collections.abc
 import enum
 from enum import auto
-import typing
 from typing import Final
 
 import attr
@@ -68,7 +67,7 @@ class AccessGroup:
     )
 
 
-def _rev_list(lst: typing.Reversible[object]) -> list[object]:
+def _rev_list(lst: collections.abc.Reversible[object]) -> list[object]:
     """Return the reversed list of the given one.
 
     `lst` is the list to reverse.
