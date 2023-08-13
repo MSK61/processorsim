@@ -38,6 +38,7 @@
 #
 ############################################################
 
+import collections.abc
 import enum
 from enum import auto
 import typing
@@ -62,7 +63,9 @@ class AccessGroup:
 
     access_type: object = attr.ib()
 
-    reqs: typing.MutableSet[object] = attr.ib(converter=set, factory=set)
+    reqs: collections.abc.MutableSet[object] = attr.ib(
+        converter=set, factory=set
+    )
 
 
 def _rev_list(lst: typing.Reversible[object]) -> list[object]:
