@@ -29,5 +29,4 @@
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
 disable=duplicate-code,
-        no-self-use,
         too-few-public-methods
