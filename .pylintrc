@@ -17,6 +17,12 @@
 # along with processorSim.  If not, see <http://www.gnu.org/licenses/>.
 #
 ############################################################
+[MAIN]
+
+# Python code to execute, usually for sys.path manipulation such as
+# pygtk.require().
+init-hook="import sys; sys.path.append('src')"
+
 [MESSAGES CONTROL]
 
 # Disable the message, report, category or checker with the given id(s). You

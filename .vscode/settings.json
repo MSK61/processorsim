@@ -18,10 +18,6 @@
  *
  ************************************************************/
 {
-    "pylint.args": [
-        "--init-hook",
-        "import sys; sys.path.append(\"src\")"
-    ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "files.exclude": {
