@@ -38,7 +38,6 @@
 #
 ############################################################
 
-import collections.abc
 from collections.abc import (
     Collection,
     Generator,
@@ -53,7 +52,7 @@ import operator
 import os
 import sys
 import typing
-from typing import Any
+from typing import Any, cast
 
 import attr
 from fastcore.foundation import compose, map_ex, mapt, Self
@@ -77,7 +76,6 @@ from .units import (
     UNIT_WLOCK_KEY,
 )
 
-_T = typing.TypeVar("_T")
 _UNIT_KEY: typing.Final = "unit"
 
 
@@ -288,13 +286,15 @@ def _add_rev_edges(graph: Graph) -> None:
     `graph` is the graph to add edges to.
 
     """
+    # Casting the unit key to bool due to a missing explicit type hint
+    # for the Graph.nodes function.
     edges = itertools.starmap(
         lambda name, unit: (
             (name, pred.name)
             for pred in unit.predecessors
             if pred.name in graph
         ),
-        graph.nodes(_UNIT_KEY),
+        graph.nodes(cast(bool, _UNIT_KEY)),
     )
     graph.add_edges_from(chain.from_iterable(edges))
 
@@ -430,8 +430,8 @@ def _get_cap_name(
 
 
 def _get_preds(
-    processor: DiGraph, unit: object, unit_map: Mapping[object, _T]
-) -> collections.abc.Iterator[_T]:
+    processor: DiGraph, unit: object, unit_map: Mapping[object, object]
+) -> "map[str] | list[str]":
     """Retrieve the predecessor units of the given unit.
 
     `processor` is the processor containing the unit.
@@ -484,7 +484,11 @@ def _get_unit_entry(
     The function returns the unit model.
 
     """
-    lock_attrs = map_ex([UNIT_RLOCK_KEY, UNIT_WLOCK_KEY], attrs, gen=True)
+    # Casting to map[bool] due to a missing explicit type hint for the
+    # return type of the fastcore.foundation.map_ex function.
+    lock_attrs = cast(
+        "map[bool]", map_ex([UNIT_RLOCK_KEY, UNIT_WLOCK_KEY], attrs, gen=True)
+    )
     return UnitModel(
         name,
         attrs[UNIT_WIDTH_KEY],

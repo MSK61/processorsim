@@ -40,6 +40,7 @@
 
 import collections.abc
 from logging import warning
+import typing
 
 import networkx
 from networkx import DiGraph, Graph
@@ -93,7 +94,9 @@ def rm_empty_units(processor: Graph) -> None:
     The function removes units with no capabilities from the processor.
 
     """
-    unit_entries = tuple(processor.nodes(UNIT_CAPS_KEY))
+    # Casting the capabilities key to bool due to a missing explicit
+    # type hint for the Graph.nodes function.
+    unit_entries = tuple(processor.nodes(typing.cast(bool, UNIT_CAPS_KEY)))
 
     for unit, capabilities in unit_entries:
         if not capabilities:
@@ -121,7 +124,7 @@ def _chk_edge(
     return common_caps
 
 
-def _clean_unit(processor: Graph, unit: object) -> None:
+def _clean_unit(processor: DiGraph, unit: object) -> None:
     """Clean the given unit properties.
 
     `processor` is the processor containing the unit.

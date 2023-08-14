@@ -51,6 +51,7 @@ from collections.abc import (
 )
 import itertools
 import typing
+from typing import Any
 
 import attr
 import fastcore.foundation
@@ -74,7 +75,18 @@ def chk_caps(processor: DiGraph) -> None:
     `processor` is the processor to check whose capabilities.
 
     """
-    cap_checks = [
+    cap_checks: list[
+        Callable[
+            [
+                DiGraph,
+                Iterable[object],
+                ICaseString,
+                Iterable[ICaseString],
+                Iterable[object],
+            ],
+            None,
+        ]
+    ] = [
         lambda cap_graph, post_ord, cap, in_ports, _: _chk_multilock(
             cap_graph, post_ord, cap, in_ports
         )
@@ -490,7 +502,7 @@ def _chk_unit_flow(
         )
 
 
-def _coll_cap_edges(graph: DiGraph) -> frozenset[_T]:
+def _coll_cap_edges(graph: DiGraph) -> frozenset[Any]:
     """Collect capping edges from the given graph.
 
     `graph` is the graph to collect edges from.
@@ -606,7 +618,7 @@ def _get_cap_edge(in_edges: Iterable[_T], out_edges: Iterable[_T]) -> _T:
         return more_itertools.first(out_edges)
 
 
-def _get_cap_units(processor: DiGraph) -> Set[tuple[ICaseString, list[_T]]]:
+def _get_cap_units(processor: DiGraph) -> Set[tuple[ICaseString, list[Any]]]:
     """Create a mapping between capabilities and supporting input ports.
 
     `processor` is the processor to create a capability-port map for.
@@ -614,8 +626,8 @@ def _get_cap_units(processor: DiGraph) -> Set[tuple[ICaseString, list[_T]]]:
     capability and its supporting units.
 
     """
-    cap_unit_map: dict[ICaseString, list[_T]] = {}
-    in_ports: Generator[_T, None, None] = _port_defs.get_in_ports(processor)
+    cap_unit_map: dict[ICaseString, list[Any]] = {}
+    in_ports: Generator[Any, None, None] = _port_defs.get_in_ports(processor)
 
     for cur_port in in_ports:
         for cur_cap in processor.nodes[cur_port][UNIT_CAPS_KEY]:

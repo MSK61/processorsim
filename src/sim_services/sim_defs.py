@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -63,4 +63,6 @@ class InstrState:
 
     instr: int = attr.ib()
 
-    stalled: StallState = attr.ib(StallState.NO_STALL)
+    # default is indeed the first parameter but pylance doesn't honor it
+    # as a positional argument in calls.
+    stalled: StallState = attr.ib(default=StallState.NO_STALL)

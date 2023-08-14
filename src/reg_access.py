@@ -67,7 +67,9 @@ class AccessGroup:
     )
 
 
-def _rev_list(lst: collections.abc.Reversible[object]) -> list[object]:
+def _rev_groups(
+    lst: collections.abc.Reversible[AccessGroup],
+) -> list[AccessGroup]:
     """Return the reversed list of the given one.
 
     `lst` is the list to reverse.
@@ -111,7 +113,7 @@ class RegAccessQueue:
     # removal only without addition, we reverse the given queue to make
     # the queue front at the list tail and make use of the fast access
     # to the list tail.
-    _queue: list[AccessGroup] = attr.ib(converter=_rev_list)
+    _queue: list[AccessGroup] = attr.ib(converter=_rev_groups)
 
 
 class RegAccQBuilder:

@@ -73,7 +73,7 @@ from sim_services.sim_defs import InstrState, StallState
 # variable to receive the processor architecture file
 _PROC_OPT_VAR: Final = "processor_file"
 _PROG_OPT_VAR: Final = "prog_file"  # variable to receive the program file
-_T = typing.TypeVar("_T")
+_ObjT = typing.TypeVar("_ObjT", bound=object)
 
 
 def get_in_files(argv: Optional[Sequence[str]]) -> tuple[Any, Any]:
@@ -282,17 +282,21 @@ def _create_flight(instr_util: Mapping[int, _InstrPosition]) -> _InstrFlight:
 
     """
     start_time = min(instr_util.keys())
-    time_span = len(instr_util)
+    time_range = range(start_time, start_time + len(instr_util))
+    # Casting to map[bool] due to a missing explicit type hint for the
+    # return type of the fastcore.foundation.map_ex function.
     return _InstrFlight(
         start_time,
-        fastcore.foundation.map_ex(
-            range(start_time, start_time + time_span), instr_util, gen=True
+        typing.cast(
+            "map[_InstrPosition]",
+            fastcore.foundation.map_ex(time_range, instr_util, gen=True),
         ),
     )
 
 
 def _cui_to_flights(
-    cxuxi: Iterable[tuple[int, BagValDict[_T, InstrState]]], instructions: int
+    cxuxi: Iterable[tuple[int, BagValDict[_ObjT, InstrState]]],
+    instructions: int,
 ) -> "map[_InstrFlight]":
     """Convert a CxUxI utilization map to instruction flights.
 
@@ -304,7 +308,8 @@ def _cui_to_flights(
 
 
 def _cui_to_icu(
-    cxuxi: Iterable[tuple[int, BagValDict[_T, InstrState]]], instructions: int
+    cxuxi: Iterable[tuple[int, BagValDict[_ObjT, InstrState]]],
+    instructions: int,
 ) -> list[dict[int, _InstrPosition]]:
     """Convert a CxUxI utilization map to IxCxU format.
 
@@ -354,7 +359,7 @@ def _get_flight_row(flight: _InstrFlight) -> list[str]:
 
 
 def _get_sim_rows(
-    sim_res: Iterable[tuple[int, BagValDict[_T, InstrState]]],
+    sim_res: Iterable[tuple[int, BagValDict[_ObjT, InstrState]]],
     instructions: int,
 ) -> list[list[str]]:
     """Calculate the simulation rows.

@@ -145,8 +145,19 @@ class SelfIndexSet(_IndexedSetBase[_T]):
         super().__init__(lambda elem: elem)
 
 
+def _sorted(seq: Iterable[Any]) -> list[Any]:
+    """Create a sorted list of the given iterable.
+
+    `seq` is the sequence to sort.
+    As I don't want to rely on unstable API from typeshed, I'm just
+    relaxing the checks against the item type of the given iterable.
+
+    """
+    return sorted(seq)
+
+
 def _val_lst_dict(
-    val_iter_dict: collections.abc.Mapping[object, Iterable[object]]
+    val_iter_dict: collections.abc.Mapping[Any, Iterable[Any]]
 ) -> defaultdict[Any, list[Any]]:
     """Convert the given value iterable dictionary to a value list one.
 
@@ -174,7 +185,7 @@ class BagValDict(Generic[_KT, _VT]):
         assert type(other) is type(self)
         other_items = tuple(other.items())
         lst_pairs = (
-            map(sorted, [val_lst, self[key]]) for key, val_lst in other_items
+            map(_sorted, [val_lst, self[key]]) for key, val_lst in other_items
         )
         item_lst_pair: list[collections.abc.Sized] = [self, other_items]
         return eq(*(len(item_lst) for item_lst in item_lst_pair)) and all(

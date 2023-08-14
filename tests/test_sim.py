@@ -303,11 +303,13 @@ class StallErrTest(TestCase):
             [],
             [FuncUnit(mid, [long_input])],
         )
+        # Pylance can't match packed parameters to the number of
+        # positional arguments.
         with self.assertRaises(StallError) as ex_chk:
             simulate(
                 [
-                    HwInstruction(*instr_regs, "ALU")
-                    for instr_regs in [[[], "R1"], [["R1"], "R2"]]
+                    HwInstruction(srcs, dst, "ALU")
+                    for srcs, dst in [[[], "R1"], [["R1"], "R2"]]
                 ],
                 HwSpec(proc_desc),
             )
@@ -422,10 +424,12 @@ class TestBasic:
         `util_tbl` is the expected utilization table.
 
         """
+        # Pylance can't match packed parameters to the number of
+        # positional arguments.
         assert simulate(
             [
-                HwInstruction(*regs, ICaseString(categ))
-                for *regs, categ in prog
+                HwInstruction(srcs, dst, ICaseString(categ))
+                for srcs, dst, categ in prog
             ],
             HwSpec(cpu),
         ) == [BagValDict(inst_util) for inst_util in util_tbl]

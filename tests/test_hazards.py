@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -210,11 +210,13 @@ class RawTest(TestCase):
             [],
             [FuncUnit(mid, [in_unit])],
         )
+        # Pylance can't match packed parameters to the number of
+        # positional arguments.
         self.assertEqual(
             simulate(
                 [
-                    HwInstruction(*instr_regs, "ALU")
-                    for instr_regs in [[[], "R1"], [["R1"], "R2"]]
+                    HwInstruction(srcs, dst, "ALU")
+                    for srcs, dst in [[[], "R1"], [["R1"], "R2"]]
                 ],
                 HwSpec(proc_desc),
             ),
@@ -261,8 +263,10 @@ class TestDataHazards:
         full_sys_unit = UnitModel(
             ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), []
         )
+        # Pylance can't match packed parameters to the number of
+        # positional arguments.
         assert simulate(
-            [HwInstruction(*regs, "ALU") for regs in instr_regs],
+            [HwInstruction(srcs, dst, "ALU") for srcs, dst in instr_regs],
             HwSpec(ProcessorDesc([], [], [full_sys_unit], [])),
         ) == [
             BagValDict(cp_util)
@@ -347,11 +351,13 @@ class WarTest(TestCase):
         proc_desc = ProcessorDesc(
             [in_unit], [FuncUnit(out_unit, [in_unit])], [], []
         )
+        # Pylance can't match packed parameters to the number of
+        # positional arguments.
         self.assertEqual(
             simulate(
                 [
-                    HwInstruction(*instr_regs, "ALU")
-                    for instr_regs in [[["R1"], "R2"], [[], "R1"]]
+                    HwInstruction(srcs, dst, "ALU")
+                    for srcs, dst in [[["R1"], "R2"], [[], "R1"]]
                 ],
                 HwSpec(proc_desc),
             ),

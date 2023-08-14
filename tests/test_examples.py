@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -62,10 +62,22 @@ class ExampleTest(unittest.TestCase):
         with open(
             join(examples_dir, "unified memory.ipynb"), encoding="utf-8"
         ) as nb_file:
-            nbconvert.preprocessors.ExecutePreprocessor().preprocess(
-                nbformat.read(nb_file, nbformat.NO_CONVERT),
-                {"metadata": {"path": examples_dir}},
-            )
+            _exec_file(nb_file, examples_dir)
+
+
+def _exec_file(nb_file, run_path):
+    """Execute a notebook file.
+
+    `nb_file` is the notebook file to execute.
+    `run_path` is the execution path.
+
+    """
+    # because pylance doesn't see ExecutePreprocessor exported from
+    # nbconvert.preprocessors
+    nbconvert.preprocessors.ExecutePreprocessor().preprocess(  # type: ignore
+        nbformat.read(nb_file, nbformat.NO_CONVERT),
+        {"metadata": {"path": run_path}},
+    )
 
 
 def main():

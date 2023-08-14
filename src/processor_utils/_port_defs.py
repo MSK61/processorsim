@@ -49,7 +49,7 @@ from networkx import DiGraph
 _T = typing.TypeVar("_T")
 
 
-def get_in_ports(processor: DiGraph) -> Generator[_T, None, None]:
+def get_in_ports(processor: DiGraph) -> Generator[typing.Any, None, None]:
     """Find the input ports.
 
     `processor` is the processor to find whose input ports.

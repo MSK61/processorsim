@@ -52,6 +52,7 @@ import copy
 from itertools import chain
 import string
 import typing
+from typing import TypeVar
 
 import attr
 from fastcore.foundation import Self
@@ -68,7 +69,8 @@ from . import _instr_sinks, _utils
 from ._instr_sinks import IInstrSink
 from .sim_defs import InstrState, StallState
 
-_T = typing.TypeVar("_T")
+_T = TypeVar("_T")
+_ObjT = TypeVar("_ObjT", bound=object)
 
 
 class StallError(RuntimeError):
@@ -112,7 +114,9 @@ class HwSpec:
 
     name_unit_map: dict[ICaseString, UnitModel] = attr.ib(init=False)
 
-    @name_unit_map.default
+    # Casting to typing.Any because pylance can't detect default as a
+    # member of attr.ib.
+    @typing.cast(typing.Any, name_unit_map).default
     def _(self) -> dict[ICaseString, UnitModel]:
         """Build the name-to-unit mapping.
 
@@ -204,9 +208,9 @@ class _IssueInfo:
         """
         return self._exited < self._entered
 
-    _entered = attr.ib(0, init=False)
+    _entered: int = attr.ib(0, init=False)
 
-    _exited = attr.ib(0, init=False)
+    _exited: int = attr.ib(0, init=False)
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -498,7 +502,7 @@ def _chk_avail_regs(
 
 def _clr_src_units(
     instructions: Iterable[_instr_sinks.HostedInstr],
-    util_info: BagValDict[ICaseString, _T],
+    util_info: BagValDict[ICaseString, _ObjT],
 ) -> None:
     """Clear the utilization of units releasing instructions.
 
