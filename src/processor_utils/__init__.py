@@ -288,15 +288,13 @@ def _add_rev_edges(graph: Graph) -> None:
     `graph` is the graph to add edges to.
 
     """
-    # Casting the unit key to bool due to a missing explicit type hint
-    # for the Graph.nodes function.
     edges = itertools.starmap(
         lambda name, unit: (
             (name, pred.name)
             for pred in unit.predecessors
             if pred.name in graph
         ),
-        graph.nodes(typing.cast(bool, _UNIT_KEY)),
+        type_checking.nodes(graph, _UNIT_KEY),
     )
     graph.add_edges_from(chain.from_iterable(edges))
 

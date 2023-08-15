@@ -40,8 +40,10 @@
 ############################################################
 
 import typing
+from typing import cast
 
 import fastcore.foundation
+import networkx
 
 _T = typing.TypeVar("_T")
 
@@ -58,6 +60,20 @@ def map_ex(
     """
     # Casting to map[_T] due to a missing explicit type hint for the
     # return type of the fastcore.foundation.map_ex function.
-    return typing.cast(
-        "map[_T]", fastcore.foundation.map_ex(seq, map_func, gen=True)
-    )
+    return cast("map[_T]", fastcore.foundation.map_ex(seq, map_func, gen=True))
+
+
+def nodes(
+    graph: networkx.Graph, data: object
+) -> networkx.classes.reportviews.NodeDataView:
+    """Retrieve the node data view of the given graph.
+
+    `graph` is the graph to retrieve whose node data view.
+    `data` is the data to fill in the node data view.
+
+    """
+    # Casting data to bool due to a missing explicit type hint for the
+    # Graph.nodes function. The type inferred by pylance for the first
+    # parameter to networkx.Graph.nodes is(wrongfully) bool(because
+    # that's what the default value for that parameter implies).
+    return graph.nodes(cast(bool, data))

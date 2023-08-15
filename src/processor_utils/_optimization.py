@@ -40,12 +40,12 @@
 
 import collections.abc
 from logging import warning
-import typing
 
 import networkx
 from networkx import DiGraph, Graph
 
 from str_utils import ICaseString
+import type_checking
 from .exception import DeadInputError
 from . import _port_defs
 from .units import UNIT_CAPS_KEY
@@ -94,9 +94,7 @@ def rm_empty_units(processor: Graph) -> None:
     The function removes units with no capabilities from the processor.
 
     """
-    # Casting the capabilities key to bool due to a missing explicit
-    # type hint for the Graph.nodes function.
-    unit_entries = tuple(processor.nodes(typing.cast(bool, UNIT_CAPS_KEY)))
+    unit_entries = tuple(type_checking.nodes(processor, UNIT_CAPS_KEY))
 
     for unit, capabilities in unit_entries:
         if not capabilities:
