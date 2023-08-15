@@ -39,6 +39,7 @@
 #
 ############################################################
 
+import collections.abc
 import typing
 from typing import cast
 
@@ -49,7 +50,7 @@ _T = typing.TypeVar("_T")
 
 
 def map_ex(
-    seq: typing.Iterable[object], map_func: typing.Any, _: type[_T]
+    seq: collections.abc.Iterable[object], map_func: typing.Any, _: type[_T]
 ) -> "map[_T]":
     """Map an iterable using a mapping function.
 
