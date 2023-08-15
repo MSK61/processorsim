@@ -39,9 +39,9 @@
 #
 ############################################################
 
-import collections.abc
+from collections.abc import Iterable
 import typing
-from typing import cast
+from typing import Any, cast
 
 import fastcore.foundation
 import networkx
@@ -49,9 +49,7 @@ import networkx
 _T = typing.TypeVar("_T")
 
 
-def map_ex(
-    seq: collections.abc.Iterable[object], map_func: typing.Any, _: type[_T]
-) -> "map[_T]":
+def map_ex(seq: Iterable[object], map_func: Any, _: type[_T]) -> "map[_T]":
     """Map an iterable using a mapping function.
 
     `seq` is the iterable to map.
@@ -78,3 +76,14 @@ def nodes(
 
     """
     return graph.nodes(cast(bool, data))
+
+
+def sorted_lst(seq: Iterable[Any]) -> list[Any]:
+    """Create a sorted list of the given iterable.
+
+    `seq` is the iterable to sort.
+    As I don't want to rely on unstable API from typeshed, I'm just
+    relaxing the checks against the item type of the given iterable.
+
+    """
+    return sorted(seq)

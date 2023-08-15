@@ -1,7 +1,6 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""examples execution tests"""
+"""wrappers for appeasing type checkers"""
 
 ############################################################
 #
@@ -24,11 +23,12 @@
 #
 # program:      processor simulator
 #
-# file:         test_examples.py
+# file:         test_type_chks.py
 #
-# function:     examples execution tests
+# function:     type checking clutches
 #
-# description:  makes sure examples don't get outdated
+# description:  contains wrappers for services that might upset type
+#               checkers
 #
 # author:       Mohammed El-Afifi (ME)
 #
@@ -39,34 +39,20 @@
 #
 ############################################################
 
-from os.path import join
-import unittest
-
-import test_paths
-import test_type_chks
+import nbconvert.preprocessors
+import nbformat
 
 
-class ExampleTest(unittest.TestCase):
+def exec_file(nb_file, run_path):
+    """Execute a notebook file.
 
-    """Test case for fulfilling complete code coverage"""
+    `nb_file` is the notebook file to execute.
+    `run_path` is the execution path.
 
-    def test_example(self):
-        """Test example execution.
-
-        `self` is this test case.
-
-        """
-        examples_dir = join(test_paths.TEST_DIR, "../examples")
-        with open(
-            join(examples_dir, "unified memory.ipynb"), encoding="utf-8"
-        ) as nb_file:
-            test_type_chks.exec_file(nb_file, examples_dir)
-
-
-def main():
-    """entry point for running test in this module"""
-    unittest.main()
-
-
-if __name__ == "__main__":
-    main()
+    """
+    # Pylance doesn't see ExecutePreprocessor exported from
+    # nbconvert.preprocessors.
+    nbconvert.preprocessors.ExecutePreprocessor().preprocess(  # type: ignore
+        nbformat.read(nb_file, nbformat.NO_CONVERT),
+        {"metadata": {"path": run_path}},
+    )
