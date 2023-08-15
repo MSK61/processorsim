@@ -58,6 +58,15 @@ UNIT_WLOCK_KEY: Final = "writeLock"
 UNIT_WIDTH_KEY: Final = "width"
 
 
+def sorted_models(models: collections.abc.Iterable[object]) -> tuple[Any, ...]:
+    """Create a sorted list of the given models.
+
+    `models` are the models to sort.
+
+    """
+    return sorted_tuple(models, key=fastcore.foundation.Self.name())
+
+
 @attr.s(auto_attribs=True, frozen=True)
 class LockInfo:
 
@@ -90,15 +99,6 @@ class UnitModel:
     lock_info: LockInfo = attr.ib()
 
     _mem_acl: tuple[object, ...] = attr.ib(converter=sorted_tuple)
-
-
-def sorted_models(models: collections.abc.Iterable[object]) -> tuple[Any, ...]:
-    """Create a sorted list of the given models.
-
-    `models` are the models to sort.
-
-    """
-    return sorted_tuple(models, key=fastcore.foundation.Self.name())
 
 
 @attr.s(eq=False, frozen=True)
