@@ -54,7 +54,7 @@ def create_hw_instr(categ: object, *regs: typing.Any) -> HwInstruction:
     `regs` are the registers the instruction is operating on.
 
     """
-    # Pylance can't match packed parameters to the number of positional
+    # Pylance can't match packed arguments to the number of positional
     # arguments.
     srcs, dst = regs
     return HwInstruction(srcs, dst, categ)
