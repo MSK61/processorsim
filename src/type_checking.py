@@ -53,9 +53,9 @@ def map_ex(
 ) -> "map[_T]":
     """Map an iterable using a mapping function.
 
-    `seq` is the sequence to map.
+    `seq` is the iterable to map.
     `map_func` is the mapping function.
-    `_` is the type of elements in the resulting mapped sequence.
+    `_` is the type of elements in the resulting mapped generator.
     I'm casting to map[_T] due to a missing explicit type hint for the
     return type of the fastcore.foundation.map_ex function.
 

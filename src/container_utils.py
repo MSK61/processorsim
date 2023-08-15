@@ -147,7 +147,7 @@ class SelfIndexSet(_IndexedSetBase[_T]):
 def _sorted(seq: Iterable[Any]) -> list[Any]:
     """Create a sorted list of the given iterable.
 
-    `seq` is the sequence to sort.
+    `seq` is the iterable to sort.
     As I don't want to rely on unstable API from typeshed, I'm just
     relaxing the checks against the item type of the given iterable.
 
