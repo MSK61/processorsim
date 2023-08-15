@@ -46,7 +46,6 @@ import operator
 from operator import eq
 from typing import Any, Generic, Optional, TypeVar
 
-
 import attr
 import more_itertools
 import pydash.functions
