@@ -52,10 +52,11 @@ import operator
 import os
 import sys
 import typing
-from typing import Any, cast
+from typing import Any
 
 import attr
-from fastcore.foundation import compose, map_ex, mapt, Self
+import fastcore.foundation
+from fastcore.foundation import compose, mapt, Self
 import networkx
 from networkx import DiGraph, Graph
 
@@ -63,6 +64,7 @@ import container_utils
 from container_utils import IndexedSet, SelfIndexSet
 from errors import UndefElemError
 from str_utils import ICaseString
+import type_checking
 from . import _checks, _optimization, _port_defs, units
 from .exception import BadEdgeError, BadWidthError, DupElemError
 from .units import (
@@ -294,7 +296,7 @@ def _add_rev_edges(graph: Graph) -> None:
             for pred in unit.predecessors
             if pred.name in graph
         ),
-        graph.nodes(cast(bool, _UNIT_KEY)),
+        graph.nodes(typing.cast(bool, _UNIT_KEY)),
     )
     graph.add_edges_from(chain.from_iterable(edges))
 
@@ -330,7 +332,11 @@ def _chk_unit_width(unit: Mapping[object, Any]) -> None:
         raise BadWidthError(
             f"Functional unit ${BadWidthError.UNIT_KEY} has a bad width "
             f"${BadWidthError.WIDTH_KEY}.",
-            *(map_ex([UNIT_NAME_KEY, UNIT_WIDTH_KEY], unit, gen=True)),
+            *(
+                fastcore.foundation.map_ex(
+                    [UNIT_NAME_KEY, UNIT_WIDTH_KEY], unit, gen=True
+                )
+            ),
         )
 
 
@@ -440,7 +446,9 @@ def _get_preds(
     The function returns an iterator over predecessor units.
 
     """
-    return map_ex(processor.predecessors(unit), unit_map, gen=True)
+    return fastcore.foundation.map_ex(
+        processor.predecessors(unit), unit_map, gen=True
+    )
 
 
 def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
@@ -484,10 +492,8 @@ def _get_unit_entry(
     The function returns the unit model.
 
     """
-    # Casting to map[bool] due to a missing explicit type hint for the
-    # return type of the fastcore.foundation.map_ex function.
-    lock_attrs = cast(
-        "map[bool]", map_ex([UNIT_RLOCK_KEY, UNIT_WLOCK_KEY], attrs, gen=True)
+    lock_attrs = type_checking.map_ex(
+        [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY], attrs, bool
     )
     return UnitModel(
         name,

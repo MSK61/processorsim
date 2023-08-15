@@ -59,10 +59,10 @@ import typing
 from typing import Any, Final, IO, Optional
 
 import attr
-import fastcore.foundation
 import more_itertools
 from more_itertools import prepend
 
+import type_checking
 from container_utils import BagValDict
 import hw_loading
 import program_utils
@@ -282,14 +282,13 @@ def _create_flight(instr_util: Mapping[int, _InstrPosition]) -> _InstrFlight:
 
     """
     start_time = min(instr_util.keys())
-    time_range = range(start_time, start_time + len(instr_util))
-    # Casting to map[bool] due to a missing explicit type hint for the
-    # return type of the fastcore.foundation.map_ex function.
+    time_span = len(instr_util)
     return _InstrFlight(
         start_time,
-        typing.cast(
-            "map[_InstrPosition]",
-            fastcore.foundation.map_ex(time_range, instr_util, gen=True),
+        type_checking.map_ex(
+            range(start_time, start_time + time_span),
+            instr_util,
+            _InstrPosition,
         ),
     )
 
