@@ -56,10 +56,10 @@ def map_ex(
     `seq` is the sequence to map.
     `map_func` is the mapping function.
     `_` is the type of elements in the resulting mapped sequence.
+    I'm casting to map[_T] due to a missing explicit type hint for the
+    return type of the fastcore.foundation.map_ex function.
 
     """
-    # Casting to map[_T] due to a missing explicit type hint for the
-    # return type of the fastcore.foundation.map_ex function.
     return cast("map[_T]", fastcore.foundation.map_ex(seq, map_func, gen=True))
 
 
@@ -70,10 +70,10 @@ def nodes(
 
     `graph` is the graph to retrieve whose node data view.
     `data` is the data to fill in the node data view.
+    I'm casting data to bool due to a missing explicit type hint for the
+    Graph.nodes function. The type inferred by pylance for the first
+    parameter to networkx.Graph.nodes is(wrongfully) bool(because that's
+    what the default value for that parameter implies).
 
     """
-    # Casting data to bool due to a missing explicit type hint for the
-    # Graph.nodes function. The type inferred by pylance for the first
-    # parameter to networkx.Graph.nodes is(wrongfully) bool(because
-    # that's what the default value for that parameter implies).
     return graph.nodes(cast(bool, data))
