@@ -144,6 +144,21 @@ class SelfIndexSet(_IndexedSetBase[_T]):
         """
         super().__init__(lambda elem: elem)
 
+    @classmethod
+    def create(cls, elems: Iterable[_T]) -> "SelfIndexSet[_T]":
+        """Create a self-indexed set from elements.
+
+        `cls` is the self-indexed set class.
+        `elems` are the elements to initially insert into the set.
+
+        """
+        res = cls()
+
+        for cur_elem in elems:
+            res.add(cur_elem)
+
+        return res
+
 
 def _val_lst_dict(
     val_iter_dict: collections.abc.Mapping[Any, Iterable[Any]]

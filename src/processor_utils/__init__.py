@@ -92,7 +92,7 @@ def load_isa(
     instructions and their capabilities.
 
     """
-    return _create_isa(raw_isa, _init_cap_reg(capabilities))
+    return _create_isa(raw_isa, SelfIndexSet[object].create(capabilities))
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -535,23 +535,6 @@ def _get_unit_name(
         )
 
     return std_name
-
-
-def _init_cap_reg(capabilities: Iterable[object]) -> SelfIndexSet[object]:
-    """Initialize a capability registry.
-
-    `capabilities` are the unique capabilities to initially insert into
-                   the registry.
-    The function returns a capability registry containing the given
-    unique capabilities.
-
-    """
-    cap_registry = SelfIndexSet[object]()
-
-    for cap in capabilities:
-        cap_registry.add(cap)
-
-    return cap_registry
 
 
 def _load_caps(
