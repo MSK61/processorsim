@@ -134,7 +134,7 @@ def get_from_set(elem_set: IndexedSet[_T], elem: _T) -> _T:
 
 class SelfIndexSet(_IndexedSetBase[_T]):
 
-    """Self-indexed string set"""
+    """Self-indexed set"""
 
     def __init__(self) -> None:
         """Create a set with an identity conversion function.
