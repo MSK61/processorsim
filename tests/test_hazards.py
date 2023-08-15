@@ -45,6 +45,7 @@ from unittest import TestCase
 import pytest
 
 from test_env import TEST_DIR
+from test_type_chks import create_hw_instr
 from container_utils import BagValDict
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
@@ -210,13 +211,11 @@ class RawTest(TestCase):
             [],
             [FuncUnit(mid, [in_unit])],
         )
-        # Pylance can't match packed parameters to the number of
-        # positional arguments.
         self.assertEqual(
             simulate(
                 [
-                    HwInstruction(srcs, dst, "ALU")
-                    for srcs, dst in [[[], "R1"], [["R1"], "R2"]]
+                    create_hw_instr("ALU", *instr_regs)
+                    for instr_regs in [[[], "R1"], [["R1"], "R2"]]
                 ],
                 HwSpec(proc_desc),
             ),
@@ -263,10 +262,8 @@ class TestDataHazards:
         full_sys_unit = UnitModel(
             ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), []
         )
-        # Pylance can't match packed parameters to the number of
-        # positional arguments.
         assert simulate(
-            [HwInstruction(srcs, dst, "ALU") for srcs, dst in instr_regs],
+            [create_hw_instr("ALU", *regs) for regs in instr_regs],
             HwSpec(ProcessorDesc([], [], [full_sys_unit], [])),
         ) == [
             BagValDict(cp_util)
@@ -351,13 +348,11 @@ class WarTest(TestCase):
         proc_desc = ProcessorDesc(
             [in_unit], [FuncUnit(out_unit, [in_unit])], [], []
         )
-        # Pylance can't match packed parameters to the number of
-        # positional arguments.
         self.assertEqual(
             simulate(
                 [
-                    HwInstruction(srcs, dst, "ALU")
-                    for srcs, dst in [[["R1"], "R2"], [[], "R1"]]
+                    create_hw_instr("ALU", *instr_regs)
+                    for instr_regs in [[["R1"], "R2"], [[], "R1"]]
                 ],
                 HwSpec(proc_desc),
             ),

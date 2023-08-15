@@ -46,6 +46,7 @@ import more_itertools
 import pytest
 from pytest import mark, raises
 
+from test_type_chks import create_hw_instr
 import test_utils
 from test_utils import read_proc_file
 from container_utils import BagValDict
@@ -303,13 +304,11 @@ class StallErrTest(TestCase):
             [],
             [FuncUnit(mid, [long_input])],
         )
-        # Pylance can't match packed parameters to the number of
-        # positional arguments.
         with self.assertRaises(StallError) as ex_chk:
             simulate(
                 [
-                    HwInstruction(srcs, dst, "ALU")
-                    for srcs, dst in [[[], "R1"], [["R1"], "R2"]]
+                    create_hw_instr("ALU", *instr_regs)
+                    for instr_regs in [[[], "R1"], [["R1"], "R2"]]
                 ],
                 HwSpec(proc_desc),
             )
@@ -424,12 +423,10 @@ class TestBasic:
         `util_tbl` is the expected utilization table.
 
         """
-        # Pylance can't match packed parameters to the number of
-        # positional arguments.
         assert simulate(
             [
-                HwInstruction(srcs, dst, ICaseString(categ))
-                for srcs, dst, categ in prog
+                create_hw_instr(ICaseString(categ), *regs)
+                for *regs, categ in prog
             ],
             HwSpec(cpu),
         ) == [BagValDict(inst_util) for inst_util in util_tbl]

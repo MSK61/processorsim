@@ -39,8 +39,25 @@
 #
 ############################################################
 
+import typing
+
 import nbconvert.preprocessors
 import nbformat
+
+from program_defs import HwInstruction
+
+
+def create_hw_instr(categ: object, *regs: typing.Any) -> HwInstruction:
+    """Create a hardware instruction.
+
+    `categ` is the instruction category.
+    `regs` are the registers the instruction is operating on.
+
+    """
+    # Pylance can't match packed parameters to the number of positional
+    # arguments.
+    srcs, dst = regs
+    return HwInstruction(srcs, dst, categ)
 
 
 def exec_file(nb_file, run_path):
