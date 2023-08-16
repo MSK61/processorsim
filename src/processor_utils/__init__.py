@@ -631,11 +631,13 @@ class ProcessorDesc:
 
     """Processor description"""
 
-    in_ports: tuple[UnitModel, ...] = attr.ib(converter=tuple)
+    in_ports: tuple[UnitModel, ...] = attr.ib(converter=tuple[UnitModel, ...])
 
     out_ports: tuple[FuncUnit, ...] = attr.ib(converter=_sorted_units)
 
-    in_out_ports: tuple[UnitModel, ...] = attr.ib(converter=tuple)
+    in_out_ports: tuple[UnitModel, ...] = attr.ib(
+        converter=tuple[UnitModel, ...]
+    )
 
     internal_units: tuple[FuncUnit, ...] = attr.ib(converter=_post_order)
 
@@ -673,8 +675,8 @@ def _make_processor(proc_graph: DiGraph) -> ProcessorDesc:
 
     """
     unit_graph = _get_proc_units(proc_graph)
-    in_out_ports: list[Any] = []
-    in_ports: list[Any] = []
+    in_out_ports: list[UnitModel] = []
+    in_ports: list[UnitModel] = []
     internal_units: list[FuncUnit] = []
     out_ports: list[FuncUnit] = []
 
