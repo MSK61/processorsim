@@ -48,7 +48,7 @@ from collections.abc import (
 import itertools
 from itertools import chain
 from logging import warning
-from operator import itemgetter
+import operator
 import os
 import sys
 import typing
@@ -591,7 +591,7 @@ def _post_order(internal_units: Iterable[FuncUnit]) -> tuple[Any, ...]:
     """
     rev_graph = _get_unit_graph(internal_units)
     return mapt(
-        compose(rev_graph.nodes.get, itemgetter(_UNIT_KEY)),
+        compose(rev_graph.nodes.get, operator.itemgetter(_UNIT_KEY)),
         networkx.topological_sort(rev_graph),
     )
 
@@ -663,7 +663,17 @@ def load_proc_desc(raw_desc: Mapping[object, Any]) -> ProcessorDesc:
     of a unit always succeed the unit.
 
     """
-    proc_desc = _create_graph(*(itemgetter("units", "dataPath")(raw_desc)))
+    # Mypy requires all types to be instantiable(concrete) but
+    # type_checking.map_ex uses the type only for casting.
+    proc_desc = _create_graph(
+        *(
+            type_checking.map_ex(
+                ["units", "dataPath"],
+                raw_desc,
+                Iterable[Mapping[Any, object]],  # type: ignore[type-abstract]
+            )
+        )
+    )
     _prep_proc_desc(proc_desc)
     return _make_processor(proc_desc)
 
