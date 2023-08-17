@@ -42,7 +42,6 @@
 import collections.abc
 from collections.abc import (
     Callable,
-    Generator,
     Iterable,
     Mapping,
     MutableMapping,
@@ -565,7 +564,7 @@ def _do_cap_checks(
 
 def _filter_by_cap(
     post_ord: Iterable[object], capability: object, processor: Graph
-) -> Generator[object, None, None]:
+) -> collections.abc.Generator[object, None, None]:
     """Filter the given units by the specified capability.
 
     `post_ord` is the post-order of the processor functional units.
@@ -626,7 +625,7 @@ def _get_cap_units(
 
     """
     cap_unit_map: dict[ICaseString, list[Any]] = {}
-    in_ports: Generator[Any, None, None] = _port_defs.get_in_ports(processor)
+    in_ports = _port_defs.get_in_ports(processor)
 
     for cur_port in in_ports:
         for cur_cap in processor.nodes[cur_port][UNIT_CAPS_KEY]:
