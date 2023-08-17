@@ -500,7 +500,7 @@ def _chk_unit_flow(
         )
 
 
-def _coll_cap_edges(graph: DiGraph) -> frozenset[Any]:
+def _coll_cap_edges(graph: DiGraph) -> frozenset[tuple[Any, Any]]:
     """Collect capping edges from the given graph.
 
     `graph` is the graph to collect edges from.

@@ -53,14 +53,15 @@ import pydash.functions
 from str_utils import format_obj
 import type_checking
 
+_AnyT = TypeVar("_AnyT", bound=Any)
 _KT = TypeVar("_KT")
 _T = TypeVar("_T")
 _VT = TypeVar("_VT")
 
 
 def sorted_tuple(
-    elems: Iterable[Any], key: Optional[Callable[[Any], Any]] = None
-) -> tuple[Any, ...]:
+    elems: Iterable[_AnyT], key: Optional[Callable[[_AnyT], Any]] = None
+) -> tuple[_AnyT, ...]:
     """Sort the elements.
 
     `elems` are the elements to sort.

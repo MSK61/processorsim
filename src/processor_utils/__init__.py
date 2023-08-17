@@ -52,7 +52,7 @@ import operator
 import os
 import sys
 import typing
-from typing import Any
+from typing import Any, Optional
 
 import attr
 import fastcore.foundation
@@ -78,12 +78,16 @@ from .units import (
     UNIT_WLOCK_KEY,
 )
 
+if typing.TYPE_CHECKING:  # pragma: no cover
+    import _typeshed
+
+_ObjT = typing.TypeVar("_ObjT", bound=object)
 _UNIT_KEY: typing.Final = "unit"
 
 
 def load_isa(
-    raw_isa: Iterable[tuple[str, str]], capabilities: Iterable[object]
-) -> dict[str, Any]:
+    raw_isa: Iterable[tuple[str, str]], capabilities: Iterable[ICaseString]
+) -> dict[str, Optional[ICaseString]]:
     """Transform the given raw description into an instruction set.
 
     `raw_isa` is the raw description to extract an instruction set from.
@@ -92,7 +96,7 @@ def load_isa(
     instructions and their capabilities.
 
     """
-    return _create_isa(raw_isa, SelfIndexSet[object].create(capabilities))
+    return _create_isa(raw_isa, SelfIndexSet[ICaseString].create(capabilities))
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -175,10 +179,10 @@ def _add_edge(
 
 def _add_instr(
     instr_registry: SelfIndexSet[object],
-    cap_registry: SelfIndexSet[object],
+    cap_registry: SelfIndexSet[_ObjT],
     instr: object,
-    cap: object,
-) -> Any:
+    cap: _ObjT,
+) -> Optional[_ObjT]:
     """Add an instruction to the instruction set.
 
     `instr_registry` is the store of previously added instructions.
@@ -319,7 +323,7 @@ def _chk_unit_name(name: object, name_registry: SelfIndexSet[object]) -> None:
         )
 
 
-def _chk_unit_width(unit: Mapping[object, Any]) -> None:
+def _chk_unit_width(unit: Mapping[object, int]) -> None:
     """Check the given unit width.
 
     `unit` is the unit to load whose width.
@@ -367,8 +371,9 @@ def _create_graph(
 
 
 def _create_isa(
-    isa_spec: Iterable[tuple[str, str]], cap_registry: SelfIndexSet[object]
-) -> dict[str, Any]:
+    isa_spec: Iterable[tuple[str, str]],
+    cap_registry: SelfIndexSet[ICaseString],
+) -> dict[str, Optional[ICaseString]]:
     """Create an instruction set of the given ISA dictionary.
 
     `isa_spec` is the ISA specification to normalize.
@@ -413,8 +418,8 @@ def _get_acl_cap(
 
 
 def _get_cap_name(
-    capability: object, cap_registry: SelfIndexSet[object]
-) -> object:
+    capability: _ObjT, cap_registry: SelfIndexSet[_ObjT]
+) -> Optional[_ObjT]:
     """Return a supported capability name.
 
     `capability` is the name of the capability to validate.
@@ -538,7 +543,8 @@ def _get_unit_name(
 
 
 def _load_caps(
-    unit: Mapping[object, Any], cap_registry: IndexedSet[_CapabilityInfo]
+    unit: Mapping[object, Iterable[str]],
+    cap_registry: IndexedSet[_CapabilityInfo],
 ) -> list[object]:
     """Load the given unit capabilities.
 
@@ -563,7 +569,8 @@ def _load_caps(
 
 
 def _load_mem_acl(
-    unit: Mapping[object, Any], cap_registry: IndexedSet[_CapabilityInfo]
+    unit: Mapping[object, Iterable[str]],
+    cap_registry: IndexedSet[_CapabilityInfo],
 ) -> Generator[ICaseString, None, None]:
     """Load the given unit memory ACL.
 
@@ -617,7 +624,7 @@ def _prep_proc_desc(processor: DiGraph) -> None:
     _checks.chk_caps(processor)
 
 
-def _sorted_units(hw_units: Iterable[object]) -> tuple[Any, ...]:
+def _sorted_units(hw_units: Iterable[Any]) -> tuple[Any, ...]:
     """Create a sorted list of the given units.
 
     `hw_units` are the units to sort.
@@ -642,7 +649,7 @@ class ProcessorDesc:
     internal_units: tuple[FuncUnit, ...] = attr.ib(converter=_post_order)
 
 
-def get_abilities(processor: ProcessorDesc) -> frozenset[object]:
+def get_abilities(processor: ProcessorDesc) -> frozenset[ICaseString]:
     """Retrieve all capabilities supported by the given processor.
 
     `processor` is the processor to retrieve whose capabilities.
@@ -654,7 +661,9 @@ def get_abilities(processor: ProcessorDesc) -> frozenset[object]:
     )
 
 
-def load_proc_desc(raw_desc: Mapping[object, Any]) -> ProcessorDesc:
+def load_proc_desc(
+    raw_desc: "_typeshed.SupportsGetItem[Any, Any]",
+) -> ProcessorDesc:
     """Transform the given raw description into a processor one.
 
     `raw_desc` is the raw description to extract a processor from.

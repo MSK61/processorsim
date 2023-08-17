@@ -40,13 +40,13 @@
 ############################################################
 
 from collections.abc import Iterable
-import typing
-from typing import Any, cast
+from typing import Any, cast, TypeVar
 
 import fastcore.foundation
 import networkx
 
-_T = typing.TypeVar("_T")
+_AnyT = TypeVar("_AnyT", bound=Any)
+_T = TypeVar("_T")
 
 
 def map_ex(seq: Iterable[object], map_func: Any, _: type[_T]) -> "map[_T]":
@@ -78,7 +78,7 @@ def nodes(
     return graph.nodes(cast(bool, data))
 
 
-def sorted_lst(seq: Iterable[Any]) -> list[Any]:
+def sorted_lst(seq: Iterable[_AnyT]) -> list[_AnyT]:
     """Create a sorted list of the given iterable.
 
     `seq` is the iterable to sort.

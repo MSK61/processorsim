@@ -39,7 +39,7 @@
 #
 ############################################################
 
-import typing
+import collections.abc
 
 import nbconvert.preprocessors
 import nbformat
@@ -47,17 +47,19 @@ import nbformat
 from program_defs import HwInstruction
 
 
-def create_hw_instr(categ: object, *regs: typing.Any) -> HwInstruction:
+def create_hw_instr(
+    regs: tuple[collections.abc.Iterable[object], object], categ: object
+) -> HwInstruction:
     """Create a hardware instruction.
 
-    `categ` is the instruction category.
     `regs` are the registers the instruction is operating on.
+    `categ` is the instruction category.
 
     """
     # Pylance can't match packed arguments to the number of positional
-    # arguments.
-    srcs, dst = regs
-    return HwInstruction(srcs, dst, categ)
+    # arguments, however it can unpack a fixed-length tuple and match it
+    # to the number of positional arguments.
+    return HwInstruction(*regs, categ)
 
 
 def exec_file(nb_file, run_path):

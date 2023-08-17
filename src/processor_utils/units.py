@@ -38,7 +38,7 @@
 #
 ############################################################
 
-import collections.abc
+from collections.abc import Iterable
 import operator
 from typing import Any, Final
 
@@ -46,7 +46,7 @@ import attr
 import fastcore.foundation
 
 from container_utils import sorted_tuple
-import str_utils
+from str_utils import ICaseString
 
 # unit attributes
 UNIT_CAPS_KEY: Final = "capabilities"
@@ -58,7 +58,7 @@ UNIT_WLOCK_KEY: Final = "writeLock"
 UNIT_WIDTH_KEY: Final = "width"
 
 
-def sorted_models(models: collections.abc.Iterable[object]) -> tuple[Any, ...]:
+def sorted_models(models: Iterable[Any]) -> tuple[Any, ...]:
     """Create a sorted list of the given models.
 
     `models` are the models to sort.
@@ -77,6 +77,15 @@ class LockInfo:
     wr_lock: bool
 
 
+def _sorted_caps(caps: Iterable[Any]) -> tuple[Any, ...]:
+    """Create a sorted list of the given capabilities.
+
+    `caps` are the capabilities to sort.
+
+    """
+    return sorted_tuple(caps)
+
+
 @attr.s(frozen=True)
 class UnitModel:
 
@@ -90,11 +99,11 @@ class UnitModel:
         """
         return cap in self._mem_acl
 
-    name: str_utils.ICaseString = attr.ib()
+    name: ICaseString = attr.ib()
 
     width: int = attr.ib()
 
-    capabilities: tuple[object, ...] = attr.ib(converter=sorted_tuple)
+    capabilities: tuple[ICaseString, ...] = attr.ib(converter=_sorted_caps)
 
     lock_info: LockInfo = attr.ib()
 

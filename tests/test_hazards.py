@@ -214,8 +214,8 @@ class RawTest(TestCase):
         self.assertEqual(
             simulate(
                 [
-                    create_hw_instr("ALU", *instr_regs)
-                    for instr_regs in [[[], "R1"], [["R1"], "R2"]]
+                    create_hw_instr(instr_regs, "ALU")
+                    for instr_regs in [([], "R1"), (["R1"], "R2")]
                 ],
                 HwSpec(proc_desc),
             ),
@@ -247,9 +247,9 @@ class TestDataHazards:
     @pytest.mark.parametrize(
         "instr_regs",
         [
-            [[["R1"], "R2"], [[], "R1"]],
-            [[[], "R1"], [["R1"], "R2"]],
-            [[[], "R1"], [[], "R1"]],
+            [(["R1"], "R2"), ([], "R1")],
+            [([], "R1"), (["R1"], "R2")],
+            [([], "R1"), ([], "R1")],
         ],
     )
     def test_hazard(self, instr_regs):
@@ -263,7 +263,7 @@ class TestDataHazards:
             ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), []
         )
         assert simulate(
-            [create_hw_instr("ALU", *regs) for regs in instr_regs],
+            [create_hw_instr(regs, "ALU") for regs in instr_regs],
             HwSpec(ProcessorDesc([], [], [full_sys_unit], [])),
         ) == [
             BagValDict(cp_util)
@@ -351,8 +351,8 @@ class WarTest(TestCase):
         self.assertEqual(
             simulate(
                 [
-                    create_hw_instr("ALU", *instr_regs)
-                    for instr_regs in [[["R1"], "R2"], [[], "R1"]]
+                    create_hw_instr(instr_regs, "ALU")
+                    for instr_regs in [(["R1"], "R2"), ([], "R1")]
                 ],
                 HwSpec(proc_desc),
             ),
