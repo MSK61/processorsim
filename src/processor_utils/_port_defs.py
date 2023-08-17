@@ -105,7 +105,7 @@ class PortGroup:
 
 
 def _get_ports(
-    degrees: collections.abc.Iterable[tuple[_T, bool]]
+    degrees: collections.abc.Iterable[tuple[_T, object]]
 ) -> Generator[_T, None, None]:
     """Find the ports with respect to the given degrees.
 
