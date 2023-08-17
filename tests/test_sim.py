@@ -308,7 +308,7 @@ class StallErrTest(TestCase):
             simulate(
                 [
                     create_hw_instr(instr_regs, "ALU")
-                    for instr_regs in [([], "R1"), (["R1"], "R2")]
+                    for instr_regs in [[[], "R1"], [["R1"], "R2"]]
                 ],
                 HwSpec(proc_desc),
             )
@@ -395,12 +395,12 @@ class TestBasic:
         "prog, cpu, util_tbl",
         [
             (
-                [((["R11", "R15"], "R14"), "alu")],
+                [(["R11", "R15"], "R14", "alu")],
                 read_proc_file("processors", "singleALUProcessor.yaml"),
                 [{ICaseString("full system"): [InstrState(0)]}],
             ),
             (
-                [(([], "R12"), "MEM"), ((["R11", "R15"], "R14"), "ALU")],
+                [([], "R12", "MEM"), (["R11", "R15"], "R14", "ALU")],
                 read_proc_file(
                     "processors", "multiplexedInputSplitOutputProcessor.yaml"
                 ),
@@ -426,7 +426,7 @@ class TestBasic:
         assert simulate(
             [
                 create_hw_instr(regs, ICaseString(categ))
-                for regs, categ in prog
+                for *regs, categ in prog
             ],
             HwSpec(cpu),
         ) == [BagValDict(inst_util) for inst_util in util_tbl]

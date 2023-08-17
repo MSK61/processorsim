@@ -215,7 +215,7 @@ class RawTest(TestCase):
             simulate(
                 [
                     create_hw_instr(instr_regs, "ALU")
-                    for instr_regs in [([], "R1"), (["R1"], "R2")]
+                    for instr_regs in [[[], "R1"], [["R1"], "R2"]]
                 ],
                 HwSpec(proc_desc),
             ),
@@ -247,9 +247,9 @@ class TestDataHazards:
     @pytest.mark.parametrize(
         "instr_regs",
         [
-            [(["R1"], "R2"), ([], "R1")],
-            [([], "R1"), (["R1"], "R2")],
-            [([], "R1"), ([], "R1")],
+            [[["R1"], "R2"], [[], "R1"]],
+            [[[], "R1"], [["R1"], "R2"]],
+            [[[], "R1"], [[], "R1"]],
         ],
     )
     def test_hazard(self, instr_regs):
@@ -352,7 +352,7 @@ class WarTest(TestCase):
             simulate(
                 [
                     create_hw_instr(instr_regs, "ALU")
-                    for instr_regs in [(["R1"], "R2"), ([], "R1")]
+                    for instr_regs in [[["R1"], "R2"], [[], "R1"]]
                 ],
                 HwSpec(proc_desc),
             ),
