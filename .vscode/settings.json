@@ -18,6 +18,11 @@
  *
  ************************************************************/
 {
+    "python.formatting.blackArgs": [
+        "-C",
+        "-l",
+        "79"
+    ],
     "python.linting.flake8Enabled": true,
     "python.linting.pylintEnabled": true,
     "python.testing.unittestEnabled": false,
