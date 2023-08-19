@@ -69,6 +69,9 @@ from . import _instr_sinks, _utils
 from ._instr_sinks import IInstrSink
 from .sim_defs import InstrState, StallState
 
+# By all means _ObjT and _T definitions below are equivalent, however
+# _ObjT is needed for generic functions in whose signatures the type
+# variable only appears once otherwise pylance issues a warning/error.
 _ObjT = TypeVar("_ObjT", bound=object)
 _T = TypeVar("_T")
 

@@ -81,7 +81,7 @@ from .units import (
 if typing.TYPE_CHECKING:  # pragma: no cover
     import _typeshed
 
-_ObjT = typing.TypeVar("_ObjT", bound=object)
+_T = typing.TypeVar("_T")
 _UNIT_KEY: typing.Final = "unit"
 
 
@@ -179,10 +179,10 @@ def _add_edge(
 
 def _add_instr(
     instr_registry: SelfIndexSet[object],
-    cap_registry: SelfIndexSet[_ObjT],
+    cap_registry: SelfIndexSet[_T],
     instr: object,
-    cap: _ObjT,
-) -> Optional[_ObjT]:
+    cap: _T,
+) -> Optional[_T]:
     """Add an instruction to the instruction set.
 
     `instr_registry` is the store of previously added instructions.
@@ -418,8 +418,8 @@ def _get_acl_cap(
 
 
 def _get_cap_name(
-    capability: _ObjT, cap_registry: SelfIndexSet[_ObjT]
-) -> Optional[_ObjT]:
+    capability: _T, cap_registry: SelfIndexSet[_T]
+) -> Optional[_T]:
     """Return a supported capability name.
 
     `capability` is the name of the capability to validate.
