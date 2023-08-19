@@ -52,7 +52,7 @@ import operator
 import os
 import sys
 import typing
-from typing import Any, Optional
+from typing import Any
 
 import attr
 import fastcore.foundation
@@ -87,7 +87,7 @@ _UNIT_KEY: typing.Final = "unit"
 
 def load_isa(
     raw_isa: Iterable[tuple[str, str]], capabilities: Iterable[ICaseString]
-) -> dict[str, Optional[ICaseString]]:
+) -> dict[str, ICaseString]:
     """Transform the given raw description into an instruction set.
 
     `raw_isa` is the raw description to extract an instruction set from.
@@ -182,7 +182,7 @@ def _add_instr(
     cap_registry: SelfIndexSet[_T],
     instr: object,
     cap: _T,
-) -> Optional[_T]:
+) -> _T:
     """Add an instruction to the instruction set.
 
     `instr_registry` is the store of previously added instructions.
@@ -373,7 +373,7 @@ def _create_graph(
 def _create_isa(
     isa_spec: Iterable[tuple[str, str]],
     cap_registry: SelfIndexSet[ICaseString],
-) -> dict[str, Optional[ICaseString]]:
+) -> dict[str, ICaseString]:
     """Create an instruction set of the given ISA dictionary.
 
     `isa_spec` is the ISA specification to normalize.
@@ -417,9 +417,7 @@ def _get_acl_cap(
     return std_cap.name
 
 
-def _get_cap_name(
-    capability: _T, cap_registry: SelfIndexSet[_T]
-) -> Optional[_T]:
+def _get_cap_name(capability: _T, cap_registry: SelfIndexSet[_T]) -> _T:
     """Return a supported capability name.
 
     `capability` is the name of the capability to validate.
