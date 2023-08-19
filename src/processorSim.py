@@ -69,11 +69,11 @@ import program_utils
 import sim_services
 from sim_services.sim_defs import InstrState, StallState
 
+_ObjT = typing.TypeVar("_ObjT", bound=object)
 # command-line option variables
 # variable to receive the processor architecture file
 _PROC_OPT_VAR: Final = "processor_file"
 _PROG_OPT_VAR: Final = "prog_file"  # variable to receive the program file
-_ObjT = typing.TypeVar("_ObjT", bound=object)
 
 
 def get_in_files(argv: Optional[Sequence[str]]) -> tuple[Any, Any]:

@@ -69,8 +69,8 @@ from . import _instr_sinks, _utils
 from ._instr_sinks import IInstrSink
 from .sim_defs import InstrState, StallState
 
-_T = TypeVar("_T")
 _ObjT = TypeVar("_ObjT", bound=object)
+_T = TypeVar("_T")
 
 
 class StallError(RuntimeError):
