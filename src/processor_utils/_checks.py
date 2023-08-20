@@ -55,6 +55,7 @@ import attr
 import fastcore.foundation
 from fastcore.foundation import Self
 import more_itertools
+from more_itertools import one
 import networkx
 from networkx import DiGraph, Graph
 
@@ -294,7 +295,10 @@ def _aug_terminals(graph: Graph, ports: Sequence[object]) -> object:
     terminal. The function returns the newly added port.
 
     """
-    return ports[0] if len(ports) == 1 else _unify_ports(graph, ports)
+    try:
+        return one(ports)
+    except ValueError:
+        return _unify_ports(graph, ports)
 
 
 def _cap_in_edge(
@@ -609,7 +613,7 @@ def _get_cap_edge(in_edges: Iterable[_T], out_edges: Iterable[_T]) -> _T:
 
     """
     try:
-        return more_itertools.one(in_edges)
+        return one(in_edges)
     except ValueError:
         return more_itertools.first(out_edges)
 
