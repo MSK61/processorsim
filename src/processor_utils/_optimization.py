@@ -168,7 +168,7 @@ def _rm_dead_end(
 
 
 def _rm_dummy_edge(
-    processor: Graph, edge: collections.abc.Collection[object]
+    processor: Graph, edge: collections.abc.Iterable[object]
 ) -> None:
     """Remove an edge from the given processor.
 

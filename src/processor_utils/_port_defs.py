@@ -38,8 +38,7 @@
 #
 ############################################################
 
-import collections.abc
-from collections.abc import Generator
+from collections.abc import Generator, Iterable
 import typing
 from typing import Any
 
@@ -104,9 +103,7 @@ class PortGroup:
         return self._out_ports
 
 
-def _get_ports(
-    degrees: collections.abc.Iterable[tuple[_T, object]]
-) -> Generator[_T, None, None]:
+def _get_ports(degrees: Iterable[Iterable[_T]]) -> Generator[_T, None, None]:
     """Find the ports with respect to the given degrees.
 
     `degrees` are the degrees of all units.
