@@ -78,9 +78,6 @@ from .units import (
     UNIT_WLOCK_KEY,
 )
 
-if typing.TYPE_CHECKING:  # pragma: no cover
-    import _typeshed
-
 _T = typing.TypeVar("_T")
 _UNIT_KEY: typing.Final = "unit"
 
@@ -659,9 +656,7 @@ def get_abilities(processor: ProcessorDesc) -> frozenset[ICaseString]:
     )
 
 
-def load_proc_desc(
-    raw_desc: "_typeshed.SupportsGetItem[Any, Any]",
-) -> ProcessorDesc:
+def load_proc_desc(raw_desc: Any) -> ProcessorDesc:
     """Transform the given raw description into a processor one.
 
     `raw_desc` is the raw description to extract a processor from.
