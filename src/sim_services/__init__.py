@@ -69,11 +69,13 @@ from . import _instr_sinks, _utils
 from ._instr_sinks import IInstrSink
 from .sim_defs import InstrState, StallState
 
+_KT = TypeVar("_KT")
 # By all means _ObjT and _T definitions below are equivalent, however
 # _ObjT is needed for generic functions in whose signatures the type
 # variable only appears once otherwise pylance issues a warning/error.
 _ObjT = TypeVar("_ObjT", bound=object)
 _T = TypeVar("_T")
+_VT = TypeVar("_VT")
 
 
 class StallError(RuntimeError):
@@ -477,10 +479,10 @@ def _chk_hazards(
 
 
 def _chk_avail_regs(
-    avail_regs: MutableSequence[Sequence[object]],
-    acc_queues: Mapping[object, RegAccessQueue],
+    avail_regs: MutableSequence[Iterable[_T]],
+    acc_queues: Mapping[_T, RegAccessQueue],
     lock: bool,
-    new_regs: Sequence[object],
+    new_regs: Iterable[_T],
     req_params: Iterable[object],
 ) -> bool:
     """Check if the given registers can be accessed.
@@ -693,7 +695,7 @@ def _regs_avail(
     The function returns the registers availability state.
 
     """
-    avail_reg_lists: list[Sequence[object]] = []
+    avail_reg_lists: list[Iterable[object]] = []
     return (
         _RegAvailState(True, chain.from_iterable(avail_reg_lists))
         if all(
@@ -795,9 +797,9 @@ def _stall_unit(
 
 
 def _update_clears(
-    reqs_to_clear: MutableMapping[object, MutableSequence[object]],
-    regs: Iterable[object],
-    instr: object,
+    reqs_to_clear: MutableMapping[_KT, MutableSequence[_VT]],
+    regs: Iterable[_KT],
+    instr: _VT,
 ) -> None:
     """Update the list of register accesses to be cleared.
 

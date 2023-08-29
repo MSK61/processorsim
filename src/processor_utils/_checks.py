@@ -42,6 +42,7 @@
 import collections.abc
 from collections.abc import (
     Callable,
+    Generator,
     Iterable,
     Mapping,
     MutableMapping,
@@ -49,7 +50,7 @@ from collections.abc import (
 )
 import itertools
 import typing
-from typing import Any
+from typing import Any, TypeVar
 
 import attr
 import fastcore.foundation
@@ -65,7 +66,9 @@ from .exception import BlockedCapError, ComponentInfo, PathLockError
 from .units import UNIT_CAPS_KEY, UNIT_WIDTH_KEY
 
 _OLD_NODE_KEY: typing.Final = "old_node"
-_T = typing.TypeVar("_T")
+_KT = TypeVar("_KT")
+_T = TypeVar("_T")
+_VT = TypeVar("_VT")
 
 
 def chk_caps(processor: DiGraph) -> None:
@@ -385,8 +388,8 @@ def _chk_in_lock(in_lock_info: _SatInfo, path_desc: _PathDescriptor) -> None:
 
 
 def _chk_in_locks(
-    in_ports: Iterable[object],
-    path_locks: Mapping[object, _SatInfo],
+    in_ports: Iterable[_T],
+    path_locks: Mapping[_T, _SatInfo],
     capability: object,
 ) -> None:
     """Check if paths from input ports don't have exactly one lock.
@@ -536,10 +539,10 @@ def _do_cap_checks(
         Callable[
             [
                 DiGraph,
-                Iterable[object],
+                Generator[object, None, None],
                 ICaseString,
-                Iterable[ICaseString],
-                Iterable[object],
+                list[Any],
+                tuple[Any, ...],
             ],
             None,
         ]
@@ -567,8 +570,8 @@ def _do_cap_checks(
 
 
 def _filter_by_cap(
-    post_ord: Iterable[object], capability: object, processor: Graph
-) -> collections.abc.Generator[object, None, None]:
+    post_ord: Iterable[_T], capability: object, processor: Graph
+) -> Generator[_T, None, None]:
     """Filter the given units by the specified capability.
 
     `post_ord` is the post-order of the processor functional units.
@@ -591,7 +594,7 @@ def _get_anal_graph(processor: Graph) -> DiGraph:
     """
     width_graph = DiGraph()
     hw_units = enumerate(processor)
-    new_nodes: dict[object, object] = {}
+    new_nodes: dict[object, int] = {}
 
     for idx, unit in hw_units:
         _update_graph(idx, unit, processor, width_graph, new_nodes)
@@ -691,11 +694,11 @@ def _unify_ports(graph: Graph, ports: Iterable[object]) -> int:
 
 
 def _update_graph(
-    idx: object,
-    unit: object,
+    idx: _VT,
+    unit: _KT,
     processor: Graph,
     width_graph: Graph,
-    unit_idx_map: MutableMapping[object, object],
+    unit_idx_map: MutableMapping[_KT, _VT],
 ) -> None:
     """Update width graph structures.
 

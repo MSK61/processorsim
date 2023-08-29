@@ -69,7 +69,7 @@ def split_nodes(graph: DiGraph) -> dict[Any, object]:
     }
 
 
-def _mov_out_link(graph: Graph, link: Sequence[Any], new_node: object) -> None:
+def _mov_out_link(graph: Graph, link: Sequence[Any], new_node: Any) -> None:
     """Move an outgoing link from an old node to a new one.
 
     `graph` is the graph containing the nodes.
@@ -84,7 +84,7 @@ def _mov_out_link(graph: Graph, link: Sequence[Any], new_node: object) -> None:
 def _mov_out_links(
     graph: Graph,
     out_links: collections.abc.Iterable[Sequence[Any]],
-    new_node: object,
+    new_node: Any,
 ) -> None:
     """Move outgoing links from an old node to a new one.
 
@@ -97,7 +97,7 @@ def _mov_out_links(
         _mov_out_link(graph, cur_link, new_node)
 
 
-def _split_node(graph: DiGraph, old_node: object, new_node: object) -> object:
+def _split_node(graph: DiGraph, old_node: Any, new_node: Any) -> Any:
     """Split a node into old and new ones.
 
     `graph` is the graph containing the node to be split.

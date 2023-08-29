@@ -52,7 +52,7 @@ import operator
 import os
 import sys
 import typing
-from typing import Any
+from typing import Any, TypeVar
 
 import attr
 import fastcore.foundation
@@ -78,7 +78,9 @@ from .units import (
     UNIT_WLOCK_KEY,
 )
 
-_T = typing.TypeVar("_T")
+_CapT = TypeVar("_CapT")
+_InstrT = TypeVar("_InstrT")
+_T = TypeVar("_T")
 _UNIT_KEY: typing.Final = "unit"
 
 
@@ -109,8 +111,8 @@ class _CapabilityInfo:
 def _add_capability(
     unit: object,
     cap: ICaseString,
-    cap_list: MutableSequence[object],
-    unit_cap_reg: SelfIndexSet[object],
+    cap_list: MutableSequence[ICaseString],
+    unit_cap_reg: SelfIndexSet[ICaseString],
     global_cap_reg: IndexedSet[_CapabilityInfo],
 ) -> None:
     """Add a capability to the given unit.
@@ -142,7 +144,7 @@ def _add_capability(
 def _add_edge(
     processor: Graph,
     edge: Collection[str],
-    unit_registry: SelfIndexSet[object],
+    unit_registry: SelfIndexSet[ICaseString],
     edge_registry: IndexedSet[Collection[str]],
 ) -> None:
     """Add an edge to a processor.
@@ -175,11 +177,11 @@ def _add_edge(
 
 
 def _add_instr(
-    instr_registry: SelfIndexSet[object],
-    cap_registry: SelfIndexSet[_T],
-    instr: object,
-    cap: _T,
-) -> _T:
+    instr_registry: SelfIndexSet[_InstrT],
+    cap_registry: SelfIndexSet[_CapT],
+    instr: _InstrT,
+    cap: _CapT,
+) -> _CapT:
     """Add an instruction to the instruction set.
 
     `instr_registry` is the store of previously added instructions.
@@ -196,8 +198,8 @@ def _add_instr(
 
 def _add_new_cap(
     cap: _CapabilityInfo,
-    cap_list: MutableSequence[object],
-    unit_cap_reg: SelfIndexSet[object],
+    cap_list: MutableSequence[ICaseString],
+    unit_cap_reg: SelfIndexSet[ICaseString],
     global_cap_reg: IndexedSet[_CapabilityInfo],
 ) -> None:
     """Add a new capability to the given list and registry.
@@ -233,8 +235,8 @@ def _add_src_path() -> None:
 
 def _add_unit(
     processor: Graph,
-    unit: Mapping[object, Any],
-    unit_registry: SelfIndexSet[object],
+    unit: Mapping[str, Any],
+    unit_registry: SelfIndexSet[ICaseString],
     cap_registry: IndexedSet[_CapabilityInfo],
 ) -> None:
     """Add a functional unit to a processor.
@@ -263,7 +265,7 @@ def _add_unit(
     unit_registry.add(unit_name)
 
 
-def _chk_instr(instr: object, instr_registry: SelfIndexSet[object]) -> None:
+def _chk_instr(instr: _T, instr_registry: SelfIndexSet[_T]) -> None:
     """Check the given instruction.
 
     `instr` is the instruction.
@@ -300,7 +302,7 @@ def _add_rev_edges(graph: Graph) -> None:
     graph.add_edges_from(chain.from_iterable(edges))
 
 
-def _chk_unit_name(name: object, name_registry: SelfIndexSet[object]) -> None:
+def _chk_unit_name(name: _T, name_registry: SelfIndexSet[_T]) -> None:
     """Check the given unit name.
 
     `name` is the unit name.
@@ -320,7 +322,7 @@ def _chk_unit_name(name: object, name_registry: SelfIndexSet[object]) -> None:
         )
 
 
-def _chk_unit_width(unit: Mapping[object, int]) -> None:
+def _chk_unit_width(unit: Mapping[str, int]) -> None:
     """Check the given unit width.
 
     `unit` is the unit to load whose width.
@@ -340,8 +342,7 @@ def _chk_unit_width(unit: Mapping[object, int]) -> None:
 
 
 def _create_graph(
-    hw_units: Iterable[Mapping[object, object]],
-    links: Iterable[Collection[str]],
+    hw_units: Iterable[Mapping[str, Any]], links: Iterable[Collection[str]]
 ) -> DiGraph:
     """Create a data flow graph for a processor.
 
@@ -352,7 +353,7 @@ def _create_graph(
 
     """
     flow_graph = DiGraph()
-    unit_registry = SelfIndexSet[object]()
+    unit_registry = SelfIndexSet[ICaseString]()
     edge_registry = IndexedSet[Collection[str]](
         lambda edge: mapt(compose(ICaseString, unit_registry.get), edge)
     )
@@ -378,7 +379,7 @@ def _create_isa(
     and standard capability names.
 
     """
-    instr_registry = SelfIndexSet[object]()
+    instr_registry = SelfIndexSet[ICaseString]()
     return {
         instr.upper(): _add_instr(
             instr_registry,
@@ -433,7 +434,7 @@ def _get_cap_name(capability: _T, cap_registry: SelfIndexSet[_T]) -> _T:
 
 
 def _get_preds(
-    processor: DiGraph, unit: object, unit_map: Mapping[object, object]
+    processor: DiGraph, unit: object, unit_map: Any
 ) -> "map[str] | list[str]":
     """Retrieve the predecessor units of the given unit.
 
@@ -466,8 +467,8 @@ def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
 
 
 def _get_std_edge(
-    edge: Iterable[str], unit_registry: SelfIndexSet[object]
-) -> Generator[object, None, None]:
+    edge: Iterable[str], unit_registry: SelfIndexSet[ICaseString]
+) -> Generator[ICaseString, None, None]:
     """Return a validated edge.
 
     `edge` is the edge to validate.
@@ -479,9 +480,7 @@ def _get_std_edge(
     return (_get_unit_name(ICaseString(unit), unit_registry) for unit in edge)
 
 
-def _get_unit_entry(
-    name: ICaseString, attrs: Mapping[object, Any]
-) -> UnitModel:
+def _get_unit_entry(name: ICaseString, attrs: Mapping[str, Any]) -> UnitModel:
     """Create a unit map entry from the given attributes.
 
     `name` is the unit name.
@@ -515,9 +514,7 @@ def _get_unit_graph(internal_units: Iterable[FuncUnit]) -> DiGraph:
     return rev_graph
 
 
-def _get_unit_name(
-    unit: object, unit_registry: SelfIndexSet[object]
-) -> object:
+def _get_unit_name(unit: _T, unit_registry: SelfIndexSet[_T]) -> _T:
     """Return a validated unit name.
 
     `unit` is the name of the unit to validate.
@@ -537,9 +534,9 @@ def _get_unit_name(
 
 
 def _load_caps(
-    unit: Mapping[object, Iterable[str]],
+    unit: Mapping[str, Iterable[str]],
     cap_registry: IndexedSet[_CapabilityInfo],
-) -> list[object]:
+) -> list[ICaseString]:
     """Load the given unit capabilities.
 
     `unit` is the unit to load whose capabilities.
@@ -547,8 +544,8 @@ def _load_caps(
     The function returns a list of loaded capabilities.
 
     """
-    cap_list: list[object] = []
-    unit_cap_reg = SelfIndexSet[object]()
+    cap_list: list[ICaseString] = []
+    unit_cap_reg = SelfIndexSet[ICaseString]()
 
     for cur_cap in unit[UNIT_CAPS_KEY]:
         _add_capability(
@@ -563,7 +560,7 @@ def _load_caps(
 
 
 def _load_mem_acl(
-    unit: Mapping[object, Iterable[str]],
+    unit: Mapping[str, Iterable[str]],
     cap_registry: IndexedSet[_CapabilityInfo],
 ) -> Generator[ICaseString, None, None]:
     """Load the given unit memory ACL.
@@ -671,7 +668,7 @@ def load_proc_desc(raw_desc: Any) -> ProcessorDesc:
             type_checking.map_ex(
                 ["units", "dataPath"],
                 raw_desc,
-                Iterable[Mapping[Any, object]],  # type: ignore[type-abstract]
+                Iterable[Mapping[str, Any]],  # type: ignore[type-abstract]
             )
         )
     )

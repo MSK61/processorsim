@@ -42,6 +42,7 @@ from collections.abc import Iterable, Mapping
 import logging
 from re import split
 import string
+import typing
 from typing import Final
 
 import attr
@@ -52,6 +53,8 @@ from container_utils import IndexedSet
 from errors import UndefElemError
 from program_defs import HwInstruction, ProgInstruction
 from str_utils import ICaseString
+
+_T = typing.TypeVar("_T")
 
 
 class CodeError(RuntimeError):
@@ -176,7 +179,7 @@ def _create_instr(
     return ProgInstruction(sources, dst, src_line_info.instruction, line_num)
 
 
-def _get_cap(isa: Mapping[str, object], instr: ProgInstruction) -> object:
+def _get_cap(isa: Mapping[str, _T], instr: ProgInstruction) -> _T:
     """Get the ISA capability of the given instruction.
 
     `isa` is the instruction set containing upper-case instructions.

@@ -68,6 +68,8 @@ import program_utils
 import sim_services
 from sim_services.sim_defs import StallState
 
+# _ObjT is needed for generic functions in whose signatures the type
+# variable only appears once otherwise pylance issues a warning/error.
 _ObjT = typing.TypeVar("_ObjT", bound=object)
 # command-line option variables
 # variable to receive the processor architecture file
@@ -206,7 +208,7 @@ class _ResultWriter:
     """Simulation result writer"""
 
     @classmethod
-    def print_sim_res(cls, sim_res: Collection[Collection[object]]) -> None:
+    def print_sim_res(cls, sim_res: Collection[Collection[Any]]) -> None:
         """Print the simulation result.
 
         `cls` is the writer class.
@@ -238,7 +240,7 @@ class _ResultWriter:
         return range(1, cls._get_last_tick(sim_res) + 1)
 
     @classmethod
-    def _print_res_row(cls, row_key: str, res_row: Iterable[object]) -> None:
+    def _print_res_row(cls, row_key: Any, res_row: Iterable[Any]) -> None:
         """Print the given simulation row.
 
         `cls` is the writer class.
