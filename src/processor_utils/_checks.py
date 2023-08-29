@@ -659,7 +659,7 @@ def _make_cap_graph(processor: Graph, capability: object) -> DiGraph:
 
 
 def _set_capacities(
-    graph: Graph, cap_edges: Iterable[tuple[object, object]]
+    graph: Graph, cap_edges: Iterable[Sequence[object]]
 ) -> None:
     """Assign capacities to capping edges.
 

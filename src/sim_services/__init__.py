@@ -52,7 +52,7 @@ import copy
 from itertools import chain
 import string
 import typing
-from typing import TypeVar
+from typing import Any, TypeVar
 
 import attr
 from fastcore.foundation import Self
@@ -119,7 +119,7 @@ class HwSpec:
 
     # Casting to typing.Any because pylance can't detect default as a
     # member of attr.ib.
-    @typing.cast(typing.Any, name_unit_map).default
+    @typing.cast(Any, name_unit_map).default
     def _(self) -> dict[ICaseString, UnitModel]:
         """Build the name-to-unit mapping.
 
@@ -345,7 +345,7 @@ def _add_wr_access(instr: int, builder: RegAccQBuilder) -> None:
 
 
 def _build_acc_plan(
-    program: Iterable[tuple[int, HwInstruction]]
+    program: Iterable[Iterable[Any]],
 ) -> dict[object, RegAccessQueue]:
     """Build the registry access plan through the program lifetime.
 
@@ -440,7 +440,7 @@ def _chk_full_stall(
 
 def _chk_hazards(
     old_util: BagValDict[_T, InstrState],
-    new_util: Iterable[tuple[_T, Iterable[InstrState]]],
+    new_util: Iterable[Iterable[Any]],
     name_unit_map: Mapping[_T, UnitModel],
     program: Sequence[HwInstruction],
     acc_queues: Mapping[object, RegAccessQueue],

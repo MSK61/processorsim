@@ -63,11 +63,10 @@ import more_itertools
 from more_itertools import prepend
 
 import type_checking
-from container_utils import BagValDict
 import hw_loading
 import program_utils
 import sim_services
-from sim_services.sim_defs import InstrState, StallState
+from sim_services.sim_defs import StallState
 
 _ObjT = typing.TypeVar("_ObjT", bound=object)
 # command-line option variables
@@ -250,9 +249,7 @@ class _ResultWriter:
         cls._writer.writerow(prepend(row_key, res_row))
 
     @classmethod
-    def _print_tbl_data(
-        cls, sim_res: Iterable[tuple[int, Iterable[object]]]
-    ) -> None:
+    def _print_tbl_data(cls, sim_res: Iterable[Iterable[Any]]) -> None:
         """Print the simulation table rows.
 
         `cls` is the writer class.
@@ -294,8 +291,7 @@ def _create_flight(instr_util: Mapping[int, _InstrPosition]) -> _InstrFlight:
 
 
 def _cui_to_flights(
-    cxuxi: Iterable[tuple[int, BagValDict[_ObjT, InstrState]]],
-    instructions: int,
+    cxuxi: Iterable[Iterable[Any]], instructions: int
 ) -> "map[_InstrFlight]":
     """Convert a CxUxI utilization map to instruction flights.
 
@@ -307,8 +303,7 @@ def _cui_to_flights(
 
 
 def _cui_to_icu(
-    cxuxi: Iterable[tuple[int, BagValDict[_ObjT, InstrState]]],
-    instructions: int,
+    cxuxi: Iterable[Iterable[Any]], instructions: int
 ) -> list[dict[int, _InstrPosition]]:
     """Convert a CxUxI utilization map to IxCxU format.
 
@@ -328,7 +323,7 @@ def _cui_to_icu(
 
 def _fill_cp_util(
     clock_pulse: int,
-    cp_util: Iterable[tuple[object, Iterable[InstrState]]],
+    cp_util: Iterable[Iterable[Iterable[sim_services.InstrState]]],
     ixcxu: Sequence[collections.abc.MutableMapping[int, _InstrPosition]],
 ) -> None:
     """Fill the given clock utilization into the IxCxU map.
@@ -358,8 +353,7 @@ def _get_flight_row(flight: _InstrFlight) -> list[str]:
 
 
 def _get_sim_rows(
-    sim_res: Iterable[tuple[int, BagValDict[_ObjT, InstrState]]],
-    instructions: int,
+    sim_res: Iterable[Iterable[Any]], instructions: int
 ) -> list[list[str]]:
     """Calculate the simulation rows.
 

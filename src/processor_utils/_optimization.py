@@ -102,7 +102,7 @@ def rm_empty_units(processor: Graph) -> None:
 
 
 def _chk_edge(
-    processor: Graph, edge: tuple[object, object]
+    processor: Graph, edge: collections.abc.Sequence[object]
 ) -> frozenset[ICaseString]:
     """Check if the edge is useful.
 

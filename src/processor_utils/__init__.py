@@ -83,7 +83,7 @@ _UNIT_KEY: typing.Final = "unit"
 
 
 def load_isa(
-    raw_isa: Iterable[tuple[str, str]], capabilities: Iterable[ICaseString]
+    raw_isa: Iterable[Iterable[str]], capabilities: Iterable[ICaseString]
 ) -> dict[str, ICaseString]:
     """Transform the given raw description into an instruction set.
 
@@ -368,8 +368,7 @@ def _create_graph(
 
 
 def _create_isa(
-    isa_spec: Iterable[tuple[str, str]],
-    cap_registry: SelfIndexSet[ICaseString],
+    isa_spec: Iterable[Iterable[str]], cap_registry: SelfIndexSet[ICaseString]
 ) -> dict[str, ICaseString]:
     """Create an instruction set of the given ISA dictionary.
 
