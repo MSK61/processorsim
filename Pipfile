@@ -20,7 +20,7 @@ networkx = "*"
 pyyaml = "*"
 more-itertools = "*"
 fastcore = "*"
-iteration-utilities = "*"
+pydash = "*"
 
 [requires]
 python_version = "3.11"

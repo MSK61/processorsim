@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -46,13 +46,13 @@ import more_itertools
 import pytest
 from pytest import mark, raises
 
+import test_type_chks
 import test_utils
 from test_utils import read_proc_file
 from container_utils import BagValDict
 import processor_utils
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
-from program_defs import HwInstruction
 from sim_services import HwSpec, simulate, StallError
 from sim_services.sim_defs import InstrState, StallState
 from str_utils import ICaseString
@@ -138,14 +138,17 @@ class FlowTest(TestCase):
         """
         in_units = [
             UnitModel(
-                ICaseString(name), 1, {categ: False}, LockInfo(True, False)
+                ICaseString(name),
+                1,
+                {ICaseString(categ): False},
+                LockInfo(True, False),
             )
             for name, categ in [("ALU input", "ALU"), ("MEM input", "MEM")]
         ]
         out_unit = UnitModel(
             ICaseString("output"),
             1,
-            {name: False for name in ["ALU", "MEM"]},
+            {ICaseString(name): False for name in ["ALU", "MEM"]},
             LockInfo(False, True),
         )
         proc_desc = ProcessorDesc(
@@ -154,7 +157,7 @@ class FlowTest(TestCase):
         self.assertEqual(
             simulate(
                 [
-                    HwInstruction(*instr_params)
+                    test_utils.create_hw_instr(*instr_params)
                     for instr_params in [
                         [[], "R12", "MEM"],
                         [["R11", "R15"], "R14", "ALU"],
@@ -195,7 +198,7 @@ class InSortTest(TestCase):
             UnitModel(
                 ICaseString(name),
                 1,
-                {"ALU": mem_access},
+                {ICaseString("ALU"): mem_access},
                 LockInfo(rd_lock, wr_lock),
             )
             for name, rd_lock, wr_lock, mem_access in [
@@ -210,14 +213,17 @@ class InSortTest(TestCase):
                 UnitModel(
                     ICaseString("input 2"),
                     1,
-                    {"ALU": False},
+                    {ICaseString("ALU"): False},
                     LockInfo(True, False),
                 )
             ],
             [],
         )
         self.assertEqual(
-            simulate([HwInstruction([], "R1", "ALU")], HwSpec(proc_desc)),
+            simulate(
+                [test_utils.create_hw_instr([], "R1", "ALU")],
+                HwSpec(proc_desc),
+            ),
             [
                 BagValDict(cp_util)
                 for cp_util in [
@@ -242,7 +248,7 @@ class PipelineTest(TestCase):
         self.assertEqual(
             simulate(
                 [
-                    HwInstruction([], out_reg, "ALU")
+                    test_utils.create_hw_instr([], out_reg, "ALU")
                     for out_reg in ["R1", "R2", "R3", "R4", "R5", "R6"]
                 ],
                 HwSpec(proc_desc),
@@ -293,7 +299,7 @@ class StallErrTest(TestCase):
             UnitModel(
                 ICaseString(name),
                 1,
-                {"ALU": False},
+                {ICaseString("ALU"): False},
                 LockInfo(rd_lock, wr_lock),
             )
             for name, rd_lock, wr_lock in [
@@ -312,7 +318,9 @@ class StallErrTest(TestCase):
         with self.assertRaises(StallError) as ex_chk:
             simulate(
                 [
-                    HwInstruction(*instr_regs, "ALU")
+                    test_type_chks.create_hw_instr(
+                        instr_regs, ICaseString("ALU")
+                    )
                     for instr_regs in [[[], "R1"], [["R1"], "R2"]]
                 ],
                 HwSpec(proc_desc),
@@ -351,7 +359,7 @@ class StallTest(TestCase):
             UnitModel(
                 ICaseString(name),
                 width,
-                {"ALU": False},
+                {ICaseString("ALU"): False},
                 LockInfo(rd_lock, wr_lock),
             )
             for name, width, rd_lock, wr_lock in [
@@ -369,7 +377,7 @@ class StallTest(TestCase):
         self.assertEqual(
             simulate(
                 [
-                    HwInstruction([], out_reg, "ALU")
+                    test_utils.create_hw_instr([], out_reg, "ALU")
                     for out_reg in ["R1", "R2"]
                 ],
                 HwSpec(proc_desc),
@@ -429,7 +437,7 @@ class TestBasic:
         """
         assert simulate(
             [
-                HwInstruction(*regs, ICaseString(categ))
+                test_type_chks.create_hw_instr(regs, ICaseString(categ))
                 for *regs, categ in prog
             ],
             HwSpec(cpu),
@@ -454,19 +462,22 @@ class TestOutputFlush:
         `last_instr` is the last instruction number.
 
         """
-        program = starmap(
-            HwInstruction,
+        prog = starmap(
+            test_utils.create_hw_instr,
             chain([[[], "R1", "ALU"], [["R1"], "R2", "ALU"]], extra_instr_lst),
         )
         cores = starmap(
             lambda name, width: UnitModel(
-                ICaseString(name), width, {"ALU": False}, LockInfo(True, True)
+                ICaseString(name),
+                width,
+                {ICaseString("ALU"): False},
+                LockInfo(True, True),
             ),
             [("core 1", 1), ("core 2", 1 + len(extra_instr_lst))],
         )
         extra_instr_seq = range(2, last_instr)
         assert simulate(
-            tuple(program), HwSpec(ProcessorDesc([], [], cores, []))
+            tuple(prog), HwSpec(ProcessorDesc([], [], cores, []))
         ) == [
             BagValDict(cp_util)
             for cp_util in [
@@ -532,10 +543,7 @@ class TestSim:
 
         """
         prog = starmap(
-            lambda in_regs, out_reg, categ: HwInstruction(
-                in_regs, out_reg, ICaseString(categ)
-            ),
-            chain(valid_prog, [([], "R14", "MEM")]),
+            test_utils.create_hw_instr, chain(valid_prog, [([], "R14", "MEM")])
         )
         ex_chk = raises(
             StallError,
@@ -564,7 +572,7 @@ def _make_proc_desc(units_desc):
         UnitModel(
             ICaseString(name),
             width,
-            {"ALU": False},
+            {ICaseString("ALU"): False},
             LockInfo(rd_lock, wr_lock),
         )
         for name, width, rd_lock, wr_lock in units_desc

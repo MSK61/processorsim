@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -40,9 +40,10 @@
 
 import abc
 from abc import abstractmethod
+import collections.abc
+from collections.abc import Iterable, Iterator
 import itertools
 import typing
-from typing import Iterable, Iterator
 
 import attr
 import fastcore.foundation
@@ -71,7 +72,7 @@ class InstrMovStatus:
 
     """Status of moving instructions"""
 
-    moved: typing.List[HostedInstr] = attr.ib(factory=list)
+    moved: list[HostedInstr] = attr.ib(factory=list)
 
     mem_used: bool = attr.ib(False, init=False)
 
@@ -116,7 +117,7 @@ class IInstrSink(abc.ABC):
     @staticmethod
     def _get_new_guests(
         src_unit: ICaseString, instructions: Iterable[int]
-    ) -> typing.Generator[HostedInstr, None, None]:
+    ) -> collections.abc.Generator[HostedInstr, None, None]:
         """Prepare new hosted instructions.
 
         `src_unit` is the old host of instructions.
@@ -191,7 +192,6 @@ class OutSink(IInstrSink):
 
     """Dummy sink for flushing output ports"""
 
-    # pylint: disable=unused-argument
     def _accepts_cap(self, _: int) -> typing.Literal[True]:
         """Always accept all instructions.
 
@@ -230,8 +230,6 @@ class OutSink(IInstrSink):
 
         """
         return tuple(candidates)
-
-    # pylint: enable=unused-argument
 
     @property
     def _donors(self) -> Iterator[ICaseString]:
@@ -321,7 +319,7 @@ class UnitSink(IInstrSink):
 
     unit: processor_utils.units.FuncUnit
 
-    program: typing.Sequence[program_defs.HwInstruction]
+    program: collections.abc.Sequence[program_defs.HwInstruction]
 
 
 def _mov_candidate(

@@ -32,44 +32,43 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.3, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import typing
-from typing import (
-    AbstractSet,
+import collections.abc
+from collections.abc import (
     Callable,
-    Dict,
     Generator,
     Iterable,
-    List,
     Mapping,
     MutableMapping,
     Sequence,
-    Tuple,
 )
+import itertools
+import typing
+from typing import Any, TypeVar
 
 import attr
 import fastcore.foundation
 from fastcore.foundation import Self
-import iteration_utilities
 import more_itertools
+from more_itertools import one
 import networkx
 from networkx import DiGraph, Graph
 
 from str_utils import ICaseString
-from . import exception
+from . import cap_anal_utils, exception, _port_defs, units
 from .exception import BlockedCapError, ComponentInfo, PathLockError
-from . import units
 from .units import UNIT_CAPS_KEY, UNIT_WIDTH_KEY
-from . import _port_defs
 
 _OLD_NODE_KEY: typing.Final = "old_node"
-_T = typing.TypeVar("_T")
+_KT = TypeVar("_KT")
+_T = TypeVar("_T")
+_VT = TypeVar("_VT")
 
 
 def chk_caps(processor: DiGraph) -> None:
@@ -78,7 +77,18 @@ def chk_caps(processor: DiGraph) -> None:
     `processor` is the processor to check whose capabilities.
 
     """
-    cap_checks = [
+    cap_checks: list[
+        Callable[
+            [
+                DiGraph,
+                Iterable[object],
+                ICaseString,
+                Iterable[ICaseString],
+                Iterable[object],
+            ],
+            None,
+        ]
+    ] = [
         lambda cap_graph, post_ord, cap, in_ports, _: _chk_multilock(
             cap_graph, post_ord, cap, in_ports
         )
@@ -111,7 +121,7 @@ def chk_cycles(processor: Graph) -> None:
 
 
 def chk_non_empty(
-    processor: typing.Container[object], in_ports: Iterable[object]
+    processor: collections.abc.Container[object], in_ports: Iterable[object]
 ) -> None:
     """Check if the processor still has input ports.
 
@@ -167,7 +177,7 @@ class _PathDescriptor:
         """
         return cls(Self.write_lock(), "write", capability, start)
 
-    selector: typing.Callable[[_SatInfo], int]
+    selector: Callable[[_SatInfo], int]
 
     lock_type: object
 
@@ -244,7 +254,7 @@ class _PathLockCalc:
 
     _start_unit: Mapping[object, bool]
 
-    _succ_lst: typing.Collection[object]
+    _succ_lst: collections.abc.Collection[object]
 
     _capability: object
 
@@ -288,7 +298,10 @@ def _aug_terminals(graph: Graph, ports: Sequence[object]) -> object:
     terminal. The function returns the newly added port.
 
     """
-    return ports[0] if len(ports) == 1 else _unify_ports(graph, ports)
+    try:
+        return one(ports)
+    except ValueError:
+        return _unify_ports(graph, ports)
 
 
 def _cap_in_edge(
@@ -341,7 +354,7 @@ def _chk_cap_flow(
     unified_out = _aug_out_ports(
         anal_graph, [unit_anal_map[port] for port in out_ports]
     )
-    unified_out = _split_nodes(anal_graph)[unified_out]
+    unified_out = cap_anal_utils.split_nodes(anal_graph)[unified_out]
     _dist_edge_caps(anal_graph)
 
     for cur_port in in_ports:
@@ -375,8 +388,8 @@ def _chk_in_lock(in_lock_info: _SatInfo, path_desc: _PathDescriptor) -> None:
 
 
 def _chk_in_locks(
-    in_ports: Iterable[object],
-    path_locks: Mapping[object, _SatInfo],
+    in_ports: Iterable[_T],
+    path_locks: Mapping[_T, _SatInfo],
     capability: object,
 ) -> None:
     """Check if paths from input ports don't have exactly one lock.
@@ -415,7 +428,7 @@ def _chk_multilock(
     exist.
 
     """
-    path_locks: Dict[object, _SatInfo] = {}
+    path_locks: dict[object, _SatInfo] = {}
 
     for unit in post_ord:
         _chk_path_locks(unit, processor, path_locks, capability)
@@ -441,21 +454,15 @@ def _chk_path_locks(
 
     """
     succ_lst = tuple(processor.successors(start))
-    # because pylint can't detect packed as a member of
-    # iteration_utilities
-    # pylint: disable=no-member
-    sat_params = map(
-        iteration_utilities.packed(
-            _PathLockCalc(
-                processor.nodes[start], succ_lst, capability, start, path_locks
-            ).calc_lock
-        ),
+    sat_params = itertools.starmap(
+        _PathLockCalc(
+            processor.nodes[start], succ_lst, capability, start, path_locks
+        ).calc_lock,
         [
             (units.UNIT_RLOCK_KEY, _PathDescriptor.make_read_desc),
             (units.UNIT_WLOCK_KEY, _PathDescriptor.make_write_desc),
         ],
     )
-    # pylint: disable=no-member
     path_locks[start] = _SatInfo(*sat_params)
 
 
@@ -500,7 +507,7 @@ def _chk_unit_flow(
         )
 
 
-def _coll_cap_edges(graph: DiGraph) -> typing.FrozenSet[_T]:
+def _coll_cap_edges(graph: DiGraph) -> frozenset[tuple[Any, Any]]:
     """Collect capping edges from the given graph.
 
     `graph` is the graph to collect edges from.
@@ -509,14 +516,10 @@ def _coll_cap_edges(graph: DiGraph) -> typing.FrozenSet[_T]:
     the node.
 
     """
-    out_degrees = graph.out_degree()
-    in_degrees = iteration_utilities.starfilter(
-        lambda node, in_deg: in_deg == 1 or out_degrees[node] == 1,
-        graph.in_degree(),
-    )
     return frozenset(
         _get_cap_edge(graph.in_edges(node), graph.out_edges(node))
-        for node, _ in in_degrees
+        for node, in_deg in graph.in_degree
+        if in_deg == 1 or graph.out_degree(node) == 1
     )
 
 
@@ -536,10 +539,10 @@ def _do_cap_checks(
         Callable[
             [
                 DiGraph,
-                Iterable[object],
+                Generator[object, None, None],
                 ICaseString,
-                Iterable[ICaseString],
-                Iterable[object],
+                list[Any],
+                tuple[Any, ...],
             ],
             None,
         ]
@@ -551,9 +554,7 @@ def _do_cap_checks(
     `cap_checks` are the checks to perform.
 
     """
-    cap_units: AbstractSet[
-        Tuple[ICaseString, List[ICaseString]]
-    ] = _get_cap_units(processor)
+    cap_units = _get_cap_units(processor)
     out_ports = tuple(_port_defs.get_out_ports(processor))
     post_ord = tuple(networkx.dfs_postorder_nodes(processor))
 
@@ -569,8 +570,8 @@ def _do_cap_checks(
 
 
 def _filter_by_cap(
-    post_ord: Iterable[object], capability: object, processor: Graph
-) -> Generator[object, None, None]:
+    post_ord: Iterable[_T], capability: object, processor: Graph
+) -> Generator[_T, None, None]:
     """Filter the given units by the specified capability.
 
     `post_ord` is the post-order of the processor functional units.
@@ -593,7 +594,7 @@ def _get_anal_graph(processor: Graph) -> DiGraph:
     """
     width_graph = DiGraph()
     hw_units = enumerate(processor)
-    new_nodes: Dict[object, object] = {}
+    new_nodes: dict[object, int] = {}
 
     for idx, unit in hw_units:
         _update_graph(idx, unit, processor, width_graph, new_nodes)
@@ -615,14 +616,14 @@ def _get_cap_edge(in_edges: Iterable[_T], out_edges: Iterable[_T]) -> _T:
 
     """
     try:
-        return more_itertools.one(in_edges)
+        return one(in_edges)
     except ValueError:
         return more_itertools.first(out_edges)
 
 
 def _get_cap_units(
     processor: DiGraph,
-) -> AbstractSet[Tuple[ICaseString, List[_T]]]:
+) -> collections.abc.ItemsView[ICaseString, list[Any]]:
     """Create a mapping between capabilities and supporting input ports.
 
     `processor` is the processor to create a capability-port map for.
@@ -630,8 +631,8 @@ def _get_cap_units(
     capability and its supporting units.
 
     """
-    cap_unit_map: Dict[ICaseString, List[_T]] = {}
-    in_ports: Generator[_T, None, None] = _port_defs.get_in_ports(processor)
+    cap_unit_map: dict[ICaseString, list[Any]] = {}
+    in_ports = _port_defs.get_in_ports(processor)
 
     for cur_port in in_ports:
         for cur_cap in processor.nodes[cur_port][UNIT_CAPS_KEY]:
@@ -660,36 +661,8 @@ def _make_cap_graph(processor: Graph, capability: object) -> DiGraph:
     return cap_graph
 
 
-def _mov_out_link(
-    graph: Graph, link: Tuple[object, object], new_node: object
-) -> None:
-    """Move an outgoing link from an old node to a new one.
-
-    `graph` is the graph containing the nodes.
-    `link` is the outgoing link to move.
-    `new_node` is the node to move the outgoing link to.
-
-    """
-    graph.add_edge(new_node, link[1])
-    graph.remove_edge(*link)
-
-
-def _mov_out_links(
-    graph: Graph, out_links: Iterable[Tuple[object, object]], new_node: object
-) -> None:
-    """Move outgoing links from an old node to a new one.
-
-    `graph` is the graph containing the nodes.
-    `out_links` are the outgoing links to move.
-    `new_node` is the node to move the outgoing links to.
-
-    """
-    for cur_link in out_links:
-        _mov_out_link(graph, cur_link, new_node)
-
-
 def _set_capacities(
-    graph: Graph, cap_edges: Iterable[Tuple[object, object]]
+    graph: Graph, cap_edges: Iterable[Sequence[object]]
 ) -> None:
     """Assign capacities to capping edges.
 
@@ -701,44 +674,6 @@ def _set_capacities(
         graph[cur_edge[0]][cur_edge[1]]["capacity"] = min(
             graph.nodes[unit][UNIT_WIDTH_KEY] for unit in cur_edge
         )
-
-
-def _split_node(graph: DiGraph, old_node: object, new_node: object) -> object:
-    """Split a node into old and new ones.
-
-    `graph` is the graph containing the node to be split.
-    `old_node` is the existing node.
-    `new_node` is the node added after splitting.
-    The function returns the new node.
-
-    """
-    graph.add_node(
-        new_node, **{UNIT_WIDTH_KEY: graph.nodes[old_node][UNIT_WIDTH_KEY]}
-    )
-    _mov_out_links(graph, tuple(graph.out_edges(old_node)), new_node)
-    graph.add_edge(old_node, new_node)
-    return new_node
-
-
-def _split_nodes(graph: DiGraph) -> Dict[object, object]:
-    """Split nodes in the given graph as necessary.
-
-    `graph` is the graph containing nodes.
-    The function splits nodes having multiple links on one side and a
-    non-capping link on the other. A link on one side is capping if it's
-    the only link on this side.
-    The function returns a dictionary mapping each unit to its output
-    twin(if one was created) or itself if it wasn't split.
-
-    """
-    out_degrees = graph.out_degree()
-    in_degrees = tuple(graph.in_degree())
-    return {
-        unit: _split_node(graph, unit, len(out_degrees) + unit)
-        if twin != 1 and out_degrees[unit] != 1 and (twin or out_degrees[unit])
-        else unit
-        for unit, twin in in_degrees
-    }
 
 
 def _unify_ports(graph: Graph, ports: Iterable[object]) -> int:
@@ -759,11 +694,11 @@ def _unify_ports(graph: Graph, ports: Iterable[object]) -> int:
 
 
 def _update_graph(
-    idx: object,
-    unit: object,
+    idx: _VT,
+    unit: _KT,
     processor: Graph,
     width_graph: Graph,
-    unit_idx_map: MutableMapping[object, object],
+    unit_idx_map: MutableMapping[_KT, _VT],
 ) -> None:
     """Update width graph structures.
 

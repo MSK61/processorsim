@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -46,6 +46,7 @@ import test_env
 import processor_utils
 from processor_utils import ProcessorDesc
 from processor_utils.units import LockInfo, UnitModel
+import program_defs
 import program_utils
 from str_utils import ICaseString
 
@@ -149,6 +150,17 @@ def compile_prog(prog_file, isa):
 
     """
     return program_utils.compile_program(read_prog_file(prog_file), isa)
+
+
+def create_hw_instr(srcs, dst, categ):
+    """Create a hardware instruction.
+
+    `srcs` are the source registers.
+    `dst` is the register to receive the result.
+    `categ` is the instruction category.
+
+    """
+    return program_defs.HwInstruction(srcs, dst, ICaseString(categ))
 
 
 def read_isa_file(file_name, capabilities):

@@ -31,34 +31,32 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.3, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+from collections.abc import (
+    Collection,
+    Generator,
+    Iterable,
+    Mapping,
+    MutableSequence,
+)
+import itertools
 from itertools import chain
 from logging import warning
 import operator
 import os
 import sys
 import typing
-from typing import (
-    Any,
-    Collection,
-    Dict,
-    Generator,
-    Iterable,
-    List,
-    Mapping,
-    MutableSequence,
-    Tuple,
-)
+from typing import Any, TypeVar
 
 import attr
 import fastcore.foundation
-from fastcore.foundation import map_ex, Self
+from fastcore.foundation import compose, mapt, Self
 import networkx
 from networkx import DiGraph, Graph
 
@@ -66,8 +64,9 @@ import container_utils
 from container_utils import IndexedSet, SelfIndexSet
 from errors import UndefElemError
 from str_utils import ICaseString
+import type_checking
+from . import _checks, _optimization, _port_defs, units
 from .exception import BadEdgeError, BadWidthError, DupElemError
-from . import units
 from .units import (
     FuncUnit,
     UNIT_CAPS_KEY,
@@ -79,17 +78,16 @@ from .units import (
     UNIT_WIDTH_KEY,
     UNIT_WLOCK_KEY,
 )
-from . import _checks
-from . import _optimization
-from . import _port_defs
 
-_T = typing.TypeVar("_T")
+_CapT = TypeVar("_CapT")
+_InstrT = TypeVar("_InstrT")
+_T = TypeVar("_T")
 _UNIT_KEY: typing.Final = "unit"
 
 
 def load_isa(
-    raw_isa: Iterable[Tuple[str, str]], capabilities: Iterable[object]
-) -> Dict[str, object]:
+    raw_isa: Iterable[Iterable[str]], capabilities: Iterable[ICaseString]
+) -> dict[str, ICaseString]:
     """Transform the given raw description into an instruction set.
 
     `raw_isa` is the raw description to extract an instruction set from.
@@ -98,7 +96,7 @@ def load_isa(
     instructions and their capabilities.
 
     """
-    return _create_isa(raw_isa, _init_cap_reg(capabilities))
+    return _create_isa(raw_isa, SelfIndexSet[ICaseString].create(capabilities))
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -114,8 +112,8 @@ class _CapabilityInfo:
 def _add_capability(
     unit: object,
     cap: ICaseString,
-    cap_list: MutableSequence[object],
-    unit_cap_reg: SelfIndexSet[object],
+    cap_list: MutableSequence[ICaseString],
+    unit_cap_reg: SelfIndexSet[ICaseString],
     global_cap_reg: IndexedSet[_CapabilityInfo],
 ) -> None:
     """Add a capability to the given unit.
@@ -147,7 +145,7 @@ def _add_capability(
 def _add_edge(
     processor: Graph,
     edge: Collection[str],
-    unit_registry: SelfIndexSet[object],
+    unit_registry: SelfIndexSet[ICaseString],
     edge_registry: IndexedSet[Collection[str]],
 ) -> None:
     """Add an edge to a processor.
@@ -180,11 +178,11 @@ def _add_edge(
 
 
 def _add_instr(
-    instr_registry: SelfIndexSet[object],
-    cap_registry: SelfIndexSet[object],
-    instr: object,
-    cap: object,
-) -> object:
+    instr_registry: SelfIndexSet[_InstrT],
+    cap_registry: SelfIndexSet[_CapT],
+    instr: _InstrT,
+    cap: _CapT,
+) -> _CapT:
     """Add an instruction to the instruction set.
 
     `instr_registry` is the store of previously added instructions.
@@ -201,8 +199,8 @@ def _add_instr(
 
 def _add_new_cap(
     cap: _CapabilityInfo,
-    cap_list: MutableSequence[object],
-    unit_cap_reg: SelfIndexSet[object],
+    cap_list: MutableSequence[ICaseString],
+    unit_cap_reg: SelfIndexSet[ICaseString],
     global_cap_reg: IndexedSet[_CapabilityInfo],
 ) -> None:
     """Add a new capability to the given list and registry.
@@ -238,8 +236,8 @@ def _add_src_path() -> None:
 
 def _add_unit(
     processor: Graph,
-    unit: Mapping[object, Any],
-    unit_registry: SelfIndexSet[object],
+    unit: Mapping[str, Any],
+    unit_registry: SelfIndexSet[ICaseString],
     cap_registry: IndexedSet[_CapabilityInfo],
 ) -> None:
     """Add a functional unit to a processor.
@@ -268,7 +266,7 @@ def _add_unit(
     unit_registry.add(unit_name)
 
 
-def _chk_instr(instr: object, instr_registry: SelfIndexSet[object]) -> None:
+def _chk_instr(instr: _T, instr_registry: SelfIndexSet[_T]) -> None:
     """Check the given instruction.
 
     `instr` is the instruction.
@@ -294,14 +292,18 @@ def _add_rev_edges(graph: Graph) -> None:
     `graph` is the graph to add edges to.
 
     """
-    edges = chain.from_iterable(
-        ((name, pred.name) for pred in unit.predecessors if pred.name in graph)
-        for name, unit in graph.nodes(_UNIT_KEY)
+    edges = itertools.starmap(
+        lambda name, unit: (
+            (name, pred.name)
+            for pred in unit.predecessors
+            if pred.name in graph
+        ),
+        type_checking.nodes(graph, _UNIT_KEY),
     )
-    graph.add_edges_from(edges)
+    graph.add_edges_from(chain.from_iterable(edges))
 
 
-def _chk_unit_name(name: object, name_registry: SelfIndexSet[object]) -> None:
+def _chk_unit_name(name: _T, name_registry: SelfIndexSet[_T]) -> None:
     """Check the given unit name.
 
     `name` is the unit name.
@@ -321,7 +323,7 @@ def _chk_unit_name(name: object, name_registry: SelfIndexSet[object]) -> None:
         )
 
 
-def _chk_unit_width(unit: Mapping[object, Any]) -> None:
+def _chk_unit_width(unit: Mapping[str, int]) -> None:
     """Check the given unit width.
 
     `unit` is the unit to load whose width.
@@ -332,7 +334,11 @@ def _chk_unit_width(unit: Mapping[object, Any]) -> None:
         raise BadWidthError(
             f"Functional unit ${BadWidthError.UNIT_KEY} has a bad width "
             f"${BadWidthError.WIDTH_KEY}.",
-            *(map_ex([UNIT_NAME_KEY, UNIT_WIDTH_KEY], unit, gen=True)),
+            *(
+                fastcore.foundation.map_ex(
+                    [UNIT_NAME_KEY, UNIT_WIDTH_KEY], unit, gen=True
+                )
+            ),
         )
 
 
@@ -352,8 +358,7 @@ def _conv_graph2(graph: DiGraph) -> DiGraph:
 
 
 def _create_graph(
-    hw_units: Iterable[Mapping[object, object]],
-    links: Iterable[Collection[str]],
+    hw_units: Iterable[Mapping[str, Any]], links: Iterable[Collection[str]]
 ) -> DiGraph:
     """Create a data flow graph for a processor.
 
@@ -364,9 +369,9 @@ def _create_graph(
 
     """
     flow_graph = DiGraph()
-    unit_registry = SelfIndexSet[object]()
+    unit_registry = SelfIndexSet[ICaseString]()
     edge_registry = IndexedSet[Collection[str]](
-        lambda edge: tuple(_get_edge_units(edge, unit_registry))
+        lambda edge: mapt(compose(ICaseString, unit_registry.get), edge)
     )
     cap_registry = IndexedSet[_CapabilityInfo](Self.name())
 
@@ -380,8 +385,8 @@ def _create_graph(
 
 
 def _create_isa(
-    isa_spec: Iterable[Tuple[str, str]], cap_registry: SelfIndexSet[object]
-) -> Dict[str, object]:
+    isa_spec: Iterable[Iterable[str]], cap_registry: SelfIndexSet[ICaseString]
+) -> dict[str, ICaseString]:
     """Create an instruction set of the given ISA dictionary.
 
     `isa_spec` is the ISA specification to normalize.
@@ -390,7 +395,7 @@ def _create_isa(
     and standard capability names.
 
     """
-    instr_registry = SelfIndexSet[object]()
+    instr_registry = SelfIndexSet[ICaseString]()
     return {
         instr.upper(): _add_instr(
             instr_registry,
@@ -427,7 +432,7 @@ def _get_acl_cap(
 
 def _get_cap_dict2(
     attrs: Mapping[object, Iterable[object]]
-) -> Dict[object, bool]:
+) -> dict[object, bool]:
     """Build the capabilities dictionary out of the unit attributes.
 
     `attrs` are the unit attribute dictionary.
@@ -437,9 +442,7 @@ def _get_cap_dict2(
     return {cap: cap in mem_acl_set for cap in attrs[UNIT_CAPS_KEY]}
 
 
-def _get_cap_name(
-    capability: object, cap_registry: SelfIndexSet[object]
-) -> object:
+def _get_cap_name(capability: _T, cap_registry: SelfIndexSet[_T]) -> _T:
     """Return a supported capability name.
 
     `capability` is the name of the capability to validate.
@@ -458,31 +461,9 @@ def _get_cap_name(
     return std_cap
 
 
-def _get_edge_units(
-    edge: Iterable[str], unit_registry: SelfIndexSet[object]
-) -> Generator[object, None, None]:
-    """Return the units of an edge.
-
-    `edge` is the edge to retrieve whose units.
-    `unit_registry` is the store of units.
-
-    """
-    return (unit_registry.get(ICaseString(unit)) for unit in edge)
-
-
-def _get_frozen_lst(obj_lst: Iterable[object]) -> Tuple[object, ...]:
-    """Return a read-only list of the given objects.
-
-    `obj_lst` is an iterable over the objects to be stored in the
-              read-only list.
-
-    """
-    return tuple(obj_lst)
-
-
 def _get_preds(
-    processor: DiGraph, unit: object, unit_map: Mapping[object, _T]
-) -> typing.Iterator[_T]:
+    processor: DiGraph, unit: object, unit_map: Any
+) -> "map[str] | list[str]":
     """Retrieve the predecessor units of the given unit.
 
     `processor` is the processor containing the unit.
@@ -491,7 +472,9 @@ def _get_preds(
     The function returns an iterator over predecessor units.
 
     """
-    return map_ex(processor.predecessors(unit), unit_map, gen=True)
+    return fastcore.foundation.map_ex(
+        processor.predecessors(unit), unit_map, gen=True
+    )
 
 
 def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
@@ -523,8 +506,8 @@ def _get_proc_units2(graph: DiGraph) -> Generator[FuncUnit, None, None]:
 
 
 def _get_std_edge(
-    edge: Iterable[str], unit_registry: SelfIndexSet[object]
-) -> Generator[object, None, None]:
+    edge: Iterable[str], unit_registry: SelfIndexSet[ICaseString]
+) -> Generator[ICaseString, None, None]:
     """Return a validated edge.
 
     `edge` is the edge to validate.
@@ -536,9 +519,7 @@ def _get_std_edge(
     return (_get_unit_name(ICaseString(unit), unit_registry) for unit in edge)
 
 
-def _get_unit_entry(
-    name: ICaseString, attrs: Mapping[object, Any]
-) -> UnitModel:
+def _get_unit_entry(name: ICaseString, attrs: Mapping[str, Any]) -> UnitModel:
     """Create a unit map entry from the given attributes.
 
     `name` is the unit name.
@@ -546,7 +527,9 @@ def _get_unit_entry(
     The function returns the unit model.
 
     """
-    lock_attrs = map_ex([UNIT_RLOCK_KEY, UNIT_WLOCK_KEY], attrs, gen=True)
+    lock_attrs = type_checking.map_ex(
+        [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY], attrs, bool
+    )
     return UnitModel(
         name,
         attrs[UNIT_WIDTH_KEY],
@@ -569,9 +552,7 @@ def _get_unit_graph(internal_units: Iterable[FuncUnit]) -> DiGraph:
     return rev_graph
 
 
-def _get_unit_name(
-    unit: object, unit_registry: SelfIndexSet[object]
-) -> object:
+def _get_unit_name(unit: _T, unit_registry: SelfIndexSet[_T]) -> _T:
     """Return a validated unit name.
 
     `unit` is the name of the unit to validate.
@@ -590,26 +571,10 @@ def _get_unit_name(
     return std_name
 
 
-def _init_cap_reg(capabilities: Iterable[object]) -> SelfIndexSet[object]:
-    """Initialize a capability registry.
-
-    `capabilities` are the unique capabilities to initially insert into
-                   the registry.
-    The function returns a capability registry containing the given
-    unique capabilities.
-
-    """
-    cap_registry = SelfIndexSet[object]()
-
-    for cap in capabilities:
-        cap_registry.add(cap)
-
-    return cap_registry
-
-
 def _load_caps(
-    unit: Mapping[object, Any], cap_registry: IndexedSet[_CapabilityInfo]
-) -> List[object]:
+    unit: Mapping[str, Iterable[str]],
+    cap_registry: IndexedSet[_CapabilityInfo],
+) -> list[ICaseString]:
     """Load the given unit capabilities.
 
     `unit` is the unit to load whose capabilities.
@@ -617,8 +582,8 @@ def _load_caps(
     The function returns a list of loaded capabilities.
 
     """
-    cap_list: List[object] = []
-    unit_cap_reg = SelfIndexSet[object]()
+    cap_list: list[ICaseString] = []
+    unit_cap_reg = SelfIndexSet[ICaseString]()
 
     for cur_cap in unit[UNIT_CAPS_KEY]:
         _add_capability(
@@ -633,7 +598,8 @@ def _load_caps(
 
 
 def _load_mem_acl(
-    unit: Mapping[object, Any], cap_registry: IndexedSet[_CapabilityInfo]
+    unit: Mapping[str, Iterable[str]],
+    cap_registry: IndexedSet[_CapabilityInfo],
 ) -> Generator[ICaseString, None, None]:
     """Load the given unit memory ACL.
 
@@ -649,7 +615,7 @@ def _load_mem_acl(
     )
 
 
-def _post_order(internal_units: Iterable[FuncUnit]) -> Tuple[FuncUnit, ...]:
+def _post_order(internal_units: Iterable[FuncUnit]) -> tuple[Any, ...]:
     """Create a post-order for internal units.
 
     `internal_units` are the internal units.
@@ -660,12 +626,9 @@ def _post_order(internal_units: Iterable[FuncUnit]) -> Tuple[FuncUnit, ...]:
 
     """
     rev_graph = _get_unit_graph(internal_units)
-    return tuple(
-        fastcore.foundation.maps(
-            rev_graph.nodes.get,
-            operator.itemgetter(_UNIT_KEY),
-            networkx.topological_sort(rev_graph),
-        )
+    return mapt(
+        compose(rev_graph.nodes.get, operator.itemgetter(_UNIT_KEY)),
+        networkx.topological_sort(rev_graph),
     )
 
 
@@ -690,10 +653,10 @@ def _prep_proc_desc(processor: DiGraph) -> None:
     _checks.chk_caps(processor)
 
 
-def _sorted_units(hw_units: Iterable[object]) -> Tuple[FuncUnit, ...]:
+def _sorted_units(hw_units: Iterable[Any]) -> tuple[Any, ...]:
     """Create a sorted list of the given units.
 
-    `hw_units` are the units to create a sorted list of.
+    `hw_units` are the units to sort.
 
     """
     return container_utils.sorted_tuple(hw_units, key=Self.model.name())
@@ -704,16 +667,18 @@ class ProcessorDesc:
 
     """Processor description"""
 
-    in_ports: Tuple[UnitModel, ...] = attr.ib(converter=_get_frozen_lst)
+    in_ports: tuple[UnitModel, ...] = attr.ib(converter=tuple[UnitModel, ...])
 
-    out_ports: Tuple[FuncUnit, ...] = attr.ib(converter=_sorted_units)
+    out_ports: tuple[FuncUnit, ...] = attr.ib(converter=_sorted_units)
 
-    in_out_ports: Tuple[UnitModel, ...] = attr.ib(converter=_get_frozen_lst)
+    in_out_ports: tuple[UnitModel, ...] = attr.ib(
+        converter=tuple[UnitModel, ...]
+    )
 
-    internal_units: Tuple[FuncUnit, ...] = attr.ib(converter=_post_order)
+    internal_units: tuple[FuncUnit, ...] = attr.ib(converter=_post_order)
 
 
-def get_abilities(processor: ProcessorDesc) -> typing.FrozenSet[object]:
+def get_abilities(processor: ProcessorDesc) -> frozenset[ICaseString]:
     """Retrieve all capabilities supported by the given processor.
 
     `processor` is the processor to retrieve whose capabilities.
@@ -725,7 +690,7 @@ def get_abilities(processor: ProcessorDesc) -> typing.FrozenSet[object]:
     )
 
 
-def load_proc_desc(raw_desc: Mapping[object, Any]) -> ProcessorDesc:
+def load_proc_desc(raw_desc: Any) -> ProcessorDesc:
     """Transform the given raw description into a processor one.
 
     `raw_desc` is the raw description to extract a processor from.
@@ -734,7 +699,17 @@ def load_proc_desc(raw_desc: Mapping[object, Any]) -> ProcessorDesc:
     of a unit always succeed the unit.
 
     """
-    proc_desc = _create_graph(raw_desc["units"], raw_desc["dataPath"])
+    # Mypy requires all types to be instantiable(concrete) but
+    # type_checking.map_ex uses the type only for casting.
+    proc_desc = _create_graph(
+        *(
+            type_checking.map_ex(
+                ["units", "dataPath"],
+                raw_desc,
+                Iterable[Mapping[str, Any]],  # type: ignore[type-abstract]
+            )
+        )
+    )
     _prep_proc_desc(proc_desc)
     return _make_processor(proc_desc)
 
@@ -746,22 +721,30 @@ def _make_processor(proc_graph: DiGraph) -> ProcessorDesc:
 
     """
     unit_graph = _get_proc_units(proc_graph)
-    in_out_ports = []
-    in_ports = []
-    internal_units = []
-    out_ports = []
-    in_degrees = proc_graph.in_degree()
-    out_degrees = proc_graph.out_degree()
+    in_out_ports: list[UnitModel] = []
+    in_ports: list[UnitModel] = []
+    internal_units: list[FuncUnit] = []
+    out_ports: list[FuncUnit] = []
 
     for unit in unit_graph:
-        if in_degrees[unit.model.name] and out_degrees[unit.model.name]:
-            internal_units.append(unit)
-        elif in_degrees[unit.model.name]:
-            out_ports.append(unit)
-        elif out_degrees[unit.model.name]:
-            in_ports.append(unit.model)
-        else:
-            in_out_ports.append(unit.model)
+        match mapt(
+            bool,
+            [
+                proc_graph.in_degree(unit.model.name),
+                proc_graph.out_degree(unit.model.name),
+            ],
+        ):
+            case True, True:
+                internal_units.append(unit)
+
+            case True, False:
+                out_ports.append(unit)
+
+            case False, True:
+                in_ports.append(unit.model)
+
+            case _:
+                in_out_ports.append(unit.model)
 
     return ProcessorDesc(in_ports, out_ports, in_out_ports, internal_units)
 

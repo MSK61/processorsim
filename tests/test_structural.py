@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -45,11 +45,11 @@ import attr
 import more_itertools
 import pytest
 
+from test_utils import create_hw_instr
 from container_utils import BagValDict
 import processor_utils
 from processor_utils import ProcessorDesc, units
 from processor_utils.units import LockInfo, UnitModel
-from program_defs import HwInstruction
 from sim_services import HwSpec, simulate
 from sim_services.sim_defs import InstrState, StallState
 from str_utils import ICaseString
@@ -72,7 +72,7 @@ class MemUtilTest(TestCase):
                 UnitModel(
                     ICaseString("full system"),
                     2,
-                    {"ALU": True},
+                    {ICaseString("ALU"): True},
                     LockInfo(True, True),
                 )
             ],
@@ -81,7 +81,7 @@ class MemUtilTest(TestCase):
         self.assertEqual(
             simulate(
                 [
-                    HwInstruction([], out_reg, "ALU")
+                    create_hw_instr([], out_reg, "ALU")
                     for out_reg in ["R1", "R2"]
                 ],
                 HwSpec(proc_desc),
@@ -105,10 +105,7 @@ class StructuralTest(TestCase):
 
         """
         sim_res = simulate(
-            [
-                HwInstruction([], out_reg, ICaseString("ALU"))
-                for out_reg in ["R1", "R2"]
-            ],
+            [create_hw_instr([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
             HwSpec(
                 processor_utils.load_proc_desc(
                     {
@@ -261,14 +258,14 @@ class TestHazards:
         in_unit = UnitModel(
             ICaseString("input"),
             in_params.width,
-            {"ALU": in_params.mem_util},
+            {ICaseString("ALU"): in_params.mem_util},
             LockInfo(True, False),
         )
         out_units = (
             UnitModel(
                 ICaseString(name),
                 width,
-                {"ALU": mem_access},
+                {ICaseString("ALU"): mem_access},
                 LockInfo(False, True),
             )
             for name, width, mem_access in in_params.out_unit_params
@@ -282,7 +279,7 @@ class TestHazards:
             )
         }
         assert simulate(
-            [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
+            [create_hw_instr([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
             HwSpec(ProcessorDesc([in_unit], out_units, [], [])),
         ) == list(
             map(

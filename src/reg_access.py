@@ -31,17 +31,17 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import collections.abc
 import enum
 from enum import auto
-import typing
-from typing import Final, List
+from typing import Final
 
 import attr
 
@@ -62,10 +62,14 @@ class AccessGroup:
 
     access_type: object = attr.ib()
 
-    reqs: typing.MutableSet[object] = attr.ib(converter=set, factory=set)
+    reqs: collections.abc.MutableSet[object] = attr.ib(
+        converter=set, factory=set
+    )
 
 
-def _rev_list(lst: typing.Reversible[object]) -> List[object]:
+def _rev_groups(
+    lst: collections.abc.Reversible[AccessGroup],
+) -> list[AccessGroup]:
     """Return the reversed list of the given one.
 
     `lst` is the list to reverse.
@@ -79,7 +83,6 @@ class RegAccessQueue:
 
     """Access request queue for a single register"""
 
-    # pylint: disable=unsubscriptable-object
     def can_access(self, req_type: object, req_owner: object) -> bool:
         """Request access to the register.
 
@@ -103,14 +106,14 @@ class RegAccessQueue:
         self._queue[-1].reqs.remove(req_owner)
 
         if not self._queue[-1].reqs:
-            del self._queue[-1]  # pylint: disable=unsupported-delete-operation
+            del self._queue[-1]
 
     # Typically a queue pushes new elements at the back and removes old
     # elements from the front. Since this queue is going to support
     # removal only without addition, we reverse the given queue to make
     # the queue front at the list tail and make use of the fast access
     # to the list tail.
-    _queue: List[AccessGroup] = attr.ib(converter=_rev_list)
+    _queue: list[AccessGroup] = attr.ib(converter=_rev_groups)
 
 
 class RegAccQBuilder:
@@ -123,7 +126,7 @@ class RegAccQBuilder:
         `self` is this access queue builder.
 
         """
-        self._queue: List[AccessGroup] = []
+        self._queue: list[AccessGroup] = []
 
     def append(self, req_type: AccessType, req_owner: int) -> None:
         """Append a new read request to the built queue.

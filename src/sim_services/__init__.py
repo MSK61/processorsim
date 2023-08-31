@@ -31,29 +31,28 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import collections
-import copy
-from itertools import chain
-import string
-import typing
-from typing import (
-    Dict,
+from collections import defaultdict
+import collections.abc
+from collections.abc import (
     Iterable,
     Iterator,
-    List,
     Mapping,
     MutableMapping,
     MutableSequence,
     Sequence,
-    Tuple,
 )
+import copy
+from itertools import chain
+import string
+import typing
+from typing import Any, TypeVar
 
 import attr
 from fastcore.foundation import Self
@@ -70,7 +69,13 @@ from . import _instr_sinks, _utils
 from ._instr_sinks import IInstrSink
 from .sim_defs import InstrState, StallState
 
-_T = typing.TypeVar("_T")
+_KT = TypeVar("_KT")
+# By all means _ObjT and _T definitions below are equivalent, however
+# _ObjT is needed for generic functions in whose signatures the type
+# variable only appears once otherwise pylance issues a warning/error.
+_ObjT = TypeVar("_ObjT", bound=object)
+_T = TypeVar("_T")
+_VT = TypeVar("_VT")
 
 
 class StallError(RuntimeError):
@@ -112,10 +117,12 @@ class HwSpec:
 
     processor_desc: ProcessorDesc = attr.ib()
 
-    name_unit_map: Dict[ICaseString, UnitModel] = attr.ib(init=False)
+    name_unit_map: dict[ICaseString, UnitModel] = attr.ib(init=False)
 
-    @name_unit_map.default
-    def _(self) -> Dict[ICaseString, UnitModel]:
+    # Casting to typing.Any because pylance can't detect default as a
+    # member of attr.ib.
+    @typing.cast(Any, name_unit_map).default
+    def _(self) -> dict[ICaseString, UnitModel]:
         """Build the name-to-unit mapping.
 
         `self` is this hardware specification.
@@ -137,7 +144,7 @@ class HwSpec:
 
 def simulate(
     program: Sequence[HwInstruction], hw_info: HwSpec
-) -> List[BagValDict[ICaseString, InstrState]]:
+) -> list[BagValDict[ICaseString, InstrState]]:
     """Run the given program on the processor.
 
     `program` is the program to run.
@@ -145,7 +152,7 @@ def simulate(
     The function returns the pipeline diagram.
 
     """
-    util_tbl: List[BagValDict[ICaseString, InstrState]] = []
+    util_tbl: list[BagValDict[ICaseString, InstrState]] = []
     acc_queues = _build_acc_plan(enumerate(program))
     issue_rec = _IssueInfo()
     prog_len = len(program)
@@ -206,9 +213,9 @@ class _IssueInfo:
         """
         return self._exited < self._entered
 
-    _entered = attr.ib(0, init=False)
+    _entered: int = attr.ib(0, init=False)
 
-    _exited = attr.ib(0, init=False)
+    _exited: int = attr.ib(0, init=False)
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -226,14 +233,14 @@ class _TransitionUtil:
 
     """Utilization transition of a single unit between two pulses"""
 
-    old_util: typing.Collection[InstrState]
+    old_util: collections.abc.Collection[InstrState]
 
     new_util: Iterable[InstrState]
 
 
 def _accept_instr(
     issue_rec: _IssueInfo,
-    instr_categ: object,
+    instr_categ: ICaseString,
     input_iter: Iterator[UnitModel],
     util_info: BagValDict[ICaseString, InstrState],
     accept_res: _AcceptStatus,
@@ -263,7 +270,7 @@ def _accept_instr(
 
 def _accept_in_unit(
     input_iter: Iterator[UnitModel],
-    instr_categ: object,
+    instr_categ: ICaseString,
     accept_res: _AcceptStatus,
     util_info: BagValDict[ICaseString, InstrState],
     issue_rec: _IssueInfo,
@@ -340,17 +347,15 @@ def _add_wr_access(instr: int, builder: RegAccQBuilder) -> None:
 
 
 def _build_acc_plan(
-    program: Iterable[Tuple[int, HwInstruction]]
-) -> Dict[object, RegAccessQueue]:
+    program: Iterable[Iterable[Any]],
+) -> dict[object, RegAccessQueue]:
     """Build the registry access plan through the program lifetime.
 
     `program` is the program to build a registry access plan for.
     The function returns the registry access plan.
 
     """
-    builders: typing.DefaultDict[
-        object, RegAccQBuilder
-    ] = collections.defaultdict(RegAccQBuilder)
+    builders: defaultdict[object, RegAccQBuilder] = defaultdict(RegAccQBuilder)
 
     for instr_index, instr in program:
         _add_access(instr, instr_index, builders)
@@ -360,13 +365,13 @@ def _build_acc_plan(
 
 def _build_cap_map(
     inputs: Iterable[UnitModel],
-) -> Dict[object, List[UnitModel]]:
+) -> dict[object, list[UnitModel]]:
     """Build the capability map for input units.
 
     `inputs` are the input processing units.
 
     """
-    cap_map: Dict[object, List[UnitModel]] = {}
+    cap_map: dict[object, list[UnitModel]] = {}
 
     for unit in inputs:
         for cap in unit.capabilities:
@@ -437,7 +442,7 @@ def _chk_full_stall(
 
 def _chk_hazards(
     old_util: BagValDict[_T, InstrState],
-    new_util: Iterable[Tuple[_T, Iterable[InstrState]]],
+    new_util: Iterable[Iterable[Any]],
     name_unit_map: Mapping[_T, UnitModel],
     program: Sequence[HwInstruction],
     acc_queues: Mapping[object, RegAccessQueue],
@@ -455,7 +460,7 @@ def _chk_hazards(
     stalled instructions appropriately according to idientified hazards.
 
     """
-    reqs_to_clear: Dict[object, MutableSequence[object]] = {}
+    reqs_to_clear: dict[object, MutableSequence[object]] = {}
 
     for unit, new_unit_util in new_util:
         _stall_unit(
@@ -474,10 +479,10 @@ def _chk_hazards(
 
 
 def _chk_avail_regs(
-    avail_regs: MutableSequence[Sequence[object]],
-    acc_queues: Mapping[object, RegAccessQueue],
+    avail_regs: MutableSequence[Iterable[_T]],
+    acc_queues: Mapping[_T, RegAccessQueue],
     lock: bool,
-    new_regs: Sequence[object],
+    new_regs: Iterable[_T],
     req_params: Iterable[object],
 ) -> bool:
     """Check if the given registers can be accessed.
@@ -502,7 +507,7 @@ def _chk_avail_regs(
 
 def _clr_src_units(
     instructions: Iterable[_instr_sinks.HostedInstr],
-    util_info: BagValDict[ICaseString, _T],
+    util_info: BagValDict[ICaseString, _ObjT],
 ) -> None:
     """Clear the utilization of units releasing instructions.
 
@@ -690,7 +695,7 @@ def _regs_avail(
     The function returns the registers availability state.
 
     """
-    avail_reg_lists: List[Sequence[object]] = []
+    avail_reg_lists: list[Iterable[object]] = []
     return (
         _RegAvailState(True, chain.from_iterable(avail_reg_lists))
         if all(
@@ -712,7 +717,9 @@ def _regs_avail(
     )
 
 
-def _regs_loaded(old_unit_util: Iterable[InstrState], instr: object) -> bool:
+def _regs_loaded(
+    old_unit_util: Iterable[InstrState], instr: object
+) -> typing.Optional[InstrState]:
     """Check if the registers were previously loaded.
 
     `old_unit_util` is the unit utilization information of the previous
@@ -721,13 +728,10 @@ def _regs_loaded(old_unit_util: Iterable[InstrState], instr: object) -> bool:
             checked for being previously loaded.
 
     """
-    return typing.cast(
-        bool,
-        more_itertools.first_true(
-            old_unit_util,
-            pred=lambda old_instr: old_instr.instr == instr
-            and old_instr.stalled != StallState.DATA,
-        ),
+    return more_itertools.first_true(
+        old_unit_util,
+        pred=lambda old_instr: old_instr.instr == instr
+        and old_instr.stalled != StallState.DATA,
     )
 
 
@@ -793,9 +797,9 @@ def _stall_unit(
 
 
 def _update_clears(
-    reqs_to_clear: MutableMapping[object, MutableSequence[object]],
-    regs: Iterable[object],
-    instr: object,
+    reqs_to_clear: MutableMapping[_KT, MutableSequence[_VT]],
+    regs: Iterable[_KT],
+    instr: _VT,
 ) -> None:
     """Update the list of register accesses to be cleared.
 

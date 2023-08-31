@@ -1,6 +1,7 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""simulation definitions"""
+"""tests capability analysis utilities"""
 
 ############################################################
 #
@@ -23,11 +24,11 @@
 #
 # program:      processor simulator
 #
-# file:         sim_defs.py
+# file:         test_cap_anal.py
 #
-# function:     simulation helper classes
+# function:     capability analysis utilities tests
 #
-# description:  simulation definitions
+# description:  tests capability analysis utilities
 #
 # author:       Mohammed El-Afifi (ME)
 #
@@ -38,31 +39,37 @@
 #
 ############################################################
 
-import enum
-from enum import auto
-from typing import Final
+import unittest
 
-import attr
+import networkx
 
-
-class StallState(enum.Enum):
-
-    """Instruction stalling state"""
-
-    NO_STALL: Final = auto()
-
-    STRUCTURAL: Final = auto()
-
-    DATA: Final = auto()
+import processor_utils.cap_anal_utils
 
 
-@attr.s
-class InstrState:
+class SplitTest(unittest.TestCase):
 
-    """Instruction state"""
+    """Test case for splitting capability graphs"""
 
-    instr: int = attr.ib()
+    def test_new_unit_is_larger_than_the_original_by_the_graph_size(self):
+        """Test splitting a graph.
 
-    # default is indeed the first parameter but pylance doesn't honor it
-    # as a positional argument in calls.
-    stalled: StallState = attr.ib(default=StallState.NO_STALL)
+        `self` is this test case.
+
+        """
+        graph = networkx.DiGraph({0: [2, 3], 1: [4, 5]})
+
+        for in_node in [0, 1]:
+            graph.nodes[in_node][processor_utils.units.UNIT_WIDTH_KEY] = 1
+
+        self.assertEqual(
+            processor_utils.cap_anal_utils.split_nodes(graph)[1], 7
+        )
+
+
+def main():
+    """entry point for running test in this module"""
+    unittest.main()
+
+
+if __name__ == "__main__":
+    main()

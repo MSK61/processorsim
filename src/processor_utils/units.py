@@ -31,22 +31,22 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import collections.abc
 import operator
-import typing
-from typing import Final, Tuple
+from typing import Any, Final
 
 import attr
 import fastcore.foundation
 
 import container_utils
-import str_utils
+from str_utils import ICaseString
 
 # unit attributes
 UNIT_CAPS_KEY: Final = "capabilities"
@@ -57,6 +57,17 @@ UNIT_RLOCK_KEY: Final = "readLock"
 UNIT_WLOCK_KEY: Final = "writeLock"
 UNIT_ROLES_KEY: Final = "roles"
 UNIT_WIDTH_KEY: Final = "width"
+
+
+def sorted_models(models: collections.abc.Iterable[Any]) -> tuple[Any, ...]:
+    """Create a sorted list of the given models.
+
+    `models` are the models to sort.
+
+    """
+    return container_utils.sorted_tuple(
+        models, key=fastcore.foundation.Self.name()
+    )
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -74,7 +85,7 @@ class UnitModel:
 
     """Functional unit model"""
 
-    def needs_mem(self, cap: object) -> bool:
+    def needs_mem(self, cap: ICaseString) -> bool:
         """Test if the given capability will require memory access.
 
         `self` is this unit model.
@@ -83,7 +94,7 @@ class UnitModel:
         return self.roles[cap]
 
     @property
-    def capabilities(self) -> typing.KeysView[object]:
+    def capabilities(self) -> collections.abc.KeysView[ICaseString]:
         """Unit capabilities
 
         `self` is this unit model.
@@ -91,24 +102,13 @@ class UnitModel:
         """
         return self.roles.keys()
 
-    name: str_utils.ICaseString = attr.ib()
+    name: ICaseString = attr.ib()
 
     width: int = attr.ib()
 
-    roles: typing.Mapping[object, bool] = attr.ib()
+    roles: collections.abc.Mapping[ICaseString, bool] = attr.ib()
 
     lock_info: LockInfo = attr.ib()
-
-
-def sorted_models(models: typing.Iterable[object]) -> Tuple[UnitModel, ...]:
-    """Create a sorted list of the given models.
-
-    `models` are the models to create a sorted list of.
-
-    """
-    return container_utils.sorted_tuple(
-        models, key=fastcore.foundation.Self.name()
-    )
 
 
 @attr.s(eq=False, frozen=True)
@@ -116,7 +116,7 @@ class FuncUnit:
 
     """Processing functional unit"""
 
-    def __eq__(self, other: typing.Any) -> bool:
+    def __eq__(self, other: Any) -> bool:
         """Test if the two functional units are identical.
 
         `self` is this functional unit.
@@ -136,4 +136,4 @@ class FuncUnit:
 
     model: UnitModel = attr.ib()
 
-    predecessors: Tuple[UnitModel, ...] = attr.ib(converter=sorted_models)
+    predecessors: tuple[UnitModel, ...] = attr.ib(converter=sorted_models)

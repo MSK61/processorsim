@@ -31,22 +31,23 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import typing
-from typing import Tuple
+import collections.abc
+from typing import Any
 
 import attr
 
 import container_utils
+import str_utils
 
 
-def _sorted_uniq(elems: typing.Iterable[object]) -> Tuple[object, ...]:
+def _sorted_uniq(elems: collections.abc.Iterable[Any]) -> tuple[Any, ...]:
     """Sort the elements after filtering out duplicates.
 
     `elems` are the elements to filter and sort.
@@ -60,7 +61,7 @@ class _Instruction:
 
     """Instruction"""
 
-    sources: Tuple[object, ...] = attr.ib(converter=_sorted_uniq)
+    sources: tuple[object, ...] = attr.ib(converter=_sorted_uniq)
 
     destination: object = attr.ib()
 
@@ -70,7 +71,7 @@ class HwInstruction(_Instruction):
 
     """Hardware instruction"""
 
-    categ: object = attr.ib()
+    categ: str_utils.ICaseString = attr.ib()
 
 
 @attr.s(auto_attribs=True, frozen=True)

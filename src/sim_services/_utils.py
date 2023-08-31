@@ -31,14 +31,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import typing
+import collections.abc
 
 
 def mem_unavail(mem_busy: bool, mem_req: bool) -> bool:
@@ -51,7 +51,7 @@ def mem_unavail(mem_busy: bool, mem_req: bool) -> bool:
     return mem_busy and mem_req
 
 
-def unit_full(width: object, unit_util: typing.Sized) -> bool:
+def unit_full(width: object, unit_util: collections.abc.Sized) -> bool:
     """Check if the unit is full.
 
     `width` is the unit width.

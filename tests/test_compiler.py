@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -49,7 +49,6 @@ from pytest import mark, raises
 import test_utils
 from test_utils import read_prog_file
 import errors
-import program_defs
 from program_defs import ProgInstruction
 import program_utils
 from program_utils import CodeError, read_program
@@ -145,10 +144,8 @@ class TestProgLoad:
         assert test_utils.compile_prog(
             prog_file, {"ADD": ICaseString("ALU")}
         ) == [
-            program_defs.HwInstruction(
-                map(ICaseString, inputs),
-                ICaseString("R14"),
-                ICaseString("ALU"),
+            test_utils.create_hw_instr(
+                map(ICaseString, inputs), ICaseString("R14"), "ALU"
             )
         ]
 

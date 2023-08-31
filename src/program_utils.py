@@ -31,28 +31,30 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+from collections.abc import Iterable, Mapping
 import logging
 from re import split
 import string
 import typing
-from typing import Final, Iterable, List, Mapping
+from typing import Final
 
 import attr
 import fastcore.foundation
-import iteration_utilities
 
 import container_utils
 from container_utils import IndexedSet
 from errors import UndefElemError
 from program_defs import HwInstruction, ProgInstruction
 from str_utils import ICaseString
+
+_T = typing.TypeVar("_T")
 
 
 class CodeError(RuntimeError):
@@ -102,8 +104,8 @@ class CodeError(RuntimeError):
 
 
 def compile_program(
-    prog: Iterable[ProgInstruction], isa: Mapping[str, object]
-) -> List[HwInstruction]:
+    prog: Iterable[ProgInstruction], isa: Mapping[str, ICaseString]
+) -> list[HwInstruction]:
     """Compile the program using the given instruction set.
 
     `prog` is the program to compile.
@@ -124,20 +126,20 @@ def compile_program(
     ]
 
 
-def read_program(prog_file: Iterable[str]) -> List[ProgInstruction]:
+def read_program(prog_file: Iterable[str]) -> list[ProgInstruction]:
     """Read the program stored in the given file.
 
     `prog_file` is the file containing the assembly program.
     The function returns the program instructions.
 
     """
-    program: typing.Generator[
-        typing.Tuple[int, str], None, None
-    ] = iteration_utilities.starfilter(
-        lambda _, line: line, enumerate(map(str.strip, prog_file), 1)
-    )
+    prog = enumerate(map(str.strip, prog_file), 1)
     reg_registry = IndexedSet[_OperandInfo](fastcore.foundation.Self.name())
-    return [_create_instr(*line, reg_registry) for line in program]
+    return [
+        _create_instr(line_no, line, reg_registry)
+        for line_no, line in prog
+        if line
+    ]
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -177,7 +179,7 @@ def _create_instr(
     return ProgInstruction(sources, dst, src_line_info.instruction, line_num)
 
 
-def _get_cap(isa: Mapping[str, object], instr: ProgInstruction) -> object:
+def _get_cap(isa: Mapping[str, _T], instr: ProgInstruction) -> _T:
     """Get the ISA capability of the given instruction.
 
     `isa` is the instruction set containing upper-case instructions.
@@ -224,7 +226,7 @@ def _get_operands(
     src_line_info: _LineInfo,
     line_num: object,
     reg_registry: IndexedSet[_OperandInfo],
-) -> List[ICaseString]:
+) -> list[ICaseString]:
     """Extract operands from the given line.
 
     `src_line_info` is the source line information.

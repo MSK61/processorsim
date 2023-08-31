@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -42,10 +42,8 @@
 from os.path import join
 import unittest
 
-import nbconvert.preprocessors
-import nbformat
-
 import test_paths
+import test_type_chks
 
 
 class ExampleTest(unittest.TestCase):
@@ -62,10 +60,7 @@ class ExampleTest(unittest.TestCase):
         with open(
             join(examples_dir, "unified memory.ipynb"), encoding="utf-8"
         ) as nb_file:
-            nbconvert.preprocessors.ExecutePreprocessor().preprocess(
-                nbformat.read(nb_file, nbformat.NO_CONVERT),
-                {"metadata": {"path": examples_dir}},
-            )
+            test_type_chks.exec_file(nb_file, examples_dir)
 
 
 def main():

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""simulation definitions"""
+"""wrappers for appeasing type checkers"""
 
 ############################################################
 #
@@ -23,11 +23,12 @@
 #
 # program:      processor simulator
 #
-# file:         sim_defs.py
+# file:         test_type_chks.py
 #
-# function:     simulation helper classes
+# function:     type checking clutches
 #
-# description:  simulation definitions
+# description:  contains wrappers for services that might upset type
+#               checkers
 #
 # author:       Mohammed El-Afifi (ME)
 #
@@ -38,31 +39,35 @@
 #
 ############################################################
 
-import enum
-from enum import auto
-from typing import Final
+import nbconvert.preprocessors
+import nbformat
 
-import attr
-
-
-class StallState(enum.Enum):
-
-    """Instruction stalling state"""
-
-    NO_STALL: Final = auto()
-
-    STRUCTURAL: Final = auto()
-
-    DATA: Final = auto()
+import program_defs
 
 
-@attr.s
-class InstrState:
+def create_hw_instr(regs, categ):
+    """Create a hardware instruction.
 
-    """Instruction state"""
+    `regs` are the registers the instruction is operating on.
+    `categ` is the instruction category.
 
-    instr: int = attr.ib()
+    """
+    # Pylance can't match packed arguments to the number of positional
+    # arguments.
+    srcs, dst = regs
+    return program_defs.HwInstruction(srcs, dst, categ)
 
-    # default is indeed the first parameter but pylance doesn't honor it
-    # as a positional argument in calls.
-    stalled: StallState = attr.ib(default=StallState.NO_STALL)
+
+def exec_file(nb_file, run_path):
+    """Execute a notebook file.
+
+    `nb_file` is the notebook file to execute.
+    `run_path` is the execution path.
+
+    """
+    # Pylance doesn't see ExecutePreprocessor exported from
+    # nbconvert.preprocessors.
+    nbconvert.preprocessors.ExecutePreprocessor().preprocess(  # type: ignore
+        nbformat.read(nb_file, nbformat.NO_CONVERT),
+        {"metadata": {"path": run_path}},
+    )

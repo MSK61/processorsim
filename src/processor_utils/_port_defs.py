@@ -31,15 +31,16 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+from collections.abc import Generator, Iterable
 import typing
-from typing import Generator, Tuple
+from typing import Any
 
 from fastcore import foundation
 from networkx import DiGraph
@@ -47,24 +48,24 @@ from networkx import DiGraph
 _T = typing.TypeVar("_T")
 
 
-def get_in_ports(processor: DiGraph) -> Generator[_T, None, None]:
+def get_in_ports(processor: DiGraph) -> Generator[typing.Any, None, None]:
     """Find the input ports.
 
     `processor` is the processor to find whose input ports.
     The function returns an iterator over the processor input ports.
 
     """
-    return _get_ports(processor.in_degree())
+    return _get_ports(processor.in_degree)
 
 
-def get_out_ports(processor: DiGraph) -> Generator[object, None, None]:
+def get_out_ports(processor: DiGraph) -> Generator[Any, None, None]:
     """Find the output ports.
 
     `processor` is the processor to find whose output ports.
     The function returns an iterator over the processor output ports.
 
     """
-    return _get_ports(processor.out_degree())
+    return _get_ports(processor.out_degree)
 
 
 class PortGroup:
@@ -84,7 +85,7 @@ class PortGroup:
         )
 
     @property
-    def in_ports(self) -> Tuple[object, ...]:
+    def in_ports(self) -> Any:
         """Input ports
 
         `self` is this port group.
@@ -93,7 +94,7 @@ class PortGroup:
         return self._in_ports
 
     @property
-    def out_ports(self) -> Tuple[object, ...]:
+    def out_ports(self) -> Any:
         """Output ports
 
         `self` is this port group.
@@ -102,9 +103,7 @@ class PortGroup:
         return self._out_ports
 
 
-def _get_ports(
-    degrees: typing.Iterable[Tuple[_T, bool]]
-) -> Generator[_T, None, None]:
+def _get_ports(degrees: Iterable[Iterable[_T]]) -> Generator[_T, None, None]:
     """Find the ports with respect to the given degrees.
 
     `degrees` are the degrees of all units.

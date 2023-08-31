@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# Disabling then immediately enabling again the invalid-name pylint
+# check allows to skip pylint checking for the module name.
 # pylint: disable=invalid-name
 # pylint: enable=invalid-name
 
@@ -38,13 +40,15 @@ Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import collections.abc
+from collections.abc import Collection, Iterable, Mapping, Sequence, Sized
 import csv
 import itertools
 import logging
@@ -52,55 +56,40 @@ import operator
 import sys
 import argparse
 import typing
-from typing import (
-    Collection,
-    Dict,
-    Final,
-    IO,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Sized,
-    TextIO,
-    Tuple,
-)
+from typing import Any, Final, IO, Optional
 
 import attr
-import fastcore.foundation
 import more_itertools
 from more_itertools import prepend
 
-from container_utils import BagValDict
+import type_checking
 import hw_loading
 import program_utils
 import sim_services
-from sim_services.sim_defs import InstrState, StallState
+from sim_services.sim_defs import StallState
 
+# _ObjT is needed for generic functions in whose signatures the type
+# variable only appears once otherwise pylance issues a warning/error.
+_ObjT = typing.TypeVar("_ObjT", bound=object)
 # command-line option variables
 # variable to receive the processor architecture file
 _PROC_OPT_VAR: Final = "processor_file"
 _PROG_OPT_VAR: Final = "prog_file"  # variable to receive the program file
-_T = typing.TypeVar("_T")
 
 
-def get_in_files(argv: Optional[Sequence[str]]) -> Tuple[TextIO, TextIO]:
+def get_in_files(argv: Optional[Sequence[str]]) -> tuple[Any, Any]:
     """Create input file objects from the given arguments.
 
     `argv` is the list of arguments.
 
     """
     args = process_command_line(argv)
-    return typing.cast(
-        Tuple[TextIO, TextIO],
-        operator.attrgetter(_PROC_OPT_VAR, _PROG_OPT_VAR)(args),
-    )
+    return operator.attrgetter(_PROC_OPT_VAR, _PROG_OPT_VAR)(args)
 
 
 def get_sim_res(
     processor_file: IO[str], program_file: Iterable[str]
-) -> List[List[str]]:
+) -> list[list[str]]:
     """Calculate the simulation result table.
 
     `processor_file` is the file containing the processor architecture.
@@ -219,7 +208,7 @@ class _ResultWriter:
     """Simulation result writer"""
 
     @classmethod
-    def print_sim_res(cls, sim_res: Collection[Collection[object]]) -> None:
+    def print_sim_res(cls, sim_res: Collection[Collection[Any]]) -> None:
         """Print the simulation result.
 
         `cls` is the writer class.
@@ -251,7 +240,7 @@ class _ResultWriter:
         return range(1, cls._get_last_tick(sim_res) + 1)
 
     @classmethod
-    def _print_res_row(cls, row_key: str, res_row: Iterable[object]) -> None:
+    def _print_res_row(cls, row_key: Any, res_row: Iterable[Any]) -> None:
         """Print the given simulation row.
 
         `cls` is the writer class.
@@ -262,9 +251,7 @@ class _ResultWriter:
         cls._writer.writerow(prepend(row_key, res_row))
 
     @classmethod
-    def _print_tbl_data(
-        cls, sim_res: Iterable[Tuple[int, Iterable[object]]]
-    ) -> None:
+    def _print_tbl_data(cls, sim_res: Iterable[Iterable[Any]]) -> None:
         """Print the simulation table rows.
 
         `cls` is the writer class.
@@ -297,14 +284,16 @@ def _create_flight(instr_util: Mapping[int, _InstrPosition]) -> _InstrFlight:
     time_span = len(instr_util)
     return _InstrFlight(
         start_time,
-        fastcore.foundation.map_ex(
-            range(start_time, start_time + time_span), instr_util, gen=True
+        type_checking.map_ex(
+            range(start_time, start_time + time_span),
+            instr_util,
+            _InstrPosition,
         ),
     )
 
 
 def _cui_to_flights(
-    cxuxi: Iterable[Tuple[int, BagValDict[_T, InstrState]]], instructions: int
+    cxuxi: Iterable[Iterable[Any]], instructions: int
 ) -> "map[_InstrFlight]":
     """Convert a CxUxI utilization map to instruction flights.
 
@@ -316,15 +305,15 @@ def _cui_to_flights(
 
 
 def _cui_to_icu(
-    cxuxi: Iterable[Tuple[int, BagValDict[_T, InstrState]]], instructions: int
-) -> List[Dict[int, _InstrPosition]]:
+    cxuxi: Iterable[Iterable[Any]], instructions: int
+) -> list[dict[int, _InstrPosition]]:
     """Convert a CxUxI utilization map to IxCxU format.
 
     `cxuxi` is the ClockxUnitxInstruction utilization map to convert.
     `instructions` are the total number of instructions.
 
     """
-    ixcxu: List[Dict[int, _InstrPosition]] = list(
+    ixcxu: list[dict[int, _InstrPosition]] = list(
         more_itertools.repeatfunc(dict, instructions)
     )
 
@@ -336,8 +325,8 @@ def _cui_to_icu(
 
 def _fill_cp_util(
     clock_pulse: int,
-    cp_util: Iterable[Tuple[object, Iterable[InstrState]]],
-    ixcxu: Sequence[typing.MutableMapping[int, _InstrPosition]],
+    cp_util: Iterable[Iterable[Iterable[sim_services.InstrState]]],
+    ixcxu: Sequence[collections.abc.MutableMapping[int, _InstrPosition]],
 ) -> None:
     """Fill the given clock utilization into the IxCxU map.
 
@@ -353,7 +342,7 @@ def _fill_cp_util(
             )
 
 
-def _get_flight_row(flight: _InstrFlight) -> List[str]:
+def _get_flight_row(flight: _InstrFlight) -> list[str]:
     """Convert the given flight to a row.
 
     `flight` is the flight to convert.
@@ -366,9 +355,8 @@ def _get_flight_row(flight: _InstrFlight) -> List[str]:
 
 
 def _get_sim_rows(
-    sim_res: Iterable[Tuple[int, BagValDict[_T, InstrState]]],
-    instructions: int,
-) -> List[List[str]]:
+    sim_res: Iterable[Iterable[Any]], instructions: int
+) -> list[list[str]]:
     """Calculate the simulation rows.
 
     `sim_res` is the simulation result.

@@ -31,36 +31,27 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.75.1, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import collections
+from collections import defaultdict
+import collections.abc
+from collections.abc import Callable, Iterable
 from itertools import starmap
 import operator
 from operator import eq
-import typing
-from typing import (
-    Any,
-    Callable,
-    DefaultDict,
-    Generic,
-    Iterable,
-    List,
-    Optional,
-    Tuple,
-    TypeVar,
-)
-
+from typing import Any, Generic, Optional, TypeVar
 
 import attr
-import iteration_utilities
 import more_itertools
+import pydash.functions
 
 from str_utils import format_obj
+import type_checking
 
 _KT = TypeVar("_KT")
 _T = TypeVar("_T")
@@ -69,7 +60,7 @@ _VT = TypeVar("_VT")
 
 def sorted_tuple(
     elems: Iterable[Any], key: Optional[Callable[[Any], Any]] = None
-) -> Tuple[Any, ...]:
+) -> tuple[Any, ...]:
     """Sort the elements.
 
     `elems` are the elements to sort.
@@ -115,7 +106,7 @@ class _IndexedSetBase(Generic[_T]):
 
     _index_func: Callable[[_T], object] = attr.ib()
 
-    _std_form_map: typing.Dict[object, _T] = attr.ib(factory=dict, init=False)
+    _std_form_map: dict[object, _T] = attr.ib(factory=dict, init=False)
 
 
 class IndexedSet(_IndexedSetBase[_T]):
@@ -143,7 +134,7 @@ def get_from_set(elem_set: IndexedSet[_T], elem: _T) -> _T:
 
 class SelfIndexSet(_IndexedSetBase[_T]):
 
-    """Self-indexed string set"""
+    """Self-indexed set"""
 
     def __init__(self) -> None:
         """Create a set with an identity conversion function.
@@ -153,10 +144,25 @@ class SelfIndexSet(_IndexedSetBase[_T]):
         """
         super().__init__(lambda elem: elem)
 
+    @classmethod
+    def create(cls, elems: Iterable[_T]) -> "SelfIndexSet[_T]":
+        """Create a self-indexed set from elements.
+
+        `cls` is the self-indexed set class.
+        `elems` are the elements to initially insert into the set.
+
+        """
+        res = cls()
+
+        for cur_elem in elems:
+            res.add(cur_elem)
+
+        return res
+
 
 def _val_lst_dict(
-    val_iter_dict: typing.Mapping[object, object]
-) -> DefaultDict[object, List[object]]:
+    val_iter_dict: collections.abc.Mapping[Any, Iterable[Any]]
+) -> defaultdict[Any, list[Any]]:
     """Convert the given value iterable dictionary to a value list one.
 
     `val_iter_dict` is the dictionary containing value iterables.
@@ -165,7 +171,7 @@ def _val_lst_dict(
     val_lst_dict = starmap(
         lambda key, val_lst: (key, list(val_lst)), val_iter_dict.items()
     )
-    return collections.defaultdict(list, val_lst_dict)
+    return defaultdict(list, val_lst_dict)
 
 
 @attr.s(eq=False, frozen=True, repr=False)
@@ -183,14 +189,15 @@ class BagValDict(Generic[_KT, _VT]):
         assert type(other) is type(self)
         other_items = tuple(other.items())
         lst_pairs = (
-            map(sorted, [val_lst, self[key]]) for key, val_lst in other_items
+            map(type_checking.sorted_lst, [val_lst, self[key]])
+            for key, val_lst in other_items
         )
-        item_lst_pair: List[typing.Sized] = [self, other_items]
+        item_lst_pair: list[collections.abc.Sized] = [self, other_items]
         return eq(*(len(item_lst) for item_lst in item_lst_pair)) and all(
             starmap(eq, lst_pairs)
         )
 
-    def __getitem__(self, key: _KT) -> List[_VT]:
+    def __getitem__(self, key: _KT) -> list[_VT]:
         """Retrieve the list of the given key.
 
         `self` is this dictionary.
@@ -229,7 +236,7 @@ class BagValDict(Generic[_KT, _VT]):
         `self` is this dictionary.
 
         """
-        elems: Iterable[Tuple[_KT, List[_VT]]] = starmap(
+        elems: Iterable[tuple[_KT, list[_VT]]] = starmap(
             lambda key, val_lst: (key, sorted(val_lst)), self.items()
         )
         elems = sorted(elems, key=operator.itemgetter(0))
@@ -237,7 +244,7 @@ class BagValDict(Generic[_KT, _VT]):
             starmap(lambda key, val_lst: f"{key!r}: {val_lst}", elems)
         )
 
-    def _useful_items(self) -> typing.Iterator[Tuple[_KT, List[_VT]]]:
+    def _useful_items(self) -> "filter[tuple[_KT, list[_VT]]]":
         """Filter out items with empty value lists.
 
         `self` is this dictionary.
@@ -245,12 +252,13 @@ class BagValDict(Generic[_KT, _VT]):
         non-empty lists.
 
         """
-        return iteration_utilities.starfilter(
-            lambda _, val_lst: val_lst, self._dict.items()
+        return filter(
+            pydash.functions.Spread(lambda _, val_lst: val_lst),
+            self._dict.items(),
         )
 
     items = _useful_items
 
-    _dict: DefaultDict[_KT, List[_VT]] = attr.ib(
+    _dict: defaultdict[_KT, list[_VT]] = attr.ib(
         converter=_val_lst_dict, factory=dict
     )

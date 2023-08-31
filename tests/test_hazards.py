@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -45,10 +45,11 @@ from unittest import TestCase
 import pytest
 
 from test_env import TEST_DIR
+import test_type_chks
+import test_utils
 from container_utils import BagValDict
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
-from program_defs import HwInstruction
 from sim_services import HwSpec, simulate
 from sim_services.sim_defs import InstrState, StallState
 from str_utils import ICaseString
@@ -67,11 +68,12 @@ class InstrOfferTest(TestCase):
 
         """
         in_unit, out_unit = (
-            UnitModel(
-                ICaseString(name),
+            _create_model(
+                name,
                 width,
-                {"ALU": False, "MEM": mem_access},
-                LockInfo(rd_lock, wr_lock),
+                [("ALU", False), ("MEM", mem_access)],
+                rd_lock,
+                wr_lock,
             )
             for name, width, rd_lock, wr_lock, mem_access in [
                 ("input", 3, True, False, False),
@@ -84,11 +86,11 @@ class InstrOfferTest(TestCase):
         self.assertEqual(
             simulate(
                 [
-                    HwInstruction([], *instr_params)
+                    test_utils.create_hw_instr([], *instr_params)
                     for instr_params in [
-                        ["R1", "MEM"],
-                        ["R2", "MEM"],
-                        ["R3", "ALU"],
+                        ("R1", "MEM"),
+                        ("R2", "MEM"),
+                        ("R3", "ALU"),
                     ]
                 ],
                 HwSpec(proc_desc),
@@ -120,11 +122,12 @@ class MemAccessTest(TestCase):
 
         """
         in_unit, out_unit = (
-            UnitModel(
-                ICaseString(name),
+            _create_model(
+                name,
                 2,
-                {"ALU": False, "MEM": mem_access},
-                LockInfo(rd_lock, wr_lock),
+                [("ALU", False), ("MEM", mem_access)],
+                rd_lock,
+                wr_lock,
             )
             for name, rd_lock, wr_lock, mem_access in [
                 ("input", True, False, False),
@@ -137,8 +140,8 @@ class MemAccessTest(TestCase):
         self.assertEqual(
             simulate(
                 [
-                    HwInstruction([], *instr_params)
-                    for instr_params in [["R1", "MEM"], ["R2", "ALU"]]
+                    test_utils.create_hw_instr([], *instr_params)
+                    for instr_params in [("R1", "MEM"), ("R2", "ALU")]
                 ],
                 HwSpec(proc_desc),
             ),
@@ -166,7 +169,7 @@ class RarTest(TestCase):
                 UnitModel(
                     ICaseString(TEST_DIR),
                     2,
-                    {"ALU": False},
+                    {ICaseString("ALU"): False},
                     LockInfo(True, True),
                 )
             ],
@@ -175,7 +178,7 @@ class RarTest(TestCase):
         self.assertEqual(
             simulate(
                 [
-                    HwInstruction(["R1"], out_reg, "ALU")
+                    test_utils.create_hw_instr(["R1"], out_reg, "ALU")
                     for out_reg in ["R2", "R3"]
                 ],
                 HwSpec(proc_desc),
@@ -195,11 +198,12 @@ class RawTest(TestCase):
         `self` is this test case.
 
         """
+        alu_cap = ICaseString("ALU")
         in_unit, mid, out_unit = (
             UnitModel(
                 ICaseString(name),
                 1,
-                {"ALU": False},
+                {alu_cap: False},
                 LockInfo(rd_lock, wr_lock),
             )
             for name, rd_lock, wr_lock in [
@@ -217,7 +221,7 @@ class RawTest(TestCase):
         self.assertEqual(
             simulate(
                 [
-                    HwInstruction(*instr_regs, "ALU")
+                    test_type_chks.create_hw_instr(instr_regs, alu_cap)
                     for instr_regs in [[[], "R1"], [["R1"], "R2"]]
                 ],
                 HwSpec(proc_desc),
@@ -263,10 +267,16 @@ class TestDataHazards:
 
         """
         full_sys_unit = UnitModel(
-            ICaseString(TEST_DIR), 2, {"ALU": False}, LockInfo(True, True)
+            ICaseString(TEST_DIR),
+            2,
+            {ICaseString("ALU"): False},
+            LockInfo(True, True),
         )
         assert simulate(
-            [HwInstruction(*regs, "ALU") for regs in instr_regs],
+            [
+                test_type_chks.create_hw_instr(regs, ICaseString("ALU"))
+                for regs in instr_regs
+            ],
             HwSpec(ProcessorDesc([], [], [full_sys_unit], [])),
         ) == [
             BagValDict(cp_util)
@@ -292,11 +302,12 @@ class UnifiedMemTest(TestCase):
 
         """
         in_unit, out_unit = (
-            UnitModel(
-                ICaseString(name),
+            _create_model(
+                name,
                 1,
-                {"ALU": alu_mem_access, "MEM": True},
-                LockInfo(rd_lock, wr_lock),
+                [("ALU", alu_mem_access), ("MEM", True)],
+                rd_lock,
+                wr_lock,
             )
             for name, rd_lock, wr_lock, alu_mem_access in [
                 ("input", True, False, True),
@@ -309,7 +320,7 @@ class UnifiedMemTest(TestCase):
         self.assertEqual(
             simulate(
                 [
-                    HwInstruction([], out_reg, "ALU")
+                    test_utils.create_hw_instr([], out_reg, "ALU")
                     for out_reg in ["R1", "R2"]
                 ],
                 HwSpec(proc_desc),
@@ -338,11 +349,12 @@ class WarTest(TestCase):
         `self` is this test case.
 
         """
+        alu_cap = ICaseString("ALU")
         in_unit, out_unit = (
             UnitModel(
                 ICaseString(name),
                 1,
-                {"ALU": False},
+                {alu_cap: False},
                 LockInfo(rd_lock, wr_lock),
             )
             for name, rd_lock, wr_lock in [
@@ -356,7 +368,7 @@ class WarTest(TestCase):
         self.assertEqual(
             simulate(
                 [
-                    HwInstruction(*instr_regs, "ALU")
+                    test_type_chks.create_hw_instr(instr_regs, alu_cap)
                     for instr_regs in [[["R1"], "R2"], [[], "R1"]]
                 ],
                 HwSpec(proc_desc),
@@ -373,6 +385,24 @@ class WarTest(TestCase):
                 ]
             ],
         )
+
+
+def _create_model(name, width, roles, rd_lock, wr_lock):
+    """Create a unit model.
+
+    `name` is the unit name.
+    `width` is the unit width.
+    `roles` are the unit roles.
+    `rd_lock` is the read lock.
+    `wr_lock` is the write lock.
+
+    """
+    return UnitModel(
+        ICaseString(name),
+        width,
+        {ICaseString(cap): cap_access for cap, cap_access in roles},
+        LockInfo(rd_lock, wr_lock),
+    )
 
 
 def main():

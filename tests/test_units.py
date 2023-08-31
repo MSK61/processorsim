@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -106,7 +106,7 @@ class PostOrderTest(TestCase):
             UnitModel(
                 ICaseString(name),
                 1,
-                {"ALU": False},
+                {ICaseString("ALU"): False},
                 LockInfo(rd_lock, wr_lock),
             )
             for name, rd_lock, wr_lock in [
