@@ -143,7 +143,7 @@ class FlowTest(TestCase):
         out_unit = create_unit(
             "output",
             1,
-            ((name, False) for name in ["ALU", "MEM"]),
+            ((categ, False) for categ in ["ALU", "MEM"]),
             False,
             True,
         )
