@@ -45,9 +45,10 @@ from fastcore.foundation import Self
 import pytest
 
 import test_utils
+from test_utils import create_unit
 import processor_utils
 from processor_utils import ProcessorDesc, units
-from processor_utils.units import FuncUnit, LockInfo, UnitModel
+from processor_utils.units import FuncUnit
 from str_utils import ICaseString
 
 
@@ -61,11 +62,8 @@ class ExpAttrTest(TestCase):
         `self` is this test case.
 
         """
-        full_sys_unit = UnitModel(
-            ICaseString("full system"),
-            1,
-            {ICaseString("ALU"): True},
-            LockInfo(True, True),
+        full_sys_unit = create_unit(
+            "full system", 1, [("ALU", True)], True, True
         )
         self.assertEqual(
             processor_utils.load_proc_desc(
@@ -103,12 +101,7 @@ class PostOrderTest(TestCase):
 
         """
         in_unit, mid1_unit, mid2_unit, mid3_unit, out_unit = (
-            UnitModel(
-                ICaseString(name),
-                1,
-                {ICaseString("ALU"): False},
-                LockInfo(rd_lock, wr_lock),
-            )
+            create_unit(name, 1, [("ALU", False)], rd_lock, wr_lock)
             for name, rd_lock, wr_lock in [
                 ("input", True, False),
                 ("middle 1", False, False),

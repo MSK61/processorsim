@@ -44,8 +44,7 @@ import yaml
 
 import test_env
 import processor_utils
-from processor_utils import ProcessorDesc
-from processor_utils.units import LockInfo, UnitModel
+from processor_utils import ProcessorDesc, units
 import program_defs
 import program_utils
 from str_utils import ICaseString
@@ -79,14 +78,7 @@ def chk_one_unit(proc_dir, proc_file):
     assert read_proc_file(proc_dir, proc_file) == ProcessorDesc(
         [],
         [],
-        [
-            UnitModel(
-                ICaseString("full system"),
-                1,
-                {ICaseString("ALU"): False},
-                LockInfo(True, True),
-            )
-        ],
+        [create_unit("full system", 1, [("ALU", False)], True, True)],
         [],
     )
 
@@ -102,22 +94,11 @@ def chk_two_units(proc_dir, proc_file):
 
     """
     proc_desc = read_proc_file(proc_dir, proc_file)
-    alu_cap = ICaseString("ALU")
-    out_unit = ICaseString("output")
     assert proc_desc == ProcessorDesc(
+        [create_unit("input", 1, [("ALU", False)], True, False)],
         [
-            UnitModel(
-                ICaseString("input"),
-                1,
-                {alu_cap: False},
-                LockInfo(True, False),
-            )
-        ],
-        [
-            processor_utils.units.FuncUnit(
-                UnitModel(
-                    out_unit, 1, {alu_cap: False}, LockInfo(False, True)
-                ),
+            units.FuncUnit(
+                create_unit("output", 1, [("ALU", False)], False, True),
                 proc_desc.in_ports,
             )
         ],
@@ -161,6 +142,24 @@ def create_hw_instr(srcs, dst, categ):
 
     """
     return program_defs.HwInstruction(srcs, dst, ICaseString(categ))
+
+
+def create_unit(name, width, roles, rd_lock, wr_lock):
+    """Create a unit model.
+
+    `name` is the unit name.
+    `width` is the unit width.
+    `roles` are the unit roles.
+    `rd_lock` is the read lock.
+    `wr_lock` is the write lock.
+
+    """
+    return units.UnitModel(
+        ICaseString(name),
+        width,
+        {ICaseString(cap): cap_access for cap, cap_access in roles},
+        units.LockInfo(rd_lock, wr_lock),
+    )
 
 
 def read_isa_file(file_name, capabilities):

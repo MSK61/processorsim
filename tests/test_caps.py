@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -48,7 +48,7 @@ from pytest import mark, raises
 import test_utils
 from test_utils import chk_warn, read_proc_file
 import processor_utils
-from processor_utils import exception, units
+from processor_utils import exception
 from str_utils import ICaseString
 
 
@@ -131,12 +131,7 @@ class TestDupCap:
         caplog.set_level(WARNING)
         in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits.yaml"
         processor = (
-            units.UnitModel(
-                ICaseString(unit_name),
-                1,
-                {ICaseString("ALU"): False},
-                units.LockInfo(True, True),
-            )
+            test_utils.create_unit(unit_name, 1, [("ALU", False)], True, True)
             for unit_name in ["core 1", "core 2"]
         )
         assert read_proc_file(

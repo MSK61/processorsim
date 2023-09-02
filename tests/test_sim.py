@@ -48,11 +48,11 @@ from pytest import mark, raises
 
 import test_type_chks
 import test_utils
-from test_utils import read_proc_file
+from test_utils import create_unit, read_proc_file
 from container_utils import BagValDict
 import processor_utils
 from processor_utils import ProcessorDesc
-from processor_utils.units import FuncUnit, LockInfo, UnitModel
+from processor_utils.units import FuncUnit
 from sim_services import HwSpec, simulate, StallError
 from sim_services.sim_defs import InstrState, StallState
 from str_utils import ICaseString
@@ -137,19 +137,15 @@ class FlowTest(TestCase):
 
         """
         in_units = [
-            UnitModel(
-                ICaseString(name),
-                1,
-                {ICaseString(categ): False},
-                LockInfo(True, False),
-            )
+            create_unit(name, 1, [(categ, False)], True, False)
             for name, categ in [("ALU input", "ALU"), ("MEM input", "MEM")]
         ]
-        out_unit = UnitModel(
-            ICaseString("output"),
+        out_unit = create_unit(
+            "output",
             1,
-            {ICaseString(name): False for name in ["ALU", "MEM"]},
-            LockInfo(False, True),
+            ((name, False) for name in ["ALU", "MEM"]),
+            False,
+            True,
         )
         proc_desc = ProcessorDesc(
             in_units, [FuncUnit(out_unit, in_units)], [], []
@@ -195,12 +191,7 @@ class InSortTest(TestCase):
 
         """
         in_unit, out_unit = (
-            UnitModel(
-                ICaseString(name),
-                1,
-                {ICaseString("ALU"): mem_access},
-                LockInfo(rd_lock, wr_lock),
-            )
+            create_unit(name, 1, [("ALU", mem_access)], rd_lock, wr_lock)
             for name, rd_lock, wr_lock, mem_access in [
                 ("input 1", True, False, False),
                 ("output 1", False, True, True),
@@ -209,14 +200,7 @@ class InSortTest(TestCase):
         proc_desc = ProcessorDesc(
             [in_unit],
             [FuncUnit(out_unit, [in_unit])],
-            [
-                UnitModel(
-                    ICaseString("input 2"),
-                    1,
-                    {ICaseString("ALU"): False},
-                    LockInfo(True, False),
-                )
-            ],
+            [create_unit("input 2", 1, [("ALU", False)], True, False)],
             [],
         )
         self.assertEqual(
@@ -296,12 +280,7 @@ class StallErrTest(TestCase):
 
         """
         long_input, mid, short_input, out_unit = (
-            UnitModel(
-                ICaseString(name),
-                1,
-                {ICaseString("ALU"): False},
-                LockInfo(rd_lock, wr_lock),
-            )
+            create_unit(name, 1, [("ALU", False)], rd_lock, wr_lock)
             for name, rd_lock, wr_lock in [
                 ("long input", False, False),
                 ("middle", False, False),
@@ -356,12 +335,7 @@ class StallTest(TestCase):
 
         """
         in_unit, mid, out_unit = (
-            UnitModel(
-                ICaseString(name),
-                width,
-                {ICaseString("ALU"): False},
-                LockInfo(rd_lock, wr_lock),
-            )
+            create_unit(name, width, [("ALU", False)], rd_lock, wr_lock)
             for name, width, rd_lock, wr_lock in [
                 ("input", 2, True, False),
                 ("middle", 2, False, False),
@@ -467,11 +441,8 @@ class TestOutputFlush:
             chain([[[], "R1", "ALU"], [["R1"], "R2", "ALU"]], extra_instr_lst),
         )
         cores = starmap(
-            lambda name, width: UnitModel(
-                ICaseString(name),
-                width,
-                {ICaseString("ALU"): False},
-                LockInfo(True, True),
+            lambda name, width: create_unit(
+                name, width, [("ALU", False)], True, True
             ),
             [("core 1", 1), ("core 2", 1 + len(extra_instr_lst))],
         )
@@ -569,12 +540,7 @@ def _make_proc_desc(units_desc):
 
     """
     big_input, small_input1, mid1, small_input2, mid2, out_unit = (
-        UnitModel(
-            ICaseString(name),
-            width,
-            {ICaseString("ALU"): False},
-            LockInfo(rd_lock, wr_lock),
-        )
+        create_unit(name, width, [("ALU", False)], rd_lock, wr_lock)
         for name, width, rd_lock, wr_lock in units_desc
     )
     return ProcessorDesc(

@@ -45,11 +45,10 @@ import attr
 import more_itertools
 import pytest
 
-from test_utils import create_hw_instr
+from test_utils import create_hw_instr, create_unit
 from container_utils import BagValDict
 import processor_utils
 from processor_utils import ProcessorDesc, units
-from processor_utils.units import LockInfo, UnitModel
 from sim_services import HwSpec, simulate
 from sim_services.sim_defs import InstrState, StallState
 from str_utils import ICaseString
@@ -68,14 +67,7 @@ class MemUtilTest(TestCase):
         proc_desc = ProcessorDesc(
             [],
             [],
-            [
-                UnitModel(
-                    ICaseString("full system"),
-                    2,
-                    {ICaseString("ALU"): True},
-                    LockInfo(True, True),
-                )
-            ],
+            [create_unit("full system", 2, [("ALU", True)], True, True)],
             [],
         )
         self.assertEqual(
@@ -255,19 +247,15 @@ class TestHazards:
         `exp_results` are the test expected results.
 
         """
-        in_unit = UnitModel(
-            ICaseString("input"),
+        in_unit = create_unit(
+            "input",
             in_params.width,
-            {ICaseString("ALU"): in_params.mem_util},
-            LockInfo(True, False),
+            [("ALU", in_params.mem_util)],
+            True,
+            False,
         )
         out_units = (
-            UnitModel(
-                ICaseString(name),
-                width,
-                {ICaseString("ALU"): mem_access},
-                LockInfo(False, True),
-            )
+            create_unit(name, width, [("ALU", mem_access)], False, True)
             for name, width, mem_access in in_params.out_unit_params
         )
         out_units = (

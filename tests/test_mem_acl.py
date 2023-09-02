@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -46,18 +46,16 @@ import attr
 import pytest
 from pytest import mark
 
+from test_utils import create_unit
 from processor_utils import load_proc_desc, ProcessorDesc
 from processor_utils.units import (
-    LockInfo,
     UNIT_CAPS_KEY,
     UNIT_MEM_KEY,
-    UnitModel,
     UNIT_NAME_KEY,
     UNIT_RLOCK_KEY,
     UNIT_WIDTH_KEY,
     UNIT_WLOCK_KEY,
 )
-from str_utils import ICaseString
 
 
 class PartialMemTest(unittest.TestCase):
@@ -70,14 +68,8 @@ class PartialMemTest(unittest.TestCase):
         `self` is this test case.
 
         """
-        full_sys_unit = UnitModel(
-            ICaseString("full system"),
-            1,
-            {
-                ICaseString(name): mem_access
-                for name, mem_access in [("ALU", False), ("MEM", True)]
-            },
-            LockInfo(True, True),
+        full_sys_unit = create_unit(
+            "full system", 1, [("ALU", False), ("MEM", True)], True, True
         )
         self.assertEqual(
             load_proc_desc(
@@ -123,12 +115,7 @@ class TestCapCase:
         """
         caplog.set_level(WARNING)
         in_out_units = (
-            UnitModel(
-                ICaseString(name),
-                1,
-                {ICaseString("ALU"): mem_access},
-                LockInfo(True, True),
-            )
+            create_unit(name, 1, [("ALU", mem_access)], True, True)
             for name, mem_access in [(loaded_core, False), ("core 2", True)]
         )
         assert load_proc_desc(
@@ -242,11 +229,8 @@ class TestStdCaseCap:
             [],
             [],
             [
-                UnitModel(
-                    ICaseString(exp_results.unit),
-                    1,
-                    {ICaseString(exp_ref_cap): True},
-                    LockInfo(True, True),
+                create_unit(
+                    exp_results.unit, 1, [(exp_ref_cap, True)], True, True
                 )
             ],
             [],

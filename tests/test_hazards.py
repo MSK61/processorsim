@@ -47,9 +47,10 @@ import pytest
 from test_env import TEST_DIR
 import test_type_chks
 import test_utils
+from test_utils import create_unit
 from container_utils import BagValDict
 from processor_utils import ProcessorDesc
-from processor_utils.units import FuncUnit, LockInfo, UnitModel
+from processor_utils.units import FuncUnit
 from sim_services import HwSpec, simulate
 from sim_services.sim_defs import InstrState, StallState
 from str_utils import ICaseString
@@ -68,7 +69,7 @@ class InstrOfferTest(TestCase):
 
         """
         in_unit, out_unit = (
-            _create_model(
+            create_unit(
                 name,
                 width,
                 [("ALU", False), ("MEM", mem_access)],
@@ -122,7 +123,7 @@ class MemAccessTest(TestCase):
 
         """
         in_unit, out_unit = (
-            _create_model(
+            create_unit(
                 name,
                 2,
                 [("ALU", False), ("MEM", mem_access)],
@@ -165,14 +166,7 @@ class RarTest(TestCase):
         proc_desc = ProcessorDesc(
             [],
             [],
-            [
-                UnitModel(
-                    ICaseString(TEST_DIR),
-                    2,
-                    {ICaseString("ALU"): False},
-                    LockInfo(True, True),
-                )
-            ],
+            [create_unit(TEST_DIR, 2, [("ALU", False)], True, True)],
             [],
         )
         self.assertEqual(
@@ -198,14 +192,8 @@ class RawTest(TestCase):
         `self` is this test case.
 
         """
-        alu_cap = ICaseString("ALU")
         in_unit, mid, out_unit = (
-            UnitModel(
-                ICaseString(name),
-                1,
-                {alu_cap: False},
-                LockInfo(rd_lock, wr_lock),
-            )
+            create_unit(name, 1, [("ALU", False)], rd_lock, wr_lock)
             for name, rd_lock, wr_lock in [
                 ("input", False, False),
                 ("middle", True, False),
@@ -218,6 +206,7 @@ class RawTest(TestCase):
             [],
             [FuncUnit(mid, [in_unit])],
         )
+        alu_cap = ICaseString("ALU")
         self.assertEqual(
             simulate(
                 [
@@ -266,12 +255,7 @@ class TestDataHazards:
         `instr_regs` are the registers accessed by each instruction.
 
         """
-        full_sys_unit = UnitModel(
-            ICaseString(TEST_DIR),
-            2,
-            {ICaseString("ALU"): False},
-            LockInfo(True, True),
-        )
+        full_sys_unit = create_unit(TEST_DIR, 2, [("ALU", False)], True, True)
         assert simulate(
             [
                 test_type_chks.create_hw_instr(regs, ICaseString("ALU"))
@@ -302,7 +286,7 @@ class UnifiedMemTest(TestCase):
 
         """
         in_unit, out_unit = (
-            _create_model(
+            create_unit(
                 name,
                 1,
                 [("ALU", alu_mem_access), ("MEM", True)],
@@ -349,14 +333,8 @@ class WarTest(TestCase):
         `self` is this test case.
 
         """
-        alu_cap = ICaseString("ALU")
         in_unit, out_unit = (
-            UnitModel(
-                ICaseString(name),
-                1,
-                {alu_cap: False},
-                LockInfo(rd_lock, wr_lock),
-            )
+            create_unit(name, 1, [("ALU", False)], rd_lock, wr_lock)
             for name, rd_lock, wr_lock in [
                 ("input", False, False),
                 ("output", True, True),
@@ -365,6 +343,7 @@ class WarTest(TestCase):
         proc_desc = ProcessorDesc(
             [in_unit], [FuncUnit(out_unit, [in_unit])], [], []
         )
+        alu_cap = ICaseString("ALU")
         self.assertEqual(
             simulate(
                 [
@@ -385,24 +364,6 @@ class WarTest(TestCase):
                 ]
             ],
         )
-
-
-def _create_model(name, width, roles, rd_lock, wr_lock):
-    """Create a unit model.
-
-    `name` is the unit name.
-    `width` is the unit width.
-    `roles` are the unit roles.
-    `rd_lock` is the read lock.
-    `wr_lock` is the write lock.
-
-    """
-    return UnitModel(
-        ICaseString(name),
-        width,
-        {ICaseString(cap): cap_access for cap, cap_access in roles},
-        LockInfo(rd_lock, wr_lock),
-    )
 
 
 def main():

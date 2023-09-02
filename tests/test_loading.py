@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -43,10 +43,9 @@ import pytest
 from pytest import mark
 
 import test_utils
-from test_utils import read_proc_file
+from test_utils import create_unit, read_proc_file
 import processor_utils
-from processor_utils.units import FuncUnit, LockInfo, UnitModel
-from str_utils import ICaseString
+from processor_utils.units import FuncUnit
 
 
 class TestProcessors:
@@ -62,26 +61,24 @@ class TestProcessors:
         proc_desc = read_proc_file(
             "processors", "4ConnectedUnitsProcessor.yaml"
         )
-        alu_cap = ICaseString("ALU")
-        wr_lock = LockInfo(False, True)
         out_ports = tuple(
             FuncUnit(
-                UnitModel(name, 1, {alu_cap: False}, wr_lock), predecessors
+                create_unit(name, 1, [("ALU", False)], False, True),
+                predecessors,
             )
             for name, predecessors in [
-                (ICaseString("output 1"), proc_desc.in_ports),
+                ("output 1", proc_desc.in_ports),
                 (
-                    ICaseString("output 2"),
+                    "output 2",
                     (unit.model for unit in proc_desc.internal_units),
                 ),
             ]
         )
-        in_unit = ICaseString("input")
-        internal_unit = UnitModel(
-            ICaseString("middle"), 1, {alu_cap: False}, LockInfo(False, False)
+        internal_unit = create_unit(
+            "middle", 1, [("ALU", False)], False, False
         )
         assert proc_desc == processor_utils.ProcessorDesc(
-            [UnitModel(in_unit, 1, {alu_cap: False}, LockInfo(True, False))],
+            [create_unit("input", 1, [("ALU", False)], True, False)],
             out_ports,
             [],
             [FuncUnit(internal_unit, proc_desc.in_ports)],

@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+#               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
@@ -46,9 +46,10 @@ import more_itertools
 import pytest
 
 import test_utils
-from test_utils import chk_warn, read_proc_file
+from test_utils import chk_warn, create_unit, read_proc_file
 from processor_utils import ProcessorDesc
-from processor_utils.units import FuncUnit, LockInfo, UnitModel
+import processor_utils.units
+from processor_utils.units import FuncUnit, LockInfo
 from str_utils import ICaseString
 
 
@@ -71,22 +72,12 @@ class TestClean:
         proc_desc = read_proc_file(
             "optimization", "pathThatGetsCutOffItsOutput.yaml"
         )
-        out1_unit = ICaseString("output 1")
-        alu_cap = ICaseString("ALU")
+        role = "ALU", False
         assert proc_desc == ProcessorDesc(
-            [
-                UnitModel(
-                    ICaseString("input"),
-                    1,
-                    {alu_cap: False},
-                    LockInfo(True, False),
-                )
-            ],
+            [create_unit("input", 1, [role], True, False)],
             [
                 FuncUnit(
-                    UnitModel(
-                        out1_unit, 1, {alu_cap: False}, LockInfo(False, True)
-                    ),
+                    create_unit("output 1", 1, [role], False, True),
                     proc_desc.in_ports,
                 )
             ],
@@ -108,14 +99,7 @@ class TestClean:
         ) == ProcessorDesc(
             [],
             [],
-            [
-                UnitModel(
-                    ICaseString("core 1"),
-                    1,
-                    {ICaseString("ALU"): False},
-                    LockInfo(True, True),
-                )
-            ],
+            [create_unit("core 1", 1, [("ALU", False)], True, True)],
             [],
         )
         chk_warn(["core 2"], caplog.records)
@@ -137,18 +121,17 @@ class TestEdgeRemoval:
             "optimization", "incompatibleEdgeProcessor.yaml"
         )
         in_units = starmap(
-            lambda name, categ: UnitModel(
-                name, 1, {categ: False}, LockInfo(True, False)
+            lambda name, categ: create_unit(
+                name, 1, [(categ, False)], True, False
             ),
-            (
-                map(ICaseString, unit_params)
-                for unit_params in [["input 1", "ALU"], ["input 2", "MEM"]]
-            ),
+            [["input 1", "ALU"], ["input 2", "MEM"]],
         )
         wr_lock = LockInfo(False, True)
         out_units = starmap(
             lambda name, categ, in_unit: FuncUnit(
-                UnitModel(name, 1, {categ: False}, wr_lock),
+                processor_utils.units.UnitModel(
+                    name, 1, {categ: False}, wr_lock
+                ),
                 [
                     more_itertools.first_true(
                         proc_desc.in_ports,
