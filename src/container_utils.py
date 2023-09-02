@@ -179,7 +179,7 @@ class BagValDict(Generic[_KT, _VT]):
 
     """Dictionary with(unsorted) lists as values"""
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: Any) -> Any:
         """Test if the two dictionaries are identical.
 
         `self` is this dictionary.

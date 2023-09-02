@@ -41,7 +41,7 @@
 import collections.abc
 
 
-def mem_unavail(mem_busy: bool, mem_req: bool) -> bool:
+def mem_unavail(mem_busy: object, mem_req: object) -> object:
     """Check if the memory is unavailable for the given access.
 
     `mem_busy` is the memory busy flag.

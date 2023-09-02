@@ -488,8 +488,8 @@ def _get_unit_entry(name: ICaseString, attrs: Mapping[str, Any]) -> UnitModel:
     The function returns the unit model.
 
     """
-    lock_attrs = type_checking.map_ex(
-        [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY], attrs, bool
+    lock_attrs = fastcore.foundation.map_ex(
+        [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY], attrs
     )
     return UnitModel(
         name,

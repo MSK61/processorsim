@@ -74,7 +74,7 @@ class InstrMovStatus:
 
     moved: list[HostedInstr] = attr.ib(factory=list)
 
-    mem_used: bool = attr.ib(False, init=False)
+    mem_used: object = attr.ib(False, init=False)
 
 
 class IInstrSink(abc.ABC):
@@ -82,7 +82,7 @@ class IInstrSink(abc.ABC):
     """Instruction sink"""
 
     def fill_unit(
-        self, util_info: BagValDict[ICaseString, InstrState], mem_busy: bool
+        self, util_info: BagValDict[ICaseString, InstrState], mem_busy: object
     ) -> InstrMovStatus:
         """Fill this sink with instructions from its donors.
 
@@ -127,7 +127,7 @@ class IInstrSink(abc.ABC):
         return (HostedInstr(src_unit, instr) for instr in instructions)
 
     @abstractmethod
-    def _accepts_cap(self, instr: int) -> bool:
+    def _accepts_cap(self, instr: int) -> object:
         """Check if the given instruction capability may be accepted.
 
         `self` is this instruction sink.
@@ -141,7 +141,7 @@ class IInstrSink(abc.ABC):
         self,
         candidates: Iterable[HostedInstr],
         util_info: BagValDict[ICaseString, InstrState],
-        mem_busy: bool,
+        mem_busy: object,
     ) -> InstrMovStatus:
         """Fill this sink.
 
@@ -166,7 +166,7 @@ class IInstrSink(abc.ABC):
 
         """
 
-    def _valid_candid(self, instr: InstrState) -> bool:
+    def _valid_candid(self, instr: InstrState) -> object:
         """Check if the given instruction is a good candidate.
 
         `self` is this instruction sink.
@@ -205,7 +205,7 @@ class OutSink(IInstrSink):
         self,
         candidates: Iterable[HostedInstr],
         util_info: BagValDict[ICaseString, InstrState],
-        mem_busy: bool,
+        mem_busy: object,
     ) -> InstrMovStatus:
         """Commit all candidate instructions to the output.
 
@@ -262,7 +262,7 @@ class UnitSink(IInstrSink):
         self,
         candidates: Iterable[HostedInstr],
         util_info: BagValDict[ICaseString, InstrState],
-        mem_busy: bool,
+        mem_busy: object,
     ) -> InstrMovStatus:
         """Move candidate instructions between units.
 
@@ -326,7 +326,7 @@ def _mov_candidate(
     unit_sink: UnitSink,
     candid_iter: Iterator[HostedInstr],
     util_info: BagValDict[ICaseString, InstrState],
-    mem_busy: bool,
+    mem_busy: object,
     mov_res: InstrMovStatus,
 ) -> bool:
     """Move a candidate instruction between units.

@@ -231,7 +231,7 @@ class _PathLockCalc:
         return one_lock
 
     def _calc_path_lock(
-        self, unit_lock: bool, path_desc: _PathDescriptor
+        self, unit_lock: object, path_desc: _PathDescriptor
     ) -> int:
         """Calculate the path lock.
 
@@ -252,7 +252,7 @@ class _PathLockCalc:
         _chk_seg_lock(path_lock, path_desc)
         return path_lock
 
-    _start_unit: Mapping[object, bool]
+    _start_unit: Mapping[object, object]
 
     _succ_lst: collections.abc.Collection[object]
 
@@ -486,7 +486,7 @@ def _chk_seg_lock(seg_lock: int, seg_desc: _PathDescriptor) -> None:
 
 
 def _chk_unit_flow(
-    min_width: bool, capability_info: ComponentInfo, port_info: ComponentInfo
+    min_width: object, capability_info: ComponentInfo, port_info: ComponentInfo
 ) -> None:
     """Check the flow volume from an input port to outputs.
 

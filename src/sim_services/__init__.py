@@ -168,9 +168,9 @@ class _AcceptStatus:
 
     """Instruction acceptance status"""
 
-    accepted: bool = attr.ib(True, init=False)
+    accepted: object = attr.ib(True, init=False)
 
-    mem_used: bool = attr.ib()
+    mem_used: object = attr.ib()
 
 
 @attr.s
@@ -223,7 +223,7 @@ class _RegAvailState:
 
     """Registers availability state"""
 
-    avail: bool
+    avail: object
 
     regs: Iterable[object]
 
@@ -481,7 +481,7 @@ def _chk_hazards(
 def _chk_avail_regs(
     avail_regs: MutableSequence[Iterable[_T]],
     acc_queues: Mapping[_T, RegAccessQueue],
-    lock: bool,
+    lock: object,
     new_regs: Iterable[_T],
     req_params: Iterable[object],
 ) -> bool:
@@ -572,7 +572,7 @@ def _fill_inputs(
     cap_unit_map: Mapping[object, Iterable[UnitModel]],
     program: Sequence[HwInstruction],
     util_info: BagValDict[ICaseString, InstrState],
-    mem_busy: bool,
+    mem_busy: object,
     issue_rec: _IssueInfo,
 ) -> None:
     """Fetch new program instructions into the pipeline.
@@ -601,8 +601,8 @@ def _fill_inputs(
 def _fill_unit(
     unit: IInstrSink,
     util_info: BagValDict[ICaseString, InstrState],
-    mem_busy: bool,
-) -> bool:
+    mem_busy: object,
+) -> object:
     """Fill an output with instructions from its predecessors.
 
     `unit` is the destination unit to fill.
@@ -639,7 +639,7 @@ def _get_out_ports(processor: ProcessorDesc) -> "map[ICaseString]":
 
 def _issue_instr(
     instr_lst: MutableSequence[InstrState],
-    mem_access: bool,
+    mem_access: object,
     issue_rec: _IssueInfo,
     accept_res: _AcceptStatus,
 ) -> None:
