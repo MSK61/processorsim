@@ -44,7 +44,7 @@ import os.path
 import pytest
 
 import test_utils
-import processorSim
+import processor_sim
 
 
 class TestWhole:
@@ -85,7 +85,7 @@ class TestWhole:
         `sim_res` is the expected simulation result.
 
         """
-        processor_file, program_file = processorSim.get_in_files(
+        processor_file, program_file = processor_sim.get_in_files(
             [
                 "--processor",
                 *(
@@ -99,7 +99,7 @@ class TestWhole:
         )
         with processor_file, program_file:
             assert (
-                processorSim.get_sim_res(processor_file, program_file)
+                processor_sim.get_sim_res(processor_file, program_file)
                 == sim_res
             )
 
