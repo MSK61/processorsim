@@ -8,7 +8,7 @@
 """
 simulates running a program through a processor architecture
 
-Usage: processorSim.py --processor PROCESSORFILE PROGRAMFILE
+Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 """
 
 ############################################################

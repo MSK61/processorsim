@@ -18,4 +18,4 @@
 #
 ############################################################
 [run]
-omit = src/processorSim.py
+omit = src/processor_sim.py
