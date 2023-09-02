@@ -75,9 +75,9 @@ class LockInfo:
 
     """Parameter locking information in units"""
 
-    rd_lock: bool
+    rd_lock: object
 
-    wr_lock: bool
+    wr_lock: object
 
 
 @attr.s(frozen=True)
@@ -116,7 +116,7 @@ class FuncUnit:
 
     """Processing functional unit"""
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: Any) -> Any:
         """Test if the two functional units are identical.
 
         `self` is this functional unit.

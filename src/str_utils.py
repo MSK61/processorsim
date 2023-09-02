@@ -41,7 +41,7 @@
 import collections.abc
 import functools
 import operator
-import typing
+from typing import Any
 
 import attr
 
@@ -74,7 +74,7 @@ class ICaseString:
         """
         return self._canonical(item) in self._canonical(self.raw_str)
 
-    def __eq__(self, other: typing.Any) -> bool:
+    def __eq__(self, other: Any) -> Any:
         """Test if the two case-insensitive strings are identical.
 
         `self` is this case-insensitive string.
@@ -91,7 +91,7 @@ class ICaseString:
         """
         return hash(self._canonical(self.raw_str))
 
-    def __lt__(self, other: "ICaseString") -> bool:
+    def __lt__(self, other: "ICaseString") -> Any:
         """Test if this case-insensitive string is less than the other.
 
         `self` is this case-insensitive string.
