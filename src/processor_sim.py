@@ -68,9 +68,6 @@ import program_utils
 import sim_services
 from sim_services.sim_defs import StallState
 
-# _ObjT is needed for generic functions in whose signatures the type
-# variable only appears once otherwise pylance issues a warning/error.
-_ObjT = typing.TypeVar("_ObjT", bound=object)
 # command-line option variables
 # variable to receive the processor architecture file
 _PROC_OPT_VAR: Final = "processor_file"
