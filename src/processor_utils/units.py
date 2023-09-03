@@ -85,7 +85,7 @@ class UnitModel:
 
     """Functional unit model"""
 
-    def needs_mem(self, cap: ICaseString) -> bool:
+    def needs_mem(self, cap: ICaseString) -> object:
         """Test if the given capability will require memory access.
 
         `self` is this unit model.
@@ -106,7 +106,7 @@ class UnitModel:
 
     width: int = attr.ib()
 
-    roles: collections.abc.Mapping[ICaseString, bool] = attr.ib()
+    roles: collections.abc.Mapping[ICaseString, object] = attr.ib()
 
     lock_info: LockInfo = attr.ib()
 
