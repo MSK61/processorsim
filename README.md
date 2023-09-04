@@ -15,7 +15,7 @@ A simulator for program execution on pipelined processors
 
 ## Usage/Examples
 
-Check the [examples](examples) directory for how to use the API. [tests/test_whole.py](tests/test_whole.py) on the other hand illustrates how to use [processorSim.py](src/processorSim.py) as a CLI driver to simulate program executions.
+Check the [examples](examples) directory for how to use the API. [tests/test_whole.py](tests/test_whole.py) on the other hand illustrates how to use [processor_sim.py](src/processor_sim.py) as a CLI driver to simulate program executions.
 
 
 ## Requirements
