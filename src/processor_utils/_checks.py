@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+# environment:  Visual Studio Code 1.82.0, python 3.11.4, Fedora release
 #               38 (Thirty Eight)
 #
 # notes:        This is a private program.
@@ -517,7 +517,7 @@ def _coll_cap_edges(graph: DiGraph) -> frozenset[tuple[Any, Any]]:
 
     """
     return frozenset(
-        _get_cap_edge(graph.in_edges(node), graph.out_edges(node))
+        _get_cap_edge(graph, node)
         for node, in_deg in graph.in_degree
         if in_deg == 1 or graph.out_degree(node) == 1
     )
@@ -605,20 +605,20 @@ def _get_anal_graph(processor: Graph) -> DiGraph:
     return width_graph
 
 
-def _get_cap_edge(in_edges: Iterable[_T], out_edges: Iterable[_T]) -> _T:
-    """Select the capping edge.
+def _get_cap_edge(graph: DiGraph, node: Any) -> Any:
+    """Select the capping edge of a node.
 
-    `in_edges` are an iterator over input edges.
-    `out_edges` are an iterator over output edges.
+    `graph` is the graph containing the node.
+    `node` is the node to retrieve whose capping edge.
     A capping edge is the sole edge on either side of a node that
     determines the maximum flow through the node. Either the input edges
     or the output edges must contain exactly one edge.
 
     """
     try:
-        return one(in_edges)
+        return one(graph.in_edges(node))
     except ValueError:
-        return more_itertools.first(out_edges)
+        return more_itertools.first(graph.out_edges(node))
 
 
 def _get_cap_units(

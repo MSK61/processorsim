@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+# environment:  Visual Studio Code 1.82.0, python 3.11.4, Fedora release
 #               38 (Thirty Eight)
 #
 # notes:        This is a private program.
@@ -44,6 +44,7 @@ from typing import Any, cast, TypeVar
 
 import fastcore.foundation
 import networkx
+from networkx.classes import reportviews
 
 _AnyT = TypeVar("_AnyT", bound=Any)
 _T = TypeVar("_T")
@@ -64,7 +65,7 @@ def map_ex(seq: Any, map_func: Any, _: type[_T]) -> "map[_T]":
 
 def nodes(
     graph: networkx.Graph, data: Any
-) -> networkx.classes.reportviews.NodeDataView:
+) -> reportviews.NodeDataView | reportviews.NodeView:
     """Retrieve the node data view of the given graph.
 
     `graph` is the graph to retrieve whose node data view.

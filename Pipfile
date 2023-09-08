@@ -14,6 +14,7 @@ types-pyyaml = "*"
 flake8 = "<5"
 rope = "*"
 pytest-black = "*"
+pyright = "*"
 
 [packages]
 networkx = "*"
