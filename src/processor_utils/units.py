@@ -31,14 +31,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+# environment:  Visual Studio Code 1.82.0, python 3.11.4, Fedora release
 #               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import collections.abc
+from collections import abc
 import operator
 from typing import Any, Final
 
@@ -59,7 +59,7 @@ UNIT_ROLES_KEY: Final = "roles"
 UNIT_WIDTH_KEY: Final = "width"
 
 
-def sorted_models(models: collections.abc.Iterable[Any]) -> tuple[Any, ...]:
+def sorted_models(models: abc.Iterable[Any]) -> tuple[Any, ...]:
     """Create a sorted list of the given models.
 
     `models` are the models to sort.
@@ -94,7 +94,7 @@ class UnitModel:
         return self.roles[cap]
 
     @property
-    def capabilities(self) -> collections.abc.KeysView[ICaseString]:
+    def capabilities(self) -> abc.KeysView[ICaseString]:
         """Unit capabilities
 
         `self` is this unit model.
@@ -106,7 +106,7 @@ class UnitModel:
 
     width: int = attr.ib()
 
-    roles: collections.abc.Mapping[ICaseString, object] = attr.ib()
+    roles: abc.Mapping[ICaseString, object] = attr.ib()
 
     lock_info: LockInfo = attr.ib()
 
