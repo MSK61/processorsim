@@ -39,7 +39,7 @@
 #
 ############################################################
 
-import collections.abc
+from collections import abc
 from collections.abc import (
     Callable,
     Generator,
@@ -121,7 +121,7 @@ def chk_cycles(processor: Graph) -> None:
 
 
 def chk_non_empty(
-    processor: collections.abc.Container[object], in_ports: Iterable[object]
+    processor: abc.Container[object], in_ports: Iterable[object]
 ) -> None:
     """Check if the processor still has input ports.
 
@@ -254,7 +254,7 @@ class _PathLockCalc:
 
     _start_unit: Mapping[object, object]
 
-    _succ_lst: collections.abc.Collection[object]
+    _succ_lst: abc.Collection[object]
 
     _capability: object
 
@@ -623,7 +623,7 @@ def _get_cap_edge(graph: DiGraph, node: Any) -> Any:
 
 def _get_cap_units(
     processor: DiGraph,
-) -> collections.abc.ItemsView[ICaseString, list[Any]]:
+) -> abc.ItemsView[ICaseString, list[Any]]:
     """Create a mapping between capabilities and supporting input ports.
 
     `processor` is the processor to create a capability-port map for.

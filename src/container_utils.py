@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+# environment:  Visual Studio Code 1.82.0, python 3.11.4, Fedora release
 #               38 (Thirty Eight)
 #
 # notes:        This is a private program.
@@ -39,7 +39,7 @@
 ############################################################
 
 from collections import defaultdict
-import collections.abc
+from collections import abc
 from collections.abc import Callable, Iterable
 from itertools import starmap
 import operator
@@ -161,7 +161,7 @@ class SelfIndexSet(_IndexedSetBase[_T]):
 
 
 def _val_lst_dict(
-    val_iter_dict: collections.abc.Mapping[Any, Iterable[Any]]
+    val_iter_dict: abc.Mapping[Any, Iterable[Any]]
 ) -> defaultdict[Any, list[Any]]:
     """Convert the given value iterable dictionary to a value list one.
 
@@ -192,7 +192,7 @@ class BagValDict(Generic[_KT, _VT]):
             map(type_checking.sorted_lst, [val_lst, self[key]])
             for key, val_lst in other_items
         )
-        item_lst_pair: list[collections.abc.Sized] = [self, other_items]
+        item_lst_pair: list[abc.Sized] = [self, other_items]
         return eq(*(len(item_lst) for item_lst in item_lst_pair)) and all(
             starmap(eq, lst_pairs)
         )
