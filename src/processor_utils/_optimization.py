@@ -31,14 +31,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
+# environment:  Visual Studio Code 1.82.0, python 3.11.4, Fedora release
 #               38 (Thirty Eight)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import collections.abc
+from collections import abc
 from logging import warning
 
 import networkx
@@ -102,7 +102,7 @@ def rm_empty_units(processor: Graph) -> None:
 
 
 def _chk_edge(
-    processor: Graph, edge: collections.abc.Sequence[object]
+    processor: Graph, edge: abc.Sequence[object]
 ) -> frozenset[ICaseString]:
     """Check if the edge is useful.
 
@@ -143,9 +143,7 @@ def _clean_unit(processor: DiGraph, unit: object) -> None:
 
 
 def _rm_dead_end(
-    processor: Graph,
-    dead_end: object,
-    in_ports: collections.abc.Container[object],
+    processor: Graph, dead_end: object, in_ports: abc.Container[object]
 ) -> None:
     """Remove a dead end from the given processor.
 
@@ -167,9 +165,7 @@ def _rm_dead_end(
     processor.remove_node(dead_end)
 
 
-def _rm_dummy_edge(
-    processor: Graph, edge: collections.abc.Collection[object]
-) -> None:
+def _rm_dummy_edge(processor: Graph, edge: abc.Collection[object]) -> None:
     """Remove an edge from the given processor.
 
     `processor` is the processor to remove the edge from.
