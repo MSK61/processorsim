@@ -16,7 +16,7 @@ jobs:
       with:
         persist-credentials: false
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4.7.1
       with:
         python-version: "3.11.6"
         cache: "pipenv"
