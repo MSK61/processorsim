@@ -4,6 +4,7 @@ jobs:
   build:
     env:
       PIPENV_VERBOSITY: -1
+      sarifFile: snyk-code.sarif
     runs-on: ubuntu-latest
 
     steps:
@@ -19,6 +20,29 @@ jobs:
         python -m pip install --upgrade pip
         pip install pipenv
         pipenv sync -d
+    - name: Set up Snyk CLI to check for security issues
+      # Snyk can be used to break the build when it detects security issues.
+      # In this case we want to upload the SAST issues to GitHub Code Scanning
+      uses: snyk/actions/setup@0.4.0
+      env:
+        # This is where you will need to introduce the Snyk API token created with your Snyk account
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
     - run: pipenv run ./test.sh
+
+    # Runs Snyk Code (SAST) analysis and uploads result into GitHub.
+    # Use || true to not fail the pipeline
+    - name: Snyk Code test
+      run: snyk code test --sarif > $sarifFile # || true
+
+    - name: Snyk test
+      run: snyk test
     - name: Coveralls GitHub Action
       uses: coverallsapp/github-action@v2.2.3
+    - name: Snyk monitor
+      run: snyk monitor
+
+    # Push the Snyk Code results into GitHub Code Scanning tab
+    - name: Upload result to GitHub Code Scanning
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: ${{ env.sarifFile }}
