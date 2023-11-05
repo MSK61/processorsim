@@ -4,6 +4,10 @@ jobs:
   build:
     env:
       PIPENV_VERBOSITY: -1
+
+      # This is where you will need to introduce the Snyk API token created with your Snyk account
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
       sarifFile: snyk-code.sarif
     runs-on: ubuntu-latest
 
@@ -24,9 +28,6 @@ jobs:
       # Snyk can be used to break the build when it detects security issues.
       # In this case we want to upload the SAST issues to GitHub Code Scanning
       uses: snyk/actions/setup@0.4.0
-      env:
-        # This is where you will need to introduce the Snyk API token created with your Snyk account
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
     - run: pipenv run ./test.sh
 
     # Runs Snyk Code (SAST) analysis and uploads result into GitHub.
