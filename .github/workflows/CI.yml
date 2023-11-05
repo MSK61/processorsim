@@ -20,3 +20,5 @@ jobs:
         pip install pipenv
         pipenv sync -d
     - run: pipenv run ./test.sh
+    - name: Coveralls GitHub Action
+      uses: coverallsapp/github-action@v2.2.3
