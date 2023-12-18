@@ -32,16 +32,18 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import io
 import os.path
 
 import pytest
+import typer.testing
 
 import test_utils
 import processor_sim
@@ -85,23 +87,35 @@ class TestWhole:
         `sim_res` is the expected simulation result.
 
         """
-        processor_file, program_file = processor_sim.get_in_files(
-            [
-                "--processor",
-                *(
-                    os.path.join(test_utils.TEST_DATA_DIR, *path_parts)
-                    for path_parts in [
-                        ["fullHwDesc", proc_file_name],
-                        ["programs", prog_file_name],
-                    ]
-                ),
+        app = typer.Typer()
+        app.command()(processor_sim.main)
+        file_args = (
+            os.path.join(test_utils.TEST_DATA_DIR, *path_parts)
+            for path_parts in [
+                ["fullHwDesc", proc_file_name],
+                ["programs", prog_file_name],
             ]
         )
-        with processor_file, program_file:
-            assert (
-                processor_sim.get_sim_res(processor_file, program_file)
-                == sim_res
+        with io.StringIO() as exp_res_stream:
+            _assert_res(
+                typer.testing.CliRunner()
+                .invoke(app, ["--processor", *file_args])
+                .stdout,
+                exp_res_stream,
+                sim_res,
             )
+
+
+def _assert_res(actual_res, exp_res_stream, exp_res):
+    """Assert simulation results.
+
+    `actual_res` is the actual simulation results.
+    `exp_res_stream` is the expected simulation results stream.
+    `exp_res` are the expected simulation results.
+
+    """
+    processor_sim.ResultWriter(exp_res_stream).print_sim_res(exp_res)
+    assert actual_res == exp_res_stream.getvalue()
 
 
 def main():

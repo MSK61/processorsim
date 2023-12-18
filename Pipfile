@@ -22,6 +22,7 @@ pyyaml = "*"
 more-itertools = "*"
 fastcore = "*"
 pydash = "*"
+typer = "*"
 
 [requires]
 python_version = "3.11"

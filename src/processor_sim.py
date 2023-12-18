@@ -40,8 +40,8 @@ Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -56,16 +56,22 @@ import operator
 import sys
 import argparse
 import typing
-from typing import Any, Final, IO, Optional
+from typing import Annotated, Any, Final, IO, Optional
+import _csv
 
 import attr
 import more_itertools
+import typer
+from typer import FileText
 
 import type_checking
 import hw_loading
 import program_utils
 import sim_services
 from sim_services.sim_defs import StallState
+
+if typing.TYPE_CHECKING:
+    import _typeshed
 
 # command-line option variables
 # variable to receive the processor architecture file
@@ -139,17 +145,21 @@ def process_command_line(argv: Optional[Sequence[str]]) -> argparse.Namespace:
     return args
 
 
-def main(argv: Optional[Sequence[str]] = None) -> typing.Literal[0]:
-    """Run the program.
-
-    `argv` is the command-line arguments, defaulting to None.
-    The function returns the program exit code.
-
-    """
-    processor_file, program_file = get_in_files(argv)
+def main(
+    processor_file: Annotated[
+        FileText,
+        typer.Option(
+            "--processor",
+            help="Read the processor architecture from this file.",
+        ),
+    ],
+    program_file: Annotated[
+        FileText, typer.Argument(help="Simulate this program file.")
+    ],
+) -> None:
+    """Simulate running a program through a processor architecture."""
     logging.basicConfig(level=logging.INFO)
     run(processor_file, program_file)
-    return 0  # success
 
 
 def run(processor_file: IO[str], program_file: IO[str]) -> None:
@@ -163,7 +173,9 @@ def run(processor_file: IO[str], program_file: IO[str]) -> None:
 
     """
     with processor_file, program_file:
-        _ResultWriter.print_sim_res(get_sim_res(processor_file, program_file))
+        ResultWriter(sys.stdout).print_sim_res(
+            get_sim_res(processor_file, program_file)
+        )
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -199,20 +211,49 @@ class _InstrFlight:
     stops: Iterable[_InstrPosition]
 
 
-class _ResultWriter:
+def _create_flight(instr_util: Mapping[int, _InstrPosition]) -> _InstrFlight:
+    """Create an instruction flight from its utilization.
+
+    `instr_util` is the instruction utilization information.
+
+    """
+    start_time = min(instr_util.keys())
+    time_span = len(instr_util)
+    return _InstrFlight(
+        start_time,
+        type_checking.map_ex(
+            range(start_time, start_time + time_span),
+            instr_util,
+            _InstrPosition,
+        ),
+    )
+
+
+def _create_writer(
+    out_stream: "_typeshed.SupportsWrite[str]",
+) -> "_csv._writer":
+    """Create a CSV writer with the given backend stream.
+
+    `out_stream` is the backend stream.
+
+    """
+    return csv.writer(out_stream, "excel-tab", lineterminator="\n")
+
+
+@attr.s(frozen=True)
+class ResultWriter:
 
     """Simulation result writer"""
 
-    @classmethod
-    def print_sim_res(cls, sim_res: Collection[Collection[Any]]) -> None:
+    def print_sim_res(self, sim_res: Collection[Collection[Any]]) -> None:
         """Print the simulation result.
 
-        `cls` is the writer class.
+        `self` is this writer.
         `sim_res` is the simulation result to print.
 
         """
-        cls._print_tbl_hdr(sim_res)
-        cls._print_tbl_data(enumerate(sim_res, 1))
+        self._print_tbl_hdr(sim_res)
+        self._print_tbl_data(enumerate(sim_res, 1))
 
     @staticmethod
     def _get_last_tick(sim_res: Iterable[Sized]) -> int:
@@ -235,57 +276,36 @@ class _ResultWriter:
         """
         return range(1, cls._get_last_tick(sim_res) + 1)
 
-    @classmethod
-    def _print_res_row(cls, row_key: Any, res_row: Iterable[Any]) -> None:
+    def _print_res_row(self, row_key: Any, res_row: Iterable[Any]) -> None:
         """Print the given simulation row.
 
-        `cls` is the writer class.
+        `self` is this writer.
         `row_key` is the row key.
         `res_row` is the simulation row.
 
         """
-        cls._writer.writerow(more_itertools.prepend(row_key, res_row))
+        self._writer.writerow(more_itertools.prepend(row_key, res_row))
 
-    @classmethod
-    def _print_tbl_data(cls, sim_res: Iterable[Iterable[Any]]) -> None:
+    def _print_tbl_data(self, sim_res: Iterable[Iterable[Any]]) -> None:
         """Print the simulation table rows.
 
-        `cls` is the writer class.
+        `self` is this writer.
         `sim_res` is the simulation result.
 
         """
         for row_idx, fields in sim_res:
-            cls._print_res_row("I" + str(row_idx), fields)
+            self._print_res_row("I" + str(row_idx), fields)
 
-    @classmethod
-    def _print_tbl_hdr(cls, sim_res: Iterable[Sized]) -> None:
+    def _print_tbl_hdr(self, sim_res: Iterable[Sized]) -> None:
         """Print the simulation table header.
 
-        `cls` is the writer class.
+        `self` is this writer.
         `sim_res` is the simulation result.
 
         """
-        cls._print_res_row("", cls._get_ticks(sim_res))
+        self._print_res_row("", self._get_ticks(sim_res))
 
-    _writer = csv.writer(sys.stdout, "excel-tab")
-
-
-def _create_flight(instr_util: Mapping[int, _InstrPosition]) -> _InstrFlight:
-    """Create an instruction flight from its utilization.
-
-    `instr_util` is the instruction utilization information.
-
-    """
-    start_time = min(instr_util.keys())
-    time_span = len(instr_util)
-    return _InstrFlight(
-        start_time,
-        type_checking.map_ex(
-            range(start_time, start_time + time_span),
-            instr_util,
-            _InstrPosition,
-        ),
-    )
+    _writer: "_csv._writer" = attr.ib(converter=_create_writer)
 
 
 def _cui_to_flights(
@@ -375,4 +395,4 @@ def _icu_to_flights(
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    typer.run(main)
