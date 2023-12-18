@@ -60,7 +60,6 @@ from typing import Any, Final, IO, Optional
 
 import attr
 import more_itertools
-from more_itertools import prepend
 
 import type_checking
 import hw_loading
@@ -245,7 +244,7 @@ class _ResultWriter:
         `res_row` is the simulation row.
 
         """
-        cls._writer.writerow(prepend(row_key, res_row))
+        cls._writer.writerow(more_itertools.prepend(row_key, res_row))
 
     @classmethod
     def _print_tbl_data(cls, sim_res: Iterable[Iterable[Any]]) -> None:
