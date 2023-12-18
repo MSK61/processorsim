@@ -48,15 +48,13 @@ Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 ############################################################
 
 import collections.abc
-from collections.abc import Collection, Iterable, Mapping, Sequence, Sized
+from collections.abc import Collection, Iterable, Mapping, Sized
 import csv
 import itertools
 import logging
-import operator
 import sys
-import argparse
 import typing
-from typing import Annotated, Any, Final, IO, Optional
+from typing import Annotated, Any, IO
 import _csv
 
 import attr
@@ -72,21 +70,6 @@ from sim_services.sim_defs import StallState
 
 if typing.TYPE_CHECKING:
     import _typeshed
-
-# command-line option variables
-# variable to receive the processor architecture file
-_PROC_OPT_VAR: Final = "processor_file"
-_PROG_OPT_VAR: Final = "prog_file"  # variable to receive the program file
-
-
-def get_in_files(argv: Optional[Sequence[str]]) -> tuple[Any, Any]:
-    """Create input file objects from the given arguments.
-
-    `argv` is the list of arguments.
-
-    """
-    args = process_command_line(argv)
-    return operator.attrgetter(_PROC_OPT_VAR, _PROG_OPT_VAR)(args)
 
 
 def get_sim_res(
@@ -108,41 +91,6 @@ def get_sim_res(
     return _get_sim_rows(
         enumerate(sim_services.simulate(compiled_prog, proc_spec)), len(prog)
     )
-
-
-def process_command_line(argv: Optional[Sequence[str]]) -> argparse.Namespace:
-    """
-    Return args object.
-    `argv` is a list of arguments, or `None` for ``sys.argv[1:]``.
-    """
-    if argv is None:
-        argv = sys.argv[1:]
-
-    # initialize the parser object:
-    parser = argparse.ArgumentParser(add_help=False)
-
-    # define options here:
-    parser.add_argument(  # processor architecture file
-        "--processor",
-        dest=_PROC_OPT_VAR,
-        type=open,
-        required=True,
-        metavar="PROCESSORFILE",
-        help="Read the processor architecture from this file.",
-    )
-    parser.add_argument(  # program
-        _PROG_OPT_VAR,
-        type=open,
-        metavar="PROGRAMFILE",
-        help="Simulate this program file.",
-    )
-    parser.add_argument(  # customized description; put --help last
-        "-h", "--help", action="help", help="Show this help message and exit."
-    )
-
-    args = parser.parse_args(argv)
-
-    return args
 
 
 def main(
@@ -342,7 +290,9 @@ def _cui_to_icu(
 def _fill_cp_util(
     clock_pulse: int,
     cp_util: Iterable[Iterable[Iterable[sim_services.InstrState]]],
-    ixcxu: Sequence[collections.abc.MutableMapping[int, _InstrPosition]],
+    ixcxu: collections.abc.Sequence[
+        collections.abc.MutableMapping[int, _InstrPosition]
+    ],
 ) -> None:
     """Fill the given clock utilization into the IxCxU map.
 
