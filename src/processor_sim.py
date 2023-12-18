@@ -72,27 +72,6 @@ if typing.TYPE_CHECKING:
     import _typeshed
 
 
-def get_sim_res(
-    processor_file: IO[str], program_file: Iterable[str]
-) -> list[list[str]]:
-    """Calculate the simulation result table.
-
-    `processor_file` is the file containing the processor architecture.
-    `program_file` is the file containing the program to simulate.
-    The function reads the program file and simulates its execution on
-    the processor defined by the architecture provided in the given
-    processor description file.
-
-    """
-    proc_desc = hw_loading.read_processor(processor_file)
-    prog = program_utils.read_program(program_file)
-    compiled_prog = program_utils.compile_program(prog, proc_desc.isa)
-    proc_spec = sim_services.HwSpec(proc_desc.processor)
-    return _get_sim_rows(
-        enumerate(sim_services.simulate(compiled_prog, proc_spec)), len(prog)
-    )
-
-
 def main(
     processor_file: Annotated[
         FileText,
@@ -122,7 +101,7 @@ def run(processor_file: IO[str], program_file: IO[str]) -> None:
     """
     with processor_file, program_file:
         ResultWriter(sys.stdout).print_sim_res(
-            get_sim_res(processor_file, program_file)
+            _get_sim_res(processor_file, program_file)
         )
 
 
@@ -318,6 +297,27 @@ def _get_flight_row(flight: _InstrFlight) -> list[str]:
         *(itertools.repeat("", flight.start_time)),
         *(str(stop) for stop in flight.stops),
     ]
+
+
+def _get_sim_res(
+    processor_file: IO[str], program_file: Iterable[str]
+) -> list[list[str]]:
+    """Calculate the simulation result table.
+
+    `processor_file` is the file containing the processor architecture.
+    `program_file` is the file containing the program to simulate.
+    The function reads the program file and simulates its execution on
+    the processor defined by the architecture provided in the given
+    processor description file.
+
+    """
+    proc_desc = hw_loading.read_processor(processor_file)
+    prog = program_utils.read_program(program_file)
+    compiled_prog = program_utils.compile_program(prog, proc_desc.isa)
+    proc_spec = sim_services.HwSpec(proc_desc.processor)
+    return _get_sim_rows(
+        enumerate(sim_services.simulate(compiled_prog, proc_spec)), len(prog)
+    )
 
 
 def _get_sim_rows(
