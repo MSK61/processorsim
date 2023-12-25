@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -65,9 +65,7 @@ def exec_file(nb_file, run_path):
     `run_path` is the execution path.
 
     """
-    # Pylance doesn't see ExecutePreprocessor exported from
-    # nbconvert.preprocessors.
-    nbconvert.preprocessors.ExecutePreprocessor().preprocess(  # type: ignore
+    nbconvert.preprocessors.ExecutePreprocessor().preprocess(
         nbformat.read(nb_file, nbformat.NO_CONVERT),
         {"metadata": {"path": run_path}},
     )
