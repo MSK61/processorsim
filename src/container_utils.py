@@ -253,8 +253,7 @@ class BagValDict(Generic[_KT, _VT]):
 
         """
         return filter(
-            pydash.functions.Spread(lambda _, val_lst: val_lst),
-            self._dict.items(),
+            pydash.spread(lambda _, val_lst: val_lst), self._dict.items()
         )
 
     items = _useful_items
