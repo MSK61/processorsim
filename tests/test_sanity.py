@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -122,7 +122,6 @@ class TestBlocking:
 
     """Test case for detecting blocked inputs"""
 
-    # pylint: disable=invalid-name
     @mark.parametrize(
         "in_file, isolated_input",
         [
@@ -130,6 +129,7 @@ class TestBlocking:
             ("processorWithNoCapableOutputs.yaml", "input"),
         ],
     )
+    # pylint: disable-next=invalid-name
     def test_in_port_with_no_compatible_out_links_raises_DeadInputError(
         self, in_file, isolated_input
     ):
@@ -156,7 +156,6 @@ class TestLoop:
 
     """Test case for loading processors with loops"""
 
-    # pylint: disable=invalid-name
     @mark.parametrize(
         "in_file",
         [
@@ -165,7 +164,9 @@ class TestLoop:
             "bigLoopProcessor.yaml",
         ],
     )
-    def test_loop_raises_NetworkXUnfeasible(self, in_file):
+    def test_loop_raises_NetworkXUnfeasible(  # pylint: disable=invalid-name
+        self, in_file
+    ):
         """Test loading a processor with a loop.
 
         `self` is this test case.
@@ -179,7 +180,6 @@ class TestNoLock:
 
     """Test case for checking paths without locks"""
 
-    # pylint: disable=invalid-name
     @mark.parametrize(
         "units, data_path",
         [
@@ -218,6 +218,7 @@ class TestNoLock:
             ),
         ],
     )
+    # pylint: disable-next=invalid-name
     def test_path_with_no_locks_raises_PathLockError(self, units, data_path):
         """Test loading a processor with no locks in paths.
 
@@ -237,7 +238,7 @@ class TestWidth:
 
     """Test case for checking data path width"""
 
-    # pylint: disable=invalid-name
+    # pylint: disable-next=invalid-name
     def test_unconsumed_capabilitiy_raises_BlockedCapError(self):
         """Test an input with a capability not consumed at all.
 
@@ -299,7 +300,6 @@ class TestMultiLock:
 
     """Test case for checking multiple locks along a path"""
 
-    # pylint: disable=invalid-name
     @mark.parametrize(
         "in_proc_desc, lock_data, exp_proc_desc",
         [
@@ -315,6 +315,7 @@ class TestMultiLock:
             ),
         ],
     )
+    # pylint: disable-next=invalid-name
     def test_path_with_multiple_locks_raises_PathLockError(
         self, in_proc_desc, lock_data, exp_proc_desc
     ):

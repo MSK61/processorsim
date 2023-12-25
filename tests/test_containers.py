@@ -51,8 +51,7 @@ class CoverageTest(unittest.TestCase):
 
     """Test case for fulfilling complete code coverage"""
 
-    # pylint: disable=invalid-name
-    def test_IndexedSet_repr(self):
+    def test_IndexedSet_repr(self):  # pylint: disable=invalid-name
         """Test IndexedSet representation.
 
         `self` is this test case.

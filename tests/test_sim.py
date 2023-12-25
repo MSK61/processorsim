@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -280,8 +280,9 @@ class StallErrTest(TestCase):
 
     """Test case for stall error details"""
 
-    # pylint: disable=invalid-name
-    def test_util_tbl_exists_in_StallError(self):
+    def test_util_tbl_exists_in_StallError(  # pylint: disable=invalid-name
+        self,
+    ):
         """Test dumping the utilizaiton table in stall errors.
 
         `self` is this test case.

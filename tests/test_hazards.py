@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -188,8 +188,7 @@ class RawTest(TestCase):
 
     """Test case for RAW hazards"""
 
-    # pylint: disable=invalid-name
-    def test_RLock_in_unit_before_WLock(self):
+    def test_RLock_in_unit_before_WLock(self):  # pylint: disable=invalid-name
         """Test detecting RAW hazards with read locks in earlier units.
 
         `self` is this test case.

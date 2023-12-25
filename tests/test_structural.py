@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -98,7 +98,7 @@ class StructuralTest(TestCase):
 
     """Test case for structural hazards"""
 
-    # pylint: disable=invalid-name
+    # pylint: disable-next=invalid-name
     def test_mem_ACL_is_correctly_matched_against_instructions(self):
         """Test comparing memory ACL against instructions.
 

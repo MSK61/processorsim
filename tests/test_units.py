@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -145,7 +145,6 @@ class TestDupName:
 
     """Test case for loading units with duplicate names"""
 
-    # pylint: disable=invalid-name
     @pytest.mark.parametrize(
         "in_file, dup_unit",
         [
@@ -153,6 +152,7 @@ class TestDupName:
             ("twoUnitsWithSameNameAndDifferentCase.yaml", "FULL SYSTEM"),
         ],
     )
+    # pylint: disable-next=invalid-name
     def test_two_units_with_same_name_raise_DupElemError(
         self, in_file, dup_unit
     ):
