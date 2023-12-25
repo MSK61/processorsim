@@ -31,21 +31,22 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+from collections import abc
 from collections.abc import Iterable
 import operator
-from typing import Any, Final
+from typing import Any, cast, Final
 
 import attr
 import fastcore.foundation
 
-from container_utils import sorted_tuple
+import container_utils
 from str_utils import ICaseString
 
 # unit attributes
@@ -64,7 +65,9 @@ def sorted_models(models: Iterable[Any]) -> tuple[Any, ...]:
     `models` are the models to sort.
 
     """
-    return sorted_tuple(models, key=fastcore.foundation.Self.name())
+    return container_utils.sorted_tuple(
+        models, key=fastcore.foundation.Self.name()
+    )
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -77,19 +80,66 @@ class LockInfo:
     wr_lock: object
 
 
-def _sorted_caps(caps: Iterable[Any]) -> tuple[Any, ...]:
-    """Create a sorted list of the given capabilities.
+@attr.frozen
+class _UnitModel2:
 
-    `caps` are the capabilities to sort.
+    """Functional unit model"""
 
-    """
-    return sorted_tuple(caps)
+    def needs_mem(self, cap: ICaseString) -> bool:
+        """Test if the given capability will require memory access.
+
+        `self` is this unit model.
+
+        """
+        return cast(bool, self.roles[cap])
+
+    name: ICaseString
+
+    width: int
+
+    roles: abc.Mapping[ICaseString, object]
+
+    lock_info: LockInfo
 
 
-@attr.s(frozen=True)
+# Looks like mypy can't honor auto_detect=True in attr.frozen so I have
+# to explicitly(and redundantly) use init=False.
+@attr.frozen(init=False)
 class UnitModel:
 
     """Functional unit model"""
+
+    # pylint: disable-next=too-many-arguments
+    def __init__(
+        self,
+        name: ICaseString,
+        width: int,
+        capabilities: Iterable[Any],
+        lock_info: LockInfo,
+        mem_acl: Iterable[object],
+    ) -> None:
+        """Create a unit model.
+
+        `self` is this unit model.
+        `name` is the unit name.
+        `width` is the unit width.
+        `capabilities` are the unit capabilities.
+        `lock_info` is the locking information.
+        `mem_acl` is the memory access control list.
+
+        """
+        mem_acl = tuple(mem_acl)
+        # Pylance and pylint can't detect __attrs_init__ as an injected
+        # method.
+        # pylint: disable-next=no-member
+        self.__attrs_init__(  # type: ignore[reportGeneralTypeIssues]
+            _UnitModel2(
+                name,
+                width,
+                {cap: cap in mem_acl for cap in capabilities},
+                lock_info,
+            )
+        )
 
     def needs_mem(self, cap: object) -> bool:
         """Test if the given capability will require memory access.
@@ -97,17 +147,47 @@ class UnitModel:
         `self` is this unit model.
 
         """
-        return cap in self._mem_acl
+        return cap in self._model2.roles and self._model2.needs_mem(
+            cast(ICaseString, cap)
+        )
 
-    name: ICaseString = attr.ib()
+    @property
+    def capabilities(self) -> abc.KeysView[ICaseString]:
+        """Unit capabilities
 
-    width: int = attr.ib()
+        `self` is this unit model.
 
-    capabilities: tuple[ICaseString, ...] = attr.ib(converter=_sorted_caps)
+        """
+        return self._model2.roles.keys()
 
-    lock_info: LockInfo = attr.ib()
+    @property
+    def lock_info(self) -> LockInfo:
+        """Unit locking information
 
-    _mem_acl: tuple[object, ...] = attr.ib(converter=sorted_tuple)
+        `self` is this unit model.
+
+        """
+        return self._model2.lock_info
+
+    @property
+    def name(self) -> ICaseString:
+        """Unit name
+
+        `self` is this unit model.
+
+        """
+        return self._model2.name
+
+    @property
+    def width(self) -> int:
+        """Unit width
+
+        `self` is this unit model.
+
+        """
+        return self._model2.width
+
+    _model2: _UnitModel2
 
 
 @attr.s(eq=False, frozen=True)
