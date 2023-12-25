@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.82.0, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -48,7 +48,7 @@ from typing import Any, Generic, Optional, TypeVar
 
 import attr
 import more_itertools
-import pydash.functions
+import pydash
 
 from str_utils import format_obj
 import type_checking
@@ -142,7 +142,7 @@ class SelfIndexSet(_IndexedSetBase[_T]):
         `self` is this set.
 
         """
-        super().__init__(lambda elem: elem)
+        super().__init__(pydash.identity)
 
     @classmethod
     def create(cls, elems: Iterable[_T]) -> "SelfIndexSet[_T]":
