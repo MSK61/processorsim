@@ -42,8 +42,7 @@ from collections import defaultdict
 from collections import abc
 from collections.abc import Callable, Iterable
 from itertools import starmap
-import operator
-from operator import eq
+from operator import eq, itemgetter
 from typing import Any, Generic, Optional, TypeVar
 
 import attr
@@ -239,7 +238,7 @@ class BagValDict(Generic[_KT, _VT]):
         elems: Iterable[tuple[_KT, list[_VT]]] = starmap(
             lambda key, val_lst: (key, sorted(val_lst)), self.items()
         )
-        elems = sorted(elems, key=operator.itemgetter(0))
+        elems = sorted(elems, key=itemgetter(0))
         return ", ".join(
             starmap(lambda key, val_lst: f"{key!r}: {val_lst}", elems)
         )
@@ -252,9 +251,7 @@ class BagValDict(Generic[_KT, _VT]):
         non-empty lists.
 
         """
-        return filter(
-            pydash.spread(lambda _, val_lst: val_lst), self._dict.items()
-        )
+        return filter(itemgetter(1), self._dict.items())
 
     items = _useful_items
 
