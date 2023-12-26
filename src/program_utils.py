@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -142,7 +142,7 @@ def read_program(prog_file: Iterable[str]) -> list[ProgInstruction]:
     ]
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@attr.mutable(frozen=True)
 class _LineInfo:
 
     """Source line information"""
@@ -152,7 +152,7 @@ class _LineInfo:
     operands: str
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@attr.mutable(frozen=True)
 class _OperandInfo:
 
     """Instruction operand information"""

@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -163,7 +163,7 @@ class TestCapCase:
             assert token in warn_msg
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@attr.mutable(frozen=True)
 class _TestExpResults:
 
     """Non-standard capability loading test expected results"""
@@ -173,7 +173,7 @@ class _TestExpResults:
     ref_cap: object
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@attr.mutable(frozen=True)
 class _TestInParams:
 
     """Non-standard capability loading test input results"""

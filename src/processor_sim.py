@@ -105,7 +105,7 @@ def run(processor_file: IO[str], program_file: IO[str]) -> None:
         )
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@attr.mutable(frozen=True)
 class _InstrPosition:
 
     """Instruction position"""
@@ -128,7 +128,7 @@ class _InstrPosition:
     _stalled: StallState
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@attr.mutable(frozen=True)
 class _InstrFlight:
 
     """Instruction flight"""

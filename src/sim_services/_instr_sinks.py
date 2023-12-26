@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -57,7 +57,7 @@ from .sim_defs import InstrState, StallState
 from . import _utils
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@attr.mutable(frozen=True)
 class HostedInstr:
 
     """Instruction hosted inside a functional unit"""
@@ -187,7 +187,7 @@ class IInstrSink(abc.ABC):
         """
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@attr.mutable(frozen=True)
 class OutSink(IInstrSink):
 
     """Dummy sink for flushing output ports"""
@@ -243,7 +243,7 @@ class OutSink(IInstrSink):
     _out_ports: Iterator[ICaseString]
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@attr.mutable(frozen=True)
 class UnitSink(IInstrSink):
 
     """Instruction sink wrapper for functional units"""

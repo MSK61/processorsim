@@ -56,7 +56,7 @@ class StallState(enum.Enum):
     DATA: Final = auto()
 
 
-@attr.s(auto_attribs=True)
+@attr.mutable(order=True)
 class InstrState:
 
     """Instruction state"""

@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -218,7 +218,7 @@ class _IssueInfo:
     _exited: int = attr.ib(0, init=False)
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@attr.mutable(frozen=True)
 class _RegAvailState:
 
     """Registers availability state"""
@@ -228,7 +228,7 @@ class _RegAvailState:
     regs: Iterable[object]
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@attr.mutable(frozen=True)
 class _TransitionUtil:
 
     """Utilization transition of a single unit between two pulses"""

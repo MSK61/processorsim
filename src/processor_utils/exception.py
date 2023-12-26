@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -125,7 +125,7 @@ class BadWidthError(RuntimeError):
     WIDTH_KEY: Final = "width"
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@attr.mutable(frozen=True)
 class ComponentInfo:
 
     """Component information"""
@@ -135,7 +135,7 @@ class ComponentInfo:
     reporting_name: object
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@attr.mutable(frozen=True)
 class CapPortInfo:
 
     """Capability-port combination information"""

@@ -264,7 +264,7 @@ class TestWidth:
         )
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@attr.mutable(frozen=True)
 class _IoProcessor:
 
     """Single input, single output processor"""
@@ -276,7 +276,7 @@ class _IoProcessor:
     capability: object
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@attr.mutable(frozen=True)
 class _LockTestData:
 
     """Lock test data"""
@@ -286,7 +286,7 @@ class _LockTestData:
     lock_type: object
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@attr.mutable(frozen=True)
 class _TestExpResults:
 
     """Multi-lock test expected results"""

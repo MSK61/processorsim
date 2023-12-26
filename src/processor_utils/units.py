@@ -67,7 +67,7 @@ def sorted_models(models: Iterable[Any]) -> tuple[Any, ...]:
     return sorted_tuple(models, key=fastcore.foundation.Self.name())
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@attr.mutable(frozen=True)
 class LockInfo:
 
     """Parameter locking information in units"""
