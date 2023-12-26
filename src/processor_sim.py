@@ -232,7 +232,7 @@ class ResultWriter:
         """
         self._print_res_row("", self._get_ticks(sim_res))
 
-    _writer: "_csv._writer" = attr.ib(converter=_create_writer)
+    _writer: "_csv._writer" = attr.field(converter=_create_writer)
 
 
 def _cui_to_flights(

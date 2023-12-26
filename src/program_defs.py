@@ -60,9 +60,9 @@ class _Instruction:
 
     """Instruction"""
 
-    sources: tuple[object, ...] = attr.ib(converter=_sorted_uniq)
+    sources: tuple[object, ...] = attr.field(converter=_sorted_uniq)
 
-    destination: object = attr.ib()
+    destination: object = attr.field()
 
 
 @attr.frozen
@@ -70,7 +70,7 @@ class HwInstruction(_Instruction):
 
     """Hardware instruction"""
 
-    categ: object = attr.ib()
+    categ: object = attr.field()
 
 
 @attr.frozen

@@ -126,6 +126,6 @@ class ICaseString:
         """
         return map(self._canonical, [self.raw_str, other])
 
-    raw_str: str = attr.ib()
+    raw_str: str = attr.field()
 
     _canonical = staticmethod(str.lower)

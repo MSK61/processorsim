@@ -103,9 +103,9 @@ class _IndexedSetBase(Generic[_T]):
         """
         self._std_form_map[self._index_func(elem)] = elem
 
-    _index_func: Callable[[_T], object] = attr.ib()
+    _index_func: Callable[[_T], object] = attr.field()
 
-    _std_form_map: dict[object, _T] = attr.ib(factory=dict, init=False)
+    _std_form_map: dict[object, _T] = attr.field(factory=dict, init=False)
 
 
 class IndexedSet(_IndexedSetBase[_T]):
@@ -255,6 +255,6 @@ class BagValDict(Generic[_KT, _VT]):
 
     items = _useful_items
 
-    _dict: defaultdict[_KT, list[_VT]] = attr.ib(
+    _dict: defaultdict[_KT, list[_VT]] = attr.field(
         converter=_val_lst_dict, factory=dict
     )

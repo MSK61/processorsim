@@ -72,9 +72,9 @@ class InstrMovStatus:
 
     """Status of moving instructions"""
 
-    moved: list[HostedInstr] = attr.ib(factory=list)
+    moved: list[HostedInstr] = attr.field(factory=list)
 
-    mem_used: object = attr.ib(False, init=False)
+    mem_used: object = attr.field(default=False, init=False)
 
 
 class IInstrSink(abc.ABC):

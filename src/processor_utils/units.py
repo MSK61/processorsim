@@ -100,15 +100,15 @@ class UnitModel:
         """
         return cap in self._mem_acl
 
-    name: ICaseString = attr.ib()
+    name: ICaseString = attr.field()
 
-    width: int = attr.ib()
+    width: int = attr.field()
 
-    capabilities: tuple[ICaseString, ...] = attr.ib(converter=_sorted_caps)
+    capabilities: tuple[ICaseString, ...] = attr.field(converter=_sorted_caps)
 
-    lock_info: LockInfo = attr.ib()
+    lock_info: LockInfo = attr.field()
 
-    _mem_acl: tuple[object, ...] = attr.ib(converter=sorted_tuple)
+    _mem_acl: tuple[object, ...] = attr.field(converter=sorted_tuple)
 
 
 @attr.frozen(eq=False)
@@ -134,6 +134,6 @@ class FuncUnit:
             map(operator.is_, self.predecessors, other.predecessors)
         )
 
-    model: UnitModel = attr.ib()
+    model: UnitModel = attr.field()
 
-    predecessors: tuple[UnitModel, ...] = attr.ib(converter=sorted_models)
+    predecessors: tuple[UnitModel, ...] = attr.field(converter=sorted_models)

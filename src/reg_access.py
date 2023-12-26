@@ -60,9 +60,9 @@ class AccessGroup:
 
     """Access group"""
 
-    access_type: object = attr.ib()
+    access_type: object = attr.field()
 
-    reqs: abc.MutableSet[object] = attr.ib(converter=set, factory=set)
+    reqs: abc.MutableSet[object] = attr.field(converter=set, factory=set)
 
 
 def _rev_groups(lst: abc.Reversible[AccessGroup]) -> list[AccessGroup]:
@@ -109,7 +109,7 @@ class RegAccessQueue:
     # removal only without addition, we reverse the given queue to make
     # the queue front at the list tail and make use of the fast access
     # to the list tail.
-    _queue: list[AccessGroup] = attr.ib(converter=_rev_groups)
+    _queue: list[AccessGroup] = attr.field(converter=_rev_groups)
 
 
 class RegAccQBuilder:

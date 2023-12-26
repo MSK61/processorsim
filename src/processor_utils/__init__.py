@@ -629,15 +629,17 @@ class ProcessorDesc:
 
     """Processor description"""
 
-    in_ports: tuple[UnitModel, ...] = attr.ib(converter=tuple[UnitModel, ...])
-
-    out_ports: tuple[FuncUnit, ...] = attr.ib(converter=_sorted_units)
-
-    in_out_ports: tuple[UnitModel, ...] = attr.ib(
+    in_ports: tuple[UnitModel, ...] = attr.field(
         converter=tuple[UnitModel, ...]
     )
 
-    internal_units: tuple[FuncUnit, ...] = attr.ib(converter=_post_order)
+    out_ports: tuple[FuncUnit, ...] = attr.field(converter=_sorted_units)
+
+    in_out_ports: tuple[UnitModel, ...] = attr.field(
+        converter=tuple[UnitModel, ...]
+    )
+
+    internal_units: tuple[FuncUnit, ...] = attr.field(converter=_post_order)
 
 
 def get_abilities(processor: ProcessorDesc) -> frozenset[ICaseString]:

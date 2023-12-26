@@ -115,12 +115,12 @@ class HwSpec:
 
     """Hardware specification"""
 
-    processor_desc: ProcessorDesc = attr.ib()
+    processor_desc: ProcessorDesc = attr.field()
 
-    name_unit_map: dict[ICaseString, UnitModel] = attr.ib(init=False)
+    name_unit_map: dict[ICaseString, UnitModel] = attr.field(init=False)
 
     # Casting to typing.Any because pylance can't detect default as a
-    # member of attr.ib.
+    # member of attr.field.
     @typing.cast(Any, name_unit_map).default
     def _(self) -> dict[ICaseString, UnitModel]:
         """Build the name-to-unit mapping.
@@ -168,9 +168,9 @@ class _AcceptStatus:
 
     """Instruction acceptance status"""
 
-    accepted: object = attr.ib(True, init=False)
+    accepted: object = attr.field(default=True, init=False)
 
-    mem_used: object = attr.ib()
+    mem_used: object = attr.field()
 
 
 @attr.s
@@ -213,9 +213,9 @@ class _IssueInfo:
         """
         return self._exited < self._entered
 
-    _entered: int = attr.ib(0, init=False)
+    _entered: int = attr.field(default=0, init=False)
 
-    _exited: int = attr.ib(0, init=False)
+    _exited: int = attr.field(default=0, init=False)
 
 
 @attr.frozen
