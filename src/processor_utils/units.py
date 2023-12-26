@@ -67,7 +67,7 @@ def sorted_models(models: Iterable[Any]) -> tuple[Any, ...]:
     return sorted_tuple(models, key=fastcore.foundation.Self.name())
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class LockInfo:
 
     """Parameter locking information in units"""
@@ -86,7 +86,7 @@ def _sorted_caps(caps: Iterable[Any]) -> tuple[Any, ...]:
     return sorted_tuple(caps)
 
 
-@attr.s(frozen=True)
+@attr.frozen
 class UnitModel:
 
     """Functional unit model"""
@@ -111,7 +111,7 @@ class UnitModel:
     _mem_acl: tuple[object, ...] = attr.ib(converter=sorted_tuple)
 
 
-@attr.s(eq=False, frozen=True)
+@attr.frozen(eq=False)
 class FuncUnit:
 
     """Processing functional unit"""

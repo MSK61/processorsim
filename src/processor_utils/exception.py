@@ -125,7 +125,7 @@ class BadWidthError(RuntimeError):
     WIDTH_KEY: Final = "width"
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class ComponentInfo:
 
     """Component information"""
@@ -135,7 +135,7 @@ class ComponentInfo:
     reporting_name: object
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class CapPortInfo:
 
     """Capability-port combination information"""

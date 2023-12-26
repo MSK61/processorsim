@@ -142,7 +142,7 @@ def read_program(prog_file: Iterable[str]) -> list[ProgInstruction]:
     ]
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class _LineInfo:
 
     """Source line information"""
@@ -152,7 +152,7 @@ class _LineInfo:
     operands: str
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class _OperandInfo:
 
     """Instruction operand information"""

@@ -69,7 +69,7 @@ def sorted_tuple(
     return tuple(sorted(elems, key=key))
 
 
-@attr.s(frozen=True, repr=False)
+@attr.frozen(repr=False)
 class _IndexedSetBase(Generic[_T]):
 
     """Indexed set base class"""
@@ -173,7 +173,7 @@ def _val_lst_dict(
     return defaultdict(list, val_lst_dict)
 
 
-@attr.s(eq=False, frozen=True, repr=False)
+@attr.frozen(eq=False, repr=False)
 class BagValDict(Generic[_KT, _VT]):
 
     """Dictionary with(unsorted) lists as values"""

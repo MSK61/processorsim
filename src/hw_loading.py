@@ -47,7 +47,7 @@ import yaml
 import processor_utils
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class HwDesc:
 
     """Hardware description"""

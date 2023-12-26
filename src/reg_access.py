@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.82.0, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -55,7 +55,7 @@ class AccessType(enum.Enum):
     WRITE: Final = auto()
 
 
-@attr.s(frozen=True)
+@attr.frozen
 class AccessGroup:
 
     """Access group"""
@@ -74,7 +74,7 @@ def _rev_groups(lst: abc.Reversible[AccessGroup]) -> list[AccessGroup]:
     return list(reversed(lst))
 
 
-@attr.s(frozen=True)
+@attr.frozen
 class RegAccessQueue:
 
     """Access request queue for a single register"""

@@ -57,7 +57,7 @@ from .sim_defs import InstrState, StallState
 from . import _utils
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class HostedInstr:
 
     """Instruction hosted inside a functional unit"""
@@ -187,7 +187,7 @@ class IInstrSink(abc.ABC):
         """
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class OutSink(IInstrSink):
 
     """Dummy sink for flushing output ports"""
@@ -243,7 +243,7 @@ class OutSink(IInstrSink):
     _out_ports: Iterator[ICaseString]
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class UnitSink(IInstrSink):
 
     """Instruction sink wrapper for functional units"""

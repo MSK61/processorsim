@@ -105,7 +105,7 @@ def run(processor_file: IO[str], program_file: IO[str]) -> None:
         )
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class _InstrPosition:
 
     """Instruction position"""
@@ -128,7 +128,7 @@ class _InstrPosition:
     _stalled: StallState
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class _InstrFlight:
 
     """Instruction flight"""
@@ -167,7 +167,7 @@ def _create_writer(
     return csv.writer(out_stream, "excel-tab", lineterminator="\n")
 
 
-@attr.s(frozen=True)
+@attr.frozen
 class ResultWriter:
 
     """Simulation result writer"""

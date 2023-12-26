@@ -142,7 +142,7 @@ class StructuralTest(TestCase):
         )
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class _TestExpResults:
 
     """Structural test expected results"""
@@ -152,7 +152,7 @@ class _TestExpResults:
     extra_util: object
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class _TestInParams:
 
     """Structural test input parameters"""

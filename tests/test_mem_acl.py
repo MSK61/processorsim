@@ -163,7 +163,7 @@ class TestCapCase:
             assert token in warn_msg
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class _TestExpResults:
 
     """Non-standard capability loading test expected results"""
@@ -173,7 +173,7 @@ class _TestExpResults:
     ref_cap: object
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class _TestInParams:
 
     """Non-standard capability loading test input results"""

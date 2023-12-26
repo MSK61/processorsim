@@ -98,7 +98,7 @@ def load_isa(
     return _create_isa(raw_isa, SelfIndexSet[ICaseString].create(capabilities))
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class _CapabilityInfo:
 
     """Unit capability information"""
@@ -624,7 +624,7 @@ def _sorted_units(hw_units: Iterable[Any]) -> tuple[Any, ...]:
     return container_utils.sorted_tuple(hw_units, key=Self.model.name())
 
 
-@attr.s(frozen=True)
+@attr.frozen
 class ProcessorDesc:
 
     """Processor description"""

@@ -55,7 +55,7 @@ def _sorted_uniq(elems: collections.abc.Iterable[Any]) -> tuple[Any, ...]:
     return container_utils.sorted_tuple(frozenset(elems))
 
 
-@attr.s(frozen=True, repr=False)
+@attr.frozen(repr=False)
 class _Instruction:
 
     """Instruction"""
@@ -65,7 +65,7 @@ class _Instruction:
     destination: object = attr.ib()
 
 
-@attr.s(frozen=True)
+@attr.frozen
 class HwInstruction(_Instruction):
 
     """Hardware instruction"""
@@ -73,7 +73,7 @@ class HwInstruction(_Instruction):
     categ: object = attr.ib()
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class ProgInstruction(_Instruction):
 
     """Program instruction"""

@@ -53,7 +53,7 @@ from processor_utils import units
 from str_utils import ICaseString
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class _TestExpResults:
 
     """Hardware loading test expected results"""
@@ -63,7 +63,7 @@ class _TestExpResults:
     proc_srvc_cap: object
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class _TestInParams:
 
     """Hardware loading test input parameters"""

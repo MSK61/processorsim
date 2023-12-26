@@ -110,7 +110,7 @@ class StallError(RuntimeError):
     STATE_KEY: typing.Final = "state"  # parameter key in message format
 
 
-@attr.s(frozen=True)
+@attr.frozen
 class HwSpec:
 
     """Hardware specification"""
@@ -218,7 +218,7 @@ class _IssueInfo:
     _exited: int = attr.ib(0, init=False)
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class _RegAvailState:
 
     """Registers availability state"""
@@ -228,7 +228,7 @@ class _RegAvailState:
     regs: Iterable[object]
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class _TransitionUtil:
 
     """Utilization transition of a single unit between two pulses"""

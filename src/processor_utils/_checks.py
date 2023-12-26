@@ -136,7 +136,7 @@ def chk_non_empty(
         raise exception.EmptyProcError("No input ports found")
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class _SatInfo:
 
     """Lock saturation information"""
@@ -146,7 +146,7 @@ class _SatInfo:
     write_lock: int
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class _PathDescriptor:
 
     """Path descriptor in multi-lock analysis"""
@@ -186,7 +186,7 @@ class _PathDescriptor:
     start: object
 
 
-@attr.mutable(frozen=True)
+@attr.frozen
 class _PathLockCalc:
 
     """Path lock calculator"""
