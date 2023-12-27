@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -51,7 +51,7 @@ class UndefElemError(RuntimeError):
 
         `self` is this unknown element error.
         `msg_tmpl` is the error message format taking the unknown
-                   element as a positional argument.
+                   element as a keyword argument.
         `elem` is the unknown element.
 
         """

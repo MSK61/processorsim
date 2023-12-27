@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -66,7 +66,7 @@ class CodeError(RuntimeError):
 
         `self` is this syntax error.
         `msg_tmpl` is the error message format taking the line number as
-                   a positional argument.
+                   a keyword argument.
         `line` is the number of the line containing the error.
         `instr` is the instruction causing the error.
 

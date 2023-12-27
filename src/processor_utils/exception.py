@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -56,7 +56,7 @@ class BadEdgeError(RuntimeError):
 
         `self` is this bad edge error.
         `msg_tmpl` is the error message format taking the bad edge as a
-                   positional argument.
+                   keyword argument.
         `edge` is the bad edge.
 
         """
@@ -88,7 +88,7 @@ class BadWidthError(RuntimeError):
 
         `self` is this bad width error.
         `msg_tmpl` is the error message format taking in order the
-                   offending unit and width as positional arguments.
+                   offending unit and width as keyword arguments.
         `unit` is the unit with a bad width.
         `width` is the bad width.
 
@@ -161,7 +161,7 @@ class BlockedCapError(RuntimeError):
         `self` is this blocked input capability error.
         `msg_tmpl` is the error message format taking in order the
                    capability, port, actual, and maximum bus widths as
-                   positional arguments.
+                   keyword arguments.
         `blocking_info` is the blocking information.
 
         """
@@ -215,7 +215,7 @@ class DeadInputError(RuntimeError):
 
         `self` is this dead input error.
         `msg_tmpl` is the error message format taking the blocked port
-                   as a positional argument.
+                   as a keyword argument.
         `port` is the blocked input port.
 
         """
@@ -245,7 +245,7 @@ class DupElemError(RuntimeError):
 
         `self` is this duplicate element error.
         `msg_tmpl` is the error message format taking in order the old
-                   and new elements as positional arguments.
+                   and new elements as keyword arguments.
         `old_elem` is the element already existing.
         `new_elem` is the element just discovered.
 
@@ -302,7 +302,7 @@ class PathLockError(RuntimeError):
 
         `self` is this multi-lock error.
         `msg_tmpl` is the error message format taking the multi-lock
-                   segment as a positional argument.
+                   segment as a keyword argument.
         `start` is the path start unit.
         `lock_type` is the type of locks along the path.
         `capability` is the capability for which the path was computed.
