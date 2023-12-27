@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -42,7 +42,9 @@
 from itertools import chain, starmap
 from unittest import TestCase
 
+import fastcore.foundation
 import more_itertools
+import pydash
 import pytest
 from pytest import mark, raises
 
@@ -147,15 +149,13 @@ class FlowTest(TestCase):
         proc_desc = ProcessorDesc(
             in_units, [FuncUnit(out_unit, in_units)], [], []
         )
+        hw_instr_ctor = pydash.spread(HwInstruction)
         self.assertEqual(
             simulate(
-                [
-                    HwInstruction(*instr_params)
-                    for instr_params in [
-                        [[], "R12", "MEM"],
-                        [["R11", "R15"], "R14", "ALU"],
-                    ]
-                ],
+                fastcore.foundation.mapt(
+                    hw_instr_ctor,
+                    [[[], "R12", "MEM"], [["R11", "R15"], "R14", "ALU"]],
+                ),
                 HwSpec(proc_desc),
             ),
             [
