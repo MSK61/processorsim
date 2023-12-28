@@ -32,19 +32,23 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+from fastcore.foundation import mapt
+import pydash
 import pytest
 from pytest import mark
 
 from test_env import TEST_DIR
 import reg_access
 from reg_access import AccessGroup, AccessType, RegAccessQueue
+
+_ACCESS_GR_CTOR = pydash.spread(AccessGroup)
 
 
 class TestAccessPlan:
@@ -57,13 +61,10 @@ class TestAccessPlan:
             ([AccessGroup(AccessType.READ, [0])], True),
             ([AccessGroup(AccessType.WRITE, [0])], False),
             (
-                [
-                    AccessGroup(*gr_params)
-                    for gr_params in [
-                        [AccessType.WRITE, [1]],
-                        [AccessType.READ, [0]],
-                    ]
-                ],
+                mapt(
+                    _ACCESS_GR_CTOR,
+                    [[AccessType.WRITE, [1]], [AccessType.READ, [0]]],
+                ),
                 False,
             ),
             ([AccessGroup(AccessType.READ, [1])], False),
@@ -115,33 +116,24 @@ class TestAddRequests:
             ([[AccessType.WRITE, 0]], [AccessGroup(AccessType.WRITE, [0])]),
             (
                 [[AccessType.READ, 0], [AccessType.WRITE, 1]],
-                [
-                    AccessGroup(*gr_params)
-                    for gr_params in [
-                        [AccessType.READ, [0]],
-                        [AccessType.WRITE, [1]],
-                    ]
-                ],
+                mapt(
+                    _ACCESS_GR_CTOR,
+                    [[AccessType.READ, [0]], [AccessType.WRITE, [1]]],
+                ),
             ),
             (
                 [[AccessType.WRITE, 0], [AccessType.WRITE, 1]],
-                [
-                    AccessGroup(*gr_params)
-                    for gr_params in [
-                        [AccessType.WRITE, [0]],
-                        [AccessType.WRITE, [1]],
-                    ]
-                ],
+                mapt(
+                    _ACCESS_GR_CTOR,
+                    [[AccessType.WRITE, [0]], [AccessType.WRITE, [1]]],
+                ),
             ),
             (
                 [[AccessType.WRITE, 0], [AccessType.READ, 1]],
-                [
-                    AccessGroup(*gr_params)
-                    for gr_params in [
-                        [AccessType.WRITE, [0]],
-                        [AccessType.READ, [1]],
-                    ]
-                ],
+                mapt(
+                    _ACCESS_GR_CTOR,
+                    [[AccessType.WRITE, [0]], [AccessType.READ, [1]]],
+                ),
             ),
             (
                 [[AccessType.READ, 0], [AccessType.READ, 1]],

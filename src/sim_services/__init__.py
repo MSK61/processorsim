@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -50,15 +50,15 @@ from collections.abc import (
 )
 import copy
 from itertools import chain
-import string
 import typing
 from typing import Any, TypeVar
 
-import attr
+from attr import field, frozen, mutable
 from fastcore.foundation import Self
 import more_itertools
 
 from container_utils import BagValDict
+import errors
 from processor_utils import ProcessorDesc
 import processor_utils.units
 from processor_utils.units import LockInfo, UnitModel
@@ -78,7 +78,8 @@ _T = TypeVar("_T")
 _VT = TypeVar("_VT")
 
 
-class StallError(RuntimeError):
+@errors.EXCEPTION
+class StallError(errors.SimErrorBase):
 
     """Stalled processor error"""
 
@@ -87,40 +88,30 @@ class StallError(RuntimeError):
 
         `self` is this stalled processor error.
         `msg_tmpl` is the error message format taking the stalled
-                   processor state as a positional argument.
+                   processor state as a keyword argument.
         `stalled_state` is the stalled processor state.
 
         """
-        super().__init__(
-            string.Template(msg_tmpl).substitute(
-                {self.STATE_KEY: stalled_state}
-            )
+        self._init_simple(
+            msg_tmpl, [errors.ErrorElement(self.STATE_KEY, stalled_state)]
         )
-        self._stalled_state = stalled_state
 
-    @property
-    def processor_state(self) -> object:
-        """Stalled processor state
-
-        `self` is this stalled processor error.
-
-        """
-        return self._stalled_state
+    processor_state: object = field()
 
     STATE_KEY: typing.Final = "state"  # parameter key in message format
 
 
-@attr.s(frozen=True)
+@frozen
 class HwSpec:
 
     """Hardware specification"""
 
-    processor_desc: ProcessorDesc = attr.ib()
+    processor_desc: ProcessorDesc = field()
 
-    name_unit_map: dict[ICaseString, UnitModel] = attr.ib(init=False)
+    name_unit_map: dict[ICaseString, UnitModel] = field(init=False)
 
     # Casting to typing.Any because pylance can't detect default as a
-    # member of attr.ib.
+    # member of attr.field.
     @typing.cast(Any, name_unit_map).default
     def _(self) -> dict[ICaseString, UnitModel]:
         """Build the name-to-unit mapping.
@@ -163,17 +154,17 @@ def simulate(
     return util_tbl
 
 
-@attr.s
+@mutable
 class _AcceptStatus:
 
     """Instruction acceptance status"""
 
-    accepted: object = attr.ib(True, init=False)
+    accepted: object = field(default=True, init=False)
 
-    mem_used: object = attr.ib()
+    mem_used: object = field()
 
 
-@attr.s
+@mutable
 class _IssueInfo:
 
     """Instruction issue information record"""
@@ -213,12 +204,12 @@ class _IssueInfo:
         """
         return self._exited < self._entered
 
-    _entered: int = attr.ib(0, init=False)
+    _entered: int = field(default=0, init=False)
 
-    _exited: int = attr.ib(0, init=False)
+    _exited: int = field(default=0, init=False)
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@frozen
 class _RegAvailState:
 
     """Registers availability state"""
@@ -228,7 +219,7 @@ class _RegAvailState:
     regs: Iterable[object]
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@frozen
 class _TransitionUtil:
 
     """Utilization transition of a single unit between two pulses"""

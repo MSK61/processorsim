@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -152,7 +152,6 @@ class TestProgLoad:
             )
         ]
 
-    # pylint: disable=invalid-name
     @mark.parametrize(
         "prog_file, instr, line_num",
         [
@@ -161,6 +160,7 @@ class TestProgLoad:
             ("lowerCaseSubtractProgram.asm", "sub", 1),
         ],
     )
+    # pylint: disable-next=invalid-name
     def test_unsupported_instruction_raises_UndefElemError(
         self, prog_file, instr, line_num
     ):

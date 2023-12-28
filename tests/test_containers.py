@@ -32,38 +32,38 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import unittest
+import pydash
+import pytest
 
 import test_env
 import container_utils
 
 
-class CoverageTest(unittest.TestCase):
+class TestCoverage:
 
     """Test case for fulfilling complete code coverage"""
 
-    # pylint: disable=invalid-name
-    def test_IndexedSet_repr(self):
+    def test_IndexedSet_repr(self):  # pylint: disable=invalid-name
         """Test IndexedSet representation.
 
         `self` is this test case.
 
         """
-        indexed_set = container_utils.IndexedSet(lambda elem: elem)
+        indexed_set = container_utils.IndexedSet[str](pydash.identity)
         indexed_set.add(test_env.TEST_DIR)
-        self.assertTrue(repr(indexed_set))
+        assert repr(indexed_set)
 
 
 def main():
     """entry point for running test in this module"""
-    unittest.main()
+    pytest.main([__file__])
 
 
 if __name__ == "__main__":

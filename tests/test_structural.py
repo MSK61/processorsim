@@ -32,16 +32,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-from unittest import TestCase
-
-import attr
+from attr import frozen
 import more_itertools
 import pytest
 
@@ -55,7 +53,7 @@ from sim_services.sim_defs import InstrState, StallState
 from str_utils import ICaseString
 
 
-class MemUtilTest(TestCase):
+class TestMemUtil:
 
     """Test case for memory utilization"""
 
@@ -65,47 +63,34 @@ class MemUtilTest(TestCase):
         `self` is this test case.
 
         """
-        proc_desc = ProcessorDesc(
-            [],
-            [],
-            [
-                UnitModel(
-                    ICaseString("full system"),
-                    2,
-                    ["ALU"],
-                    LockInfo(True, True),
-                    ["ALU"],
-                )
-            ],
-            [],
+        full_sys_unit = UnitModel(
+            ICaseString("full system"),
+            2,
+            ["ALU"],
+            LockInfo(True, True),
+            ["ALU"],
         )
-        self.assertEqual(
-            simulate(
-                [
-                    HwInstruction([], out_reg, "ALU")
-                    for out_reg in ["R1", "R2"]
-                ],
-                HwSpec(proc_desc),
-            ),
-            [
-                BagValDict({ICaseString("full system"): [InstrState(instr)]})
-                for instr in [0, 1]
-            ],
-        )
+        assert simulate(
+            [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
+            HwSpec(ProcessorDesc([], [], [full_sys_unit], [])),
+        ) == [
+            BagValDict({ICaseString("full system"): [InstrState(instr)]})
+            for instr in [0, 1]
+        ]
 
 
-class StructuralTest(TestCase):
+class TestStructural:
 
     """Test case for structural hazards"""
 
-    # pylint: disable=invalid-name
+    # pylint: disable-next=invalid-name
     def test_mem_ACL_is_correctly_matched_against_instructions(self):
         """Test comparing memory ACL against instructions.
 
         `self` is this test case.
 
         """
-        sim_res = simulate(
+        assert simulate(
             [
                 HwInstruction([], out_reg, ICaseString("ALU"))
                 for out_reg in ["R1", "R2"]
@@ -132,17 +117,13 @@ class StructuralTest(TestCase):
                     }
                 )
             ),
-        )
-        self.assertEqual(
-            sim_res,
-            [
-                BagValDict({ICaseString("full system"): [InstrState(instr)]})
-                for instr in [0, 1]
-            ],
-        )
+        ) == [
+            BagValDict({ICaseString("full system"): [InstrState(instr)]})
+            for instr in [0, 1]
+        ]
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@frozen
 class _TestExpResults:
 
     """Structural test expected results"""
@@ -152,7 +133,7 @@ class _TestExpResults:
     extra_util: object
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@frozen
 class _TestInParams:
 
     """Structural test input parameters"""

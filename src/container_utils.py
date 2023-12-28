@@ -31,24 +31,24 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.82.0, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import abc
 from collections import defaultdict
-from collections import abc
+import collections.abc
 from collections.abc import Callable, Iterable
 from itertools import starmap
-import operator
-from operator import eq
+from operator import eq, itemgetter
 from typing import Any, Generic, Optional, TypeVar
 
-import attr
+from attr import field, frozen
 import more_itertools
-import pydash.functions
+import pydash
 
 from str_utils import format_obj
 import type_checking
@@ -70,8 +70,8 @@ def sorted_tuple(
     return tuple(sorted(elems, key=key))
 
 
-@attr.s(frozen=True, repr=False)
-class _IndexedSetBase(Generic[_T]):
+@frozen(repr=False)
+class _IndexedSetBase(abc.ABC, Generic[_T]):
 
     """Indexed set base class"""
 
@@ -104,9 +104,9 @@ class _IndexedSetBase(Generic[_T]):
         """
         self._std_form_map[self._index_func(elem)] = elem
 
-    _index_func: Callable[[_T], object] = attr.ib()
+    _index_func: Callable[[_T], object] = field()
 
-    _std_form_map: dict[object, _T] = attr.ib(factory=dict, init=False)
+    _std_form_map: dict[object, _T] = field(factory=dict, init=False)
 
 
 class IndexedSet(_IndexedSetBase[_T]):
@@ -142,7 +142,7 @@ class SelfIndexSet(_IndexedSetBase[_T]):
         `self` is this set.
 
         """
-        super().__init__(lambda elem: elem)
+        super().__init__(pydash.identity)
 
     @classmethod
     def create(cls, elems: Iterable[_T]) -> "SelfIndexSet[_T]":
@@ -161,7 +161,7 @@ class SelfIndexSet(_IndexedSetBase[_T]):
 
 
 def _val_lst_dict(
-    val_iter_dict: abc.Mapping[Any, Iterable[Any]]
+    val_iter_dict: collections.abc.Mapping[Any, Iterable[Any]]
 ) -> defaultdict[Any, list[Any]]:
     """Convert the given value iterable dictionary to a value list one.
 
@@ -174,7 +174,7 @@ def _val_lst_dict(
     return defaultdict(list, val_lst_dict)
 
 
-@attr.s(eq=False, frozen=True, repr=False)
+@frozen(eq=False, repr=False)
 class BagValDict(Generic[_KT, _VT]):
 
     """Dictionary with(unsorted) lists as values"""
@@ -192,7 +192,7 @@ class BagValDict(Generic[_KT, _VT]):
             map(type_checking.sorted_lst, [val_lst, self[key]])
             for key, val_lst in other_items
         )
-        item_lst_pair: list[abc.Sized] = [self, other_items]
+        item_lst_pair: list[collections.abc.Sized] = [self, other_items]
         return eq(*(len(item_lst) for item_lst in item_lst_pair)) and all(
             starmap(eq, lst_pairs)
         )
@@ -239,7 +239,7 @@ class BagValDict(Generic[_KT, _VT]):
         elems: Iterable[tuple[_KT, list[_VT]]] = starmap(
             lambda key, val_lst: (key, sorted(val_lst)), self.items()
         )
-        elems = sorted(elems, key=operator.itemgetter(0))
+        elems = sorted(elems, key=itemgetter(0))
         return ", ".join(
             starmap(lambda key, val_lst: f"{key!r}: {val_lst}", elems)
         )
@@ -252,13 +252,10 @@ class BagValDict(Generic[_KT, _VT]):
         non-empty lists.
 
         """
-        return filter(
-            pydash.functions.Spread(lambda _, val_lst: val_lst),
-            self._dict.items(),
-        )
+        return filter(itemgetter(1), self._dict.items())
 
     items = _useful_items
 
-    _dict: defaultdict[_KT, list[_VT]] = attr.ib(
+    _dict: defaultdict[_KT, list[_VT]] = field(
         converter=_val_lst_dict, factory=dict
     )

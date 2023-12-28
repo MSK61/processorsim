@@ -40,7 +40,7 @@ Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -58,6 +58,7 @@ from typing import Annotated, Any, IO
 import _csv
 
 import attr
+from attr import frozen
 import more_itertools
 import typer
 from typer import FileText
@@ -105,7 +106,7 @@ def run(processor_file: IO[str], program_file: IO[str]) -> None:
         )
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@frozen
 class _InstrPosition:
 
     """Instruction position"""
@@ -128,7 +129,7 @@ class _InstrPosition:
     _stalled: StallState
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@frozen
 class _InstrFlight:
 
     """Instruction flight"""
@@ -167,7 +168,7 @@ def _create_writer(
     return csv.writer(out_stream, "excel-tab", lineterminator="\n")
 
 
-@attr.s(frozen=True)
+@frozen
 class ResultWriter:
 
     """Simulation result writer"""
@@ -232,7 +233,7 @@ class ResultWriter:
         """
         self._print_res_row("", self._get_ticks(sim_res))
 
-    _writer: "_csv._writer" = attr.ib(converter=_create_writer)
+    _writer: "_csv._writer" = attr.field(converter=_create_writer)
 
 
 def _cui_to_flights(

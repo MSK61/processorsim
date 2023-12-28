@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -41,15 +41,16 @@
 from collections.abc import Iterable, Mapping
 import logging
 from re import split
-import string
 import typing
 from typing import Final
 
-import attr
-import fastcore.foundation
+from attr import field, frozen
+from fastcore import foundation
+import pydash
 
 import container_utils
 from container_utils import IndexedSet
+import errors
 from errors import UndefElemError
 from program_defs import HwInstruction, ProgInstruction
 from str_utils import ICaseString
@@ -57,7 +58,8 @@ from str_utils import ICaseString
 _T = typing.TypeVar("_T")
 
 
-class CodeError(RuntimeError):
+@errors.EXCEPTION
+class CodeError(errors.SimErrorBase):
 
     """Syntax error"""
 
@@ -66,36 +68,23 @@ class CodeError(RuntimeError):
 
         `self` is this syntax error.
         `msg_tmpl` is the error message format taking the line number as
-                   a positional argument.
+                   a keyword argument.
         `line` is the number of the line containing the error.
         `instr` is the instruction causing the error.
 
         """
-        super().__init__(
-            string.Template(msg_tmpl).substitute(
-                {self.INSTR_KEY: instr, self.LINE_NUM_KEY: line}
-            )
+        self._init_simple(
+            msg_tmpl,
+            foundation.mapt(
+                pydash.spread(errors.ErrorElement),
+                [[self.INSTR_KEY, instr], [self.LINE_NUM_KEY, line]],
+            ),
         )
-        self._line = line
-        self._instr = instr
 
-    @property
-    def instr(self) -> object:
-        """Instruction where the error is encountered
+    # error parameters
+    instr: object = field()
 
-        `self` is this syntax error.
-
-        """
-        return self._instr
-
-    @property
-    def line(self) -> object:
-        """Number of the source line containing the error
-
-        `self` is this syntax error.
-
-        """
-        return self._line
+    line: object = field()
 
     # parameter keys in message format
     INSTR_KEY: Final = "instruction"
@@ -134,7 +123,7 @@ def read_program(prog_file: Iterable[str]) -> list[ProgInstruction]:
 
     """
     prog = enumerate(map(str.strip, prog_file), 1)
-    reg_registry = IndexedSet[_OperandInfo](fastcore.foundation.Self.name())
+    reg_registry = IndexedSet[_OperandInfo](foundation.Self.name())
     return [
         _create_instr(line_no, line, reg_registry)
         for line_no, line in prog
@@ -142,7 +131,7 @@ def read_program(prog_file: Iterable[str]) -> list[ProgInstruction]:
     ]
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@frozen
 class _LineInfo:
 
     """Source line information"""
@@ -152,7 +141,7 @@ class _LineInfo:
     operands: str
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@frozen
 class _OperandInfo:
 
     """Instruction operand information"""

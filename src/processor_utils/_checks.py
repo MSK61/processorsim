@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.82.0, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -52,7 +52,7 @@ import itertools
 import typing
 from typing import Any, TypeVar
 
-import attr
+from attr import frozen
 import fastcore.foundation
 from fastcore.foundation import Self
 import more_itertools
@@ -136,7 +136,7 @@ def chk_non_empty(
         raise exception.EmptyProcError("No input ports found")
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@frozen
 class _SatInfo:
 
     """Lock saturation information"""
@@ -146,7 +146,7 @@ class _SatInfo:
     write_lock: int
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@frozen
 class _PathDescriptor:
 
     """Path descriptor in multi-lock analysis"""
@@ -186,7 +186,7 @@ class _PathDescriptor:
     start: object
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@frozen
 class _PathLockCalc:
 
     """Path lock calculator"""

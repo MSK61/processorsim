@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -60,7 +60,7 @@ def format_obj(
 
 
 @functools.total_ordering
-@attr.s(eq=False, frozen=True)
+@attr.frozen(eq=False)
 class ICaseString:
 
     """Case-insensitive string"""
@@ -126,6 +126,6 @@ class ICaseString:
         """
         return map(self._canonical, [self.raw_str, other])
 
-    raw_str: str = attr.ib()
+    raw_str: str = attr.field()
 
     _canonical = staticmethod(str.lower)

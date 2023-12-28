@@ -32,21 +32,20 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import unittest
-
 import networkx
+import pytest
 
 import processor_utils.cap_anal_utils
 
 
-class SplitTest(unittest.TestCase):
+class TestSplit:
 
     """Test case for splitting capability graphs"""
 
@@ -61,14 +60,12 @@ class SplitTest(unittest.TestCase):
         for in_node in [0, 1]:
             graph.nodes[in_node][processor_utils.units.UNIT_WIDTH_KEY] = 1
 
-        self.assertEqual(
-            processor_utils.cap_anal_utils.split_nodes(graph)[1], 7
-        )
+        assert processor_utils.cap_anal_utils.split_nodes(graph)[1] == 7
 
 
 def main():
     """entry point for running test in this module"""
-    unittest.main()
+    pytest.main([__file__])
 
 
 if __name__ == "__main__":

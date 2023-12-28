@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -43,7 +43,7 @@ from collections.abc import Iterable
 import operator
 from typing import Any, cast, Final
 
-import attr
+from attr import field, frozen
 import fastcore.foundation
 
 import container_utils
@@ -70,7 +70,7 @@ def sorted_models(models: Iterable[Any]) -> tuple[Any, ...]:
     )
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@frozen
 class LockInfo:
 
     """Parameter locking information in units"""
@@ -80,7 +80,7 @@ class LockInfo:
     wr_lock: object
 
 
-@attr.frozen
+@frozen
 class _UnitModel2:
 
     """Functional unit model"""
@@ -89,6 +89,7 @@ class _UnitModel2:
         """Test if the given capability will require memory access.
 
         `self` is this unit model.
+        `cap` is the capabilitiy to check.
 
         """
         return cast(bool, self.roles[cap])
@@ -104,7 +105,7 @@ class _UnitModel2:
 
 # Looks like mypy can't honor auto_detect=True in attr.frozen so I have
 # to explicitly(and redundantly) use init=False.
-@attr.frozen(init=False)
+@frozen(init=False)
 class UnitModel:
 
     """Functional unit model"""
@@ -145,6 +146,7 @@ class UnitModel:
         """Test if the given capability will require memory access.
 
         `self` is this unit model.
+        `cap` is the capabilitiy to check.
 
         """
         return cap in self._model2.roles and self._model2.needs_mem(
@@ -190,7 +192,7 @@ class UnitModel:
     _model2: _UnitModel2
 
 
-@attr.s(eq=False, frozen=True)
+@frozen(eq=False)
 class FuncUnit:
 
     """Processing functional unit"""
@@ -213,6 +215,6 @@ class FuncUnit:
             map(operator.is_, self.predecessors, other.predecessors)
         )
 
-    model: UnitModel = attr.ib()
+    model: UnitModel = field()
 
-    predecessors: tuple[UnitModel, ...] = attr.ib(converter=sorted_models)
+    predecessors: tuple[UnitModel, ...] = field(converter=sorted_models)

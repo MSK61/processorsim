@@ -31,17 +31,18 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import abc
 import collections.abc
 from typing import Any
 
-import attr
+from attr import field, frozen
 
 import container_utils
 
@@ -55,26 +56,26 @@ def _sorted_uniq(elems: collections.abc.Iterable[Any]) -> tuple[Any, ...]:
     return container_utils.sorted_tuple(frozenset(elems))
 
 
-@attr.s(frozen=True, repr=False)
-class _Instruction:
+@frozen(repr=False)
+class _InstrBase(abc.ABC):
 
-    """Instruction"""
+    """Instruction base class"""
 
-    sources: tuple[object, ...] = attr.ib(converter=_sorted_uniq)
+    sources: tuple[object, ...] = field(converter=_sorted_uniq)
 
-    destination: object = attr.ib()
+    destination: object = field()
 
 
-@attr.s(frozen=True)
-class HwInstruction(_Instruction):
+@frozen
+class HwInstruction(_InstrBase):
 
     """Hardware instruction"""
 
-    categ: object = attr.ib()
+    categ: object = field()
 
 
-@attr.s(auto_attribs=True, frozen=True)
-class ProgInstruction(_Instruction):
+@frozen
+class ProgInstruction(_InstrBase):
 
     """Program instruction"""
 

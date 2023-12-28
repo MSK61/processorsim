@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -53,7 +53,7 @@ class TestDupInstr:
 
     """Test case for loading duplicate instructions"""
 
-    # pylint: disable=invalid-name
+    # pylint: disable-next=invalid-name
     def test_two_instructions_with_same_name_raise_DupElemError(self):
         """Test loading two instructions with the same name.
 
@@ -80,7 +80,7 @@ class TestIsa:
 
     """Test case for loading instruction sets"""
 
-    # pylint: disable=invalid-name
+    # pylint: disable-next=invalid-name
     def test_isa_with_unsupported_capabilitiy_raises_UndefElemError(self):
         """Test loading an instruction set with an unknown capability.
 
@@ -97,8 +97,6 @@ class TestIsa:
             [ValInStrCheck(ex_chk.value.element, ICaseString("ALU"))],
             ex_chk.value,
         )
-
-    # pylint: enable=invalid-name
 
     @pytest.mark.parametrize(
         "in_file, supported_caps, exp_isa",

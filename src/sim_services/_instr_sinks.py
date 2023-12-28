@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -46,6 +46,7 @@ import itertools
 import typing
 
 import attr
+from attr import field, frozen
 import fastcore.foundation
 import more_itertools
 
@@ -57,7 +58,7 @@ from .sim_defs import InstrState, StallState
 from . import _utils
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@frozen
 class HostedInstr:
 
     """Instruction hosted inside a functional unit"""
@@ -67,14 +68,14 @@ class HostedInstr:
     index_in_host: int
 
 
-@attr.s
+@attr.mutable
 class InstrMovStatus:
 
     """Status of moving instructions"""
 
-    moved: list[HostedInstr] = attr.ib(factory=list)
+    moved: list[HostedInstr] = field(factory=list)
 
-    mem_used: object = attr.ib(False, init=False)
+    mem_used: object = field(default=False, init=False)
 
 
 class IInstrSink(abc.ABC):
@@ -187,7 +188,7 @@ class IInstrSink(abc.ABC):
         """
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@frozen
 class OutSink(IInstrSink):
 
     """Dummy sink for flushing output ports"""
@@ -243,7 +244,7 @@ class OutSink(IInstrSink):
     _out_ports: Iterator[ICaseString]
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@frozen
 class UnitSink(IInstrSink):
 
     """Instruction sink wrapper for functional units"""

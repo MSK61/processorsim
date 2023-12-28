@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -54,7 +54,7 @@ import sys
 import typing
 from typing import Any, TypeVar
 
-import attr
+from attr import field, frozen
 import fastcore.foundation
 from fastcore.foundation import compose, mapt, Self
 import networkx
@@ -98,7 +98,7 @@ def load_isa(
     return _create_isa(raw_isa, SelfIndexSet[ICaseString].create(capabilities))
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@frozen
 class _CapabilityInfo:
 
     """Unit capability information"""
@@ -624,20 +624,20 @@ def _sorted_units(hw_units: Iterable[Any]) -> tuple[Any, ...]:
     return container_utils.sorted_tuple(hw_units, key=Self.model.name())
 
 
-@attr.s(frozen=True)
+@frozen
 class ProcessorDesc:
 
     """Processor description"""
 
-    in_ports: tuple[UnitModel, ...] = attr.ib(converter=tuple[UnitModel, ...])
+    in_ports: tuple[UnitModel, ...] = field(converter=tuple[UnitModel, ...])
 
-    out_ports: tuple[FuncUnit, ...] = attr.ib(converter=_sorted_units)
+    out_ports: tuple[FuncUnit, ...] = field(converter=_sorted_units)
 
-    in_out_ports: tuple[UnitModel, ...] = attr.ib(
+    in_out_ports: tuple[UnitModel, ...] = field(
         converter=tuple[UnitModel, ...]
     )
 
-    internal_units: tuple[FuncUnit, ...] = attr.ib(converter=_post_order)
+    internal_units: tuple[FuncUnit, ...] = field(converter=_post_order)
 
 
 def get_abilities(processor: ProcessorDesc) -> frozenset[ICaseString]:

@@ -32,17 +32,16 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
 from logging import WARNING
-import unittest
 
-import attr
+from attr import frozen
 import pytest
 from pytest import mark
 
@@ -58,45 +57,6 @@ from processor_utils.units import (
     UNIT_WLOCK_KEY,
 )
 from str_utils import ICaseString
-
-
-class PartialMemTest(unittest.TestCase):
-
-    """Test case for partial memory access"""
-
-    def test_partial_mem_access(self):
-        """Test loading a processor with partial memory access.
-
-        `self` is this test case.
-
-        """
-        full_sys_unit = UnitModel(
-            ICaseString("full system"),
-            1,
-            map(ICaseString, ["ALU", "MEM"]),
-            LockInfo(True, True),
-            [ICaseString("MEM")],
-        )
-        self.assertEqual(
-            load_proc_desc(
-                {
-                    "units": [
-                        {
-                            UNIT_NAME_KEY: "full system",
-                            UNIT_WIDTH_KEY: 1,
-                            UNIT_CAPS_KEY: ["ALU", "MEM"],
-                            **{
-                                attr: True
-                                for attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]
-                            },
-                            UNIT_MEM_KEY: ["MEM"],
-                        }
-                    ],
-                    "dataPath": [],
-                }
-            ),
-            ProcessorDesc([], [], [full_sys_unit], []),
-        )
 
 
 class TestCapCase:
@@ -163,7 +123,49 @@ class TestCapCase:
             assert token in warn_msg
 
 
-@attr.s(auto_attribs=True, frozen=True)
+class TestPartialMem:
+
+    """Test case for partial memory access"""
+
+    def test_partial_mem_access(self):
+        """Test loading a processor with partial memory access.
+
+        `self` is this test case.
+
+        """
+        assert load_proc_desc(
+            {
+                "units": [
+                    {
+                        UNIT_NAME_KEY: "full system",
+                        UNIT_WIDTH_KEY: 1,
+                        UNIT_CAPS_KEY: ["ALU", "MEM"],
+                        **{
+                            attr: True
+                            for attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]
+                        },
+                        UNIT_MEM_KEY: ["MEM"],
+                    }
+                ],
+                "dataPath": [],
+            }
+        ) == ProcessorDesc(
+            [],
+            [],
+            [
+                UnitModel(
+                    ICaseString("full system"),
+                    1,
+                    map(ICaseString, ["ALU", "MEM"]),
+                    LockInfo(True, True),
+                    [ICaseString("MEM")],
+                )
+            ],
+            [],
+        )
+
+
+@frozen
 class _TestExpResults:
 
     """Non-standard capability loading test expected results"""
@@ -173,7 +175,7 @@ class _TestExpResults:
     ref_cap: object
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@frozen
 class _TestInParams:
 
     """Non-standard capability loading test input results"""

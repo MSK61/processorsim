@@ -32,16 +32,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import unittest
-
-import attr
+from attr import frozen
 from fastcore.foundation import Self
 import networkx
 import pytest
@@ -60,7 +58,123 @@ from processor_utils.units import (
 from str_utils import ICaseString
 
 
-class PerCapTest(unittest.TestCase):
+class TestBlocking:
+
+    """Test case for detecting blocked inputs"""
+
+    @mark.parametrize(
+        "in_file, isolated_input",
+        [
+            ("isolatedInputPort.yaml", "input 2"),
+            ("processorWithNoCapableOutputs.yaml", "input"),
+        ],
+    )
+    # pylint: disable-next=invalid-name
+    def test_in_port_with_no_compatible_out_links_raises_DeadInputError(
+        self, in_file, isolated_input
+    ):
+        """Test an input port with only incompatible out links.
+
+        `self` is this test case.
+        `in_file` is the processor description file.
+        `isolated_input` is the input unit that gets isolated during
+                         optimization.
+        An incompatible link is a link connecting an input port to a
+        successor unit with no capabilities in common.
+
+        """
+        ex_chk = raises(
+            exception.DeadInputError, read_proc_file, "blocking", in_file
+        )
+        chk_error(
+            [ValInStrCheck(ex_chk.value.port, ICaseString(isolated_input))],
+            ex_chk.value,
+        )
+
+
+class TestLoop:
+
+    """Test case for loading processors with loops"""
+
+    @mark.parametrize(
+        "in_file",
+        [
+            "selfNodeProcessor.yaml",
+            "bidirectionalEdgeProcessor.yaml",
+            "bigLoopProcessor.yaml",
+        ],
+    )
+    def test_loop_raises_NetworkXUnfeasible(  # pylint: disable=invalid-name
+        self, in_file
+    ):
+        """Test loading a processor with a loop.
+
+        `self` is this test case.
+        `in_file` is the processor description file.
+
+        """
+        raises(networkx.NetworkXUnfeasible, read_proc_file, "loops", in_file)
+
+
+class TestNoLock:
+
+    """Test case for checking paths without locks"""
+
+    @mark.parametrize(
+        "units, data_path",
+        [
+            (
+                [
+                    {
+                        UNIT_NAME_KEY: "input",
+                        UNIT_WIDTH_KEY: 1,
+                        UNIT_CAPS_KEY: ["ALU"],
+                        UNIT_WLOCK_KEY: True,
+                    },
+                    {
+                        UNIT_NAME_KEY: "output 1",
+                        UNIT_WIDTH_KEY: 1,
+                        UNIT_CAPS_KEY: ["ALU"],
+                    },
+                    {
+                        UNIT_NAME_KEY: "output 2",
+                        UNIT_WIDTH_KEY: 1,
+                        UNIT_CAPS_KEY: ["ALU"],
+                        UNIT_RLOCK_KEY: True,
+                    },
+                ],
+                [["input", "output 1"], ["input", "output 2"]],
+            ),
+            (
+                [
+                    {
+                        UNIT_NAME_KEY: "full system",
+                        UNIT_WIDTH_KEY: 1,
+                        UNIT_CAPS_KEY: ["ALU"],
+                        UNIT_WLOCK_KEY: True,
+                    }
+                ],
+                [],
+            ),
+        ],
+    )
+    # pylint: disable-next=invalid-name
+    def test_path_with_no_locks_raises_PathLockError(self, units, data_path):
+        """Test loading a processor with no locks in paths.
+
+        `self` is this test case.
+        `units` are the processor units.
+        `data_path` is the data path between units.
+
+        """
+        raises(
+            PathLockError,
+            load_proc_desc,
+            {"units": units, "dataPath": data_path},
+        )
+
+
+class TestPerCap:
 
     """Test case for checking multiple locks per capability"""
 
@@ -118,126 +232,11 @@ class PerCapTest(unittest.TestCase):
         )
 
 
-class TestBlocking:
-
-    """Test case for detecting blocked inputs"""
-
-    # pylint: disable=invalid-name
-    @mark.parametrize(
-        "in_file, isolated_input",
-        [
-            ("isolatedInputPort.yaml", "input 2"),
-            ("processorWithNoCapableOutputs.yaml", "input"),
-        ],
-    )
-    def test_in_port_with_no_compatible_out_links_raises_DeadInputError(
-        self, in_file, isolated_input
-    ):
-        """Test an input port with only incompatible out links.
-
-        `self` is this test case.
-        `in_file` is the processor description file.
-        `isolated_input` is the input unit that gets isolated during
-                         optimization.
-        An incompatible link is a link connecting an input port to a
-        successor unit with no capabilities in common.
-
-        """
-        ex_chk = raises(
-            exception.DeadInputError, read_proc_file, "blocking", in_file
-        )
-        chk_error(
-            [ValInStrCheck(ex_chk.value.port, ICaseString(isolated_input))],
-            ex_chk.value,
-        )
-
-
-class TestLoop:
-
-    """Test case for loading processors with loops"""
-
-    # pylint: disable=invalid-name
-    @mark.parametrize(
-        "in_file",
-        [
-            "selfNodeProcessor.yaml",
-            "bidirectionalEdgeProcessor.yaml",
-            "bigLoopProcessor.yaml",
-        ],
-    )
-    def test_loop_raises_NetworkXUnfeasible(self, in_file):
-        """Test loading a processor with a loop.
-
-        `self` is this test case.
-        `in_file` is the processor description file.
-
-        """
-        raises(networkx.NetworkXUnfeasible, read_proc_file, "loops", in_file)
-
-
-class TestNoLock:
-
-    """Test case for checking paths without locks"""
-
-    # pylint: disable=invalid-name
-    @mark.parametrize(
-        "units, data_path",
-        [
-            (
-                [
-                    {
-                        UNIT_NAME_KEY: "input",
-                        UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["ALU"],
-                        UNIT_WLOCK_KEY: True,
-                    },
-                    {
-                        UNIT_NAME_KEY: "output 1",
-                        UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["ALU"],
-                    },
-                    {
-                        UNIT_NAME_KEY: "output 2",
-                        UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["ALU"],
-                        UNIT_RLOCK_KEY: True,
-                    },
-                ],
-                [["input", "output 1"], ["input", "output 2"]],
-            ),
-            (
-                [
-                    {
-                        UNIT_NAME_KEY: "full system",
-                        UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["ALU"],
-                        UNIT_WLOCK_KEY: True,
-                    }
-                ],
-                [],
-            ),
-        ],
-    )
-    def test_path_with_no_locks_raises_PathLockError(self, units, data_path):
-        """Test loading a processor with no locks in paths.
-
-        `self` is this test case.
-        `units` are the processor units.
-        `data_path` is the data path between units.
-
-        """
-        raises(
-            PathLockError,
-            load_proc_desc,
-            {"units": units, "dataPath": data_path},
-        )
-
-
 class TestWidth:
 
     """Test case for checking data path width"""
 
-    # pylint: disable=invalid-name
+    # pylint: disable-next=invalid-name
     def test_unconsumed_capabilitiy_raises_BlockedCapError(self):
         """Test an input with a capability not consumed at all.
 
@@ -263,7 +262,7 @@ class TestWidth:
         )
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@frozen
 class _IoProcessor:
 
     """Single input, single output processor"""
@@ -275,7 +274,7 @@ class _IoProcessor:
     capability: object
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@frozen
 class _LockTestData:
 
     """Lock test data"""
@@ -285,7 +284,7 @@ class _LockTestData:
     lock_type: object
 
 
-@attr.s(auto_attribs=True, frozen=True)
+@frozen
 class _TestExpResults:
 
     """Multi-lock test expected results"""
@@ -299,7 +298,6 @@ class TestMultiLock:
 
     """Test case for checking multiple locks along a path"""
 
-    # pylint: disable=invalid-name
     @mark.parametrize(
         "in_proc_desc, lock_data, exp_proc_desc",
         [
@@ -315,6 +313,7 @@ class TestMultiLock:
             ),
         ],
     )
+    # pylint: disable-next=invalid-name
     def test_path_with_multiple_locks_raises_PathLockError(
         self, in_proc_desc, lock_data, exp_proc_desc
     ):

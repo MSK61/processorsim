@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.82.0, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -43,7 +43,7 @@ import enum
 from enum import auto
 from typing import Final
 
-import attr
+from attr import field, frozen
 
 
 class AccessType(enum.Enum):
@@ -55,14 +55,14 @@ class AccessType(enum.Enum):
     WRITE: Final = auto()
 
 
-@attr.s(frozen=True)
+@frozen
 class AccessGroup:
 
     """Access group"""
 
-    access_type: object = attr.ib()
+    access_type: object = field()
 
-    reqs: abc.MutableSet[object] = attr.ib(converter=set, factory=set)
+    reqs: abc.MutableSet[object] = field(converter=set, factory=set)
 
 
 def _rev_groups(lst: abc.Reversible[AccessGroup]) -> list[AccessGroup]:
@@ -74,7 +74,7 @@ def _rev_groups(lst: abc.Reversible[AccessGroup]) -> list[AccessGroup]:
     return list(reversed(lst))
 
 
-@attr.s(frozen=True)
+@frozen
 class RegAccessQueue:
 
     """Access request queue for a single register"""
@@ -109,7 +109,7 @@ class RegAccessQueue:
     # removal only without addition, we reverse the given queue to make
     # the queue front at the list tail and make use of the fast access
     # to the list tail.
-    _queue: list[AccessGroup] = attr.ib(converter=_rev_groups)
+    _queue: list[AccessGroup] = field(converter=_rev_groups)
 
 
 class RegAccQBuilder:
