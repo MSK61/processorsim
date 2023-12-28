@@ -125,82 +125,6 @@ class BadWidthError(RuntimeError):
     WIDTH_KEY: Final = "width"
 
 
-@attr.frozen
-class ComponentInfo:
-
-    """Component information"""
-
-    std_name: ICaseString
-
-    reporting_name: object
-
-
-@attr.frozen
-class CapPortInfo:
-
-    """Capability-port combination information"""
-
-    capability_info: ComponentInfo
-
-    port_info: ComponentInfo
-
-
-class BlockedCapError(RuntimeError):
-
-    """Blocked Input capability error
-
-    A blocked input capability is one that if fed to a supporting input
-    port won't reach all outputs with full or partial width from the
-    input it was fed to.
-
-    """
-
-    def __init__(self, msg_tmpl: str, blocking_info: CapPortInfo) -> None:
-        """Create a blocked input capability error.
-
-        `self` is this blocked input capability error.
-        `msg_tmpl` is the error message format taking in order the
-                   capability, port, actual, and maximum bus widths as
-                   keyword arguments.
-        `blocking_info` is the blocking information.
-
-        """
-        cap_info = blocking_info.capability_info
-        super().__init__(
-            Template(msg_tmpl).substitute(
-                {
-                    self.CAPABILITY_KEY: cap_info.reporting_name,
-                    self.PORT_KEY: blocking_info.port_info.reporting_name,
-                }
-            )
-        )
-        self._capability = cap_info.std_name
-        self._port = blocking_info.port_info.std_name
-
-    @property
-    def capability(self) -> ICaseString:
-        """Blocked capability
-
-        `self` is this blocked input capability error.
-
-        """
-        return self._capability
-
-    @property
-    def port(self) -> ICaseString:
-        """Port the capability is block at
-
-        `self` is this blocked input capability error.
-
-        """
-        return self._port
-
-    # parameter keys in message format
-    CAPABILITY_KEY: Final = "capability"
-
-    PORT_KEY: Final = "port"
-
-
 class DeadInputError(RuntimeError):
 
     """Dead input port error
@@ -354,3 +278,79 @@ class PathLockError(RuntimeError):
     LOCK_TYPE_KEY: Final = "lock_type"
 
     START_KEY: Final = "start"
+
+
+@attr.frozen
+class ComponentInfo:
+
+    """Component information"""
+
+    std_name: ICaseString
+
+    reporting_name: object
+
+
+@attr.frozen
+class CapPortInfo:
+
+    """Capability-port combination information"""
+
+    capability_info: ComponentInfo
+
+    port_info: ComponentInfo
+
+
+class BlockedCapError(RuntimeError):
+
+    """Blocked Input capability error
+
+    A blocked input capability is one that if fed to a supporting input
+    port won't reach all outputs with full or partial width from the
+    input it was fed to.
+
+    """
+
+    def __init__(self, msg_tmpl: str, blocking_info: CapPortInfo) -> None:
+        """Create a blocked input capability error.
+
+        `self` is this blocked input capability error.
+        `msg_tmpl` is the error message format taking in order the
+                   capability, port, actual, and maximum bus widths as
+                   keyword arguments.
+        `blocking_info` is the blocking information.
+
+        """
+        cap_info = blocking_info.capability_info
+        super().__init__(
+            Template(msg_tmpl).substitute(
+                {
+                    self.CAPABILITY_KEY: cap_info.reporting_name,
+                    self.PORT_KEY: blocking_info.port_info.reporting_name,
+                }
+            )
+        )
+        self._capability = cap_info.std_name
+        self._port = blocking_info.port_info.std_name
+
+    @property
+    def capability(self) -> ICaseString:
+        """Blocked capability
+
+        `self` is this blocked input capability error.
+
+        """
+        return self._capability
+
+    @property
+    def port(self) -> ICaseString:
+        """Port the capability is block at
+
+        `self` is this blocked input capability error.
+
+        """
+        return self._port
+
+    # parameter keys in message format
+    CAPABILITY_KEY: Final = "capability"
+
+    PORT_KEY: Final = "port"
