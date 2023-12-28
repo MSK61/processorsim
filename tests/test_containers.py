@@ -32,22 +32,21 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import unittest
-
 import pydash
+import pytest
 
 import test_env
 import container_utils
 
 
-class CoverageTest(unittest.TestCase):
+class TestCoverage:
 
     """Test case for fulfilling complete code coverage"""
 
@@ -59,12 +58,12 @@ class CoverageTest(unittest.TestCase):
         """
         indexed_set = container_utils.IndexedSet[str](pydash.identity)
         indexed_set.add(test_env.TEST_DIR)
-        self.assertTrue(repr(indexed_set))
+        assert repr(indexed_set)
 
 
 def main():
     """entry point for running test in this module"""
-    unittest.main()
+    pytest.main([__file__])
 
 
 if __name__ == "__main__":

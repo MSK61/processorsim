@@ -40,7 +40,6 @@
 ############################################################
 
 from logging import WARNING
-import unittest
 
 from attr import frozen
 import pytest
@@ -58,45 +57,6 @@ from processor_utils.units import (
     UNIT_WLOCK_KEY,
 )
 from str_utils import ICaseString
-
-
-class PartialMemTest(unittest.TestCase):
-
-    """Test case for partial memory access"""
-
-    def test_partial_mem_access(self):
-        """Test loading a processor with partial memory access.
-
-        `self` is this test case.
-
-        """
-        full_sys_unit = UnitModel(
-            ICaseString("full system"),
-            1,
-            map(ICaseString, ["ALU", "MEM"]),
-            LockInfo(True, True),
-            [ICaseString("MEM")],
-        )
-        self.assertEqual(
-            load_proc_desc(
-                {
-                    "units": [
-                        {
-                            UNIT_NAME_KEY: "full system",
-                            UNIT_WIDTH_KEY: 1,
-                            UNIT_CAPS_KEY: ["ALU", "MEM"],
-                            **{
-                                attr: True
-                                for attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]
-                            },
-                            UNIT_MEM_KEY: ["MEM"],
-                        }
-                    ],
-                    "dataPath": [],
-                }
-            ),
-            ProcessorDesc([], [], [full_sys_unit], []),
-        )
 
 
 class TestCapCase:
@@ -161,6 +121,48 @@ class TestCapCase:
 
         for token in ["alu", "core 2", "ALU", loaded_core]:
             assert token in warn_msg
+
+
+class TestPartialMem:
+
+    """Test case for partial memory access"""
+
+    def test_partial_mem_access(self):
+        """Test loading a processor with partial memory access.
+
+        `self` is this test case.
+
+        """
+        assert load_proc_desc(
+            {
+                "units": [
+                    {
+                        UNIT_NAME_KEY: "full system",
+                        UNIT_WIDTH_KEY: 1,
+                        UNIT_CAPS_KEY: ["ALU", "MEM"],
+                        **{
+                            attr: True
+                            for attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]
+                        },
+                        UNIT_MEM_KEY: ["MEM"],
+                    }
+                ],
+                "dataPath": [],
+            }
+        ) == ProcessorDesc(
+            [],
+            [],
+            [
+                UnitModel(
+                    ICaseString("full system"),
+                    1,
+                    map(ICaseString, ["ALU", "MEM"]),
+                    LockInfo(True, True),
+                    [ICaseString("MEM")],
+                )
+            ],
+            [],
+        )
 
 
 @frozen

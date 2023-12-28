@@ -39,8 +39,6 @@
 #
 ############################################################
 
-import unittest
-
 from attr import frozen
 from fastcore.foundation import Self
 import networkx
@@ -58,64 +56,6 @@ from processor_utils.units import (
     UNIT_WLOCK_KEY,
 )
 from str_utils import ICaseString
-
-
-class PerCapTest(unittest.TestCase):
-
-    """Test case for checking multiple locks per capability"""
-
-    def test_paths_with_multiple_locks_are_only_detected_per_capability(self):
-        """Test detecting multi-lock paths per capability.
-
-        `self` is this test case.
-        The method asserts that multiple locks across a path with different
-        capabilities don't raise an exception as long as single-capability
-        paths don't have multiple locks.
-
-        """
-        load_proc_desc(
-            {
-                "units": [
-                    {
-                        UNIT_NAME_KEY: "ALU input",
-                        UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["ALU"],
-                        UNIT_RLOCK_KEY: True,
-                    },
-                    {
-                        UNIT_NAME_KEY: "MEM input",
-                        UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["MEM"],
-                    },
-                    {
-                        UNIT_NAME_KEY: "center",
-                        UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["ALU", "MEM"],
-                    },
-                    {
-                        UNIT_NAME_KEY: "ALU output",
-                        UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["ALU"],
-                        UNIT_WLOCK_KEY: True,
-                    },
-                    {
-                        UNIT_NAME_KEY: "MEM output",
-                        UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["MEM"],
-                        **{
-                            lock_prop: True
-                            for lock_prop in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]
-                        },
-                    },
-                ],
-                "dataPath": [
-                    ["ALU input", "center"],
-                    ["MEM input", "center"],
-                    ["center", "ALU output"],
-                    ["center", "MEM output"],
-                ],
-            }
-        )
 
 
 class TestBlocking:
@@ -231,6 +171,64 @@ class TestNoLock:
             PathLockError,
             load_proc_desc,
             {"units": units, "dataPath": data_path},
+        )
+
+
+class TestPerCap:
+
+    """Test case for checking multiple locks per capability"""
+
+    def test_paths_with_multiple_locks_are_only_detected_per_capability(self):
+        """Test detecting multi-lock paths per capability.
+
+        `self` is this test case.
+        The method asserts that multiple locks across a path with different
+        capabilities don't raise an exception as long as single-capability
+        paths don't have multiple locks.
+
+        """
+        load_proc_desc(
+            {
+                "units": [
+                    {
+                        UNIT_NAME_KEY: "ALU input",
+                        UNIT_WIDTH_KEY: 1,
+                        UNIT_CAPS_KEY: ["ALU"],
+                        UNIT_RLOCK_KEY: True,
+                    },
+                    {
+                        UNIT_NAME_KEY: "MEM input",
+                        UNIT_WIDTH_KEY: 1,
+                        UNIT_CAPS_KEY: ["MEM"],
+                    },
+                    {
+                        UNIT_NAME_KEY: "center",
+                        UNIT_WIDTH_KEY: 1,
+                        UNIT_CAPS_KEY: ["ALU", "MEM"],
+                    },
+                    {
+                        UNIT_NAME_KEY: "ALU output",
+                        UNIT_WIDTH_KEY: 1,
+                        UNIT_CAPS_KEY: ["ALU"],
+                        UNIT_WLOCK_KEY: True,
+                    },
+                    {
+                        UNIT_NAME_KEY: "MEM output",
+                        UNIT_WIDTH_KEY: 1,
+                        UNIT_CAPS_KEY: ["MEM"],
+                        **{
+                            lock_prop: True
+                            for lock_prop in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]
+                        },
+                    },
+                ],
+                "dataPath": [
+                    ["ALU input", "center"],
+                    ["MEM input", "center"],
+                    ["center", "ALU output"],
+                    ["center", "MEM output"],
+                ],
+            }
         )
 
 

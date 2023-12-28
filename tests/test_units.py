@@ -32,14 +32,12 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
 ############################################################
-
-from unittest import TestCase
 
 from fastcore.foundation import Self
 import pytest
@@ -49,96 +47,6 @@ import processor_utils
 from processor_utils import ProcessorDesc, units
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from str_utils import ICaseString
-
-
-class ExpAttrTest(TestCase):
-
-    """Test case for loading units with explicit attributes"""
-
-    def test_processor_with_explicit_attributes(self):
-        """Test loading a processor with explicitly defined attributes.
-
-        `self` is this test case.
-
-        """
-        full_sys_unit = UnitModel(
-            ICaseString("full system"),
-            1,
-            [ICaseString("ALU")],
-            LockInfo(True, True),
-            [ICaseString("ALU")],
-        )
-        self.assertEqual(
-            processor_utils.load_proc_desc(
-                {
-                    "units": [
-                        {
-                            units.UNIT_NAME_KEY: "full system",
-                            units.UNIT_WIDTH_KEY: 1,
-                            units.UNIT_CAPS_KEY: ["ALU"],
-                            **{
-                                attr: True
-                                for attr in [
-                                    units.UNIT_RLOCK_KEY,
-                                    units.UNIT_WLOCK_KEY,
-                                ]
-                            },
-                            units.UNIT_MEM_KEY: ["ALU"],
-                        }
-                    ],
-                    "dataPath": [],
-                }
-            ),
-            ProcessorDesc([], [], [full_sys_unit], []),
-        )
-
-
-class PostOrderTest(TestCase):
-
-    """Test case for putting units in post-order"""
-
-    def test_processor_puts_units_in_post_order(self):
-        """Test putting units in post-order.
-
-        `self` is this test case.
-
-        """
-        in_unit, mid1_unit, mid2_unit, mid3_unit, out_unit = (
-            UnitModel(
-                ICaseString(name), 1, ["ALU"], LockInfo(rd_lock, wr_lock), []
-            )
-            for name, rd_lock, wr_lock in [
-                ("input", True, False),
-                ("middle 1", False, False),
-                ("middle 2", False, False),
-                ("middle 3", False, False),
-                ("output", False, True),
-            ]
-        )
-        internal_units = (
-            FuncUnit(model, [pred])
-            for model, pred in [
-                (mid1_unit, in_unit),
-                (mid3_unit, mid2_unit),
-                (mid2_unit, mid1_unit),
-            ]
-        )
-        self.assertEqual(
-            ProcessorDesc(
-                [in_unit],
-                [FuncUnit(out_unit, [mid3_unit])],
-                [],
-                internal_units,
-            ).internal_units,
-            tuple(
-                FuncUnit(model, [pred])
-                for model, pred in [
-                    (mid3_unit, mid2_unit),
-                    (mid2_unit, mid1_unit),
-                    (mid1_unit, in_unit),
-                ]
-            ),
-        )
 
 
 class TestDupName:
@@ -179,6 +87,95 @@ class TestDupName:
             ]
         )
         test_utils.chk_error(chk_points, ex_chk.value)
+
+
+class TestExpAttr:
+
+    """Test case for loading units with explicit attributes"""
+
+    def test_processor_with_explicit_attributes(self):
+        """Test loading a processor with explicitly defined attributes.
+
+        `self` is this test case.
+
+        """
+        assert processor_utils.load_proc_desc(
+            {
+                "units": [
+                    {
+                        units.UNIT_NAME_KEY: "full system",
+                        units.UNIT_WIDTH_KEY: 1,
+                        units.UNIT_CAPS_KEY: ["ALU"],
+                        **{
+                            attr: True
+                            for attr in [
+                                units.UNIT_RLOCK_KEY,
+                                units.UNIT_WLOCK_KEY,
+                            ]
+                        },
+                        units.UNIT_MEM_KEY: ["ALU"],
+                    }
+                ],
+                "dataPath": [],
+            }
+        ) == ProcessorDesc(
+            [],
+            [],
+            [
+                UnitModel(
+                    ICaseString("full system"),
+                    1,
+                    [ICaseString("ALU")],
+                    LockInfo(True, True),
+                    [ICaseString("ALU")],
+                )
+            ],
+            [],
+        )
+
+
+class TestPostOrder:
+
+    """Test case for putting units in post-order"""
+
+    def test_processor_puts_units_in_post_order(self):
+        """Test putting units in post-order.
+
+        `self` is this test case.
+
+        """
+        in_unit, mid1_unit, mid2_unit, mid3_unit, out_unit = (
+            UnitModel(
+                ICaseString(name), 1, ["ALU"], LockInfo(rd_lock, wr_lock), []
+            )
+            for name, rd_lock, wr_lock in [
+                ("input", True, False),
+                ("middle 1", False, False),
+                ("middle 2", False, False),
+                ("middle 3", False, False),
+                ("output", False, True),
+            ]
+        )
+        assert ProcessorDesc(
+            [in_unit],
+            [FuncUnit(out_unit, [mid3_unit])],
+            [],
+            (
+                FuncUnit(model, [pred])
+                for model, pred in [
+                    (mid1_unit, in_unit),
+                    (mid3_unit, mid2_unit),
+                    (mid2_unit, mid1_unit),
+                ]
+            ),
+        ).internal_units == tuple(
+            FuncUnit(model, [pred])
+            for model, pred in [
+                (mid3_unit, mid2_unit),
+                (mid2_unit, mid1_unit),
+                (mid1_unit, in_unit),
+            ]
+        )
 
 
 def main():

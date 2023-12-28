@@ -39,8 +39,6 @@
 #
 ############################################################
 
-from unittest import TestCase
-
 from attr import frozen
 import more_itertools
 import pytest
@@ -55,7 +53,7 @@ from sim_services.sim_defs import InstrState, StallState
 from str_utils import ICaseString
 
 
-class MemUtilTest(TestCase):
+class TestMemUtil:
 
     """Test case for memory utilization"""
 
@@ -65,36 +63,23 @@ class MemUtilTest(TestCase):
         `self` is this test case.
 
         """
-        proc_desc = ProcessorDesc(
-            [],
-            [],
-            [
-                UnitModel(
-                    ICaseString("full system"),
-                    2,
-                    ["ALU"],
-                    LockInfo(True, True),
-                    ["ALU"],
-                )
-            ],
-            [],
+        full_sys_unit = UnitModel(
+            ICaseString("full system"),
+            2,
+            ["ALU"],
+            LockInfo(True, True),
+            ["ALU"],
         )
-        self.assertEqual(
-            simulate(
-                [
-                    HwInstruction([], out_reg, "ALU")
-                    for out_reg in ["R1", "R2"]
-                ],
-                HwSpec(proc_desc),
-            ),
-            [
-                BagValDict({ICaseString("full system"): [InstrState(instr)]})
-                for instr in [0, 1]
-            ],
-        )
+        assert simulate(
+            [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
+            HwSpec(ProcessorDesc([], [], [full_sys_unit], [])),
+        ) == [
+            BagValDict({ICaseString("full system"): [InstrState(instr)]})
+            for instr in [0, 1]
+        ]
 
 
-class StructuralTest(TestCase):
+class TestStructural:
 
     """Test case for structural hazards"""
 
@@ -105,7 +90,7 @@ class StructuralTest(TestCase):
         `self` is this test case.
 
         """
-        sim_res = simulate(
+        assert simulate(
             [
                 HwInstruction([], out_reg, ICaseString("ALU"))
                 for out_reg in ["R1", "R2"]
@@ -132,14 +117,10 @@ class StructuralTest(TestCase):
                     }
                 )
             ),
-        )
-        self.assertEqual(
-            sim_res,
-            [
-                BagValDict({ICaseString("full system"): [InstrState(instr)]})
-                for instr in [0, 1]
-            ],
-        )
+        ) == [
+            BagValDict({ICaseString("full system"): [InstrState(instr)]})
+            for instr in [0, 1]
+        ]
 
 
 @frozen
