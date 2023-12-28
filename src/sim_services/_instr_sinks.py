@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -67,7 +67,7 @@ class HostedInstr:
     index_in_host: int
 
 
-@attr.s
+@attr.mutable
 class InstrMovStatus:
 
     """Status of moving instructions"""

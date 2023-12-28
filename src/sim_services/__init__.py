@@ -154,7 +154,7 @@ def simulate(
     return util_tbl
 
 
-@attr.s
+@attr.mutable
 class _AcceptStatus:
 
     """Instruction acceptance status"""
@@ -164,7 +164,7 @@ class _AcceptStatus:
     mem_used: object = attr.field()
 
 
-@attr.s
+@attr.mutable
 class _IssueInfo:
 
     """Instruction issue information record"""
