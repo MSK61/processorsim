@@ -56,9 +56,9 @@ def _sorted_uniq(elems: collections.abc.Iterable[Any]) -> tuple[Any, ...]:
 
 
 @attr.frozen(repr=False)
-class _Instruction:
+class _InstrBase:
 
-    """Instruction"""
+    """Instruction base class"""
 
     sources: tuple[object, ...] = attr.field(converter=_sorted_uniq)
 
@@ -66,7 +66,7 @@ class _Instruction:
 
 
 @attr.frozen
-class HwInstruction(_Instruction):
+class HwInstruction(_InstrBase):
 
     """Hardware instruction"""
 
@@ -74,7 +74,7 @@ class HwInstruction(_Instruction):
 
 
 @attr.frozen
-class ProgInstruction(_Instruction):
+class ProgInstruction(_InstrBase):
 
     """Program instruction"""
 
