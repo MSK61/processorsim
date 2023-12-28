@@ -46,6 +46,7 @@ import itertools
 import typing
 
 import attr
+from attr import field, frozen
 import fastcore.foundation
 import more_itertools
 
@@ -57,7 +58,7 @@ from .sim_defs import InstrState, StallState
 from . import _utils
 
 
-@attr.frozen
+@frozen
 class HostedInstr:
 
     """Instruction hosted inside a functional unit"""
@@ -72,9 +73,9 @@ class InstrMovStatus:
 
     """Status of moving instructions"""
 
-    moved: list[HostedInstr] = attr.field(factory=list)
+    moved: list[HostedInstr] = field(factory=list)
 
-    mem_used: object = attr.field(default=False, init=False)
+    mem_used: object = field(default=False, init=False)
 
 
 class IInstrSink(abc.ABC):
@@ -187,7 +188,7 @@ class IInstrSink(abc.ABC):
         """
 
 
-@attr.frozen
+@frozen
 class OutSink(IInstrSink):
 
     """Dummy sink for flushing output ports"""
@@ -243,7 +244,7 @@ class OutSink(IInstrSink):
     _out_ports: Iterator[ICaseString]
 
 
-@attr.frozen
+@frozen
 class UnitSink(IInstrSink):
 
     """Instruction sink wrapper for functional units"""

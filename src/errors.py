@@ -46,6 +46,7 @@ import typing
 from typing import Final
 
 import attr
+from attr import frozen
 import fastcore.foundation
 
 # Attrs doesn't honor class variables annotated with typing.Final(albeit
@@ -57,11 +58,11 @@ import fastcore.foundation
 # so that I may call super().__init__() with my custom message.
 # Looks like mypy can't honor auto_detect=True in attr.frozen so I have
 # to explicitly(and redundantly) use init=False.
-EXCEPTION: Final = attr.frozen(auto_attribs=False, auto_exc=False, init=False)
+EXCEPTION: Final = frozen(auto_attribs=False, auto_exc=False, init=False)
 _T = typing.TypeVar("_T")
 
 
-@attr.frozen
+@frozen
 class ElementValue:
 
     """Error element value
@@ -88,7 +89,7 @@ class ElementValue:
     stored: object
 
 
-@attr.frozen
+@frozen
 class ErrorElement(typing.Generic[_T]):
 
     """Error element"""

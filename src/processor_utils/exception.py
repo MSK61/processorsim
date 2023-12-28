@@ -41,7 +41,7 @@
 
 from typing import Final
 
-import attr
+from attr import field, frozen
 from fastcore.foundation import mapt, Self
 from pydash import spread
 
@@ -65,7 +65,7 @@ class BadEdgeError(SimErrorBase):
         """
         self._init_simple(msg_tmpl, [ErrorElement(self.EDGE_KEY, edge)])
 
-    edge: object = attr.field()
+    edge: object = field()
 
     EDGE_KEY: Final = "edge"  # parameter key in message format
 
@@ -98,9 +98,9 @@ class BadWidthError(SimErrorBase):
         )
 
     # error parameters
-    unit: object = attr.field()
+    unit: object = field()
 
-    width: object = attr.field()
+    width: object = field()
 
     # parameter keys in message format
     UNIT_KEY: Final = "unit"
@@ -129,7 +129,7 @@ class DeadInputError(SimErrorBase):
         """
         self._init_simple(msg_tmpl, [ErrorElement(self.PORT_KEY, port)])
 
-    port: object = attr.field()
+    port: object = field()
 
     PORT_KEY: Final = "port"  # parameter key in message format
 
@@ -165,9 +165,9 @@ class DupElemError(SimErrorBase):
     NEW_ELEM_KEY: Final = "new_elem"
 
     # error parameters
-    old_element: object = attr.field()
+    old_element: object = field()
 
-    new_element: object = attr.field()
+    new_element: object = field()
 
 
 class EmptyProcError(RuntimeError):
@@ -217,14 +217,14 @@ class PathLockError(SimErrorBase):
     START_KEY: Final = "start"
 
     # error parameters
-    capability: object = attr.field()
+    capability: object = field()
 
-    lock_type: object = attr.field()
+    lock_type: object = field()
 
-    start: object = attr.field()
+    start: object = field()
 
 
-@attr.frozen
+@frozen
 class ComponentInfo:
 
     """Component information"""
@@ -234,7 +234,7 @@ class ComponentInfo:
     reporting_name: object
 
 
-@attr.frozen
+@frozen
 class CapPortInfo:
 
     """Capability-port combination information"""
@@ -291,9 +291,9 @@ class BlockedCapError(SimErrorBase):
         )
 
     # error parameters
-    capability: ICaseString = attr.field()
+    capability: ICaseString = field()
 
-    port: ICaseString = attr.field()
+    port: ICaseString = field()
 
     # parameter keys in message format
     CAPABILITY_KEY: Final = "capability"

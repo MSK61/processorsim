@@ -53,7 +53,7 @@ from itertools import chain
 import typing
 from typing import Any, TypeVar
 
-import attr
+from attr import field, frozen, mutable
 from fastcore.foundation import Self
 import more_itertools
 
@@ -96,19 +96,19 @@ class StallError(errors.SimErrorBase):
             msg_tmpl, [errors.ErrorElement(self.STATE_KEY, stalled_state)]
         )
 
-    processor_state: object = attr.field()
+    processor_state: object = field()
 
     STATE_KEY: typing.Final = "state"  # parameter key in message format
 
 
-@attr.frozen
+@frozen
 class HwSpec:
 
     """Hardware specification"""
 
-    processor_desc: ProcessorDesc = attr.field()
+    processor_desc: ProcessorDesc = field()
 
-    name_unit_map: dict[ICaseString, UnitModel] = attr.field(init=False)
+    name_unit_map: dict[ICaseString, UnitModel] = field(init=False)
 
     # Casting to typing.Any because pylance can't detect default as a
     # member of attr.field.
@@ -154,17 +154,17 @@ def simulate(
     return util_tbl
 
 
-@attr.mutable
+@mutable
 class _AcceptStatus:
 
     """Instruction acceptance status"""
 
-    accepted: object = attr.field(default=True, init=False)
+    accepted: object = field(default=True, init=False)
 
-    mem_used: object = attr.field()
+    mem_used: object = field()
 
 
-@attr.mutable
+@mutable
 class _IssueInfo:
 
     """Instruction issue information record"""
@@ -204,12 +204,12 @@ class _IssueInfo:
         """
         return self._exited < self._entered
 
-    _entered: int = attr.field(default=0, init=False)
+    _entered: int = field(default=0, init=False)
 
-    _exited: int = attr.field(default=0, init=False)
+    _exited: int = field(default=0, init=False)
 
 
-@attr.frozen
+@frozen
 class _RegAvailState:
 
     """Registers availability state"""
@@ -219,7 +219,7 @@ class _RegAvailState:
     regs: Iterable[object]
 
 
-@attr.frozen
+@frozen
 class _TransitionUtil:
 
     """Utilization transition of a single unit between two pulses"""

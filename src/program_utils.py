@@ -44,7 +44,7 @@ from re import split
 import typing
 from typing import Final
 
-import attr
+from attr import field, frozen
 from fastcore import foundation
 import pydash
 
@@ -82,9 +82,9 @@ class CodeError(errors.SimErrorBase):
         )
 
     # error parameters
-    instr: object = attr.field()
+    instr: object = field()
 
-    line: object = attr.field()
+    line: object = field()
 
     # parameter keys in message format
     INSTR_KEY: Final = "instruction"
@@ -131,7 +131,7 @@ def read_program(prog_file: Iterable[str]) -> list[ProgInstruction]:
     ]
 
 
-@attr.frozen
+@frozen
 class _LineInfo:
 
     """Source line information"""
@@ -141,7 +141,7 @@ class _LineInfo:
     operands: str
 
 
-@attr.frozen
+@frozen
 class _OperandInfo:
 
     """Instruction operand information"""

@@ -46,7 +46,7 @@ from itertools import starmap
 from operator import eq, itemgetter
 from typing import Any, Generic, Optional, TypeVar
 
-import attr
+from attr import field, frozen
 import more_itertools
 import pydash
 
@@ -70,7 +70,7 @@ def sorted_tuple(
     return tuple(sorted(elems, key=key))
 
 
-@attr.frozen(repr=False)
+@frozen(repr=False)
 class _IndexedSetBase(abc.ABC, Generic[_T]):
 
     """Indexed set base class"""
@@ -104,9 +104,9 @@ class _IndexedSetBase(abc.ABC, Generic[_T]):
         """
         self._std_form_map[self._index_func(elem)] = elem
 
-    _index_func: Callable[[_T], object] = attr.field()
+    _index_func: Callable[[_T], object] = field()
 
-    _std_form_map: dict[object, _T] = attr.field(factory=dict, init=False)
+    _std_form_map: dict[object, _T] = field(factory=dict, init=False)
 
 
 class IndexedSet(_IndexedSetBase[_T]):
@@ -174,7 +174,7 @@ def _val_lst_dict(
     return defaultdict(list, val_lst_dict)
 
 
-@attr.frozen(eq=False, repr=False)
+@frozen(eq=False, repr=False)
 class BagValDict(Generic[_KT, _VT]):
 
     """Dictionary with(unsorted) lists as values"""
@@ -256,6 +256,6 @@ class BagValDict(Generic[_KT, _VT]):
 
     items = _useful_items
 
-    _dict: defaultdict[_KT, list[_VT]] = attr.field(
+    _dict: defaultdict[_KT, list[_VT]] = field(
         converter=_val_lst_dict, factory=dict
     )

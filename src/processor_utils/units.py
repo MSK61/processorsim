@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -42,7 +42,7 @@ from collections.abc import Iterable
 import operator
 from typing import Any, Final
 
-import attr
+from attr import field, frozen
 import fastcore.foundation
 
 from container_utils import sorted_tuple
@@ -67,7 +67,7 @@ def sorted_models(models: Iterable[Any]) -> tuple[Any, ...]:
     return sorted_tuple(models, key=fastcore.foundation.Self.name())
 
 
-@attr.frozen
+@frozen
 class LockInfo:
 
     """Parameter locking information in units"""
@@ -86,7 +86,7 @@ def _sorted_caps(caps: Iterable[Any]) -> tuple[Any, ...]:
     return sorted_tuple(caps)
 
 
-@attr.frozen
+@frozen
 class UnitModel:
 
     """Functional unit model"""
@@ -100,18 +100,18 @@ class UnitModel:
         """
         return cap in self._mem_acl
 
-    name: ICaseString = attr.field()
+    name: ICaseString = field()
 
-    width: int = attr.field()
+    width: int = field()
 
-    capabilities: tuple[ICaseString, ...] = attr.field(converter=_sorted_caps)
+    capabilities: tuple[ICaseString, ...] = field(converter=_sorted_caps)
 
-    lock_info: LockInfo = attr.field()
+    lock_info: LockInfo = field()
 
-    _mem_acl: tuple[object, ...] = attr.field(converter=sorted_tuple)
+    _mem_acl: tuple[object, ...] = field(converter=sorted_tuple)
 
 
-@attr.frozen(eq=False)
+@frozen(eq=False)
 class FuncUnit:
 
     """Processing functional unit"""
@@ -134,6 +134,6 @@ class FuncUnit:
             map(operator.is_, self.predecessors, other.predecessors)
         )
 
-    model: UnitModel = attr.field()
+    model: UnitModel = field()
 
-    predecessors: tuple[UnitModel, ...] = attr.field(converter=sorted_models)
+    predecessors: tuple[UnitModel, ...] = field(converter=sorted_models)

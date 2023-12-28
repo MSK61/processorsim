@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -41,7 +41,7 @@
 
 import unittest
 
-import attr
+from attr import frozen
 from fastcore.foundation import Self
 import networkx
 import pytest
@@ -264,7 +264,7 @@ class TestWidth:
         )
 
 
-@attr.frozen
+@frozen
 class _IoProcessor:
 
     """Single input, single output processor"""
@@ -276,7 +276,7 @@ class _IoProcessor:
     capability: object
 
 
-@attr.frozen
+@frozen
 class _LockTestData:
 
     """Lock test data"""
@@ -286,7 +286,7 @@ class _LockTestData:
     lock_type: object
 
 
-@attr.frozen
+@frozen
 class _TestExpResults:
 
     """Multi-lock test expected results"""

@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -42,7 +42,7 @@
 from logging import WARNING
 import unittest
 
-import attr
+from attr import frozen
 import pytest
 from pytest import mark
 
@@ -163,7 +163,7 @@ class TestCapCase:
             assert token in warn_msg
 
 
-@attr.frozen
+@frozen
 class _TestExpResults:
 
     """Non-standard capability loading test expected results"""
@@ -173,7 +173,7 @@ class _TestExpResults:
     ref_cap: object
 
 
-@attr.frozen
+@frozen
 class _TestInParams:
 
     """Non-standard capability loading test input results"""

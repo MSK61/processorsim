@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -43,7 +43,7 @@ import os.path
 import unittest.mock
 from unittest.mock import patch
 
-import attr
+from attr import frozen
 import pytest
 
 import test_utils
@@ -53,7 +53,7 @@ from processor_utils import units
 from str_utils import ICaseString
 
 
-@attr.frozen
+@frozen
 class _TestExpResults:
 
     """Hardware loading test expected results"""
@@ -63,7 +63,7 @@ class _TestExpResults:
     proc_srvc_cap: object
 
 
-@attr.frozen
+@frozen
 class _TestInParams:
 
     """Hardware loading test input parameters"""

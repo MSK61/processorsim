@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -41,7 +41,7 @@
 
 from unittest import TestCase
 
-import attr
+from attr import frozen
 import more_itertools
 import pytest
 
@@ -142,7 +142,7 @@ class StructuralTest(TestCase):
         )
 
 
-@attr.frozen
+@frozen
 class _TestExpResults:
 
     """Structural test expected results"""
@@ -152,7 +152,7 @@ class _TestExpResults:
     extra_util: object
 
 
-@attr.frozen
+@frozen
 class _TestInParams:
 
     """Structural test input parameters"""

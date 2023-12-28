@@ -42,7 +42,7 @@ import abc
 import collections.abc
 from typing import Any
 
-import attr
+from attr import field, frozen
 
 import container_utils
 
@@ -56,25 +56,25 @@ def _sorted_uniq(elems: collections.abc.Iterable[Any]) -> tuple[Any, ...]:
     return container_utils.sorted_tuple(frozenset(elems))
 
 
-@attr.frozen(repr=False)
+@frozen(repr=False)
 class _InstrBase(abc.ABC):
 
     """Instruction base class"""
 
-    sources: tuple[object, ...] = attr.field(converter=_sorted_uniq)
+    sources: tuple[object, ...] = field(converter=_sorted_uniq)
 
-    destination: object = attr.field()
+    destination: object = field()
 
 
-@attr.frozen
+@frozen
 class HwInstruction(_InstrBase):
 
     """Hardware instruction"""
 
-    categ: object = attr.field()
+    categ: object = field()
 
 
-@attr.frozen
+@frozen
 class ProgInstruction(_InstrBase):
 
     """Program instruction"""
