@@ -46,7 +46,7 @@ import fastcore.foundation
 import more_itertools
 import pydash
 import pytest
-from pytest import mark, raises
+from pytest import mark
 
 from test_type_chks import create_hw_instr
 import test_utils
@@ -534,7 +534,7 @@ class TestSim:
             ),
             chain(valid_prog, [([], "R14", "MEM")]),
         )
-        ex_chk = raises(
+        ex_chk = pytest.raises(
             StallError,
             simulate,
             tuple(prog),
