@@ -31,13 +31,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import abc
 import collections.abc
 from typing import Any
 
@@ -56,7 +57,7 @@ def _sorted_uniq(elems: collections.abc.Iterable[Any]) -> tuple[Any, ...]:
 
 
 @attr.frozen(repr=False)
-class _InstrBase:
+class _InstrBase(abc.ABC):
 
     """Instruction base class"""
 

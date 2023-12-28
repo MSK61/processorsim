@@ -38,7 +38,8 @@
 #
 ############################################################
 
-from collections import abc
+import abc
+import collections.abc
 import itertools
 import string
 import typing
@@ -97,12 +98,14 @@ class ErrorElement(typing.Generic[_T]):
     val: _T
 
 
-class SimErrorBase(RuntimeError):
+class SimErrorBase(abc.ABC, RuntimeError):
 
     """Simulation exception base class"""
 
     def _init(
-        self, msg_tmpl: str, elems: abc.Collection[ErrorElement[ElementValue]]
+        self,
+        msg_tmpl: str,
+        elems: collections.abc.Collection[ErrorElement[ElementValue]],
     ) -> None:
         """Create a simulation error.
 
@@ -126,7 +129,9 @@ class SimErrorBase(RuntimeError):
         )
 
     def _init_simple(
-        self, msg_tmpl: str, elems: abc.Iterable[ErrorElement[object]]
+        self,
+        msg_tmpl: str,
+        elems: collections.abc.Iterable[ErrorElement[object]],
     ) -> None:
         """Initialize a simulation error with simple elements.
 

@@ -31,15 +31,16 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import abc
 from collections import defaultdict
-from collections import abc
+import collections.abc
 from collections.abc import Callable, Iterable
 from itertools import starmap
 from operator import eq, itemgetter
@@ -70,7 +71,7 @@ def sorted_tuple(
 
 
 @attr.frozen(repr=False)
-class _IndexedSetBase(Generic[_T]):
+class _IndexedSetBase(abc.ABC, Generic[_T]):
 
     """Indexed set base class"""
 
@@ -160,7 +161,7 @@ class SelfIndexSet(_IndexedSetBase[_T]):
 
 
 def _val_lst_dict(
-    val_iter_dict: abc.Mapping[Any, Iterable[Any]]
+    val_iter_dict: collections.abc.Mapping[Any, Iterable[Any]]
 ) -> defaultdict[Any, list[Any]]:
     """Convert the given value iterable dictionary to a value list one.
 
@@ -191,7 +192,7 @@ class BagValDict(Generic[_KT, _VT]):
             map(type_checking.sorted_lst, [val_lst, self[key]])
             for key, val_lst in other_items
         )
-        item_lst_pair: list[abc.Sized] = [self, other_items]
+        item_lst_pair: list[collections.abc.Sized] = [self, other_items]
         return eq(*(len(item_lst) for item_lst in item_lst_pair)) and all(
             starmap(eq, lst_pairs)
         )
