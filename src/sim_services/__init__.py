@@ -50,7 +50,6 @@ from collections.abc import (
 )
 import copy
 from itertools import chain
-import string
 import typing
 from typing import Any, TypeVar
 
@@ -59,6 +58,7 @@ from fastcore.foundation import Self
 import more_itertools
 
 from container_utils import BagValDict
+import errors
 from processor_utils import ProcessorDesc
 import processor_utils.units
 from processor_utils.units import LockInfo, UnitModel
@@ -78,7 +78,8 @@ _T = TypeVar("_T")
 _VT = TypeVar("_VT")
 
 
-class StallError(RuntimeError):
+@errors.EXCEPTION
+class StallError(errors.SimErrorBase):
 
     """Stalled processor error"""
 
@@ -91,21 +92,11 @@ class StallError(RuntimeError):
         `stalled_state` is the stalled processor state.
 
         """
-        super().__init__(
-            string.Template(msg_tmpl).substitute(
-                {self.STATE_KEY: stalled_state}
-            )
+        self._init_simple(
+            msg_tmpl, [errors.ErrorElement(self.STATE_KEY, stalled_state)]
         )
-        self._stalled_state = stalled_state
 
-    @property
-    def processor_state(self) -> object:
-        """Stalled processor state
-
-        `self` is this stalled processor error.
-
-        """
-        return self._stalled_state
+    processor_state: object = attr.field()
 
     STATE_KEY: typing.Final = "state"  # parameter key in message format
 

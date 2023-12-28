@@ -39,15 +39,18 @@
 #
 ############################################################
 
-from string import Template
 from typing import Final
 
 import attr
+from fastcore.foundation import mapt, Self
+from pydash import spread
 
+from errors import ElementValue, ErrorElement, EXCEPTION, SimErrorBase
 from str_utils import ICaseString
 
 
-class BadEdgeError(RuntimeError):
+@EXCEPTION
+class BadEdgeError(SimErrorBase):
 
     """Bad edge error"""
 
@@ -60,22 +63,15 @@ class BadEdgeError(RuntimeError):
         `edge` is the bad edge.
 
         """
-        super().__init__(Template(msg_tmpl).substitute({self.EDGE_KEY: edge}))
-        self._edge = edge
+        self._init_simple(msg_tmpl, [ErrorElement(self.EDGE_KEY, edge)])
 
-    @property
-    def edge(self) -> object:
-        """Bad edge
-
-        `self` is this bad edge error.
-
-        """
-        return self._edge
+    edge: object = attr.field()
 
     EDGE_KEY: Final = "edge"  # parameter key in message format
 
 
-class BadWidthError(RuntimeError):
+@EXCEPTION
+class BadWidthError(SimErrorBase):
 
     """Bad Width error
 
@@ -93,31 +89,18 @@ class BadWidthError(RuntimeError):
         `width` is the bad width.
 
         """
-        super().__init__(
-            Template(msg_tmpl).substitute(
-                {self.UNIT_KEY: unit, self.WIDTH_KEY: width}
-            )
+        self._init_simple(
+            msg_tmpl,
+            mapt(
+                spread(ErrorElement),
+                [[self.UNIT_KEY, unit], [self.WIDTH_KEY, width]],
+            ),
         )
-        self._unit = unit
-        self._width = width
 
-    @property
-    def unit(self) -> object:
-        """Unit having the bad width
+    # error parameters
+    unit: object = attr.field()
 
-        `self` is this bad width error.
-
-        """
-        return self._unit
-
-    @property
-    def width(self) -> object:
-        """Bad width
-
-        `self` is this bad width error.
-
-        """
-        return self._width
+    width: object = attr.field()
 
     # parameter keys in message format
     UNIT_KEY: Final = "unit"
@@ -125,7 +108,8 @@ class BadWidthError(RuntimeError):
     WIDTH_KEY: Final = "width"
 
 
-class DeadInputError(RuntimeError):
+@EXCEPTION
+class DeadInputError(SimErrorBase):
 
     """Dead input port error
 
@@ -143,22 +127,15 @@ class DeadInputError(RuntimeError):
         `port` is the blocked input port.
 
         """
-        super().__init__(Template(msg_tmpl).substitute({self.PORT_KEY: port}))
-        self._port = port
+        self._init_simple(msg_tmpl, [ErrorElement(self.PORT_KEY, port)])
 
-    @property
-    def port(self) -> object:
-        """Blocked input port
-
-        `self` is this dead input error.
-
-        """
-        return self._port
+    port: object = attr.field()
 
     PORT_KEY: Final = "port"  # parameter key in message format
 
 
-class DupElemError(RuntimeError):
+@EXCEPTION
+class DupElemError(SimErrorBase):
 
     """Duplicate set element error"""
 
@@ -174,36 +151,23 @@ class DupElemError(RuntimeError):
         `new_elem` is the element just discovered.
 
         """
-        super().__init__(
-            Template(msg_tmpl).substitute(
-                {self.OLD_ELEM_KEY: old_elem, self.NEW_ELEM_KEY: new_elem}
-            )
+        self._init_simple(
+            msg_tmpl,
+            mapt(
+                spread(ErrorElement),
+                [[self.OLD_ELEM_KEY, old_elem], [self.NEW_ELEM_KEY, new_elem]],
+            ),
         )
-        self._old_elem = old_elem
-        self._new_elem = new_elem
-
-    @property
-    def new_element(self) -> object:
-        """Duplicate element just discovered
-
-        `self` is this duplicate element error.
-
-        """
-        return self._new_elem
-
-    @property
-    def old_element(self) -> object:
-        """Element added before
-
-        `self` is this duplicate element error.
-
-        """
-        return self._old_elem
 
     # parameter keys in message format
     OLD_ELEM_KEY: Final = "old_elem"
 
     NEW_ELEM_KEY: Final = "new_elem"
+
+    # error parameters
+    old_element: object = attr.field()
+
+    new_element: object = attr.field()
 
 
 class EmptyProcError(RuntimeError):
@@ -211,7 +175,8 @@ class EmptyProcError(RuntimeError):
     """Empty processor error"""
 
 
-class PathLockError(RuntimeError):
+@EXCEPTION
+class PathLockError(SimErrorBase):
 
     """Path lock error"""
 
@@ -232,45 +197,17 @@ class PathLockError(RuntimeError):
         `capability` is the capability for which the path was computed.
 
         """
-        super().__init__(
-            Template(msg_tmpl).substitute(
-                {
-                    self.CAP_KEY: capability,
-                    self.LOCK_TYPE_KEY: lock_type,
-                    self.START_KEY: start,
-                }
-            )
+        self._init_simple(
+            msg_tmpl,
+            mapt(
+                spread(ErrorElement),
+                [
+                    [self.CAP_KEY, capability],
+                    [self.LOCK_TYPE_KEY, lock_type],
+                    [self.START_KEY, start],
+                ],
+            ),
         )
-        self._start = start
-        self._lock_type = lock_type
-        self._capability = capability
-
-    @property
-    def capability(self) -> object:
-        """capability of the path
-
-        `self` is this multi-lock error.
-
-        """
-        return self._capability
-
-    @property
-    def lock_type(self) -> object:
-        """type of locks along the path
-
-        `self` is this multi-lock error.
-
-        """
-        return self._lock_type
-
-    @property
-    def start(self) -> object:
-        """path start point
-
-        `self` is this multi-lock error.
-
-        """
-        return self._start
 
     # parameter keys in message format
     CAP_KEY: Final = "capability"
@@ -278,6 +215,13 @@ class PathLockError(RuntimeError):
     LOCK_TYPE_KEY: Final = "lock_type"
 
     START_KEY: Final = "start"
+
+    # error parameters
+    capability: object = attr.field()
+
+    lock_type: object = attr.field()
+
+    start: object = attr.field()
 
 
 @attr.frozen
@@ -300,7 +244,8 @@ class CapPortInfo:
     port_info: ComponentInfo
 
 
-class BlockedCapError(RuntimeError):
+@EXCEPTION
+class BlockedCapError(SimErrorBase):
 
     """Blocked Input capability error
 
@@ -320,35 +265,35 @@ class BlockedCapError(RuntimeError):
         `blocking_info` is the blocking information.
 
         """
-        cap_info = blocking_info.capability_info
-        super().__init__(
-            Template(msg_tmpl).substitute(
-                {
-                    self.CAPABILITY_KEY: cap_info.reporting_name,
-                    self.PORT_KEY: blocking_info.port_info.reporting_name,
-                }
+        self._init(
+            msg_tmpl,
+            [
+                ErrorElement(key, self._make_elem_val(comp))
+                for key, comp in [
+                    (self.CAPABILITY_KEY, blocking_info.capability_info),
+                    (self.PORT_KEY, blocking_info.port_info),
+                ]
+            ],
+        )
+
+    @staticmethod
+    def _make_elem_val(comp: ComponentInfo) -> ElementValue:
+        """Create an element value out of a component.
+
+        `comp` is the component to use for creating the element value.
+
+        """
+        return ElementValue(
+            *(
+                attr_getter(comp)
+                for attr_getter in [Self.reporting_name(), Self.std_name()]
             )
         )
-        self._capability = cap_info.std_name
-        self._port = blocking_info.port_info.std_name
 
-    @property
-    def capability(self) -> ICaseString:
-        """Blocked capability
+    # error parameters
+    capability: ICaseString = attr.field()
 
-        `self` is this blocked input capability error.
-
-        """
-        return self._capability
-
-    @property
-    def port(self) -> ICaseString:
-        """Port the capability is block at
-
-        `self` is this blocked input capability error.
-
-        """
-        return self._port
+    port: ICaseString = attr.field()
 
     # parameter keys in message format
     CAPABILITY_KEY: Final = "capability"

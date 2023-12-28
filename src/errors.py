@@ -38,11 +38,117 @@
 #
 ############################################################
 
+from collections import abc
+import itertools
 import string
 import typing
+from typing import Final
+
+import attr
+import fastcore.foundation
+
+# Attrs doesn't honor class variables annotated with typing.Final(albeit
+# being mandated by PEP-591) and instead still treats them as instance
+# attributes. That's why I'm using auto_attribs=False and marking the
+# attributes explicitly.
+# __attrs_init__() passes the attributes verbatim to super().__init__()
+# when auto_exc is left to its default(True). I'm setting auto_exc=False
+# so that I may call super().__init__() with my custom message.
+# Looks like mypy can't honor auto_detect=True in attr.frozen so I have
+# to explicitly(and redundantly) use init=False.
+EXCEPTION: Final = attr.frozen(auto_attribs=False, auto_exc=False, init=False)
+_T = typing.TypeVar("_T")
 
 
-class UndefElemError(RuntimeError):
+@attr.frozen
+class ElementValue:
+
+    """Error element value
+
+    An element value can have two forms: the form stored in memory and
+    the one displayed in error messages.
+
+    """
+
+    @classmethod
+    def create_simple(cls, val: object) -> "ElementValue":
+        """Create an element value.
+
+        `cls` is the element value class.
+        `val` is the desired value.
+        The method creates an element value that's displayed and stored
+        the same way.
+
+        """
+        return cls(*(itertools.repeat(val, 2)))
+
+    displayed: object
+
+    stored: object
+
+
+@attr.frozen
+class ErrorElement(typing.Generic[_T]):
+
+    """Error element"""
+
+    key: str
+
+    val: _T
+
+
+class SimErrorBase(RuntimeError):
+
+    """Simulation exception base class"""
+
+    def _init(
+        self, msg_tmpl: str, elems: abc.Collection[ErrorElement[ElementValue]]
+    ) -> None:
+        """Create a simulation error.
+
+        `self` is this simulation error.
+        `msg_tmpl` is the error message format taking the error elements
+                   as keyword arguments.
+        `elems` are the error elements.
+
+        """
+        super().__init__(
+            string.Template(msg_tmpl).substitute(
+                {elem.key: elem.val.displayed for elem in elems}
+            )
+        )
+        val_extractor = fastcore.foundation.Self.val().stored()
+        # Pylance and pylint can't detect __attrs_init__ as an injected
+        # method.
+        # pylint: disable-next=no-member
+        self.__attrs_init__(  # type: ignore[attr-defined]
+            *(map(val_extractor, elems))
+        )
+
+    def _init_simple(
+        self, msg_tmpl: str, elems: abc.Iterable[ErrorElement[object]]
+    ) -> None:
+        """Initialize a simulation error with simple elements.
+
+        `self` is this simulation error.
+        `msg_tmpl` is the error message format taking the error elements
+                   as keyword arguments.
+        `elems` are the error elements.
+        Simple elements are those which are stored and displayed the
+        same way.
+
+        """
+        self._init(
+            msg_tmpl,
+            [
+                ErrorElement(elem.key, ElementValue.create_simple(elem.val))
+                for elem in elems
+            ],
+        )
+
+
+@EXCEPTION
+class UndefElemError(SimErrorBase):
 
     """Unknown set element error"""
 
@@ -55,18 +161,8 @@ class UndefElemError(RuntimeError):
         `elem` is the unknown element.
 
         """
-        super().__init__(
-            string.Template(msg_tmpl).substitute({self.ELEM_KEY: elem})
-        )
-        self._elem = elem
+        self._init_simple(msg_tmpl, [ErrorElement(self.ELEM_KEY, elem)])
 
-    @property
-    def element(self) -> object:
-        """Unknown element
+    ELEM_KEY: Final = "elem"  # parameter key in message format
 
-        `self` is this unknown element error.
-
-        """
-        return self._elem
-
-    ELEM_KEY: typing.Final = "elem"  # parameter key in message format
+    element: object = attr.field()
