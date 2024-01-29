@@ -13,7 +13,7 @@ Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 
 ############################################################
 #
-# Copyright 2017, 2019, 2020, 2021, 2022, 2023 Mohammed El-Afifi
+# Copyright 2017, 2019, 2020, 2021, 2022, 2023, 2024 Mohammed El-Afifi
 # This file is part of processorSim.
 #
 # processorSim is free software: you can redistribute it and/or modify
@@ -40,7 +40,7 @@ Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.85.2, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -117,12 +117,7 @@ class _InstrPosition:
         `self` is this instruction position.
 
         """
-        stall_map = {
-            StallState.NO_STALL: "U",
-            StallState.STRUCTURAL: "S",
-            StallState.DATA: "D",
-        }
-        return f"{stall_map[self._stalled]}:{self._unit}"
+        return f"{self._stalled.value}:{self._unit}"
 
     _unit: object
 

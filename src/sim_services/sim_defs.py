@@ -4,7 +4,7 @@
 
 ############################################################
 #
-# Copyright 2017, 2019, 2020, 2021, 2022, 2023 Mohammed El-Afifi
+# Copyright 2017, 2019, 2020, 2021, 2022, 2023, 2024 Mohammed El-Afifi
 # This file is part of processorSim.
 #
 # processorSim is free software: you can redistribute it and/or modify
@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+# environment:  Visual Studio Code 1.85.2, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -39,7 +39,6 @@
 ############################################################
 
 import enum
-from enum import auto
 from typing import Final
 
 import attr
@@ -49,11 +48,11 @@ class StallState(enum.Enum):
 
     """Instruction stalling state"""
 
-    NO_STALL: Final = auto()
+    NO_STALL: Final = "U"
 
-    STRUCTURAL: Final = auto()
+    STRUCTURAL: Final = "S"
 
-    DATA: Final = auto()
+    DATA: Final = "D"
 
 
 @attr.mutable(order=True)
