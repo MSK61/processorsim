@@ -13,7 +13,7 @@ Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 
 ############################################################
 #
-# Copyright 2017, 2019, 2020, 2021, 2022, 2023 Mohammed El-Afifi
+# Copyright 2017, 2019, 2020, 2021, 2022, 2023, 2024 Mohammed El-Afifi
 # This file is part of processorSim.
 #
 # processorSim is free software: you can redistribute it and/or modify
