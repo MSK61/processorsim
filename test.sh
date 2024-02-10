@@ -27,7 +27,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, Fedora release 39 (Thirty Nine)
+# environment:  Visual Studio Code 1.86.1, Fedora release 39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -37,6 +37,6 @@ set -e
 # their own
 tests/test_containers.py
 pytest --black --cov src --flake8 --pylint $*
-PYRIGHT_PYTHON_PYLANCE_VERSION=2023.12.1 pyright
+pyright
 cd src
 pytest -m "mypy or pylint" --mypy --pylint $*
