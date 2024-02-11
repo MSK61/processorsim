@@ -81,7 +81,6 @@ class LockInfo:
 
 @frozen
 class _UnitModel2:
-
     """Functional unit model"""
 
     def needs_mem(self, cap: ICaseString) -> bool:
