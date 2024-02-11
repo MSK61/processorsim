@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.1, python 3.10.8, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -51,7 +51,6 @@ import str_utils
 
 
 class TestDupEdge:
-
     """Test case for loading duplicate edges"""
 
     def test_three_identical_edges_are_detected(self, caplog):
@@ -123,7 +122,6 @@ class TestDupEdge:
 
 
 class TestEdges:
-
     """Test case for loading edges"""
 
     # pylint: disable=invalid-name

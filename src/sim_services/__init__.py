@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -80,7 +80,6 @@ _VT = TypeVar("_VT")
 
 @errors.EXCEPTION
 class StallError(errors.SimErrorBase):
-
     """Stalled processor error"""
 
     def __init__(self, msg_tmpl: str, stalled_state: object) -> None:
@@ -103,7 +102,6 @@ class StallError(errors.SimErrorBase):
 
 @frozen
 class HwSpec:
-
     """Hardware specification"""
 
     processor_desc: ProcessorDesc = field()
@@ -156,7 +154,6 @@ def simulate(
 
 @mutable
 class _AcceptStatus:
-
     """Instruction acceptance status"""
 
     accepted: object = field(default=True, init=False)
@@ -166,7 +163,6 @@ class _AcceptStatus:
 
 @mutable
 class _IssueInfo:
-
     """Instruction issue information record"""
 
     def bump_input(self) -> None:
@@ -211,7 +207,6 @@ class _IssueInfo:
 
 @frozen
 class _RegAvailState:
-
     """Registers availability state"""
 
     avail: object
@@ -221,7 +216,6 @@ class _RegAvailState:
 
 @frozen
 class _TransitionUtil:
-
     """Utilization transition of a single unit between two pulses"""
 
     old_util: collections.abc.Collection[InstrState]

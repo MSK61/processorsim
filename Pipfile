@@ -13,8 +13,8 @@ ipykernel = "*"
 types-pyyaml = "*"
 flake8 = "<5"
 rope = "*"
-pytest-black = "*"
 pyright = "==1.1.336"
+black = {extras = ["jupyter"], version = "*"}
 
 [packages]
 networkx = "*"

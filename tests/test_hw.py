@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -55,7 +55,6 @@ from str_utils import ICaseString
 
 @frozen
 class _TestExpResults:
-
     """Hardware loading test expected results"""
 
     raw_isa: object
@@ -65,7 +64,6 @@ class _TestExpResults:
 
 @frozen
 class _TestInParams:
-
     """Hardware loading test input parameters"""
 
     capability: object
@@ -88,7 +86,6 @@ _HW_CASES = [
 
 
 class TestHwDescLoad:
-
     """Test case for loading complete hardware description files"""
 
     @pytest.mark.parametrize("in_params, exp_results", _HW_CASES)

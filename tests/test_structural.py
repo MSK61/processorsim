@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -54,7 +54,6 @@ from str_utils import ICaseString
 
 
 class TestMemUtil:
-
     """Test case for memory utilization"""
 
     def test_mem_util_in_earlier_inputs_affects_later_ones(self):
@@ -80,7 +79,6 @@ class TestMemUtil:
 
 
 class TestStructural:
-
     """Test case for structural hazards"""
 
     # pylint: disable-next=invalid-name
@@ -125,7 +123,6 @@ class TestStructural:
 
 @frozen
 class _TestExpResults:
-
     """Structural test expected results"""
 
     cp1_util_size: object
@@ -135,7 +132,6 @@ class _TestExpResults:
 
 @frozen
 class _TestInParams:
-
     """Structural test input parameters"""
 
     width: object
@@ -228,7 +224,6 @@ _STRUCT_CASES = [
 
 
 class TestHazards:
-
     """Test case for structural hazards"""
 
     @pytest.mark.parametrize("in_params, exp_results", _STRUCT_CASES)

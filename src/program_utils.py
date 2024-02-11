@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -60,7 +60,6 @@ _T = typing.TypeVar("_T")
 
 @errors.EXCEPTION
 class CodeError(errors.SimErrorBase):
-
     """Syntax error"""
 
     def __init__(self, msg_tmpl: str, line: object, instr: object) -> None:
@@ -133,7 +132,6 @@ def read_program(prog_file: Iterable[str]) -> list[ProgInstruction]:
 
 @frozen
 class _LineInfo:
-
     """Source line information"""
 
     instruction: str
@@ -143,7 +141,6 @@ class _LineInfo:
 
 @frozen
 class _OperandInfo:
-
     """Instruction operand information"""
 
     name: ICaseString

@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -53,7 +53,6 @@ from str_utils import ICaseString
 
 
 class TestClean:
-
     """Test case for cleaning(optimizing) a processor"""
 
     def test_data_path_cut_before_output_is_removed(self, caplog):
@@ -124,7 +123,6 @@ class TestClean:
 
 
 class TestEdgeRemoval:
-
     """Test case for removing incompatible edges"""
 
     def test_incompatible_edge_is_removed(self, caplog):
@@ -171,7 +169,6 @@ class TestEdgeRemoval:
 
 
 class TestWidth:
-
     """Test case for checking data path width"""
 
     def test_output_more_capable_than_input(self):

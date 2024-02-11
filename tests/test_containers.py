@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -47,7 +47,6 @@ import container_utils
 
 
 class TestCoverage:
-
     """Test case for fulfilling complete code coverage"""
 
     def test_IndexedSet_repr(self):  # pylint: disable=invalid-name

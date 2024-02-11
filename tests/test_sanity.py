@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -59,7 +59,6 @@ from str_utils import ICaseString
 
 
 class TestBlocking:
-
     """Test case for detecting blocked inputs"""
 
     @mark.parametrize(
@@ -93,7 +92,6 @@ class TestBlocking:
 
 
 class TestLoop:
-
     """Test case for loading processors with loops"""
 
     @mark.parametrize(
@@ -117,7 +115,6 @@ class TestLoop:
 
 
 class TestNoLock:
-
     """Test case for checking paths without locks"""
 
     @mark.parametrize(
@@ -175,7 +172,6 @@ class TestNoLock:
 
 
 class TestPerCap:
-
     """Test case for checking multiple locks per capability"""
 
     def test_paths_with_multiple_locks_are_only_detected_per_capability(self):
@@ -233,7 +229,6 @@ class TestPerCap:
 
 
 class TestWidth:
-
     """Test case for checking data path width"""
 
     # pylint: disable-next=invalid-name
@@ -264,7 +259,6 @@ class TestWidth:
 
 @frozen
 class _IoProcessor:
-
     """Single input, single output processor"""
 
     in_unit: object
@@ -276,7 +270,6 @@ class _IoProcessor:
 
 @frozen
 class _LockTestData:
-
     """Lock test data"""
 
     prop_name: object
@@ -286,7 +279,6 @@ class _LockTestData:
 
 @frozen
 class _TestExpResults:
-
     """Multi-lock test expected results"""
 
     in_unit: object
@@ -295,7 +287,6 @@ class _TestExpResults:
 
 
 class TestMultiLock:
-
     """Test case for checking multiple locks along a path"""
 
     @mark.parametrize(

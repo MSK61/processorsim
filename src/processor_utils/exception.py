@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -51,7 +51,6 @@ from str_utils import ICaseString
 
 @EXCEPTION
 class BadEdgeError(SimErrorBase):
-
     """Bad edge error"""
 
     def __init__(self, msg_tmpl: str, edge: object) -> None:
@@ -72,7 +71,6 @@ class BadEdgeError(SimErrorBase):
 
 @EXCEPTION
 class BadWidthError(SimErrorBase):
-
     """Bad Width error
 
     A unit width is bad if it isn't positive.
@@ -110,7 +108,6 @@ class BadWidthError(SimErrorBase):
 
 @EXCEPTION
 class DeadInputError(SimErrorBase):
-
     """Dead input port error
 
     A dead input port is one that is connected to units none of which is
@@ -136,7 +133,6 @@ class DeadInputError(SimErrorBase):
 
 @EXCEPTION
 class DupElemError(SimErrorBase):
-
     """Duplicate set element error"""
 
     def __init__(
@@ -171,13 +167,11 @@ class DupElemError(SimErrorBase):
 
 
 class EmptyProcError(RuntimeError):
-
     """Empty processor error"""
 
 
 @EXCEPTION
 class PathLockError(SimErrorBase):
-
     """Path lock error"""
 
     def __init__(
@@ -226,7 +220,6 @@ class PathLockError(SimErrorBase):
 
 @frozen
 class ComponentInfo:
-
     """Component information"""
 
     std_name: ICaseString
@@ -236,7 +229,6 @@ class ComponentInfo:
 
 @frozen
 class CapPortInfo:
-
     """Capability-port combination information"""
 
     capability_info: ComponentInfo
@@ -246,7 +238,6 @@ class CapPortInfo:
 
 @EXCEPTION
 class BlockedCapError(SimErrorBase):
-
     """Blocked Input capability error
 
     A blocked input capability is one that if fed to a supporting input

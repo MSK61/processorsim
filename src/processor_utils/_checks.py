@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -138,7 +138,6 @@ def chk_non_empty(
 
 @frozen
 class _SatInfo:
-
     """Lock saturation information"""
 
     read_lock: int
@@ -148,7 +147,6 @@ class _SatInfo:
 
 @frozen
 class _PathDescriptor:
-
     """Path descriptor in multi-lock analysis"""
 
     @classmethod
@@ -188,7 +186,6 @@ class _PathDescriptor:
 
 @frozen
 class _PathLockCalc:
-
     """Path lock calculator"""
 
     def calc_lock(

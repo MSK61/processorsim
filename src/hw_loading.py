@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -49,7 +49,6 @@ import processor_utils
 
 @attr.frozen
 class HwDesc:
-
     """Hardware description"""
 
     processor: processor_utils.ProcessorDesc

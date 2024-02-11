@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -100,7 +100,6 @@ def load_isa(
 
 @frozen
 class _CapabilityInfo:
-
     """Unit capability information"""
 
     name: ICaseString
@@ -626,7 +625,6 @@ def _sorted_units(hw_units: Iterable[Any]) -> tuple[Any, ...]:
 
 @frozen
 class ProcessorDesc:
-
     """Processor description"""
 
     in_ports: tuple[UnitModel, ...] = field(converter=tuple[UnitModel, ...])

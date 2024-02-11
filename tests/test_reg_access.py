@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -52,7 +52,6 @@ _ACCESS_GR_CTOR = pydash.spread(AccessGroup)
 
 
 class TestAccessPlan:
-
     """Test case for register access queues"""
 
     @mark.parametrize(
@@ -103,7 +102,6 @@ class TestAccessPlan:
 
 
 class TestAddRequests:
-
     """Test case for adding requests"""
 
     @mark.parametrize(

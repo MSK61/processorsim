@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.2, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -48,7 +48,6 @@ from attr import field, frozen
 
 
 class AccessType(enum.Enum):
-
     """Access type"""
 
     READ: Final = auto()
@@ -58,7 +57,6 @@ class AccessType(enum.Enum):
 
 @frozen
 class AccessGroup:
-
     """Access group"""
 
     access_type: object = field()
@@ -77,7 +75,6 @@ def _rev_groups(lst: abc.Reversible[AccessGroup]) -> list[AccessGroup]:
 
 @frozen
 class RegAccessQueue:
-
     """Access request queue for a single register"""
 
     def can_access(self, req_type: object, req_owner: object) -> bool:
@@ -114,7 +111,6 @@ class RegAccessQueue:
 
 
 class RegAccQBuilder:
-
     """Access request queue builder"""
 
     def __init__(self) -> None:
