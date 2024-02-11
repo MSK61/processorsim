@@ -38,6 +38,6 @@ set -e
 tests/test_containers.py
 pytest --cov src --flake8 --pylint $*
 black --check .
-pyright
+PYRIGHT_PYTHON_IGNORE_WARNINGS=1 pyright
 cd src
 pytest -m "mypy or pylint" --mypy --pylint $*
