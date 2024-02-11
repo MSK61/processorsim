@@ -43,7 +43,7 @@ import operator
 from typing import Any, Final
 
 from attr import field, frozen
-import fastcore.foundation
+from fastcore.foundation import Self
 
 from container_utils import sorted_tuple
 from str_utils import ICaseString
@@ -64,7 +64,7 @@ def sorted_models(models: Iterable[Any]) -> tuple[Any, ...]:
     `models` are the models to sort.
 
     """
-    return sorted_tuple(models, key=fastcore.foundation.Self.name())
+    return sorted_tuple(models, key=Self.name())
 
 
 @frozen
@@ -120,12 +120,15 @@ class FuncUnit:
         `other` is the other functional unit.
 
         """
+        pair_attrs = (
+            tuple(
+                attr_get_func(unit)
+                for attr_get_func in [Self.model(), Self.predecessors()]
+            )
+            for unit in [self, other]
+        )
         criteria = (
-            (model, len(predecessors))
-            for model, predecessors in [
-                (self.model, self.predecessors),
-                (other.model, other.predecessors),
-            ]
+            (model, len(predecessors)) for model, predecessors in pair_attrs
         )
         return operator.eq(*criteria) and all(
             map(operator.is_, self.predecessors, other.predecessors)
