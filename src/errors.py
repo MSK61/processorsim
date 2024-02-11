@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -64,7 +64,6 @@ _T = typing.TypeVar("_T")
 
 @frozen
 class ElementValue:
-
     """Error element value
 
     An element value can have two forms: the form stored in memory and
@@ -91,7 +90,6 @@ class ElementValue:
 
 @frozen
 class ErrorElement(typing.Generic[_T]):
-
     """Error element"""
 
     key: str
@@ -100,7 +98,6 @@ class ErrorElement(typing.Generic[_T]):
 
 
 class SimErrorBase(abc.ABC, RuntimeError):
-
     """Simulation exception base class"""
 
     def _init(
@@ -155,7 +152,6 @@ class SimErrorBase(abc.ABC, RuntimeError):
 
 @EXCEPTION
 class UndefElemError(SimErrorBase):
-
     """Unknown set element error"""
 
     def __init__(self, msg_tmpl: str, elem: object) -> None:

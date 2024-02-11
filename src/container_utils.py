@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -72,7 +72,6 @@ def sorted_tuple(
 
 @frozen(repr=False)
 class _IndexedSetBase(abc.ABC, Generic[_T]):
-
     """Indexed set base class"""
 
     def __repr__(self) -> str:
@@ -110,7 +109,6 @@ class _IndexedSetBase(abc.ABC, Generic[_T]):
 
 
 class IndexedSet(_IndexedSetBase[_T]):
-
     """Indexed set"""
 
 
@@ -133,7 +131,6 @@ def get_from_set(elem_set: IndexedSet[_T], elem: _T) -> _T:
 
 
 class SelfIndexSet(_IndexedSetBase[_T]):
-
     """Self-indexed set"""
 
     def __init__(self) -> None:
@@ -176,7 +173,6 @@ def _val_lst_dict(
 
 @frozen(eq=False, repr=False)
 class BagValDict(Generic[_KT, _VT]):
-
     """Dictionary with(unsorted) lists as values"""
 
     def __eq__(self, other: Any) -> Any:

@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -58,7 +58,6 @@ def _sorted_uniq(elems: collections.abc.Iterable[Any]) -> tuple[Any, ...]:
 
 @frozen(repr=False)
 class _InstrBase(abc.ABC):
-
     """Instruction base class"""
 
     sources: tuple[object, ...] = field(converter=_sorted_uniq)
@@ -68,7 +67,6 @@ class _InstrBase(abc.ABC):
 
 @frozen
 class HwInstruction(_InstrBase):
-
     """Hardware instruction"""
 
     categ: object = field()
@@ -76,7 +74,6 @@ class HwInstruction(_InstrBase):
 
 @frozen
 class ProgInstruction(_InstrBase):
-
     """Program instruction"""
 
     name: str

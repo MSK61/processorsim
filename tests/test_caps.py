@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -53,7 +53,6 @@ from str_utils import ICaseString
 
 
 class TestCaps:
-
     """Test case for loading capabilities"""
 
     # pylint: disable=invalid-name
@@ -116,7 +115,6 @@ class TestCaps:
 
 
 class TestDupCap:
-
     """Test case for loading duplicate capabilities"""
 
     def test_same_capability_with_different_cases_in_two_units_is_detected(

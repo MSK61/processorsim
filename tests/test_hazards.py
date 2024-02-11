@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -55,7 +55,6 @@ from str_utils import ICaseString
 
 
 class TestDataHazards:
-
     """Test case for data hazards"""
 
     @pytest.mark.parametrize(
@@ -93,7 +92,6 @@ class TestDataHazards:
 
 
 class TestInstrOffer:
-
     """Test case for offering instructions to units"""
 
     def test_all_candidate_instructions_are_offered_to_the_destinaton_unit(
@@ -147,7 +145,6 @@ class TestInstrOffer:
 
 
 class TestMemAccess:
-
     """Test case for instructions with memory access"""
 
     def test_only_mem_access_instructions_are_checked(self):
@@ -186,7 +183,6 @@ class TestMemAccess:
 
 
 class TestRar:
-
     """Test case for RAR hazards"""
 
     def test_hazard(self):
@@ -208,7 +204,6 @@ class TestRar:
 
 
 class TestRaw:
-
     """Test case for RAW hazards"""
 
     def test_RLock_in_unit_before_WLock(self):  # pylint: disable=invalid-name
@@ -259,7 +254,6 @@ class TestRaw:
 
 
 class TestUnifiedMem:
-
     """Test case for the unified memory architecture"""
 
     def test_hazard(self):
@@ -302,7 +296,6 @@ class TestUnifiedMem:
 
 
 class TestWar:
-
     """Test case for WAR hazards"""
 
     def test_write_registers_are_not_checked_in_units_without_write_lock(self):

@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -50,7 +50,6 @@ from str_utils import ICaseString
 
 
 class TestDupName:
-
     """Test case for loading units with duplicate names"""
 
     @pytest.mark.parametrize(
@@ -90,7 +89,6 @@ class TestDupName:
 
 
 class TestExpAttr:
-
     """Test case for loading units with explicit attributes"""
 
     def test_processor_with_explicit_attributes(self):
@@ -135,7 +133,6 @@ class TestExpAttr:
 
 
 class TestPostOrder:
-
     """Test case for putting units in post-order"""
 
     def test_processor_puts_units_in_post_order(self):

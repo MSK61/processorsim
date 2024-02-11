@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.81.1, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -60,11 +60,13 @@ def split_nodes(graph: DiGraph) -> dict[Any, object]:
     """
     in_degrees = tuple(graph.in_degree)
     return {
-        unit: _split_node(graph, unit, len(in_degrees) + unit)
-        if twin != 1
-        and graph.out_degree[unit] != 1
-        and (twin or graph.out_degree[unit])
-        else unit
+        unit: (
+            _split_node(graph, unit, len(in_degrees) + unit)
+            if twin != 1
+            and graph.out_degree[unit] != 1
+            and (twin or graph.out_degree[unit])
+            else unit
+        )
         for unit, twin in in_degrees
     }
 

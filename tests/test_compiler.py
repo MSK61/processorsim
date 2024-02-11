@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -57,7 +57,6 @@ from str_utils import ICaseString
 
 
 class TestDupOperand:
-
     """Test case for loading instructions with duplicate operands"""
 
     @mark.parametrize("dup_reg", ["R2", "R3"])
@@ -124,7 +123,6 @@ class TestDupOperand:
 
 
 class TestProgLoad:
-
     """Test case for loading programs"""
 
     @mark.parametrize(
@@ -188,7 +186,6 @@ class TestProgLoad:
 
 
 class TestSynErrors:
-
     """Test case for syntax errors"""
 
     # pylint: disable=invalid-name
@@ -262,7 +259,6 @@ class TestSynErrors:
 
 
 class TestValidSyntax:
-
     """Test case for valid syntax"""
 
     @mark.parametrize("prog_file", ["empty.asm", "emptyLineOnly.asm"])

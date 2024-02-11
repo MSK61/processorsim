@@ -36,7 +36,8 @@ set -e
 # just running a sample test module to make sure test modules are executable on
 # their own
 tests/test_containers.py
-pytest --black --cov src --flake8 --pylint $*
+pytest --cov src --flake8 --pylint $*
+black --check .
 pyright
 cd src
 pytest -m "mypy or pylint" --mypy --pylint $*

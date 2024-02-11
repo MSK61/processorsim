@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -60,7 +60,6 @@ from str_utils import ICaseString
 
 
 class TestCapCase:
-
     """Test case for checking ACL capability cases"""
 
     @mark.parametrize(
@@ -124,7 +123,6 @@ class TestCapCase:
 
 
 class TestPartialMem:
-
     """Test case for partial memory access"""
 
     def test_partial_mem_access(self):
@@ -167,7 +165,6 @@ class TestPartialMem:
 
 @frozen
 class _TestExpResults:
-
     """Non-standard capability loading test expected results"""
 
     unit: object
@@ -177,7 +174,6 @@ class _TestExpResults:
 
 @frozen
 class _TestInParams:
-
     """Non-standard capability loading test input results"""
 
     core_unit: object
@@ -206,7 +202,6 @@ _STD_CAP_CASES = [
 
 
 class TestStdCaseCap:
-
     """Test case for loading a non-standard capability case"""
 
     @mark.parametrize("in_params, exp_results", _STD_CAP_CASES)

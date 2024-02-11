@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -69,7 +69,6 @@ def sorted_models(models: Iterable[Any]) -> tuple[Any, ...]:
 
 @frozen
 class LockInfo:
-
     """Parameter locking information in units"""
 
     rd_lock: object
@@ -88,7 +87,6 @@ def _sorted_caps(caps: Iterable[Any]) -> tuple[Any, ...]:
 
 @frozen
 class UnitModel:
-
     """Functional unit model"""
 
     def needs_mem(self, cap: object) -> bool:
@@ -113,7 +111,6 @@ class UnitModel:
 
 @frozen(eq=False)
 class FuncUnit:
-
     """Processing functional unit"""
 
     def __eq__(self, other: Any) -> Any:

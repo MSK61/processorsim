@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -62,7 +62,6 @@ def format_obj(
 @functools.total_ordering
 @attr.frozen(eq=False)
 class ICaseString:
-
     """Case-insensitive string"""
 
     def __contains__(self, item: str) -> bool:

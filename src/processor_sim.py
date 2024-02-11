@@ -40,7 +40,7 @@ Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.2, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -108,7 +108,6 @@ def run(processor_file: IO[str], program_file: IO[str]) -> None:
 
 @frozen
 class _InstrPosition:
-
     """Instruction position"""
 
     def __str__(self) -> str:
@@ -126,7 +125,6 @@ class _InstrPosition:
 
 @frozen
 class _InstrFlight:
-
     """Instruction flight"""
 
     start_time: int
@@ -165,7 +163,6 @@ def _create_writer(
 
 @frozen
 class ResultWriter:
-
     """Simulation result writer"""
 
     def print_sim_res(self, sim_res: Collection[Collection[Any]]) -> None:

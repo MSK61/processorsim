@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -129,7 +129,6 @@ _UNITS_DESC = [
 
 
 class TestBasic:
-
     """Test case for basic simulation scenarios"""
 
     @mark.parametrize(
@@ -174,7 +173,6 @@ class TestBasic:
 
 
 class TestFlow:
-
     """Test case for instruction flow prioritization"""
 
     def test_earlier_instructions_are_propagated_first(self):
@@ -217,7 +215,6 @@ class TestFlow:
 
 
 class TestInSort:
-
     """Test case for loading instructions into input units"""
 
     def test_inputs_are_lexicographically_sorted(self):
@@ -265,7 +262,6 @@ class TestInSort:
 
 
 class TestOutputFlush:
-
     """Test case for flushing instructions at output ports"""
 
     @mark.parametrize(
@@ -314,7 +310,6 @@ class TestOutputFlush:
 
 
 class TestPipeline:
-
     """Test case for instruction flow in the pipeline"""
 
     def test_instructions_flow_seamlessly(self):
@@ -358,7 +353,6 @@ class TestPipeline:
 
 
 class TestSim:
-
     """Test case for program simulation"""
 
     @mark.parametrize("prog_file, proc_file, util_info", _SIM_CASES)
@@ -427,7 +421,6 @@ class TestSim:
 
 
 class TestStall:
-
     """Test case for stalled instructions"""
 
     def test_internal_stall_is_detected(self):
@@ -476,7 +469,6 @@ class TestStall:
 
 
 class TestStallErr:
-
     """Test case for stall error details"""
 
     def test_util_tbl_exists_in_StallError(  # pylint: disable=invalid-name

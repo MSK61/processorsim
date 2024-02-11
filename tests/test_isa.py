@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -50,7 +50,6 @@ from str_utils import ICaseString
 
 
 class TestDupInstr:
-
     """Test case for loading duplicate instructions"""
 
     # pylint: disable-next=invalid-name
@@ -77,7 +76,6 @@ class TestDupInstr:
 
 
 class TestIsa:
-
     """Test case for loading instruction sets"""
 
     # pylint: disable-next=invalid-name

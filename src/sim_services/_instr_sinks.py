@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -60,7 +60,6 @@ from . import _utils
 
 @frozen
 class HostedInstr:
-
     """Instruction hosted inside a functional unit"""
 
     host: ICaseString
@@ -70,7 +69,6 @@ class HostedInstr:
 
 @attr.mutable
 class InstrMovStatus:
-
     """Status of moving instructions"""
 
     moved: list[HostedInstr] = field(factory=list)
@@ -79,7 +77,6 @@ class InstrMovStatus:
 
 
 class IInstrSink(abc.ABC):
-
     """Instruction sink"""
 
     def fill_unit(
@@ -190,7 +187,6 @@ class IInstrSink(abc.ABC):
 
 @frozen
 class OutSink(IInstrSink):
-
     """Dummy sink for flushing output ports"""
 
     def _accepts_cap(self, _: int) -> typing.Literal[True]:
@@ -246,7 +242,6 @@ class OutSink(IInstrSink):
 
 @frozen
 class UnitSink(IInstrSink):
-
     """Instruction sink wrapper for functional units"""
 
     def _accepts_cap(self, instr: int) -> bool:

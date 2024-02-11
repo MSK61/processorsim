@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -47,7 +47,6 @@ import str_utils
 
 
 class TestAbilities:
-
     """Test case for extracting processor capabilities"""
 
     @pytest.mark.parametrize(

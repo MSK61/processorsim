@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.74.2, python 3.11.1, Fedora release
-#               37 (Thirty Seven)
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -187,7 +187,6 @@ def read_prog_file(file_name):
 
 
 class ValInStrCheck:
-
     """Verification point for checking a string contains a value"""
 
     def __init__(self, real_val, exp_val):
