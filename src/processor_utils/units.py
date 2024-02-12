@@ -200,7 +200,7 @@ class FuncUnit:
 
         """
         pair_attrs = (
-            tuple(
+            (
                 attr_get_func(unit)
                 for attr_get_func in [Self.model(), Self.predecessors()]
             )
