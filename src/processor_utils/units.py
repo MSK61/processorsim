@@ -98,13 +98,13 @@ class UnitModel:
         """
         return cap in self._mem_acl
 
-    name: ICaseString = field()
+    name: ICaseString
 
-    width: int = field()
+    width: int
 
     capabilities: tuple[ICaseString, ...] = field(converter=_sorted_caps)
 
-    lock_info: LockInfo = field()
+    lock_info: LockInfo
 
     _mem_acl: tuple[object, ...] = field(converter=sorted_tuple)
 

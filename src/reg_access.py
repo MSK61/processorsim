@@ -59,7 +59,7 @@ class AccessType(enum.Enum):
 class AccessGroup:
     """Access group"""
 
-    access_type: object = field()
+    access_type: object
 
     reqs: abc.MutableSet[object] = field(converter=set, factory=set)
 

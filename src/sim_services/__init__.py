@@ -104,7 +104,7 @@ class StallError(errors.SimErrorBase):
 class HwSpec:
     """Hardware specification"""
 
-    processor_desc: ProcessorDesc = field()
+    processor_desc: ProcessorDesc
 
     name_unit_map: dict[ICaseString, UnitModel] = field(init=False)
 
@@ -158,7 +158,7 @@ class _AcceptStatus:
 
     accepted: object = field(default=True, init=False)
 
-    mem_used: object = field()
+    mem_used: object
 
 
 @mutable
