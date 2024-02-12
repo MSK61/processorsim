@@ -103,7 +103,7 @@ class _IndexedSetBase(abc.ABC, Generic[_T]):
         """
         self._std_form_map[self._index_func(elem)] = elem
 
-    _index_func: Callable[[_T], object] = field()
+    _index_func: Callable[[_T], object]
 
     _std_form_map: dict[object, _T] = field(factory=dict, init=False)
 

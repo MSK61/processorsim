@@ -43,7 +43,8 @@ from collections.abc import Iterable
 import operator
 from typing import Any, cast, Final
 
-from attr import field, frozen
+import attr
+from attr import frozen
 from fastcore.foundation import Self
 
 import container_utils
@@ -212,6 +213,6 @@ class FuncUnit:
             map(operator.is_, self.predecessors, other.predecessors)
         )
 
-    model: UnitModel = field()
+    model: UnitModel
 
-    predecessors: tuple[UnitModel, ...] = field(converter=sorted_models)
+    predecessors: tuple[UnitModel, ...] = attr.field(converter=sorted_models)
