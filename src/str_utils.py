@@ -39,11 +39,10 @@
 ############################################################
 
 import collections.abc
-import functools
-import operator
-from typing import Any
 
 import attr
+
+_GET_CANONICAL = str.lower
 
 
 def format_obj(
@@ -59,8 +58,7 @@ def format_obj(
     return f"{cls_name}({sep.join(field_strings)})"
 
 
-@functools.total_ordering
-@attr.frozen(eq=False)
+@attr.frozen(order=True)
 class ICaseString:
     """Case-insensitive string"""
 
@@ -71,33 +69,7 @@ class ICaseString:
         `item` is the substring to search for.
 
         """
-        return self._canonical(item) in self._canonical(self.raw_str)
-
-    def __eq__(self, other: Any) -> Any:
-        """Test if the two case-insensitive strings are identical.
-
-        `self` is this case-insensitive string.
-        `other` is the other case-insensitive string.
-
-        """
-        return operator.eq(*(self._get_canonical(other.raw_str)))
-
-    def __hash__(self) -> int:
-        """Get the has value of this case-insensitive string.
-
-        `self` is this case-insensitive string.
-
-        """
-        return hash(self._canonical(self.raw_str))
-
-    def __lt__(self, other: "ICaseString") -> Any:
-        """Test if this case-insensitive string is less than the other.
-
-        `self` is this case-insensitive string.
-        `other` is the other case-insensitive string.
-
-        """
-        return operator.lt(*(self._get_canonical(other.raw_str)))
+        return _GET_CANONICAL(item) in _GET_CANONICAL(self.raw_str)
 
     def __radd__(self, other: str) -> str:
         """Return the reflected concatenation result.
@@ -116,15 +88,4 @@ class ICaseString:
         """
         return self.raw_str
 
-    def _get_canonical(self, other: str) -> "map[str]":
-        """Return the canonical forms of this and the other strings.
-
-        `self` is this case-insensitive string.
-        `other` is the other string.
-
-        """
-        return map(self._canonical, [self.raw_str, other])
-
-    raw_str: str
-
-    _canonical = staticmethod(str.lower)
+    raw_str: str = attr.field(eq=_GET_CANONICAL, order=_GET_CANONICAL)
