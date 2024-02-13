@@ -40,6 +40,7 @@
 
 from os.path import join
 
+import fastcore.foundation
 import yaml
 
 import test_env
@@ -104,6 +105,7 @@ def chk_two_units(proc_dir, proc_file):
     proc_desc = read_proc_file(proc_dir, proc_file)
     alu_cap = ICaseString("ALU")
     out_unit = ICaseString("output")
+    model2_getter = fastcore.foundation.Self.model2()
     assert proc_desc == ProcessorDesc(
         [
             UnitModel(
@@ -112,8 +114,10 @@ def chk_two_units(proc_dir, proc_file):
         ],
         [
             processor_utils.units.FuncUnit(
-                UnitModel(out_unit, 1, [alu_cap], LockInfo(False, True), []),
-                proc_desc.in_ports,
+                UnitModel(
+                    out_unit, 1, [alu_cap], LockInfo(False, True), []
+                ).model2,
+                map(model2_getter, proc_desc.in_ports),
             )
         ],
         [],

@@ -42,6 +42,7 @@
 from itertools import starmap
 from logging import WARNING
 
+from fastcore import foundation
 import more_itertools
 import pytest
 
@@ -72,6 +73,7 @@ class TestClean:
         )
         out1_unit = ICaseString("output 1")
         alu_cap = ICaseString("ALU")
+        model2_getter = foundation.Self.model2()
         assert proc_desc == ProcessorDesc(
             [
                 UnitModel(
@@ -86,8 +88,8 @@ class TestClean:
                 FuncUnit(
                     UnitModel(
                         out1_unit, 1, [alu_cap], LockInfo(False, True), []
-                    ),
-                    proc_desc.in_ports,
+                    ).model2,
+                    map(model2_getter, proc_desc.in_ports),
                 )
             ],
             [],
@@ -146,13 +148,13 @@ class TestEdgeRemoval:
             ),
         )
         wr_lock = LockInfo(False, True)
+        in_ports = map(foundation.Self.model2(), proc_desc.in_ports)
         out_units = starmap(
             lambda name, categ, in_unit: FuncUnit(
-                UnitModel(name, 1, [categ], wr_lock, []),
+                UnitModel(name, 1, [categ], wr_lock, []).model2,
                 [
                     more_itertools.first_true(
-                        proc_desc.in_ports,
-                        pred=lambda in_port: in_port.name == in_unit,
+                        in_ports, pred=lambda in_port: in_port.name == in_unit
                     )
                 ],
             ),

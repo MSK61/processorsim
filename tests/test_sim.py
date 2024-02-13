@@ -41,7 +41,7 @@
 
 from itertools import chain, starmap
 
-import fastcore.foundation
+from fastcore import foundation
 import more_itertools
 import pydash
 import pytest
@@ -192,11 +192,11 @@ class TestFlow:
                 ["ALU", "MEM"],
                 LockInfo(False, True),
                 [],
-            ),
-            in_units,
+            ).model2,
+            map(foundation.Self.model2(), in_units),
         )
         assert simulate(
-            fastcore.foundation.mapt(
+            foundation.mapt(
                 pydash.spread(HwInstruction),
                 [[[], "R12", "MEM"], [["R11", "R15"], "R14", "ALU"]],
             ),
@@ -243,7 +243,7 @@ class TestInSort:
         )
         proc_desc = ProcessorDesc(
             [in_unit],
-            [FuncUnit(out_unit, [in_unit])],
+            [FuncUnit(out_unit.model2, [in_unit.model2])],
             [
                 UnitModel(
                     ICaseString("input 2"),
@@ -450,9 +450,9 @@ class TestStall:
         )
         proc_desc = ProcessorDesc(
             [in_unit],
-            [FuncUnit(out_unit, [mid])],
+            [FuncUnit(out_unit.model2, [mid.model2])],
             [],
-            [FuncUnit(mid, [in_unit])],
+            [FuncUnit(mid.model2, [in_unit.model2])],
         )
         assert simulate(
             [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
@@ -495,11 +495,16 @@ class TestStallErr:
                 ("output", True, True),
             ]
         )
+        model2_getter = foundation.Self.model2()
         proc_desc = ProcessorDesc(
             [long_input, short_input],
-            [FuncUnit(out_unit, [mid, short_input])],
+            [
+                FuncUnit(
+                    out_unit.model2, map(model2_getter, [mid, short_input])
+                )
+            ],
             [],
-            [FuncUnit(mid, [long_input])],
+            [FuncUnit(mid.model2, [long_input.model2])],
         )
         cp_util_lst = [
             {
@@ -538,12 +543,17 @@ def _make_proc_desc(units_desc):
         )
         for name, width, rd_lock, wr_lock in units_desc
     )
+    model2_getter = foundation.Self.model2()
     return ProcessorDesc(
         [big_input, small_input1, small_input2],
-        [FuncUnit(out_unit, [big_input, mid2])],
+        [FuncUnit(out_unit.model2, map(model2_getter, [big_input, mid2]))],
         [],
         starmap(
-            FuncUnit, [[mid2, [mid1, small_input2]], [mid1, [small_input1]]]
+            FuncUnit,
+            [
+                [mid2.model2, map(model2_getter, [mid1, small_input2])],
+                [mid1.model2, [small_input1.model2]],
+            ],
         ),
     )
 

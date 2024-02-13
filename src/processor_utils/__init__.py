@@ -446,6 +446,20 @@ def _get_preds(
     return foundation.map_ex(processor.predecessors(unit), unit_map, gen=True)
 
 
+def _get_preds2(
+    processor: DiGraph, unit: object, unit_map: Any
+) -> "map[object]":
+    """Retrieve the predecessor units of the given unit.
+
+    `processor` is the processor containing the unit.
+    `unit` is the unit to retrieve whose predecessors.
+    `unit_map` is the mapping between names and units.
+    The function returns an iterator over predecessor units.
+
+    """
+    return map(foundation.Self.model2(), _get_preds(processor, unit, unit_map))
+
+
 def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
     """Create units for the given processor graph.
 
@@ -458,7 +472,7 @@ def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
         unit: _get_unit_entry(unit, graph.nodes[unit]) for unit in graph
     }
     return (
-        FuncUnit(unit_map[name], _get_preds(graph, name, unit_map))
+        FuncUnit(unit_map[name].model2, _get_preds2(graph, name, unit_map))
         for name in graph
     )
 
@@ -699,10 +713,10 @@ def _make_processor(proc_graph: DiGraph) -> ProcessorDesc:
                 out_ports.append(unit)
 
             case False, True:
-                in_ports.append(unit.model)
+                in_ports.append(unit.model.model)
 
             case _:
-                in_out_ports.append(unit.model)
+                in_out_ports.append(unit.model.model)
 
     return ProcessorDesc(in_ports, out_ports, in_out_ports, internal_units)
 

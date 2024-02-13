@@ -41,15 +41,16 @@
 from collections import abc
 from collections.abc import Iterable
 import operator
+import typing
 from typing import Any, cast, Final
 
-import attr
-from attr import frozen
+from attr import field, frozen
 from fastcore import foundation
 
 import container_utils
 from str_utils import ICaseString
 
+_T = typing.TypeVar("_T")
 # unit attributes
 UNIT_CAPS_KEY: Final = "capabilities"
 UNIT_MEM_KEY: Final = "memoryAccess"
@@ -76,28 +77,6 @@ class LockInfo:
     rd_lock: object
 
     wr_lock: object
-
-
-@frozen
-class _UnitModel2:
-    """Functional unit model"""
-
-    def needs_mem(self, cap: ICaseString) -> bool:
-        """Test if the given capability will require memory access.
-
-        `self` is this unit model.
-        `cap` is the capabilitiy to check.
-
-        """
-        return cast(bool, self.roles[cap])
-
-    name: ICaseString
-
-    width: int
-
-    roles: abc.Mapping[ICaseString, object]
-
-    lock_info: LockInfo
 
 
 # Looks like mypy can't honor auto_detect=True in attr.frozen so I have
@@ -130,7 +109,8 @@ class UnitModel:
         # method.
         # pylint: disable-next=no-member
         self.__attrs_init__(  # type: ignore[reportGeneralTypeIssues]
-            _UnitModel2(
+            UnitModel2(
+                self,
                 name,
                 width,
                 {cap: cap in mem_acl for cap in capabilities},
@@ -145,7 +125,7 @@ class UnitModel:
         `cap` is the capabilitiy to check.
 
         """
-        return cap in self._model2.roles and self._model2.needs_mem(
+        return cap in self.model2.roles and self.model2.needs_mem(
             cast(ICaseString, cap)
         )
 
@@ -156,7 +136,7 @@ class UnitModel:
         `self` is this unit model.
 
         """
-        return self._model2.roles.keys()
+        return self.model2.roles.keys()
 
     @property
     def lock_info(self) -> LockInfo:
@@ -165,7 +145,7 @@ class UnitModel:
         `self` is this unit model.
 
         """
-        return self._model2.lock_info
+        return self.model2.lock_info
 
     @property
     def name(self) -> ICaseString:
@@ -174,7 +154,7 @@ class UnitModel:
         `self` is this unit model.
 
         """
-        return self._model2.name
+        return self.model2.name
 
     @property
     def width(self) -> int:
@@ -183,9 +163,33 @@ class UnitModel:
         `self` is this unit model.
 
         """
-        return self._model2.width
+        return self.model2.width
 
-    _model2: _UnitModel2
+    model2: "UnitModel2"
+
+
+@frozen
+class UnitModel2:
+    """Functional unit model"""
+
+    def needs_mem(self, cap: ICaseString) -> bool:
+        """Test if the given capability will require memory access.
+
+        `self` is this unit model.
+        `cap` is the capabilitiy to check.
+
+        """
+        return cast(bool, self.roles[cap])
+
+    model: UnitModel = field(eq=False, repr=False)
+
+    name: ICaseString
+
+    width: int
+
+    roles: abc.Mapping[ICaseString, object]
+
+    lock_info: LockInfo
 
 
 @frozen(eq=False)
@@ -216,6 +220,6 @@ class FuncUnit:
             map(operator.is_, self.predecessors, other.predecessors)
         )
 
-    model: UnitModel
+    model: UnitModel2
 
-    predecessors: tuple[UnitModel, ...] = attr.field(converter=sorted_models)
+    predecessors: tuple[UnitModel2, ...] = field(converter=sorted_models)

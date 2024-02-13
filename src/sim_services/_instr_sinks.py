@@ -252,7 +252,7 @@ class UnitSink(IInstrSink):
                 capability.
 
         """
-        return self.program[instr].categ in self.unit.model.capabilities
+        return self.program[instr].categ in self.unit.model.model.capabilities
 
     def _fill(
         self,
@@ -345,7 +345,7 @@ def _mov_candidate(
         candid = next(candid_iter)
     except StopIteration:
         return False
-    mem_access = unit_sink.unit.model.needs_mem(
+    mem_access = unit_sink.unit.model.model.needs_mem(
         unit_sink.program[
             util_info[candid.host][candid.index_in_host].instr
         ].categ

@@ -39,6 +39,7 @@
 #
 ############################################################
 
+import fastcore.foundation
 import pytest
 from pytest import mark
 
@@ -64,9 +65,11 @@ class TestProcessors:
         alu_cap = ICaseString("ALU")
         wr_lock = LockInfo(False, True)
         out_ports = tuple(
-            FuncUnit(UnitModel(name, 1, [alu_cap], wr_lock, []), predecessors)
+            FuncUnit(
+                UnitModel(name, 1, [alu_cap], wr_lock, []).model2, predecessors
+            )
             for name, predecessors in [
-                (ICaseString("output 1"), proc_desc.in_ports),
+                (ICaseString("output 1"), _get_models2(proc_desc.in_ports)),
                 (
                     ICaseString("output 2"),
                     (unit.model for unit in proc_desc.internal_units),
@@ -81,7 +84,7 @@ class TestProcessors:
             [UnitModel(in_unit, 1, [alu_cap], LockInfo(True, False), [])],
             out_ports,
             [],
-            [FuncUnit(internal_unit, proc_desc.in_ports)],
+            [FuncUnit(internal_unit.model2, _get_models2(proc_desc.in_ports))],
         )
 
     @mark.parametrize(
@@ -123,6 +126,15 @@ class TestProcessors:
 
         """
         read_proc_file("processors", in_file)
+
+
+def _get_models2(models):
+    """Retrieve the UnitModel2 version of the given models.
+
+    `models` are the UnitModel units to convert.
+
+    """
+    return map(fastcore.foundation.Self.model2(), models)
 
 
 def main():

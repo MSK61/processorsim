@@ -253,7 +253,8 @@ class TestHazards:
             for name, width, mem_access in in_params.out_unit_params
         )
         out_units = (
-            units.FuncUnit(out_unit, [in_unit]) for out_unit in out_units
+            units.FuncUnit(out_unit.model2, [in_unit.model2])
+            for out_unit in out_units
         )
         cp1_util = {
             ICaseString("input"): map(

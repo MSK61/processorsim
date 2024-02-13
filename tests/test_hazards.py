@@ -112,8 +112,8 @@ class TestInstrOffer:
                 ["ALU", "MEM"],
                 LockInfo(False, True),
                 ["MEM"],
-            ),
-            [in_unit],
+            ).model2,
+            [in_unit.model2],
         )
         assert simulate(
             [
@@ -159,8 +159,8 @@ class TestMemAccess:
                 ["ALU", "MEM"],
                 LockInfo(False, True),
                 ["MEM"],
-            ),
-            [in_unit],
+            ).model2,
+            [in_unit.model2],
         )
         assert simulate(
             [
@@ -216,9 +216,9 @@ class TestRaw:
         )
         proc_desc = ProcessorDesc(
             [in_unit],
-            [FuncUnit(out_unit, [mid])],
+            [FuncUnit(out_unit.model2, [mid.model2])],
             [],
-            [FuncUnit(mid, [in_unit])],
+            [FuncUnit(mid.model2, [in_unit.model2])],
         )
         assert simulate(
             [
@@ -267,8 +267,8 @@ class TestUnifiedMem:
                 ["ALU", "MEM"],
                 LockInfo(False, True),
                 ["MEM"],
-            ),
-            [in_unit],
+            ).model2,
+            [in_unit.model2],
         )
         assert simulate(
             [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
@@ -301,8 +301,8 @@ class TestWar:
         out_unit = FuncUnit(
             UnitModel(
                 ICaseString("output"), 1, ["ALU"], LockInfo(True, True), []
-            ),
-            [in_unit],
+            ).model2,
+            [in_unit.model2],
         )
         assert simulate(
             [

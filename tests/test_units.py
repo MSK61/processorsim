@@ -155,10 +155,10 @@ class TestPostOrder:
         )
         assert ProcessorDesc(
             [in_unit],
-            [FuncUnit(out_unit, [mid3_unit])],
+            [FuncUnit(out_unit.model2, [mid3_unit.model2])],
             [],
             (
-                FuncUnit(model, [pred])
+                FuncUnit(model.model2, [pred.model2])
                 for model, pred in [
                     (mid1_unit, in_unit),
                     (mid3_unit, mid2_unit),
@@ -166,7 +166,7 @@ class TestPostOrder:
                 ]
             ),
         ).internal_units == tuple(
-            FuncUnit(model, [pred])
+            FuncUnit(model.model2, [pred.model2])
             for model, pred in [
                 (mid3_unit, mid2_unit),
                 (mid2_unit, mid1_unit),
