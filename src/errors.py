@@ -72,7 +72,7 @@ class ElementValue:
     """
 
     @classmethod
-    def create_simple(cls, val: object) -> "ElementValue":
+    def create_simple(cls, val: object) -> typing.Self:
         """Create an element value.
 
         `cls` is the element value class.

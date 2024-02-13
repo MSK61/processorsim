@@ -53,8 +53,7 @@ import typing
 from typing import Any, TypeVar
 
 from attr import frozen
-import fastcore.foundation
-from fastcore.foundation import Self
+from fastcore import foundation
 import more_itertools
 from more_itertools import one
 import networkx
@@ -150,9 +149,7 @@ class _PathDescriptor:
     """Path descriptor in multi-lock analysis"""
 
     @classmethod
-    def make_read_desc(
-        cls, capability: object, start: object
-    ) -> "_PathDescriptor":
+    def make_read_desc(cls, capability: object, start: object) -> typing.Self:
         """Create a read lock path description.
 
         `cls` is the created object class.
@@ -160,12 +157,10 @@ class _PathDescriptor:
         `start` is the path start unit.
 
         """
-        return cls(Self.read_lock(), "read", capability, start)
+        return cls(foundation.Self.read_lock(), "read", capability, start)
 
     @classmethod
-    def make_write_desc(
-        cls, capability: object, start: object
-    ) -> "_PathDescriptor":
+    def make_write_desc(cls, capability: object, start: object) -> typing.Self:
         """Create a write lock path description.
 
         `cls` is the created object class.
@@ -173,7 +168,7 @@ class _PathDescriptor:
         `start` is the path start unit.
 
         """
-        return cls(Self.write_lock(), "write", capability, start)
+        return cls(foundation.Self.write_lock(), "write", capability, start)
 
     selector: Callable[[_SatInfo], int]
 
@@ -597,7 +592,7 @@ def _get_anal_graph(processor: Graph) -> DiGraph:
         _update_graph(idx, unit, processor, width_graph, new_nodes)
 
     width_graph.add_edges_from(
-        fastcore.foundation.map_ex(edge, new_nodes) for edge in processor.edges
+        foundation.map_ex(edge, new_nodes) for edge in processor.edges
     )
     return width_graph
 

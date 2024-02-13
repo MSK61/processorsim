@@ -44,6 +44,7 @@ import collections.abc
 from collections.abc import Callable, Iterable
 from itertools import starmap
 from operator import eq, itemgetter
+import typing
 from typing import Any, Generic, Optional, TypeVar
 
 from attr import field, frozen
@@ -142,7 +143,7 @@ class SelfIndexSet(_IndexedSetBase[_T]):
         super().__init__(pydash.identity)
 
     @classmethod
-    def create(cls, elems: Iterable[_T]) -> "SelfIndexSet[_T]":
+    def create(cls, elems: Iterable[_T]) -> typing.Self:
         """Create a self-indexed set from elements.
 
         `cls` is the self-indexed set class.
