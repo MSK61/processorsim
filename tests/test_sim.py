@@ -185,17 +185,22 @@ class TestFlow:
             UnitModel(ICaseString(name), 1, [categ], LockInfo(True, False), [])
             for name, categ in [("ALU input", "ALU"), ("MEM input", "MEM")]
         ]
-        out_unit = UnitModel(
-            ICaseString("output"), 1, ["ALU", "MEM"], LockInfo(False, True), []
+        out_unit = FuncUnit(
+            UnitModel(
+                ICaseString("output"),
+                1,
+                ["ALU", "MEM"],
+                LockInfo(False, True),
+                [],
+            ),
+            in_units,
         )
         assert simulate(
             fastcore.foundation.mapt(
                 pydash.spread(HwInstruction),
                 [[[], "R12", "MEM"], [["R11", "R15"], "R14", "ALU"]],
             ),
-            HwSpec(
-                ProcessorDesc(in_units, [FuncUnit(out_unit, in_units)], [], [])
-            ),
+            HwSpec(ProcessorDesc(in_units, [out_unit], [], [])),
         ) == [
             BagValDict(inst_util)
             for inst_util in [
@@ -490,6 +495,12 @@ class TestStallErr:
                 ("output", True, True),
             ]
         )
+        proc_desc = ProcessorDesc(
+            [long_input, short_input],
+            [FuncUnit(out_unit, [mid, short_input])],
+            [],
+            [FuncUnit(mid, [long_input])],
+        )
         cp_util_lst = [
             {
                 ICaseString("long input"): [InstrState(0)],
@@ -511,14 +522,7 @@ class TestStallErr:
                 create_hw_instr(instr_regs, "ALU")
                 for instr_regs in [[[], "R1"], [["R1"], "R2"]]
             ],
-            HwSpec(
-                ProcessorDesc(
-                    [long_input, short_input],
-                    [FuncUnit(out_unit, [mid, short_input])],
-                    [],
-                    [FuncUnit(mid, [long_input])],
-                )
-            ),
+            HwSpec(proc_desc),
         ).value.processor_state == list(map(BagValDict, cp_util_lst))
 
 
