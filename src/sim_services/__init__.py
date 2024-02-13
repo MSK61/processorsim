@@ -54,7 +54,7 @@ import typing
 from typing import Any, TypeVar
 
 from attr import field, frozen, mutable
-from fastcore.foundation import Self
+from fastcore import foundation
 import more_itertools
 
 from container_utils import BagValDict
@@ -121,7 +121,7 @@ class HwSpec:
             self.processor_desc.in_ports,
             self.processor_desc.in_out_ports,
             map(
-                Self.model(),
+                foundation.Self.model(),
                 chain(
                     self.processor_desc.out_ports,
                     self.processor_desc.internal_units,
@@ -599,7 +599,9 @@ def _fill_unit(
     """
     mov_res = unit.fill_unit(util_info, mem_busy)
     _clr_src_units(
-        sorted(mov_res.moved, key=Self.index_in_host(), reverse=True),
+        sorted(
+            mov_res.moved, key=foundation.Self.index_in_host(), reverse=True
+        ),
         util_info,
     )
     return mov_res.mem_used
@@ -614,7 +616,7 @@ def _get_out_ports(processor: ProcessorDesc) -> "map[ICaseString]":
 
     """
     return map(
-        Self.name(),
+        foundation.Self.name(),
         chain(
             processor.in_out_ports,
             (port.model for port in processor.out_ports),

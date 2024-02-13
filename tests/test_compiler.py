@@ -42,7 +42,7 @@
 import itertools
 from logging import WARNING
 
-from fastcore.foundation import Self
+from fastcore import foundation
 import pytest
 from pytest import mark, raises
 
@@ -251,8 +251,8 @@ class TestSynErrors:
         chk_points = (
             test_utils.ValInStrCheck(val_getter(syn_err), exp_val)
             for val_getter, exp_val in [
-                (Self.instr(), instr),
-                (Self.line(), line_num),
+                (foundation.Self.instr(), instr),
+                (foundation.Self.line(), line_num),
             ]
         )
         test_utils.chk_error(chk_points, syn_err)

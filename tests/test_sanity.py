@@ -40,7 +40,7 @@
 ############################################################
 
 from attr import frozen
-from fastcore.foundation import Self
+from fastcore import foundation
 import networkx
 import pytest
 from pytest import mark, raises
@@ -245,8 +245,8 @@ class TestWidth:
             "inputPortWithUnconsumedCapability.yaml",
         )
         chk_params = [
-            ("Capability", Self.capability(), "Capability MEM"),
-            ("port", Self.port(), "port input"),
+            ("Capability", foundation.Self.capability(), "Capability MEM"),
+            ("port", foundation.Self.port(), "port input"),
         ]
         chk_error(
             (

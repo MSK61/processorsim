@@ -39,7 +39,7 @@
 #
 ############################################################
 
-from fastcore.foundation import Self
+from fastcore import foundation
 import pytest
 
 import test_utils
@@ -81,8 +81,8 @@ class TestDupName:
                 elem_getter(ex_chk.value), ICaseString(unit)
             )
             for elem_getter, unit in [
-                (Self.new_element(), dup_unit),
-                (Self.old_element(), "full system"),
+                (foundation.Self.new_element(), dup_unit),
+                (foundation.Self.old_element(), "full system"),
             ]
         )
         test_utils.chk_error(chk_points, ex_chk.value)

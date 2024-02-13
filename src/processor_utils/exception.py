@@ -42,7 +42,8 @@
 from typing import Final
 
 from attr import field, frozen
-from fastcore.foundation import mapt, Self
+from fastcore import foundation
+from fastcore.foundation import mapt
 from pydash import spread
 
 from errors import ElementValue, ErrorElement, EXCEPTION, SimErrorBase
@@ -277,7 +278,10 @@ class BlockedCapError(SimErrorBase):
         return ElementValue(
             *(
                 attr_getter(comp)
-                for attr_getter in [Self.reporting_name(), Self.std_name()]
+                for attr_getter in [
+                    foundation.Self.reporting_name(),
+                    foundation.Self.std_name(),
+                ]
             )
         )
 

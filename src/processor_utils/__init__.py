@@ -55,8 +55,8 @@ import typing
 from typing import Any, TypeVar
 
 from attr import field, frozen
-import fastcore.foundation
-from fastcore.foundation import compose, mapt, Self
+from fastcore import foundation
+from fastcore.foundation import compose, mapt
 import networkx
 from networkx import DiGraph, Graph
 
@@ -333,7 +333,7 @@ def _chk_unit_width(unit: Mapping[str, int]) -> None:
             f"Functional unit ${BadWidthError.UNIT_KEY} has a bad width "
             f"${BadWidthError.WIDTH_KEY}.",
             *(
-                fastcore.foundation.map_ex(
+                foundation.map_ex(
                     [UNIT_NAME_KEY, UNIT_WIDTH_KEY], unit, gen=True
                 )
             ),
@@ -356,7 +356,7 @@ def _create_graph(
     edge_registry = IndexedSet[Collection[str]](
         lambda edge: mapt(compose(ICaseString, unit_registry.get), edge)
     )
-    cap_registry = IndexedSet[_CapabilityInfo](Self.name())
+    cap_registry = IndexedSet[_CapabilityInfo](foundation.Self.name())
 
     for cur_unit in hw_units:
         _add_unit(flow_graph, cur_unit, unit_registry, cap_registry)
@@ -443,9 +443,7 @@ def _get_preds(
     The function returns an iterator over predecessor units.
 
     """
-    return fastcore.foundation.map_ex(
-        processor.predecessors(unit), unit_map, gen=True
-    )
+    return foundation.map_ex(processor.predecessors(unit), unit_map, gen=True)
 
 
 def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
@@ -487,9 +485,7 @@ def _get_unit_entry(name: ICaseString, attrs: Mapping[str, Any]) -> UnitModel:
     The function returns the unit model.
 
     """
-    lock_attrs = fastcore.foundation.map_ex(
-        [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY], attrs
-    )
+    lock_attrs = foundation.map_ex([UNIT_RLOCK_KEY, UNIT_WLOCK_KEY], attrs)
     return UnitModel(
         name,
         attrs[UNIT_WIDTH_KEY],
@@ -620,7 +616,9 @@ def _sorted_units(hw_units: Iterable[Any]) -> tuple[Any, ...]:
     `hw_units` are the units to sort.
 
     """
-    return container_utils.sorted_tuple(hw_units, key=Self.model.name())
+    return container_utils.sorted_tuple(
+        hw_units, key=foundation.Self.model.name()
+    )
 
 
 @frozen

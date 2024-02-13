@@ -39,7 +39,7 @@
 #
 ############################################################
 
-from fastcore.foundation import Self
+from fastcore import foundation
 import pytest
 from pytest import raises
 
@@ -68,8 +68,8 @@ class TestDupInstr:
         chk_points = (
             ValInStrCheck(elem_getter(ex_chk.value), ICaseString(unit))
             for elem_getter, unit in [
-                (Self.new_element(), "add"),
-                (Self.old_element(), "ADD"),
+                (foundation.Self.new_element(), "add"),
+                (foundation.Self.old_element(), "ADD"),
             ]
         )
         chk_error(chk_points, ex_chk.value)
