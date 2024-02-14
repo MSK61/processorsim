@@ -140,7 +140,9 @@ class TestDupCap:
         )
         assert read_proc_file(
             "capabilities", in_file
-        ) == processor_utils.ProcessorDesc([], [], processor, [])
+        ) == processor_utils.ProcessorDesc(
+            [], [], map(foundation.Self.model2(), processor), []
+        )
         chk_warn(["ALU", "core 1", "alu", "core 2"], caplog.records)
         assert ICaseString.__name__ not in caplog.records[0].getMessage()
 

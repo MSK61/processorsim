@@ -126,7 +126,7 @@ class TestExpAttr:
                     [ICaseString("ALU")],
                     LockInfo(True, True),
                     [ICaseString("ALU")],
-                )
+                ).model2
             ],
             [],
         )
@@ -154,7 +154,7 @@ class TestPostOrder:
             ]
         )
         assert ProcessorDesc(
-            [in_unit],
+            [in_unit.model2],
             [FuncUnit(out_unit.model2, [mid3_unit.model2])],
             [],
             (

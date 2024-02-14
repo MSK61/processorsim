@@ -42,7 +42,7 @@
 from itertools import starmap
 from logging import WARNING
 
-from fastcore import foundation
+import fastcore.foundation
 import more_itertools
 import pytest
 
@@ -73,7 +73,6 @@ class TestClean:
         )
         out1_unit = ICaseString("output 1")
         alu_cap = ICaseString("ALU")
-        model2_getter = foundation.Self.model2()
         assert proc_desc == ProcessorDesc(
             [
                 UnitModel(
@@ -82,14 +81,14 @@ class TestClean:
                     [alu_cap],
                     LockInfo(True, False),
                     [],
-                )
+                ).model2
             ],
             [
                 FuncUnit(
                     UnitModel(
                         out1_unit, 1, [alu_cap], LockInfo(False, True), []
                     ).model2,
-                    map(model2_getter, proc_desc.in_ports),
+                    proc_desc.in_ports,
                 )
             ],
             [],
@@ -117,7 +116,7 @@ class TestClean:
                     [ICaseString("ALU")],
                     LockInfo(True, True),
                     [],
-                )
+                ).model2
             ],
             [],
         )
@@ -148,13 +147,13 @@ class TestEdgeRemoval:
             ),
         )
         wr_lock = LockInfo(False, True)
-        in_ports = map(foundation.Self.model2(), proc_desc.in_ports)
         out_units = starmap(
             lambda name, categ, in_unit: FuncUnit(
                 UnitModel(name, 1, [categ], wr_lock, []).model2,
                 [
                     more_itertools.first_true(
-                        in_ports, pred=lambda in_port: in_port.name == in_unit
+                        proc_desc.in_ports,
+                        pred=lambda in_port: in_port.name == in_unit,
                     )
                 ],
             ),
@@ -166,7 +165,9 @@ class TestEdgeRemoval:
                 ]
             ),
         )
-        assert proc_desc == ProcessorDesc(in_units, out_units, [], [])
+        assert proc_desc == ProcessorDesc(
+            map(fastcore.foundation.Self.model2(), in_units), out_units, [], []
+        )
         chk_warn(["input 2", "output 1"], caplog.records)
 
 

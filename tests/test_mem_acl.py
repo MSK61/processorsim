@@ -86,7 +86,7 @@ class TestCapCase:
                 [ICaseString("ALU")],
                 LockInfo(True, True),
                 map(ICaseString, capabilities),
-            )
+            ).model2
             for name, capabilities in [(loaded_core, []), ("core 2", ["ALU"])]
         )
         assert load_proc_desc(
@@ -157,7 +157,7 @@ class TestPartialMem:
                     map(ICaseString, ["ALU", "MEM"]),
                     LockInfo(True, True),
                     [ICaseString("MEM")],
-                )
+                ).model2
             ],
             [],
         )
@@ -244,7 +244,7 @@ class TestStdCaseCap:
                     [ICaseString(exp_ref_cap)],
                     LockInfo(True, True),
                     [ICaseString(exp_ref_cap)],
-                )
+                ).model2
             ],
             [],
         )

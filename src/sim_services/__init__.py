@@ -128,7 +128,7 @@ class HwSpec:
                 ),
             ),
         )
-        return {unit.name: unit for unit in models}
+        return {unit.name: unit.model for unit in models}
 
 
 def simulate(
@@ -536,7 +536,12 @@ def _fill_cp_util(
     `issue_rec` is the issue record.
 
     """
-    in_units = chain(processor.in_out_ports, processor.in_ports)
+    in_units = map(
+        foundation.Self.model(),
+        processor_utils.units.sorted_models(
+            chain(processor.in_out_ports, processor.in_ports)
+        ),
+    )
     dst_units = more_itertools.prepend(
         _instr_sinks.OutSink(_get_out_ports(processor)),
         (
@@ -545,7 +550,7 @@ def _fill_cp_util(
         ),
     )
     _fill_inputs(
-        _build_cap_map(processor_utils.units.sorted_models(in_units)),
+        _build_cap_map(in_units),
         program,
         util_info,
         _mov_flights(dst_units, util_info),

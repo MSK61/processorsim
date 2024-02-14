@@ -182,7 +182,9 @@ class TestFlow:
 
         """
         in_units = [
-            UnitModel(ICaseString(name), 1, [categ], LockInfo(True, False), [])
+            UnitModel(
+                ICaseString(name), 1, [categ], LockInfo(True, False), []
+            ).model2
             for name, categ in [("ALU input", "ALU"), ("MEM input", "MEM")]
         ]
         out_unit = FuncUnit(
@@ -193,7 +195,7 @@ class TestFlow:
                 LockInfo(False, True),
                 [],
             ).model2,
-            map(foundation.Self.model2(), in_units),
+            in_units,
         )
         assert simulate(
             foundation.mapt(
@@ -242,7 +244,7 @@ class TestInSort:
             ]
         )
         proc_desc = ProcessorDesc(
-            [in_unit],
+            [in_unit.model2],
             [FuncUnit(out_unit.model2, [in_unit.model2])],
             [
                 UnitModel(
@@ -251,7 +253,7 @@ class TestInSort:
                     ["ALU"],
                     LockInfo(True, False),
                     [],
-                )
+                ).model2
             ],
             [],
         )
@@ -290,7 +292,7 @@ class TestOutputFlush:
         cores = starmap(
             lambda name, width: UnitModel(
                 ICaseString(name), width, ["ALU"], LockInfo(True, True), []
-            ),
+            ).model2,
             [("core 1", 1), ("core 2", 1 + len(extra_instr_lst))],
         )
         extra_instr_seq = range(2, last_instr)
@@ -449,7 +451,7 @@ class TestStall:
             ]
         )
         proc_desc = ProcessorDesc(
-            [in_unit],
+            [in_unit.model2],
             [FuncUnit(out_unit.model2, [mid.model2])],
             [],
             [FuncUnit(mid.model2, [in_unit.model2])],
@@ -497,7 +499,7 @@ class TestStallErr:
         )
         model2_getter = foundation.Self.model2()
         proc_desc = ProcessorDesc(
-            [long_input, short_input],
+            map(model2_getter, [long_input, short_input]),
             [
                 FuncUnit(
                     out_unit.model2, map(model2_getter, [mid, short_input])
@@ -545,7 +547,7 @@ def _make_proc_desc(units_desc):
     )
     model2_getter = foundation.Self.model2()
     return ProcessorDesc(
-        [big_input, small_input1, small_input2],
+        map(model2_getter, [big_input, small_input1, small_input2]),
         [FuncUnit(out_unit.model2, map(model2_getter, [big_input, mid2]))],
         [],
         starmap(

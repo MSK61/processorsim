@@ -71,7 +71,7 @@ class TestMemUtil:
         )
         assert simulate(
             [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
-            HwSpec(ProcessorDesc([], [], [full_sys_unit], [])),
+            HwSpec(ProcessorDesc([], [], [full_sys_unit.model2], [])),
         ) == [
             BagValDict({ICaseString("full system"): [InstrState(instr)]})
             for instr in [0, 1]
@@ -263,7 +263,7 @@ class TestHazards:
         }
         assert simulate(
             [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
-            HwSpec(ProcessorDesc([in_unit], out_units, [], [])),
+            HwSpec(ProcessorDesc([in_unit.model2], out_units, [], [])),
         ) == list(
             map(
                 BagValDict,

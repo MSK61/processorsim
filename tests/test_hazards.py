@@ -77,7 +77,7 @@ class TestDataHazards:
         )
         assert simulate(
             [create_hw_instr(regs, "ALU") for regs in instr_regs],
-            HwSpec(ProcessorDesc([], [], [full_sys_unit], [])),
+            HwSpec(ProcessorDesc([], [], [full_sys_unit.model2], [])),
         ) == [
             BagValDict(cp_util)
             for cp_util in [
@@ -124,7 +124,7 @@ class TestInstrOffer:
                     ["R3", "ALU"],
                 ]
             ],
-            HwSpec(ProcessorDesc([in_unit], [out_unit], [], [])),
+            HwSpec(ProcessorDesc([in_unit.model2], [out_unit], [], [])),
         ) == [
             BagValDict(cp_util)
             for cp_util in [
@@ -167,7 +167,7 @@ class TestMemAccess:
                 HwInstruction([], *instr_params)
                 for instr_params in [["R1", "MEM"], ["R2", "ALU"]]
             ],
-            HwSpec(ProcessorDesc([in_unit], [out_unit], [], [])),
+            HwSpec(ProcessorDesc([in_unit.model2], [out_unit], [], [])),
         ) == [
             BagValDict({ICaseString(unit): map(InstrState, [0, 1])})
             for unit in ["input", "output"]
@@ -191,7 +191,7 @@ class TestRar:
                 HwInstruction(["R1"], out_reg, "ALU")
                 for out_reg in ["R2", "R3"]
             ],
-            HwSpec(ProcessorDesc([], [], [full_sys_unit], [])),
+            HwSpec(ProcessorDesc([], [], [full_sys_unit.model2], [])),
         ) == [BagValDict({ICaseString(TEST_DIR): map(InstrState, [0, 1])})]
 
 
@@ -215,7 +215,7 @@ class TestRaw:
             ]
         )
         proc_desc = ProcessorDesc(
-            [in_unit],
+            [in_unit.model2],
             [FuncUnit(out_unit.model2, [mid.model2])],
             [],
             [FuncUnit(mid.model2, [in_unit.model2])],
@@ -272,7 +272,7 @@ class TestUnifiedMem:
         )
         assert simulate(
             [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
-            HwSpec(ProcessorDesc([in_unit], [out_unit], [], [])),
+            HwSpec(ProcessorDesc([in_unit.model2], [out_unit], [], [])),
         ) == [
             BagValDict(cp_util)
             for cp_util in [
@@ -309,7 +309,7 @@ class TestWar:
                 create_hw_instr(instr_regs, "ALU")
                 for instr_regs in [[["R1"], "R2"], [[], "R1"]]
             ],
-            HwSpec(ProcessorDesc([in_unit], [out_unit], [], [])),
+            HwSpec(ProcessorDesc([in_unit.model2], [out_unit], [], [])),
         ) == [
             BagValDict(cp_util)
             for cp_util in [

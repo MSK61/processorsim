@@ -39,7 +39,6 @@
 #
 ############################################################
 
-import fastcore.foundation
 import pytest
 from pytest import mark
 
@@ -48,6 +47,26 @@ from test_utils import read_proc_file
 import processor_utils
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from str_utils import ICaseString
+
+
+class TestNoError:
+    """Test case for no exceptions with valid processors"""
+
+    @mark.parametrize(
+        "in_file",
+        [
+            "oneInputTwoOutputProcessor.yaml",
+            "inputPortWithPartiallyConsumedCapability.yaml",
+        ],
+    )
+    def test_valid_processor_raises_no_exceptions(self, in_file):
+        """Test loading a valid processor raises no exceptions.
+
+        `self` is this test case.
+        `in_file` is the processor description file.
+
+        """
+        read_proc_file("processors", in_file)
 
 
 class TestProcessors:
@@ -81,7 +100,11 @@ class TestProcessors:
             ICaseString("middle"), 1, [alu_cap], LockInfo(False, False), []
         )
         assert proc_desc == processor_utils.ProcessorDesc(
-            [UnitModel(in_unit, 1, [alu_cap], LockInfo(True, False), [])],
+            [
+                UnitModel(
+                    in_unit, 1, [alu_cap], LockInfo(True, False), []
+                ).model2
+            ],
             out_ports,
             [],
             [FuncUnit(internal_unit.model2, _get_models2(proc_desc.in_ports))],
@@ -111,22 +134,6 @@ class TestProcessors:
         """
         test_utils.chk_one_unit("processors", "singleALUProcessor.yaml")
 
-    @mark.parametrize(
-        "in_file",
-        [
-            "oneInputTwoOutputProcessor.yaml",
-            "inputPortWithPartiallyConsumedCapability.yaml",
-        ],
-    )
-    def test_valid_processor_raises_no_exceptions(self, in_file):
-        """Test loading a valid processor raises no exceptions.
-
-        `self` is this test case.
-        `in_file` is the processor description file.
-
-        """
-        read_proc_file("processors", in_file)
-
 
 def _get_models2(models):
     """Retrieve the UnitModel2 version of the given models.
@@ -134,7 +141,7 @@ def _get_models2(models):
     `models` are the UnitModel units to convert.
 
     """
-    return map(fastcore.foundation.Self.model2(), models)
+    return models
 
 
 def main():

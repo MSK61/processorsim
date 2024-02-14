@@ -72,6 +72,7 @@ from .units import (
     UNIT_CAPS_KEY,
     UNIT_MEM_KEY,
     UnitModel,
+    UnitModel2,
     UNIT_NAME_KEY,
     UNIT_RLOCK_KEY,
     UNIT_WIDTH_KEY,
@@ -448,7 +449,7 @@ def _get_preds(
 
 def _get_preds2(
     processor: DiGraph, unit: object, unit_map: Any
-) -> "map[object]":
+) -> "map[str] | list[str]":
     """Retrieve the predecessor units of the given unit.
 
     `processor` is the processor containing the unit.
@@ -457,7 +458,7 @@ def _get_preds2(
     The function returns an iterator over predecessor units.
 
     """
-    return map(foundation.Self.model2(), _get_preds(processor, unit, unit_map))
+    return _get_preds(processor, unit, unit_map)
 
 
 def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
@@ -472,7 +473,7 @@ def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
         unit: _get_unit_entry(unit, graph.nodes[unit]) for unit in graph
     }
     return (
-        FuncUnit(unit_map[name].model2, _get_preds2(graph, name, unit_map))
+        FuncUnit(unit_map[name], _get_preds2(graph, name, unit_map))
         for name in graph
     )
 
@@ -491,7 +492,7 @@ def _get_std_edge(
     return (_get_unit_name(ICaseString(unit), unit_registry) for unit in edge)
 
 
-def _get_unit_entry(name: ICaseString, attrs: Mapping[str, Any]) -> UnitModel:
+def _get_unit_entry(name: ICaseString, attrs: Mapping[str, Any]) -> UnitModel2:
     """Create a unit map entry from the given attributes.
 
     `name` is the unit name.
@@ -506,7 +507,7 @@ def _get_unit_entry(name: ICaseString, attrs: Mapping[str, Any]) -> UnitModel:
         attrs[UNIT_CAPS_KEY],
         units.LockInfo(*lock_attrs),
         attrs[UNIT_MEM_KEY],
-    )
+    ).model2
 
 
 def _get_unit_graph(internal_units: Iterable[FuncUnit]) -> DiGraph:
@@ -639,12 +640,12 @@ def _sorted_units(hw_units: Iterable[Any]) -> tuple[Any, ...]:
 class ProcessorDesc:
     """Processor description"""
 
-    in_ports: tuple[UnitModel, ...] = field(converter=tuple[UnitModel, ...])
+    in_ports: tuple[UnitModel2, ...] = field(converter=tuple[UnitModel2, ...])
 
     out_ports: tuple[FuncUnit, ...] = field(converter=_sorted_units)
 
-    in_out_ports: tuple[UnitModel, ...] = field(
-        converter=tuple[UnitModel, ...]
+    in_out_ports: tuple[UnitModel2, ...] = field(
+        converter=tuple[UnitModel2, ...]
     )
 
     internal_units: tuple[FuncUnit, ...] = field(converter=_post_order)
@@ -658,7 +659,7 @@ def get_abilities(processor: ProcessorDesc) -> frozenset[ICaseString]:
     """
     in_units = chain(processor.in_out_ports, processor.in_ports)
     return frozenset(
-        chain.from_iterable(port.capabilities for port in in_units)
+        chain.from_iterable(port.model.capabilities for port in in_units)
     )
 
 
@@ -718,7 +719,12 @@ def _make_processor(proc_graph: DiGraph) -> ProcessorDesc:
             case _:
                 in_out_ports.append(unit.model.model)
 
-    return ProcessorDesc(in_ports, out_ports, in_out_ports, internal_units)
+    return ProcessorDesc(
+        map(foundation.Self.model2(), in_ports),
+        out_ports,
+        map(foundation.Self.model2(), in_out_ports),
+        internal_units,
+    )
 
 
 _add_src_path()
