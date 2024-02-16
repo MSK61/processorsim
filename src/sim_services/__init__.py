@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -60,8 +60,8 @@ import more_itertools
 from container_utils import BagValDict
 import errors
 from processor_utils import ProcessorDesc
-import processor_utils.units
-from processor_utils.units import LockInfo, UnitModel
+from processor_utils import units
+from processor_utils.units import LockInfo, UnitModel2
 from program_defs import HwInstruction
 from reg_access import AccessType, RegAccessQueue, RegAccQBuilder
 from str_utils import ICaseString
@@ -106,12 +106,12 @@ class HwSpec:
 
     processor_desc: ProcessorDesc
 
-    name_unit_map: dict[ICaseString, UnitModel] = field(init=False)
+    name_unit_map: dict[ICaseString, UnitModel2] = field(init=False)
 
     # Casting to typing.Any because pylance can't detect default as a
     # member of attr.field.
     @typing.cast(Any, name_unit_map).default
-    def _(self) -> dict[ICaseString, UnitModel]:
+    def _(self) -> dict[ICaseString, UnitModel2]:
         """Build the name-to-unit mapping.
 
         `self` is this hardware specification.
@@ -128,7 +128,7 @@ class HwSpec:
                 ),
             ),
         )
-        return {unit.name: unit.model for unit in models}
+        return {unit.name: unit for unit in models}
 
 
 def simulate(
@@ -226,7 +226,7 @@ class _TransitionUtil:
 def _accept_instr(
     issue_rec: _IssueInfo,
     instr_categ: object,
-    input_iter: Iterator[UnitModel],
+    input_iter: Iterator[UnitModel2],
     util_info: BagValDict[ICaseString, InstrState],
     accept_res: _AcceptStatus,
 ) -> None:
@@ -254,7 +254,7 @@ def _accept_instr(
 
 
 def _accept_in_unit(
-    input_iter: Iterator[UnitModel],
+    input_iter: Iterator[UnitModel2],
     instr_categ: object,
     accept_res: _AcceptStatus,
     util_info: BagValDict[ICaseString, InstrState],
@@ -276,7 +276,7 @@ def _accept_in_unit(
         unit = next(input_iter)
     except StopIteration:
         return True
-    mem_access = unit.needs_mem(instr_categ)
+    mem_access = unit.model.needs_mem(instr_categ)
 
     if _utils.mem_unavail(accept_res.mem_used, mem_access) or _utils.unit_full(
         unit.width, util_info[unit.name]
@@ -349,17 +349,17 @@ def _build_acc_plan(
 
 
 def _build_cap_map(
-    inputs: Iterable[UnitModel],
-) -> dict[object, list[UnitModel]]:
+    inputs: Iterable[UnitModel2],
+) -> dict[object, list[UnitModel2]]:
     """Build the capability map for input units.
 
     `inputs` are the input processing units.
 
     """
-    cap_map: dict[object, list[UnitModel]] = {}
+    cap_map: dict[object, list[units.UnitModel2]] = {}
 
     for unit in inputs:
-        for cap in unit.capabilities:
+        for cap in unit.model.capabilities:
             cap_map.setdefault(cap, []).append(unit)
 
     return cap_map
@@ -428,7 +428,7 @@ def _chk_full_stall(
 def _chk_hazards(
     old_util: BagValDict[_T, InstrState],
     new_util: Iterable[Iterable[Any]],
-    name_unit_map: Mapping[_T, UnitModel],
+    name_unit_map: Mapping[_T, UnitModel2],
     program: Sequence[HwInstruction],
     acc_queues: Mapping[object, RegAccessQueue],
 ) -> None:
@@ -536,11 +536,8 @@ def _fill_cp_util(
     `issue_rec` is the issue record.
 
     """
-    in_units = map(
-        foundation.Self.model(),
-        processor_utils.units.sorted_models(
-            chain(processor.in_out_ports, processor.in_ports)
-        ),
+    in_units = units.sorted_models(
+        chain(processor.in_out_ports, processor.in_ports)
     )
     dst_units = more_itertools.prepend(
         _instr_sinks.OutSink(_get_out_ports(processor)),
@@ -559,7 +556,7 @@ def _fill_cp_util(
 
 
 def _fill_inputs(
-    cap_unit_map: Mapping[object, Iterable[UnitModel]],
+    cap_unit_map: Mapping[object, Iterable[UnitModel2]],
     program: Sequence[HwInstruction],
     util_info: BagValDict[ICaseString, InstrState],
     mem_busy: object,

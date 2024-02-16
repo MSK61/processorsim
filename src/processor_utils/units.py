@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -137,33 +137,6 @@ class UnitModel:
 
         """
         return self.model2.roles.keys()
-
-    @property
-    def lock_info(self) -> LockInfo:
-        """Unit locking information
-
-        `self` is this unit model.
-
-        """
-        return self.model2.lock_info
-
-    @property
-    def name(self) -> ICaseString:
-        """Unit name
-
-        `self` is this unit model.
-
-        """
-        return self.model2.name
-
-    @property
-    def width(self) -> int:
-        """Unit width
-
-        `self` is this unit model.
-
-        """
-        return self.model2.width
 
     model2: "UnitModel2"
 
