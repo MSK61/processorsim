@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -219,6 +219,16 @@ class BagValDict(Generic[_KT, _VT]):
         """
         return format_obj(type(self).__name__, [self._format_dict()])
 
+    def items(self) -> "filter[tuple[_KT, list[_VT]]]":
+        """Filter out items with empty value lists.
+
+        `self` is this dictionary.
+        The method returns an iterator over dictionary items with
+        non-empty lists.
+
+        """
+        return filter(itemgetter(1), self._dict.items())
+
     def _format_dict(self) -> str:
         """Format this dictionary.
 
@@ -240,18 +250,6 @@ class BagValDict(Generic[_KT, _VT]):
         return ", ".join(
             starmap(lambda key, val_lst: f"{key!r}: {val_lst}", elems)
         )
-
-    def _useful_items(self) -> "filter[tuple[_KT, list[_VT]]]":
-        """Filter out items with empty value lists.
-
-        `self` is this dictionary.
-        The method returns an iterator over dictionary items with
-        non-empty lists.
-
-        """
-        return filter(itemgetter(1), self._dict.items())
-
-    items = _useful_items
 
     _dict: defaultdict[_KT, list[_VT]] = field(
         converter=_val_lst_dict, factory=dict
