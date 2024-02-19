@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -658,9 +658,7 @@ def get_abilities(processor: ProcessorDesc) -> frozenset[ICaseString]:
 
     """
     in_units = chain(processor.in_out_ports, processor.in_ports)
-    return frozenset(
-        chain.from_iterable(port.model.capabilities for port in in_units)
-    )
+    return frozenset(chain.from_iterable(port.roles for port in in_units))
 
 
 def load_proc_desc(raw_desc: Any) -> ProcessorDesc:

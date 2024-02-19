@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -252,7 +252,7 @@ class UnitSink(IInstrSink):
                 capability.
 
         """
-        return self.program[instr].categ in self.unit.model.model.capabilities
+        return self.program[instr].categ in self.unit.model.roles
 
     def _fill(
         self,

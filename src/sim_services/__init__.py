@@ -359,7 +359,7 @@ def _build_cap_map(
     cap_map: dict[object, list[units.UnitModel2]] = {}
 
     for unit in inputs:
-        for cap in unit.model.capabilities:
+        for cap in unit.roles:
             cap_map.setdefault(cap, []).append(unit)
 
     return cap_map

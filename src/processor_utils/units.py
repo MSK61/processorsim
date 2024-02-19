@@ -38,7 +38,7 @@
 #
 ############################################################
 
-from collections import abc
+import collections.abc
 from collections.abc import Iterable
 import operator
 import typing
@@ -129,15 +129,6 @@ class UnitModel:
             cast(ICaseString, cap)
         )
 
-    @property
-    def capabilities(self) -> abc.KeysView[ICaseString]:
-        """Unit capabilities
-
-        `self` is this unit model.
-
-        """
-        return self.model2.roles.keys()
-
     model2: "UnitModel2"
 
 
@@ -160,7 +151,7 @@ class UnitModel2:
 
     width: int
 
-    roles: abc.Mapping[ICaseString, object]
+    roles: collections.abc.Mapping[ICaseString, object]
 
     lock_info: LockInfo
 
