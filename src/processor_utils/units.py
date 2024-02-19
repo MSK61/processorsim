@@ -44,7 +44,8 @@ import operator
 import typing
 from typing import Any, cast, Final
 
-from attr import field, frozen
+import attr
+from attr import frozen
 from fastcore import foundation
 
 import container_utils
@@ -79,59 +80,6 @@ class LockInfo:
     wr_lock: object
 
 
-# Looks like mypy can't honor auto_detect=True in attr.frozen so I have
-# to explicitly(and redundantly) use init=False.
-@frozen(init=False)
-class UnitModel:
-    """Functional unit model"""
-
-    # pylint: disable-next=too-many-arguments
-    def __init__(
-        self,
-        name: ICaseString,
-        width: int,
-        capabilities: Iterable[Any],
-        lock_info: LockInfo,
-        mem_acl: Iterable[object],
-    ) -> None:
-        """Create a unit model.
-
-        `self` is this unit model.
-        `name` is the unit name.
-        `width` is the unit width.
-        `capabilities` are the unit capabilities.
-        `lock_info` is the locking information.
-        `mem_acl` is the memory access control list.
-
-        """
-        mem_acl = tuple(mem_acl)
-        # Pylance and pylint can't detect __attrs_init__ as an injected
-        # method.
-        # pylint: disable-next=no-member
-        self.__attrs_init__(  # type: ignore[reportGeneralTypeIssues]
-            UnitModel2(
-                self,
-                name,
-                width,
-                {cap: cap in mem_acl for cap in capabilities},
-                lock_info,
-            )
-        )
-
-    def needs_mem(self, cap: object) -> bool:
-        """Test if the given capability will require memory access.
-
-        `self` is this unit model.
-        `cap` is the capabilitiy to check.
-
-        """
-        return cap in self.model2.roles and self.model2.needs_mem(
-            cast(ICaseString, cap)
-        )
-
-    model2: "UnitModel2"
-
-
 @frozen
 class UnitModel2:
     """Functional unit model"""
@@ -144,8 +92,6 @@ class UnitModel2:
 
         """
         return cast(bool, self.roles[cap])
-
-    model: UnitModel = field(eq=False, repr=False)
 
     name: ICaseString
 
@@ -186,4 +132,45 @@ class FuncUnit:
 
     model: UnitModel2
 
-    predecessors: tuple[UnitModel2, ...] = field(converter=sorted_models)
+    predecessors: tuple[UnitModel2, ...] = attr.field(converter=sorted_models)
+
+
+# Looks like mypy can't honor auto_detect=True in attr.frozen so I have
+# to explicitly(and redundantly) use init=False.
+@frozen(init=False)
+class UnitModel:
+    """Functional unit model"""
+
+    # pylint: disable-next=too-many-arguments
+    def __init__(
+        self,
+        name: ICaseString,
+        width: int,
+        capabilities: Iterable[Any],
+        lock_info: LockInfo,
+        mem_acl: Iterable[object],
+    ) -> None:
+        """Create a unit model.
+
+        `self` is this unit model.
+        `name` is the unit name.
+        `width` is the unit width.
+        `capabilities` are the unit capabilities.
+        `lock_info` is the locking information.
+        `mem_acl` is the memory access control list.
+
+        """
+        mem_acl = tuple(mem_acl)
+        # Pylance and pylint can't detect __attrs_init__ as an injected
+        # method.
+        # pylint: disable-next=no-member
+        self.__attrs_init__(  # type: ignore[reportGeneralTypeIssues]
+            UnitModel2(
+                name,
+                width,
+                {cap: cap in mem_acl for cap in capabilities},
+                lock_info,
+            )
+        )
+
+    model2: UnitModel2

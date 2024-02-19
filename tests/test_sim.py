@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -234,9 +234,9 @@ class TestInSort:
             UnitModel(
                 ICaseString(name),
                 1,
-                ["ALU"],
+                [ICaseString("ALU")],
                 LockInfo(rd_lock, wr_lock),
-                mem_acl,
+                map(ICaseString, mem_acl),
             )
             for name, rd_lock, wr_lock, mem_acl in [
                 ("input 1", True, False, []),
@@ -250,7 +250,7 @@ class TestInSort:
                 UnitModel(
                     ICaseString("input 2"),
                     1,
-                    ["ALU"],
+                    [ICaseString("ALU")],
                     LockInfo(True, False),
                     [],
                 ).model2
@@ -258,7 +258,7 @@ class TestInSort:
             [],
         )
         assert simulate(
-            [HwInstruction([], "R1", "ALU")], HwSpec(proc_desc)
+            [HwInstruction([], "R1", ICaseString("ALU"))], HwSpec(proc_desc)
         ) == [
             BagValDict(cp_util)
             for cp_util in [
@@ -327,7 +327,7 @@ class TestPipeline:
         """
         assert simulate(
             [
-                HwInstruction([], out_reg, "ALU")
+                HwInstruction([], out_reg, ICaseString("ALU"))
                 for out_reg in ["R1", "R2", "R3", "R4", "R5", "R6"]
             ],
             HwSpec(_make_proc_desc(_UNITS_DESC)),
@@ -440,7 +440,7 @@ class TestStall:
             UnitModel(
                 ICaseString(name),
                 width,
-                ["ALU"],
+                [ICaseString("ALU")],
                 LockInfo(rd_lock, wr_lock),
                 [],
             )
@@ -457,7 +457,10 @@ class TestStall:
             [FuncUnit(mid.model2, [in_unit.model2])],
         )
         assert simulate(
-            [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
+            [
+                HwInstruction([], out_reg, ICaseString("ALU"))
+                for out_reg in ["R1", "R2"]
+            ],
             HwSpec(proc_desc),
         ) == [
             BagValDict(cp_util)
@@ -541,7 +544,11 @@ def _make_proc_desc(units_desc):
     """
     big_input, small_input1, mid1, small_input2, mid2, out_unit = (
         UnitModel(
-            ICaseString(name), width, ["ALU"], LockInfo(rd_lock, wr_lock), []
+            ICaseString(name),
+            width,
+            [ICaseString("ALU")],
+            LockInfo(rd_lock, wr_lock),
+            [],
         )
         for name, width, rd_lock, wr_lock in units_desc
     )

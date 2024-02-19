@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -65,12 +65,15 @@ class TestMemUtil:
         full_sys_unit = UnitModel(
             ICaseString("full system"),
             2,
-            ["ALU"],
+            [ICaseString("ALU")],
             LockInfo(True, True),
-            ["ALU"],
+            [ICaseString("ALU")],
         )
         assert simulate(
-            [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
+            [
+                HwInstruction([], out_reg, ICaseString("ALU"))
+                for out_reg in ["R1", "R2"]
+            ],
             HwSpec(ProcessorDesc([], [], [full_sys_unit.model2], [])),
         ) == [
             BagValDict({ICaseString("full system"): [InstrState(instr)]})
@@ -238,17 +241,17 @@ class TestHazards:
         in_unit = UnitModel(
             ICaseString("input"),
             in_params.width,
-            ["ALU"],
+            [ICaseString("ALU")],
             LockInfo(True, False),
-            in_params.mem_util,
+            map(ICaseString, in_params.mem_util),
         )
         out_units = (
             UnitModel(
                 ICaseString(name),
                 width,
-                ["ALU"],
+                [ICaseString("ALU")],
                 LockInfo(False, True),
-                mem_access,
+                map(ICaseString, mem_access),
             )
             for name, width, mem_access in in_params.out_unit_params
         )
@@ -262,7 +265,10 @@ class TestHazards:
             )
         }
         assert simulate(
-            [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
+            [
+                HwInstruction([], out_reg, ICaseString("ALU"))
+                for out_reg in ["R1", "R2"]
+            ],
             HwSpec(ProcessorDesc([in_unit.model2], out_units, [], [])),
         ) == list(
             map(

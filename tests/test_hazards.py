@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -103,26 +103,26 @@ class TestInstrOffer:
 
         """
         in_unit = UnitModel(
-            ICaseString("input"), 3, ["ALU", "MEM"], LockInfo(True, False), []
+            ICaseString("input"),
+            3,
+            map(ICaseString, ["ALU", "MEM"]),
+            LockInfo(True, False),
+            [],
         )
         out_unit = FuncUnit(
             UnitModel(
                 ICaseString("output"),
                 2,
-                ["ALU", "MEM"],
+                map(ICaseString, ["ALU", "MEM"]),
                 LockInfo(False, True),
-                ["MEM"],
+                [ICaseString("MEM")],
             ).model2,
             [in_unit.model2],
         )
         assert simulate(
             [
-                HwInstruction([], *instr_params)
-                for instr_params in [
-                    ["R1", "MEM"],
-                    ["R2", "MEM"],
-                    ["R3", "ALU"],
-                ]
+                HwInstruction([], dst, ICaseString(categ))
+                for dst, categ in [("R1", "MEM"), ("R2", "MEM"), ("R3", "ALU")]
             ],
             HwSpec(ProcessorDesc([in_unit.model2], [out_unit], [], [])),
         ) == [
@@ -150,22 +150,26 @@ class TestMemAccess:
 
         """
         in_unit = UnitModel(
-            ICaseString("input"), 2, ["ALU", "MEM"], LockInfo(True, False), []
+            ICaseString("input"),
+            2,
+            map(ICaseString, ["ALU", "MEM"]),
+            LockInfo(True, False),
+            [],
         )
         out_unit = FuncUnit(
             UnitModel(
                 ICaseString("output"),
                 2,
-                ["ALU", "MEM"],
+                map(ICaseString, ["ALU", "MEM"]),
                 LockInfo(False, True),
-                ["MEM"],
+                [ICaseString("MEM")],
             ).model2,
             [in_unit.model2],
         )
         assert simulate(
             [
-                HwInstruction([], *instr_params)
-                for instr_params in [["R1", "MEM"], ["R2", "ALU"]]
+                HwInstruction([], dst, ICaseString(categ))
+                for dst, categ in [("R1", "MEM"), ("R2", "ALU")]
             ],
             HwSpec(ProcessorDesc([in_unit.model2], [out_unit], [], [])),
         ) == [
@@ -184,11 +188,15 @@ class TestRar:
 
         """
         full_sys_unit = UnitModel(
-            ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), []
+            ICaseString(TEST_DIR),
+            2,
+            [ICaseString("ALU")],
+            LockInfo(True, True),
+            [],
         )
         assert simulate(
             [
-                HwInstruction(["R1"], out_reg, "ALU")
+                HwInstruction(["R1"], out_reg, ICaseString("ALU"))
                 for out_reg in ["R2", "R3"]
             ],
             HwSpec(ProcessorDesc([], [], [full_sys_unit.model2], [])),
@@ -256,22 +264,25 @@ class TestUnifiedMem:
         in_unit = UnitModel(
             ICaseString("input"),
             1,
-            ["ALU", "MEM"],
+            map(ICaseString, ["ALU", "MEM"]),
             LockInfo(True, False),
-            ["ALU", "MEM"],
+            map(ICaseString, ["ALU", "MEM"]),
         )
         out_unit = FuncUnit(
             UnitModel(
                 ICaseString("output"),
                 1,
-                ["ALU", "MEM"],
+                map(ICaseString, ["ALU", "MEM"]),
                 LockInfo(False, True),
-                ["MEM"],
+                [ICaseString("MEM")],
             ).model2,
             [in_unit.model2],
         )
         assert simulate(
-            [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
+            [
+                HwInstruction([], out_reg, ICaseString("ALU"))
+                for out_reg in ["R1", "R2"]
+            ],
             HwSpec(ProcessorDesc([in_unit.model2], [out_unit], [], [])),
         ) == [
             BagValDict(cp_util)

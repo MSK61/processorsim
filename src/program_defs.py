@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -46,6 +46,7 @@ import attr
 from attr import frozen
 
 import container_utils
+import str_utils
 
 
 def _sorted_uniq(elems: collections.abc.Iterable[Any]) -> tuple[Any, ...]:
@@ -70,7 +71,7 @@ class _InstrBase(abc.ABC):
 class HwInstruction(_InstrBase):
     """Hardware instruction"""
 
-    categ: object
+    categ: str_utils.ICaseString
 
 
 @frozen

@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -45,6 +45,7 @@ import attr
 import yaml
 
 import processor_utils
+import str_utils
 
 
 @attr.frozen
@@ -53,7 +54,7 @@ class HwDesc:
 
     processor: processor_utils.ProcessorDesc
 
-    isa: collections.abc.Mapping[str, object]
+    isa: collections.abc.Mapping[str, str_utils.ICaseString]
 
 
 def read_processor(proc_file: typing.IO[str]) -> HwDesc:

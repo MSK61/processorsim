@@ -225,7 +225,7 @@ class _TransitionUtil:
 
 def _accept_instr(
     issue_rec: _IssueInfo,
-    instr_categ: object,
+    instr_categ: ICaseString,
     input_iter: Iterator[UnitModel2],
     util_info: BagValDict[ICaseString, InstrState],
     accept_res: _AcceptStatus,
@@ -255,7 +255,7 @@ def _accept_instr(
 
 def _accept_in_unit(
     input_iter: Iterator[UnitModel2],
-    instr_categ: object,
+    instr_categ: ICaseString,
     accept_res: _AcceptStatus,
     util_info: BagValDict[ICaseString, InstrState],
     issue_rec: _IssueInfo,
@@ -276,7 +276,7 @@ def _accept_in_unit(
         unit = next(input_iter)
     except StopIteration:
         return True
-    mem_access = unit.model.needs_mem(instr_categ)
+    mem_access = unit.needs_mem(instr_categ)
 
     if _utils.mem_unavail(accept_res.mem_used, mem_access) or _utils.unit_full(
         unit.width, util_info[unit.name]
