@@ -71,7 +71,6 @@ from .units import (
     FuncUnit,
     UNIT_CAPS_KEY,
     UNIT_MEM_KEY,
-    UnitModel,
     UnitModel2,
     UNIT_NAME_KEY,
     UNIT_RLOCK_KEY,
@@ -501,7 +500,7 @@ def _get_unit_entry(name: ICaseString, attrs: Mapping[str, Any]) -> UnitModel2:
 
     """
     lock_attrs = foundation.map_ex([UNIT_RLOCK_KEY, UNIT_WLOCK_KEY], attrs)
-    return UnitModel(
+    return units.UnitModel(
         name,
         attrs[UNIT_WIDTH_KEY],
         attrs[UNIT_CAPS_KEY],
@@ -692,8 +691,8 @@ def _make_processor(proc_graph: DiGraph) -> ProcessorDesc:
 
     """
     unit_graph = _get_proc_units(proc_graph)
-    in_out_ports: list[UnitModel] = []
-    in_ports: list[UnitModel] = []
+    in_out_ports: list[UnitModel2] = []
+    in_ports: list[UnitModel2] = []
     internal_units: list[FuncUnit] = []
     out_ports: list[FuncUnit] = []
 
@@ -712,17 +711,12 @@ def _make_processor(proc_graph: DiGraph) -> ProcessorDesc:
                 out_ports.append(unit)
 
             case False, True:
-                in_ports.append(unit.model.model)
+                in_ports.append(unit.model)
 
             case _:
-                in_out_ports.append(unit.model.model)
+                in_out_ports.append(unit.model)
 
-    return ProcessorDesc(
-        map(foundation.Self.model2(), in_ports),
-        out_ports,
-        map(foundation.Self.model2(), in_out_ports),
-        internal_units,
-    )
+    return ProcessorDesc(in_ports, out_ports, in_out_ports, internal_units)
 
 
 _add_src_path()
