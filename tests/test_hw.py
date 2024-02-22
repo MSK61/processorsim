@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -115,9 +115,9 @@ class TestHwDescLoad:
                 [],
                 [],
                 [
-                    units.UnitModel(
-                        full_sys_unit, 1, [icase_cap], lock_info, []
-                    ).model2
+                    units.UnitModel2(
+                        full_sys_unit, 1, {icase_cap: False}, lock_info
+                    )
                 ],
                 [],
             ),
