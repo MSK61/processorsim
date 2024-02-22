@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.85.1, python 3.11.6, Fedora release
+# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -43,6 +43,7 @@ import nbconvert.preprocessors
 import nbformat
 
 import program_defs
+import str_utils
 
 
 def create_hw_instr(regs, categ):
@@ -55,7 +56,7 @@ def create_hw_instr(regs, categ):
     # Pylance can't match packed arguments to the number of positional
     # arguments.
     srcs, dst = regs
-    return program_defs.HwInstruction(srcs, dst, categ)
+    return program_defs.HwInstruction(srcs, dst, str_utils.ICaseString(categ))
 
 
 def exec_file(nb_file, run_path):

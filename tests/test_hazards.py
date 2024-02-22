@@ -47,7 +47,7 @@ from test_env import TEST_DIR
 from test_type_chks import create_hw_instr
 from container_utils import BagValDict
 from processor_utils import ProcessorDesc
-from processor_utils.units import FuncUnit, LockInfo, UnitModel
+from processor_utils.units import FuncUnit, LockInfo, UnitModel2
 from program_defs import HwInstruction
 from sim_services import HwSpec, simulate
 from sim_services.sim_defs import InstrState, StallState
@@ -72,12 +72,15 @@ class TestDataHazards:
         `instr_regs` are the registers accessed by each instruction.
 
         """
-        full_sys_unit = UnitModel(
-            ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), []
+        full_sys_unit = UnitModel2(
+            ICaseString(TEST_DIR),
+            2,
+            {ICaseString("ALU"): False},
+            LockInfo(True, True),
         )
         assert simulate(
             [create_hw_instr(regs, "ALU") for regs in instr_regs],
-            HwSpec(ProcessorDesc([], [], [full_sys_unit.model2], [])),
+            HwSpec(ProcessorDesc([], [], [full_sys_unit], [])),
         ) == [
             BagValDict(cp_util)
             for cp_util in [
@@ -102,29 +105,30 @@ class TestInstrOffer:
         `self` is this test case.
 
         """
-        in_unit = UnitModel(
+        in_unit = UnitModel2(
             ICaseString("input"),
             3,
-            map(ICaseString, ["ALU", "MEM"]),
+            {ICaseString(cap): False for cap in ["ALU", "MEM"]},
             LockInfo(True, False),
-            [],
         )
         out_unit = FuncUnit(
-            UnitModel(
+            UnitModel2(
                 ICaseString("output"),
                 2,
-                map(ICaseString, ["ALU", "MEM"]),
+                {
+                    ICaseString(cap): uses_mem
+                    for cap, uses_mem in [("ALU", False), ("MEM", True)]
+                },
                 LockInfo(False, True),
-                [ICaseString("MEM")],
-            ).model2,
-            [in_unit.model2],
+            ),
+            [in_unit],
         )
         assert simulate(
             [
                 HwInstruction([], dst, ICaseString(categ))
                 for dst, categ in [("R1", "MEM"), ("R2", "MEM"), ("R3", "ALU")]
             ],
-            HwSpec(ProcessorDesc([in_unit.model2], [out_unit], [], [])),
+            HwSpec(ProcessorDesc([in_unit], [out_unit], [], [])),
         ) == [
             BagValDict(cp_util)
             for cp_util in [
@@ -149,29 +153,30 @@ class TestMemAccess:
         `self` is this test case.
 
         """
-        in_unit = UnitModel(
+        in_unit = UnitModel2(
             ICaseString("input"),
             2,
-            map(ICaseString, ["ALU", "MEM"]),
+            {ICaseString(cap): False for cap in ["ALU", "MEM"]},
             LockInfo(True, False),
-            [],
         )
         out_unit = FuncUnit(
-            UnitModel(
+            UnitModel2(
                 ICaseString("output"),
                 2,
-                map(ICaseString, ["ALU", "MEM"]),
+                {
+                    ICaseString(cap): uses_mem
+                    for cap, uses_mem in [("ALU", False), ("MEM", True)]
+                },
                 LockInfo(False, True),
-                [ICaseString("MEM")],
-            ).model2,
-            [in_unit.model2],
+            ),
+            [in_unit],
         )
         assert simulate(
             [
                 HwInstruction([], dst, ICaseString(categ))
                 for dst, categ in [("R1", "MEM"), ("R2", "ALU")]
             ],
-            HwSpec(ProcessorDesc([in_unit.model2], [out_unit], [], [])),
+            HwSpec(ProcessorDesc([in_unit], [out_unit], [], [])),
         ) == [
             BagValDict({ICaseString(unit): map(InstrState, [0, 1])})
             for unit in ["input", "output"]
@@ -187,19 +192,18 @@ class TestRar:
         `self` is this test case.
 
         """
-        full_sys_unit = UnitModel(
+        full_sys_unit = UnitModel2(
             ICaseString(TEST_DIR),
             2,
-            [ICaseString("ALU")],
+            {ICaseString("ALU"): False},
             LockInfo(True, True),
-            [],
         )
         assert simulate(
             [
                 HwInstruction(["R1"], out_reg, ICaseString("ALU"))
                 for out_reg in ["R2", "R3"]
             ],
-            HwSpec(ProcessorDesc([], [], [full_sys_unit.model2], [])),
+            HwSpec(ProcessorDesc([], [], [full_sys_unit], [])),
         ) == [BagValDict({ICaseString(TEST_DIR): map(InstrState, [0, 1])})]
 
 
@@ -213,8 +217,11 @@ class TestRaw:
 
         """
         in_unit, mid, out_unit = (
-            UnitModel(
-                ICaseString(name), 1, ["ALU"], LockInfo(rd_lock, wr_lock), []
+            UnitModel2(
+                ICaseString(name),
+                1,
+                {ICaseString("ALU"): False},
+                LockInfo(rd_lock, wr_lock),
             )
             for name, rd_lock, wr_lock in [
                 ("input", False, False),
@@ -223,10 +230,10 @@ class TestRaw:
             ]
         )
         proc_desc = ProcessorDesc(
-            [in_unit.model2],
-            [FuncUnit(out_unit.model2, [mid.model2])],
+            [in_unit],
+            [FuncUnit(out_unit, [mid])],
             [],
-            [FuncUnit(mid.model2, [in_unit.model2])],
+            [FuncUnit(mid, [in_unit])],
         )
         assert simulate(
             [
@@ -261,29 +268,30 @@ class TestUnifiedMem:
         `self` is this test case.
 
         """
-        in_unit = UnitModel(
+        in_unit = UnitModel2(
             ICaseString("input"),
             1,
-            map(ICaseString, ["ALU", "MEM"]),
+            {ICaseString(cap): True for cap in ["ALU", "MEM"]},
             LockInfo(True, False),
-            map(ICaseString, ["ALU", "MEM"]),
         )
         out_unit = FuncUnit(
-            UnitModel(
+            UnitModel2(
                 ICaseString("output"),
                 1,
-                map(ICaseString, ["ALU", "MEM"]),
+                {
+                    ICaseString(cap): uses_mem
+                    for cap, uses_mem in [("ALU", False), ("MEM", True)]
+                },
                 LockInfo(False, True),
-                [ICaseString("MEM")],
-            ).model2,
-            [in_unit.model2],
+            ),
+            [in_unit],
         )
         assert simulate(
             [
                 HwInstruction([], out_reg, ICaseString("ALU"))
                 for out_reg in ["R1", "R2"]
             ],
-            HwSpec(ProcessorDesc([in_unit.model2], [out_unit], [], [])),
+            HwSpec(ProcessorDesc([in_unit], [out_unit], [], [])),
         ) == [
             BagValDict(cp_util)
             for cp_util in [
@@ -306,21 +314,27 @@ class TestWar:
         `self` is this test case.
 
         """
-        in_unit = UnitModel(
-            ICaseString("input"), 1, ["ALU"], LockInfo(False, False), []
+        in_unit = UnitModel2(
+            ICaseString("input"),
+            1,
+            {ICaseString("ALU"): False},
+            LockInfo(False, False),
         )
         out_unit = FuncUnit(
-            UnitModel(
-                ICaseString("output"), 1, ["ALU"], LockInfo(True, True), []
-            ).model2,
-            [in_unit.model2],
+            UnitModel2(
+                ICaseString("output"),
+                1,
+                {ICaseString("ALU"): False},
+                LockInfo(True, True),
+            ),
+            [in_unit],
         )
         assert simulate(
             [
                 create_hw_instr(instr_regs, "ALU")
                 for instr_regs in [[["R1"], "R2"], [[], "R1"]]
             ],
-            HwSpec(ProcessorDesc([in_unit.model2], [out_unit], [], [])),
+            HwSpec(ProcessorDesc([in_unit], [out_unit], [], [])),
         ) == [
             BagValDict(cp_util)
             for cp_util in [

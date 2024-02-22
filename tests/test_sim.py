@@ -164,10 +164,7 @@ class TestBasic:
 
         """
         assert simulate(
-            [
-                create_hw_instr(regs, ICaseString(categ))
-                for *regs, categ in prog
-            ],
+            [create_hw_instr(regs, categ) for *regs, categ in prog],
             HwSpec(cpu),
         ) == [BagValDict(inst_util) for inst_util in util_tbl]
 
@@ -490,8 +487,11 @@ class TestStallErr:
 
         """
         long_input, mid, short_input, out_unit = (
-            UnitModel(
-                ICaseString(name), 1, ["ALU"], LockInfo(rd_lock, wr_lock), []
+            processor_utils.units.UnitModel2(
+                ICaseString(name),
+                1,
+                {ICaseString("ALU"): False},
+                LockInfo(rd_lock, wr_lock),
             )
             for name, rd_lock, wr_lock in [
                 ("long input", False, False),
@@ -500,16 +500,11 @@ class TestStallErr:
                 ("output", True, True),
             ]
         )
-        model2_getter = foundation.Self.model2()
         proc_desc = ProcessorDesc(
-            map(model2_getter, [long_input, short_input]),
-            [
-                FuncUnit(
-                    out_unit.model2, map(model2_getter, [mid, short_input])
-                )
-            ],
+            [long_input, short_input],
+            [FuncUnit(out_unit, [mid, short_input])],
             [],
-            [FuncUnit(mid.model2, [long_input.model2])],
+            [FuncUnit(mid, [long_input])],
         )
         cp_util_lst = [
             {
