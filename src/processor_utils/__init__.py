@@ -500,13 +500,12 @@ def _get_unit_entry(name: ICaseString, attrs: Mapping[str, Any]) -> UnitModel2:
 
     """
     lock_attrs = foundation.map_ex([UNIT_RLOCK_KEY, UNIT_WLOCK_KEY], attrs)
-    return units.UnitModel(
+    return UnitModel2(
         name,
         attrs[UNIT_WIDTH_KEY],
-        attrs[UNIT_CAPS_KEY],
+        {cap: cap in attrs[UNIT_MEM_KEY] for cap in attrs[UNIT_CAPS_KEY]},
         units.LockInfo(*lock_attrs),
-        attrs[UNIT_MEM_KEY],
-    ).model2
+    )
 
 
 def _get_unit_graph(internal_units: Iterable[FuncUnit]) -> DiGraph:
@@ -571,19 +570,18 @@ def _load_caps(
 def _load_mem_acl(
     unit: Mapping[str, Iterable[str]],
     cap_registry: IndexedSet[_CapabilityInfo],
-) -> Generator[ICaseString, None, None]:
+) -> list[ICaseString]:
     """Load the given unit memory ACL.
 
     `unit` is the unit to load whose memory ACL.
     `cap_registry` is the store of valid capabilities.
-    The function returns an iterator over loaded memory ACL
-    capabilities.
+    The function returns a list of loaded memory ACL capabilities.
 
     """
-    return (
+    return [
         _get_acl_cap(unit[UNIT_NAME_KEY], cap, cap_registry)
         for cap in unit.get(UNIT_MEM_KEY, [])
-    )
+    ]
 
 
 def _post_order(internal_units: Iterable[FuncUnit]) -> tuple[Any, ...]:
