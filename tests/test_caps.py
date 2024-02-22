@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -129,20 +129,17 @@ class TestDupCap:
         caplog.set_level(WARNING)
         in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits.yaml"
         processor = (
-            units.UnitModel(
+            units.UnitModel2(
                 ICaseString(unit_name),
                 1,
-                [ICaseString("ALU")],
+                {ICaseString("ALU"): False},
                 units.LockInfo(True, True),
-                [],
             )
             for unit_name in ["core 1", "core 2"]
         )
         assert read_proc_file(
             "capabilities", in_file
-        ) == processor_utils.ProcessorDesc(
-            [], [], map(foundation.Self.model2(), processor), []
-        )
+        ) == processor_utils.ProcessorDesc([], [], processor, [])
         chk_warn(["ALU", "core 1", "alu", "core 2"], caplog.records)
         assert ICaseString.__name__ not in caplog.records[0].getMessage()
 
