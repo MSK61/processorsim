@@ -46,7 +46,7 @@ import pytest
 from container_utils import BagValDict
 import processor_utils
 from processor_utils import ProcessorDesc, units
-from processor_utils.units import LockInfo, UnitModel
+from processor_utils.units import LockInfo, UnitModel2
 from program_defs import HwInstruction
 from sim_services import HwSpec, simulate
 from sim_services.sim_defs import InstrState, StallState
@@ -62,19 +62,18 @@ class TestMemUtil:
         `self` is this test case.
 
         """
-        full_sys_unit = UnitModel(
+        full_sys_unit = UnitModel2(
             ICaseString("full system"),
             2,
-            [ICaseString("ALU")],
+            {ICaseString("ALU"): True},
             LockInfo(True, True),
-            [ICaseString("ALU")],
         )
         assert simulate(
             [
                 HwInstruction([], out_reg, ICaseString("ALU"))
                 for out_reg in ["R1", "R2"]
             ],
-            HwSpec(ProcessorDesc([], [], [full_sys_unit.model2], [])),
+            HwSpec(ProcessorDesc([], [], [full_sys_unit], [])),
         ) == [
             BagValDict({ICaseString("full system"): [InstrState(instr)]})
             for instr in [0, 1]
@@ -139,14 +138,14 @@ class _TestInParams:
 
     width: object
 
-    mem_util: object
+    uses_mem: object
 
     out_unit_params: object
 
 
 _STRUCT_CASES = [
     (
-        _TestInParams(1, ["ALU"], [("output", 1, ["ALU"])]),
+        _TestInParams(1, True, [("output", 1, True)]),
         _TestExpResults(
             1,
             [
@@ -157,7 +156,7 @@ _STRUCT_CASES = [
         ),
     ),
     (
-        _TestInParams(1, [], [("output", 1, ["ALU"])]),
+        _TestInParams(1, False, [("output", 1, True)]),
         _TestExpResults(
             1,
             [
@@ -170,7 +169,7 @@ _STRUCT_CASES = [
         ),
     ),
     (
-        _TestInParams(2, [], [("output", 2, ["ALU"])]),
+        _TestInParams(2, False, [("output", 2, True)]),
         _TestExpResults(
             2,
             [
@@ -187,12 +186,12 @@ _STRUCT_CASES = [
     (
         _TestInParams(
             2,
-            [],
+            False,
             (
                 (name, 1, mem_access)
                 for name, mem_access in [
-                    ("output 1", ["ALU"]),
-                    ("output 2", []),
+                    ("output 1", True),
+                    ("output 2", False),
                 ]
             ),
         ),
@@ -208,7 +207,7 @@ _STRUCT_CASES = [
     ),
     (
         _TestInParams(
-            2, [], ((name, 1, ["ALU"]) for name in ["output 1", "output 2"])
+            2, False, ((name, 1, True) for name in ["output 1", "output 2"])
         ),
         _TestExpResults(
             2,
@@ -238,26 +237,23 @@ class TestHazards:
         `exp_results` are the test expected results.
 
         """
-        in_unit = UnitModel(
+        in_unit = UnitModel2(
             ICaseString("input"),
             in_params.width,
-            [ICaseString("ALU")],
+            {ICaseString("ALU"): in_params.uses_mem},
             LockInfo(True, False),
-            map(ICaseString, in_params.mem_util),
         )
         out_units = (
-            UnitModel(
+            UnitModel2(
                 ICaseString(name),
                 width,
-                [ICaseString("ALU")],
+                {ICaseString("ALU"): mem_access},
                 LockInfo(False, True),
-                map(ICaseString, mem_access),
             )
             for name, width, mem_access in in_params.out_unit_params
         )
         out_units = (
-            units.FuncUnit(out_unit.model2, [in_unit.model2])
-            for out_unit in out_units
+            units.FuncUnit(out_unit, [in_unit]) for out_unit in out_units
         )
         cp1_util = {
             ICaseString("input"): map(
@@ -269,7 +265,7 @@ class TestHazards:
                 HwInstruction([], out_reg, ICaseString("ALU"))
                 for out_reg in ["R1", "R2"]
             ],
-            HwSpec(ProcessorDesc([in_unit.model2], out_units, [], [])),
+            HwSpec(ProcessorDesc([in_unit], out_units, [], [])),
         ) == list(
             map(
                 BagValDict,
