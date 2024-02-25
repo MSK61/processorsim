@@ -356,7 +356,7 @@ def _build_cap_map(
     `inputs` are the input processing units.
 
     """
-    cap_map: dict[object, list[units.UnitModel2]] = {}
+    cap_map: dict[object, list[UnitModel2]] = {}
 
     for unit in inputs:
         for cap in unit.roles:
