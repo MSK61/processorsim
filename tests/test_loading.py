@@ -88,7 +88,7 @@ class TestProcessors:
                 UnitModel2(name, 1, {alu_cap: False}, wr_lock), predecessors
             )
             for name, predecessors in [
-                (ICaseString("output 1"), _get_models2(proc_desc.in_ports)),
+                (ICaseString("output 1"), proc_desc.in_ports),
                 (
                     ICaseString("output 2"),
                     (unit.model for unit in proc_desc.internal_units),
@@ -103,7 +103,7 @@ class TestProcessors:
             [UnitModel2(in_unit, 1, {alu_cap: False}, LockInfo(True, False))],
             out_ports,
             [],
-            [FuncUnit(internal_unit, _get_models2(proc_desc.in_ports))],
+            [FuncUnit(internal_unit, proc_desc.in_ports)],
         )
 
     @mark.parametrize(
@@ -129,15 +129,6 @@ class TestProcessors:
 
         """
         test_utils.chk_one_unit("processors", "singleALUProcessor.yaml")
-
-
-def _get_models2(models):
-    """Retrieve the UnitModel2 version of the given models.
-
-    `models` are the UnitModel units to convert.
-
-    """
-    return models
 
 
 def main():
