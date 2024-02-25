@@ -42,7 +42,7 @@ import collections.abc
 from collections.abc import Iterable
 import operator
 import typing
-from typing import Any, cast, Final
+from typing import Any, Final
 
 import attr
 from attr import frozen
@@ -91,7 +91,7 @@ class UnitModel2:
         `cap` is the capabilitiy to check.
 
         """
-        return cast(bool, self.roles[cap])
+        return typing.cast(bool, self.roles[cap])
 
     name: ICaseString
 
