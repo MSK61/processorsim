@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -50,7 +50,7 @@ from processor_utils.units import (
     LockInfo,
     UNIT_CAPS_KEY,
     UNIT_MEM_KEY,
-    UnitModel,
+    UnitModel2,
     UNIT_NAME_KEY,
     UNIT_RLOCK_KEY,
     UNIT_WIDTH_KEY,
@@ -80,14 +80,13 @@ class TestCapCase:
         """
         caplog.set_level(WARNING)
         in_out_units = (
-            UnitModel(
+            UnitModel2(
                 ICaseString(name),
                 1,
-                [ICaseString("ALU")],
+                {ICaseString("ALU"): uses_mem},
                 LockInfo(True, True),
-                map(ICaseString, capabilities),
-            ).model2
-            for name, capabilities in [(loaded_core, []), ("core 2", ["ALU"])]
+            )
+            for name, uses_mem in [(loaded_core, False), ("core 2", True)]
         )
         assert load_proc_desc(
             {
@@ -151,13 +150,15 @@ class TestPartialMem:
             [],
             [],
             [
-                UnitModel(
+                UnitModel2(
                     ICaseString("full system"),
                     1,
-                    map(ICaseString, ["ALU", "MEM"]),
+                    {
+                        ICaseString(cap): uses_mem
+                        for cap, uses_mem in [("ALU", False), ("MEM", True)]
+                    },
                     LockInfo(True, True),
-                    [ICaseString("MEM")],
-                ).model2
+                )
             ],
             [],
         )
@@ -238,13 +239,12 @@ class TestStdCaseCap:
             [],
             [],
             [
-                UnitModel(
+                UnitModel2(
                     ICaseString(exp_results.unit),
                     1,
-                    [ICaseString(exp_ref_cap)],
+                    {ICaseString(exp_ref_cap): True},
                     LockInfo(True, True),
-                    [ICaseString(exp_ref_cap)],
-                ).model2
+                )
             ],
             [],
         )
