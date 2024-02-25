@@ -45,7 +45,7 @@ import yaml
 import test_env
 import processor_utils
 from processor_utils import ProcessorDesc
-from processor_utils.units import LockInfo, UnitModel2
+from processor_utils.units import LockInfo, UnitModel
 import program_utils
 from str_utils import ICaseString
 
@@ -79,7 +79,7 @@ def chk_one_unit(proc_dir, proc_file):
         [],
         [],
         [
-            UnitModel2(
+            UnitModel(
                 ICaseString("full system"),
                 1,
                 {ICaseString("ALU"): False},
@@ -105,7 +105,7 @@ def chk_two_units(proc_dir, proc_file):
     out_unit = ICaseString("output")
     assert proc_desc == ProcessorDesc(
         [
-            UnitModel2(
+            UnitModel(
                 ICaseString("input"),
                 1,
                 {alu_cap: False},
@@ -114,7 +114,7 @@ def chk_two_units(proc_dir, proc_file):
         ],
         [
             processor_utils.units.FuncUnit(
-                UnitModel2(
+                UnitModel(
                     out_unit, 1, {alu_cap: False}, LockInfo(False, True)
                 ),
                 proc_desc.in_ports,

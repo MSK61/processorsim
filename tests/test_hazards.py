@@ -47,7 +47,7 @@ from test_env import TEST_DIR
 from test_type_chks import create_hw_instr
 from container_utils import BagValDict
 from processor_utils import ProcessorDesc
-from processor_utils.units import FuncUnit, LockInfo, UnitModel2
+from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from program_defs import HwInstruction
 from sim_services import HwSpec, simulate
 from sim_services.sim_defs import InstrState, StallState
@@ -72,7 +72,7 @@ class TestDataHazards:
         `instr_regs` are the registers accessed by each instruction.
 
         """
-        full_sys_unit = UnitModel2(
+        full_sys_unit = UnitModel(
             ICaseString(TEST_DIR),
             2,
             {ICaseString("ALU"): False},
@@ -105,14 +105,14 @@ class TestInstrOffer:
         `self` is this test case.
 
         """
-        in_unit = UnitModel2(
+        in_unit = UnitModel(
             ICaseString("input"),
             3,
             {ICaseString(cap): False for cap in ["ALU", "MEM"]},
             LockInfo(True, False),
         )
         out_unit = FuncUnit(
-            UnitModel2(
+            UnitModel(
                 ICaseString("output"),
                 2,
                 {
@@ -153,14 +153,14 @@ class TestMemAccess:
         `self` is this test case.
 
         """
-        in_unit = UnitModel2(
+        in_unit = UnitModel(
             ICaseString("input"),
             2,
             {ICaseString(cap): False for cap in ["ALU", "MEM"]},
             LockInfo(True, False),
         )
         out_unit = FuncUnit(
-            UnitModel2(
+            UnitModel(
                 ICaseString("output"),
                 2,
                 {
@@ -192,7 +192,7 @@ class TestRar:
         `self` is this test case.
 
         """
-        full_sys_unit = UnitModel2(
+        full_sys_unit = UnitModel(
             ICaseString(TEST_DIR),
             2,
             {ICaseString("ALU"): False},
@@ -217,7 +217,7 @@ class TestRaw:
 
         """
         in_unit, mid, out_unit = (
-            UnitModel2(
+            UnitModel(
                 ICaseString(name),
                 1,
                 {ICaseString("ALU"): False},
@@ -268,14 +268,14 @@ class TestUnifiedMem:
         `self` is this test case.
 
         """
-        in_unit = UnitModel2(
+        in_unit = UnitModel(
             ICaseString("input"),
             1,
             {ICaseString(cap): True for cap in ["ALU", "MEM"]},
             LockInfo(True, False),
         )
         out_unit = FuncUnit(
-            UnitModel2(
+            UnitModel(
                 ICaseString("output"),
                 1,
                 {
@@ -314,14 +314,14 @@ class TestWar:
         `self` is this test case.
 
         """
-        in_unit = UnitModel2(
+        in_unit = UnitModel(
             ICaseString("input"),
             1,
             {ICaseString("ALU"): False},
             LockInfo(False, False),
         )
         out_unit = FuncUnit(
-            UnitModel2(
+            UnitModel(
                 ICaseString("output"),
                 1,
                 {ICaseString("ALU"): False},

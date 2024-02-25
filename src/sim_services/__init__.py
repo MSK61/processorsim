@@ -61,7 +61,7 @@ from container_utils import BagValDict
 import errors
 from processor_utils import ProcessorDesc
 from processor_utils import units
-from processor_utils.units import LockInfo, UnitModel2
+from processor_utils.units import LockInfo, UnitModel
 from program_defs import HwInstruction
 from reg_access import AccessType, RegAccessQueue, RegAccQBuilder
 from str_utils import ICaseString
@@ -106,12 +106,12 @@ class HwSpec:
 
     processor_desc: ProcessorDesc
 
-    name_unit_map: dict[ICaseString, UnitModel2] = field(init=False)
+    name_unit_map: dict[ICaseString, UnitModel] = field(init=False)
 
     # Casting to typing.Any because pylance can't detect default as a
     # member of attr.field.
     @typing.cast(Any, name_unit_map).default
-    def _(self) -> dict[ICaseString, UnitModel2]:
+    def _(self) -> dict[ICaseString, UnitModel]:
         """Build the name-to-unit mapping.
 
         `self` is this hardware specification.
@@ -226,7 +226,7 @@ class _TransitionUtil:
 def _accept_instr(
     issue_rec: _IssueInfo,
     instr_categ: ICaseString,
-    input_iter: Iterator[UnitModel2],
+    input_iter: Iterator[UnitModel],
     util_info: BagValDict[ICaseString, InstrState],
     accept_res: _AcceptStatus,
 ) -> None:
@@ -254,7 +254,7 @@ def _accept_instr(
 
 
 def _accept_in_unit(
-    input_iter: Iterator[UnitModel2],
+    input_iter: Iterator[UnitModel],
     instr_categ: ICaseString,
     accept_res: _AcceptStatus,
     util_info: BagValDict[ICaseString, InstrState],
@@ -349,14 +349,14 @@ def _build_acc_plan(
 
 
 def _build_cap_map(
-    inputs: Iterable[UnitModel2],
-) -> dict[object, list[UnitModel2]]:
+    inputs: Iterable[UnitModel],
+) -> dict[object, list[UnitModel]]:
     """Build the capability map for input units.
 
     `inputs` are the input processing units.
 
     """
-    cap_map: dict[object, list[UnitModel2]] = {}
+    cap_map: dict[object, list[UnitModel]] = {}
 
     for unit in inputs:
         for cap in unit.roles:
@@ -428,7 +428,7 @@ def _chk_full_stall(
 def _chk_hazards(
     old_util: BagValDict[_T, InstrState],
     new_util: Iterable[Iterable[Any]],
-    name_unit_map: Mapping[_T, UnitModel2],
+    name_unit_map: Mapping[_T, UnitModel],
     program: Sequence[HwInstruction],
     acc_queues: Mapping[object, RegAccessQueue],
 ) -> None:
@@ -556,7 +556,7 @@ def _fill_cp_util(
 
 
 def _fill_inputs(
-    cap_unit_map: Mapping[object, Iterable[UnitModel2]],
+    cap_unit_map: Mapping[object, Iterable[UnitModel]],
     program: Sequence[HwInstruction],
     util_info: BagValDict[ICaseString, InstrState],
     mem_busy: object,

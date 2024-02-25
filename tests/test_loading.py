@@ -45,7 +45,7 @@ from pytest import mark
 import test_utils
 from test_utils import read_proc_file
 import processor_utils
-from processor_utils.units import FuncUnit, LockInfo, UnitModel2
+from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from str_utils import ICaseString
 
 
@@ -85,7 +85,7 @@ class TestProcessors:
         wr_lock = LockInfo(False, True)
         out_ports = tuple(
             FuncUnit(
-                UnitModel2(name, 1, {alu_cap: False}, wr_lock), predecessors
+                UnitModel(name, 1, {alu_cap: False}, wr_lock), predecessors
             )
             for name, predecessors in [
                 (ICaseString("output 1"), proc_desc.in_ports),
@@ -96,11 +96,11 @@ class TestProcessors:
             ]
         )
         in_unit = ICaseString("input")
-        internal_unit = UnitModel2(
+        internal_unit = UnitModel(
             ICaseString("middle"), 1, {alu_cap: False}, LockInfo(False, False)
         )
         assert proc_desc == processor_utils.ProcessorDesc(
-            [UnitModel2(in_unit, 1, {alu_cap: False}, LockInfo(True, False))],
+            [UnitModel(in_unit, 1, {alu_cap: False}, LockInfo(True, False))],
             out_ports,
             [],
             [FuncUnit(internal_unit, proc_desc.in_ports)],

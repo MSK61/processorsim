@@ -71,7 +71,7 @@ from .units import (
     FuncUnit,
     UNIT_CAPS_KEY,
     UNIT_MEM_KEY,
-    UnitModel2,
+    UnitModel,
     UNIT_NAME_KEY,
     UNIT_RLOCK_KEY,
     UNIT_WIDTH_KEY,
@@ -491,7 +491,7 @@ def _get_std_edge(
     return (_get_unit_name(ICaseString(unit), unit_registry) for unit in edge)
 
 
-def _get_unit_entry(name: ICaseString, attrs: Mapping[str, Any]) -> UnitModel2:
+def _get_unit_entry(name: ICaseString, attrs: Mapping[str, Any]) -> UnitModel:
     """Create a unit map entry from the given attributes.
 
     `name` is the unit name.
@@ -500,7 +500,7 @@ def _get_unit_entry(name: ICaseString, attrs: Mapping[str, Any]) -> UnitModel2:
 
     """
     lock_attrs = foundation.map_ex([UNIT_RLOCK_KEY, UNIT_WLOCK_KEY], attrs)
-    return UnitModel2(
+    return UnitModel(
         name,
         attrs[UNIT_WIDTH_KEY],
         {cap: cap in attrs[UNIT_MEM_KEY] for cap in attrs[UNIT_CAPS_KEY]},
@@ -637,12 +637,12 @@ def _sorted_units(hw_units: Iterable[Any]) -> tuple[Any, ...]:
 class ProcessorDesc:
     """Processor description"""
 
-    in_ports: tuple[UnitModel2, ...] = field(converter=tuple[UnitModel2, ...])
+    in_ports: tuple[UnitModel, ...] = field(converter=tuple[UnitModel, ...])
 
     out_ports: tuple[FuncUnit, ...] = field(converter=_sorted_units)
 
-    in_out_ports: tuple[UnitModel2, ...] = field(
-        converter=tuple[UnitModel2, ...]
+    in_out_ports: tuple[UnitModel, ...] = field(
+        converter=tuple[UnitModel, ...]
     )
 
     internal_units: tuple[FuncUnit, ...] = field(converter=_post_order)
@@ -689,8 +689,8 @@ def _make_processor(proc_graph: DiGraph) -> ProcessorDesc:
 
     """
     unit_graph = _get_proc_units(proc_graph)
-    in_out_ports: list[UnitModel2] = []
-    in_ports: list[UnitModel2] = []
+    in_out_ports: list[UnitModel] = []
+    in_ports: list[UnitModel] = []
     internal_units: list[FuncUnit] = []
     out_ports: list[FuncUnit] = []
 

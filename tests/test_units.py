@@ -45,7 +45,7 @@ import pytest
 import test_utils
 import processor_utils
 from processor_utils import ProcessorDesc, units
-from processor_utils.units import FuncUnit, LockInfo, UnitModel2
+from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from str_utils import ICaseString
 
 
@@ -120,7 +120,7 @@ class TestExpAttr:
             [],
             [],
             [
-                UnitModel2(
+                UnitModel(
                     ICaseString("full system"),
                     1,
                     {ICaseString("ALU"): True},
@@ -141,7 +141,7 @@ class TestPostOrder:
 
         """
         in_unit, mid1_unit, mid2_unit, mid3_unit, out_unit = (
-            UnitModel2(
+            UnitModel(
                 ICaseString(name),
                 1,
                 {ICaseString("ALU"): False},

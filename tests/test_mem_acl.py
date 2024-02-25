@@ -50,7 +50,7 @@ from processor_utils.units import (
     LockInfo,
     UNIT_CAPS_KEY,
     UNIT_MEM_KEY,
-    UnitModel2,
+    UnitModel,
     UNIT_NAME_KEY,
     UNIT_RLOCK_KEY,
     UNIT_WIDTH_KEY,
@@ -80,7 +80,7 @@ class TestCapCase:
         """
         caplog.set_level(WARNING)
         in_out_units = (
-            UnitModel2(
+            UnitModel(
                 ICaseString(name),
                 1,
                 {ICaseString("ALU"): uses_mem},
@@ -150,7 +150,7 @@ class TestPartialMem:
             [],
             [],
             [
-                UnitModel2(
+                UnitModel(
                     ICaseString("full system"),
                     1,
                     {
@@ -239,7 +239,7 @@ class TestStdCaseCap:
             [],
             [],
             [
-                UnitModel2(
+                UnitModel(
                     ICaseString(exp_results.unit),
                     1,
                     {ICaseString(exp_ref_cap): True},

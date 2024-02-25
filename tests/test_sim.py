@@ -51,7 +51,7 @@ from test_utils import read_proc_file
 from container_utils import BagValDict
 import processor_utils
 from processor_utils import ProcessorDesc
-from processor_utils.units import FuncUnit, LockInfo, UnitModel2
+from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from program_defs import HwInstruction
 from sim_services import HwSpec, simulate, StallError
 from sim_services.sim_defs import InstrState, StallState
@@ -177,7 +177,7 @@ class TestFlow:
 
         """
         in_units = [
-            UnitModel2(
+            UnitModel(
                 ICaseString(name),
                 1,
                 {ICaseString(categ): False},
@@ -186,7 +186,7 @@ class TestFlow:
             for name, categ in [("ALU input", "ALU"), ("MEM input", "MEM")]
         ]
         out_unit = FuncUnit(
-            UnitModel2(
+            UnitModel(
                 ICaseString("output"),
                 1,
                 {ICaseString(cap): False for cap in ["ALU", "MEM"]},
@@ -231,7 +231,7 @@ class TestInSort:
 
         """
         in_unit, out_unit = (
-            UnitModel2(
+            UnitModel(
                 ICaseString(name),
                 1,
                 {ICaseString("ALU"): uses_mem},
@@ -246,7 +246,7 @@ class TestInSort:
             [in_unit],
             [FuncUnit(out_unit, [in_unit])],
             [
-                UnitModel2(
+                UnitModel(
                     ICaseString("input 2"),
                     1,
                     {ICaseString("ALU"): False},
@@ -290,7 +290,7 @@ class TestOutputFlush:
             ),
         )
         cores = starmap(
-            lambda name, width: UnitModel2(
+            lambda name, width: UnitModel(
                 ICaseString(name),
                 width,
                 {ICaseString("ALU"): False},
@@ -440,7 +440,7 @@ class TestStall:
 
         """
         in_unit, mid, out_unit = (
-            UnitModel2(
+            UnitModel(
                 ICaseString(name),
                 width,
                 {ICaseString("ALU"): False},
@@ -492,7 +492,7 @@ class TestStallErr:
 
         """
         long_input, mid, short_input, out_unit = (
-            UnitModel2(
+            UnitModel(
                 ICaseString(name),
                 1,
                 {ICaseString("ALU"): False},
@@ -543,7 +543,7 @@ def _make_proc_desc(units_desc):
 
     """
     big_input, small_input1, mid1, small_input2, mid2, out_unit = (
-        UnitModel2(
+        UnitModel(
             ICaseString(name),
             width,
             {ICaseString("ALU"): False},

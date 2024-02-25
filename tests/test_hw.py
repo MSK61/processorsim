@@ -115,7 +115,7 @@ class TestHwDescLoad:
                 [],
                 [],
                 [
-                    units.UnitModel2(
+                    units.UnitModel(
                         full_sys_unit, 1, {icase_cap: False}, lock_info
                     )
                 ],

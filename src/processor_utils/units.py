@@ -80,7 +80,7 @@ class LockInfo:
 
 
 @frozen
-class UnitModel2:
+class UnitModel:
     """Functional unit model"""
 
     def needs_mem(self, cap: ICaseString) -> bool:
@@ -129,6 +129,6 @@ class FuncUnit:
             map(operator.is_, self.predecessors, other.predecessors)
         )
 
-    model: UnitModel2
+    model: UnitModel
 
-    predecessors: tuple[UnitModel2, ...] = attr.field(converter=sorted_models)
+    predecessors: tuple[UnitModel, ...] = attr.field(converter=sorted_models)

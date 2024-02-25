@@ -48,7 +48,7 @@ import pytest
 import test_utils
 from test_utils import chk_warn, read_proc_file
 from processor_utils import ProcessorDesc
-from processor_utils.units import FuncUnit, LockInfo, UnitModel2
+from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from str_utils import ICaseString
 
 
@@ -74,7 +74,7 @@ class TestClean:
         alu_cap = ICaseString("ALU")
         assert proc_desc == ProcessorDesc(
             [
-                UnitModel2(
+                UnitModel(
                     ICaseString("input"),
                     1,
                     {alu_cap: False},
@@ -83,7 +83,7 @@ class TestClean:
             ],
             [
                 FuncUnit(
-                    UnitModel2(
+                    UnitModel(
                         out1_unit, 1, {alu_cap: False}, LockInfo(False, True)
                     ),
                     proc_desc.in_ports,
@@ -108,7 +108,7 @@ class TestClean:
             [],
             [],
             [
-                UnitModel2(
+                UnitModel(
                     ICaseString("core 1"),
                     1,
                     {ICaseString("ALU"): False},
@@ -135,7 +135,7 @@ class TestEdgeRemoval:
             "optimization", "incompatibleEdgeProcessor.yaml"
         )
         in_units = starmap(
-            lambda name, categ: UnitModel2(
+            lambda name, categ: UnitModel(
                 name, 1, {categ: False}, LockInfo(True, False)
             ),
             (
@@ -146,7 +146,7 @@ class TestEdgeRemoval:
         wr_lock = LockInfo(False, True)
         out_units = starmap(
             lambda name, categ, in_unit: FuncUnit(
-                UnitModel2(name, 1, {categ: False}, wr_lock),
+                UnitModel(name, 1, {categ: False}, wr_lock),
                 [
                     more_itertools.first_true(
                         proc_desc.in_ports,

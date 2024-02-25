@@ -129,7 +129,7 @@ class TestDupCap:
         caplog.set_level(WARNING)
         in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits.yaml"
         processor = (
-            units.UnitModel2(
+            units.UnitModel(
                 ICaseString(unit_name),
                 1,
                 {ICaseString("ALU"): False},

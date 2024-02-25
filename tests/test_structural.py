@@ -46,7 +46,7 @@ import pytest
 from container_utils import BagValDict
 import processor_utils
 from processor_utils import ProcessorDesc, units
-from processor_utils.units import LockInfo, UnitModel2
+from processor_utils.units import LockInfo, UnitModel
 from program_defs import HwInstruction
 from sim_services import HwSpec, simulate
 from sim_services.sim_defs import InstrState, StallState
@@ -62,7 +62,7 @@ class TestMemUtil:
         `self` is this test case.
 
         """
-        full_sys_unit = UnitModel2(
+        full_sys_unit = UnitModel(
             ICaseString("full system"),
             2,
             {ICaseString("ALU"): True},
@@ -237,14 +237,14 @@ class TestHazards:
         `exp_results` are the test expected results.
 
         """
-        in_unit = UnitModel2(
+        in_unit = UnitModel(
             ICaseString("input"),
             in_params.width,
             {ICaseString("ALU"): in_params.uses_mem},
             LockInfo(True, False),
         )
         out_units = (
-            UnitModel2(
+            UnitModel(
                 ICaseString(name),
                 width,
                 {ICaseString("ALU"): mem_access},
