@@ -41,9 +41,7 @@
 
 from itertools import chain, starmap
 
-from fastcore import foundation
 import more_itertools
-import pydash
 import pytest
 from pytest import mark, raises
 
@@ -53,7 +51,7 @@ from test_utils import read_proc_file
 from container_utils import BagValDict
 import processor_utils
 from processor_utils import ProcessorDesc
-from processor_utils.units import FuncUnit, LockInfo, UnitModel
+from processor_utils.units import FuncUnit, LockInfo, UnitModel2
 from program_defs import HwInstruction
 from sim_services import HwSpec, simulate, StallError
 from sim_services.sim_defs import InstrState, StallState
@@ -179,26 +177,31 @@ class TestFlow:
 
         """
         in_units = [
-            UnitModel(
-                ICaseString(name), 1, [categ], LockInfo(True, False), []
-            ).model2
+            UnitModel2(
+                ICaseString(name),
+                1,
+                {ICaseString(categ): False},
+                LockInfo(True, False),
+            )
             for name, categ in [("ALU input", "ALU"), ("MEM input", "MEM")]
         ]
         out_unit = FuncUnit(
-            UnitModel(
+            UnitModel2(
                 ICaseString("output"),
                 1,
-                ["ALU", "MEM"],
+                {ICaseString(cap): False for cap in ["ALU", "MEM"]},
                 LockInfo(False, True),
-                [],
-            ).model2,
+            ),
             in_units,
         )
         assert simulate(
-            foundation.mapt(
-                pydash.spread(HwInstruction),
-                [[[], "R12", "MEM"], [["R11", "R15"], "R14", "ALU"]],
-            ),
+            [
+                create_hw_instr(regs, categ)
+                for *regs, categ in [
+                    [[], "R12", "MEM"],
+                    [["R11", "R15"], "R14", "ALU"],
+                ]
+            ],
             HwSpec(ProcessorDesc(in_units, [out_unit], [], [])),
         ) == [
             BagValDict(inst_util)
@@ -228,29 +231,27 @@ class TestInSort:
 
         """
         in_unit, out_unit = (
-            UnitModel(
+            UnitModel2(
                 ICaseString(name),
                 1,
-                [ICaseString("ALU")],
+                {ICaseString("ALU"): uses_mem},
                 LockInfo(rd_lock, wr_lock),
-                map(ICaseString, mem_acl),
             )
-            for name, rd_lock, wr_lock, mem_acl in [
-                ("input 1", True, False, []),
-                ("output 1", False, True, ["ALU"]),
+            for name, rd_lock, wr_lock, uses_mem in [
+                ("input 1", True, False, False),
+                ("output 1", False, True, True),
             ]
         )
         proc_desc = ProcessorDesc(
-            [in_unit.model2],
-            [FuncUnit(out_unit.model2, [in_unit.model2])],
+            [in_unit],
+            [FuncUnit(out_unit, [in_unit])],
             [
-                UnitModel(
+                UnitModel2(
                     ICaseString("input 2"),
                     1,
-                    [ICaseString("ALU")],
+                    {ICaseString("ALU"): False},
                     LockInfo(True, False),
-                    [],
-                ).model2
+                )
             ],
             [],
         )
@@ -269,7 +270,7 @@ class TestOutputFlush:
     """Test case for flushing instructions at output ports"""
 
     @mark.parametrize(
-        "extra_instr_lst, last_instr", [([], 2), ([[[], "R3", "ALU"]], 3)]
+        "extra_instr_lst, last_instr", [([], 2), ([[[[], "R3"], "ALU"]], 3)]
     )
     def test_stalled_outputs_are_not_flushed(
         self, extra_instr_lst, last_instr
@@ -283,13 +284,18 @@ class TestOutputFlush:
 
         """
         prog = starmap(
-            HwInstruction,
-            chain([[[], "R1", "ALU"], [["R1"], "R2", "ALU"]], extra_instr_lst),
+            create_hw_instr,
+            chain(
+                [[[[], "R1"], "ALU"], [[["R1"], "R2"], "ALU"]], extra_instr_lst
+            ),
         )
         cores = starmap(
-            lambda name, width: UnitModel(
-                ICaseString(name), width, ["ALU"], LockInfo(True, True), []
-            ).model2,
+            lambda name, width: UnitModel2(
+                ICaseString(name),
+                width,
+                {ICaseString("ALU"): False},
+                LockInfo(True, True),
+            ),
             [("core 1", 1), ("core 2", 1 + len(extra_instr_lst))],
         )
         extra_instr_seq = range(2, last_instr)
@@ -434,12 +440,11 @@ class TestStall:
 
         """
         in_unit, mid, out_unit = (
-            UnitModel(
+            UnitModel2(
                 ICaseString(name),
                 width,
-                [ICaseString("ALU")],
+                {ICaseString("ALU"): False},
                 LockInfo(rd_lock, wr_lock),
-                [],
             )
             for name, width, rd_lock, wr_lock in [
                 ("input", 2, True, False),
@@ -448,10 +453,10 @@ class TestStall:
             ]
         )
         proc_desc = ProcessorDesc(
-            [in_unit.model2],
-            [FuncUnit(out_unit.model2, [mid.model2])],
+            [in_unit],
+            [FuncUnit(out_unit, [mid])],
             [],
-            [FuncUnit(mid.model2, [in_unit.model2])],
+            [FuncUnit(mid, [in_unit])],
         )
         assert simulate(
             [
@@ -487,7 +492,7 @@ class TestStallErr:
 
         """
         long_input, mid, short_input, out_unit = (
-            processor_utils.units.UnitModel2(
+            UnitModel2(
                 ICaseString(name),
                 1,
                 {ICaseString("ALU"): False},
@@ -538,26 +543,20 @@ def _make_proc_desc(units_desc):
 
     """
     big_input, small_input1, mid1, small_input2, mid2, out_unit = (
-        UnitModel(
+        UnitModel2(
             ICaseString(name),
             width,
-            [ICaseString("ALU")],
+            {ICaseString("ALU"): False},
             LockInfo(rd_lock, wr_lock),
-            [],
         )
         for name, width, rd_lock, wr_lock in units_desc
     )
-    model2_getter = foundation.Self.model2()
     return ProcessorDesc(
-        map(model2_getter, [big_input, small_input1, small_input2]),
-        [FuncUnit(out_unit.model2, map(model2_getter, [big_input, mid2]))],
+        [big_input, small_input1, small_input2],
+        [FuncUnit(out_unit, [big_input, mid2])],
         [],
         starmap(
-            FuncUnit,
-            [
-                [mid2.model2, map(model2_getter, [mid1, small_input2])],
-                [mid1.model2, [small_input1.model2]],
-            ],
+            FuncUnit, [[mid2, [mid1, small_input2]], [mid1, [small_input1]]]
         ),
     )
 
