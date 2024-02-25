@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -45,7 +45,7 @@ import pytest
 import test_utils
 import processor_utils
 from processor_utils import ProcessorDesc, units
-from processor_utils.units import FuncUnit, LockInfo, UnitModel
+from processor_utils.units import FuncUnit, LockInfo, UnitModel2
 from str_utils import ICaseString
 
 
@@ -120,13 +120,12 @@ class TestExpAttr:
             [],
             [],
             [
-                UnitModel(
+                UnitModel2(
                     ICaseString("full system"),
                     1,
-                    [ICaseString("ALU")],
+                    {ICaseString("ALU"): True},
                     LockInfo(True, True),
-                    [ICaseString("ALU")],
-                ).model2
+                )
             ],
             [],
         )
@@ -142,8 +141,11 @@ class TestPostOrder:
 
         """
         in_unit, mid1_unit, mid2_unit, mid3_unit, out_unit = (
-            UnitModel(
-                ICaseString(name), 1, ["ALU"], LockInfo(rd_lock, wr_lock), []
+            UnitModel2(
+                ICaseString(name),
+                1,
+                {ICaseString("ALU"): False},
+                LockInfo(rd_lock, wr_lock),
             )
             for name, rd_lock, wr_lock in [
                 ("input", True, False),
@@ -154,11 +156,11 @@ class TestPostOrder:
             ]
         )
         assert ProcessorDesc(
-            [in_unit.model2],
-            [FuncUnit(out_unit.model2, [mid3_unit.model2])],
+            [in_unit],
+            [FuncUnit(out_unit, [mid3_unit])],
             [],
             (
-                FuncUnit(model.model2, [pred.model2])
+                FuncUnit(model, [pred])
                 for model, pred in [
                     (mid1_unit, in_unit),
                     (mid3_unit, mid2_unit),
@@ -166,7 +168,7 @@ class TestPostOrder:
                 ]
             ),
         ).internal_units == tuple(
-            FuncUnit(model.model2, [pred.model2])
+            FuncUnit(model, [pred])
             for model, pred in [
                 (mid3_unit, mid2_unit),
                 (mid2_unit, mid1_unit),
