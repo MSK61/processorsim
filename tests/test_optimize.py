@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -42,14 +42,13 @@
 from itertools import starmap
 from logging import WARNING
 
-import fastcore.foundation
 import more_itertools
 import pytest
 
 import test_utils
 from test_utils import chk_warn, read_proc_file
 from processor_utils import ProcessorDesc
-from processor_utils.units import FuncUnit, LockInfo, UnitModel
+from processor_utils.units import FuncUnit, LockInfo, UnitModel2
 from str_utils import ICaseString
 
 
@@ -75,19 +74,18 @@ class TestClean:
         alu_cap = ICaseString("ALU")
         assert proc_desc == ProcessorDesc(
             [
-                UnitModel(
+                UnitModel2(
                     ICaseString("input"),
                     1,
-                    [alu_cap],
+                    {alu_cap: False},
                     LockInfo(True, False),
-                    [],
-                ).model2
+                )
             ],
             [
                 FuncUnit(
-                    UnitModel(
-                        out1_unit, 1, [alu_cap], LockInfo(False, True), []
-                    ).model2,
+                    UnitModel2(
+                        out1_unit, 1, {alu_cap: False}, LockInfo(False, True)
+                    ),
                     proc_desc.in_ports,
                 )
             ],
@@ -110,13 +108,12 @@ class TestClean:
             [],
             [],
             [
-                UnitModel(
+                UnitModel2(
                     ICaseString("core 1"),
                     1,
-                    [ICaseString("ALU")],
+                    {ICaseString("ALU"): False},
                     LockInfo(True, True),
-                    [],
-                ).model2
+                )
             ],
             [],
         )
@@ -138,8 +135,8 @@ class TestEdgeRemoval:
             "optimization", "incompatibleEdgeProcessor.yaml"
         )
         in_units = starmap(
-            lambda name, categ: UnitModel(
-                name, 1, [categ], LockInfo(True, False), []
+            lambda name, categ: UnitModel2(
+                name, 1, {categ: False}, LockInfo(True, False)
             ),
             (
                 map(ICaseString, unit_params)
@@ -149,7 +146,7 @@ class TestEdgeRemoval:
         wr_lock = LockInfo(False, True)
         out_units = starmap(
             lambda name, categ, in_unit: FuncUnit(
-                UnitModel(name, 1, [categ], wr_lock, []).model2,
+                UnitModel2(name, 1, {categ: False}, wr_lock),
                 [
                     more_itertools.first_true(
                         proc_desc.in_ports,
@@ -165,9 +162,7 @@ class TestEdgeRemoval:
                 ]
             ),
         )
-        assert proc_desc == ProcessorDesc(
-            map(fastcore.foundation.Self.model2(), in_units), out_units, [], []
-        )
+        assert proc_desc == ProcessorDesc(in_units, out_units, [], [])
         chk_warn(["input 2", "output 1"], caplog.records)
 
 
