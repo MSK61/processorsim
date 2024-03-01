@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.87.0, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -261,6 +261,10 @@ def _add_unit(
             for cur_attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]
         },
     )
+    processor.nodes[unit_name][units.UNIT_ROLES_KEY] = {
+        cap: cap in processor.nodes[unit_name][UNIT_MEM_KEY]
+        for cap in processor.nodes[unit_name][UNIT_CAPS_KEY]
+    }
     unit_registry.add(unit_name)
 
 

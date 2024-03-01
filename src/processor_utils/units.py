@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.87.0, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -58,6 +58,7 @@ UNIT_NAME_KEY: Final = "name"
 # unit lock attributes
 UNIT_RLOCK_KEY: Final = "readLock"
 UNIT_WLOCK_KEY: Final = "writeLock"
+UNIT_ROLES_KEY: Final = "roles"
 UNIT_WIDTH_KEY: Final = "width"
 
 

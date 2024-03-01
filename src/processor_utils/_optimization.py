@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.82.0, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.87.0, python 3.11.7, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -47,7 +47,7 @@ from networkx import DiGraph, Graph
 from str_utils import ICaseString
 import type_checking
 from .exception import DeadInputError
-from . import _port_defs
+from . import _port_defs, units
 from .units import UNIT_CAPS_KEY
 
 
@@ -140,6 +140,10 @@ def _clean_unit(processor: DiGraph, unit: object) -> None:
         _chk_edge(processor, edge) for edge in tuple(processor.in_edges(unit))
     )
     processor.nodes[unit][UNIT_CAPS_KEY] = frozenset().union(*pred_caps)
+    processor.nodes[unit][units.UNIT_ROLES_KEY] = {
+        cap: cap in processor.nodes[unit][units.UNIT_MEM_KEY]
+        for cap in processor.nodes[unit][UNIT_CAPS_KEY]
+    }
 
 
 def _rm_dead_end(
