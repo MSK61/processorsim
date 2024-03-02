@@ -582,9 +582,9 @@ def _load_mem_acl(
     The function returns a list of loaded memory ACL capabilities.
 
     """
+    mem_acl = unit.get(UNIT_MEM_KEY, [])
     return [
-        _get_acl_cap(unit[UNIT_NAME_KEY], cap, cap_registry)
-        for cap in unit.get(UNIT_MEM_KEY, [])
+        _get_acl_cap(unit[UNIT_NAME_KEY], cap, cap_registry) for cap in mem_acl
     ]
 
 
