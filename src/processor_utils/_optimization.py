@@ -47,8 +47,8 @@ from networkx import DiGraph, Graph
 from str_utils import ICaseString
 import type_checking
 from .exception import DeadInputError
-from . import _port_defs, units
-from .units import UNIT_CAPS_KEY
+from . import _port_defs
+from .units import UNIT_CAPS_KEY, UNIT_ROLES_KEY
 
 
 def chk_terminals(
@@ -94,7 +94,7 @@ def rm_empty_units(processor: Graph) -> None:
     The function removes units with no capabilities from the processor.
 
     """
-    unit_entries = tuple(type_checking.nodes(processor, UNIT_CAPS_KEY))
+    unit_entries = tuple(type_checking.nodes(processor, UNIT_ROLES_KEY))
 
     for unit, capabilities in unit_entries:
         if not capabilities:
@@ -112,8 +112,9 @@ def _chk_edge(
     the common capabilities between the units connected by the edge.
 
     """
-    common_caps = processor.nodes[edge[1]][UNIT_CAPS_KEY].intersection(
-        processor.nodes[edge[0]][UNIT_CAPS_KEY]
+    common_caps = (
+        processor.nodes[edge[1]][UNIT_ROLES_KEY]
+        & processor.nodes[edge[0]][UNIT_ROLES_KEY].keys()
     )
 
     if not common_caps:
@@ -133,15 +134,15 @@ def _clean_unit(processor: DiGraph, unit: object) -> None:
     the given unit.
 
     """
-    processor.nodes[unit][UNIT_CAPS_KEY] = frozenset(
-        processor.nodes[unit][UNIT_CAPS_KEY]
-    )
+    processor.nodes[unit][UNIT_CAPS_KEY] = processor.nodes[unit][
+        UNIT_ROLES_KEY
+    ].keys()
     pred_caps = (
         _chk_edge(processor, edge) for edge in tuple(processor.in_edges(unit))
     )
     processor.nodes[unit][UNIT_CAPS_KEY] = frozenset().union(*pred_caps)
-    processor.nodes[unit][units.UNIT_ROLES_KEY] = {
-        cap: cap in processor.nodes[unit][units.UNIT_MEM_KEY]
+    processor.nodes[unit][UNIT_ROLES_KEY] = {
+        cap: processor.nodes[unit][UNIT_ROLES_KEY].get(cap, False)
         for cap in processor.nodes[unit][UNIT_CAPS_KEY]
     }
 

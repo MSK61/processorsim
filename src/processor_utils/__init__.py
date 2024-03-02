@@ -74,6 +74,7 @@ from .units import (
     UnitModel,
     UNIT_NAME_KEY,
     UNIT_RLOCK_KEY,
+    UNIT_ROLES_KEY,
     UNIT_WIDTH_KEY,
     UNIT_WLOCK_KEY,
 )
@@ -261,10 +262,13 @@ def _add_unit(
             for cur_attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]
         },
     )
-    processor.nodes[unit_name][units.UNIT_ROLES_KEY] = {
-        cap: cap in processor.nodes[unit_name][UNIT_MEM_KEY]
-        for cap in processor.nodes[unit_name][UNIT_CAPS_KEY]
-    }
+    processor.nodes[unit_name][UNIT_ROLES_KEY] = unit.get(
+        UNIT_ROLES_KEY,
+        {
+            cap: cap in processor.nodes[unit_name][UNIT_MEM_KEY]
+            for cap in processor.nodes[unit_name][UNIT_CAPS_KEY]
+        },
+    )
     unit_registry.add(unit_name)
 
 
@@ -436,6 +440,17 @@ def _get_cap_name(capability: _T, cap_registry: SelfIndexSet[_T]) -> _T:
     return std_cap
 
 
+def _get_mem_acl(
+    roles: Iterable[tuple[_T, object]]
+) -> Generator[_T, None, None]:
+    """Extract the memory ACL from the unit roles.
+
+    `roles` are the unit roles.
+
+    """
+    return (cap for cap, uses_mem in roles if uses_mem)
+
+
 def _get_preds(
     processor: DiGraph, unit: object, unit_map: Any
 ) -> "map[str] | list[str]":
@@ -507,7 +522,7 @@ def _get_unit_entry(name: ICaseString, attrs: Mapping[str, Any]) -> UnitModel:
     return UnitModel(
         name,
         attrs[UNIT_WIDTH_KEY],
-        {cap: cap in attrs[UNIT_MEM_KEY] for cap in attrs[UNIT_CAPS_KEY]},
+        attrs[UNIT_ROLES_KEY],
         units.LockInfo(*lock_attrs),
     )
 
@@ -558,8 +573,9 @@ def _load_caps(
     """
     cap_list: list[ICaseString] = []
     unit_cap_reg = SelfIndexSet[ICaseString]()
+    unit_caps = unit.get(UNIT_ROLES_KEY, unit[UNIT_CAPS_KEY])
 
-    for cur_cap in unit[UNIT_CAPS_KEY]:
+    for cur_cap in unit_caps:
         _add_capability(
             unit[UNIT_NAME_KEY],
             ICaseString(cur_cap),
@@ -572,8 +588,7 @@ def _load_caps(
 
 
 def _load_mem_acl(
-    unit: Mapping[str, Iterable[str]],
-    cap_registry: IndexedSet[_CapabilityInfo],
+    unit: Mapping[str, Any], cap_registry: IndexedSet[_CapabilityInfo]
 ) -> list[ICaseString]:
     """Load the given unit memory ACL.
 
@@ -582,7 +597,11 @@ def _load_mem_acl(
     The function returns a list of loaded memory ACL capabilities.
 
     """
-    mem_acl = unit.get(UNIT_MEM_KEY, [])
+    mem_acl = (
+        _get_mem_acl(unit[UNIT_ROLES_KEY].items())
+        if UNIT_ROLES_KEY in unit
+        else unit.get(UNIT_MEM_KEY, [])
+    )
     return [
         _get_acl_cap(unit[UNIT_NAME_KEY], cap, cap_registry) for cap in mem_acl
     ]
