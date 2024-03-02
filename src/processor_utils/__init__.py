@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.87.0, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -566,9 +566,9 @@ def _load_mem_acl(
     capabilities.
 
     """
+    mem_acl = unit.get(UNIT_MEM_KEY, [])
     return (
-        _get_acl_cap(unit[UNIT_NAME_KEY], cap, cap_registry)
-        for cap in unit.get(UNIT_MEM_KEY, [])
+        _get_acl_cap(unit[UNIT_NAME_KEY], cap, cap_registry) for cap in mem_acl
     )
 
 
