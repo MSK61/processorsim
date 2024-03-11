@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.87.0, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.87.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -48,7 +48,7 @@ from str_utils import ICaseString
 import type_checking
 from .exception import DeadInputError
 from . import _port_defs
-from .units import UNIT_CAPS_KEY, UNIT_ROLES_KEY
+from .units import UNIT_ROLES_KEY
 
 
 def chk_terminals(
@@ -134,16 +134,13 @@ def _clean_unit(processor: DiGraph, unit: object) -> None:
     the given unit.
 
     """
-    processor.nodes[unit][UNIT_CAPS_KEY] = processor.nodes[unit][
-        UNIT_ROLES_KEY
-    ].keys()
     pred_caps = (
         _chk_edge(processor, edge) for edge in tuple(processor.in_edges(unit))
     )
-    processor.nodes[unit][UNIT_CAPS_KEY] = frozenset().union(*pred_caps)
+    unit_caps = frozenset().union(*pred_caps)
     processor.nodes[unit][UNIT_ROLES_KEY] = {
         cap: processor.nodes[unit][UNIT_ROLES_KEY].get(cap, False)
-        for cap in processor.nodes[unit][UNIT_CAPS_KEY]
+        for cap in unit_caps
     }
 
 

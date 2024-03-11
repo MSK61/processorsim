@@ -31,13 +31,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.87.0, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.87.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import collections.abc
 from collections.abc import (
     Collection,
     Generator,
@@ -69,8 +70,6 @@ from . import _checks, _optimization, _port_defs, units
 from .exception import BadEdgeError, BadWidthError, DupElemError
 from .units import (
     FuncUnit,
-    UNIT_CAPS_KEY,
-    UNIT_MEM_KEY,
     UnitModel,
     UNIT_NAME_KEY,
     UNIT_RLOCK_KEY,
@@ -252,11 +251,7 @@ def _add_unit(
     _chk_unit_width(unit)
     processor.add_node(
         unit_name,
-        **{
-            UNIT_WIDTH_KEY: unit[UNIT_WIDTH_KEY],
-            UNIT_CAPS_KEY: _load_caps(unit, cap_registry),
-            UNIT_MEM_KEY: _load_mem_acl(unit, cap_registry),
-        },
+        **{UNIT_WIDTH_KEY: unit[UNIT_WIDTH_KEY]},
         **{
             cur_attr: unit.get(cur_attr, False)
             for cur_attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]
@@ -264,10 +259,9 @@ def _add_unit(
     )
     processor.nodes[unit_name][UNIT_ROLES_KEY] = unit.get(
         UNIT_ROLES_KEY,
-        {
-            cap: cap in processor.nodes[unit_name][UNIT_MEM_KEY]
-            for cap in processor.nodes[unit_name][UNIT_CAPS_KEY]
-        },
+        _get_roles(
+            _load_caps(unit, cap_registry), _load_mem_acl(unit, cap_registry)
+        ),
     )
     unit_registry.add(unit_name)
 
@@ -440,17 +434,6 @@ def _get_cap_name(capability: _T, cap_registry: SelfIndexSet[_T]) -> _T:
     return std_cap
 
 
-def _get_mem_acl(
-    roles: Iterable[tuple[_T, object]]
-) -> Generator[_T, None, None]:
-    """Extract the memory ACL from the unit roles.
-
-    `roles` are the unit roles.
-
-    """
-    return (cap for cap, uses_mem in roles if uses_mem)
-
-
 def _get_preds(
     processor: DiGraph, unit: object, unit_map: Any
 ) -> "map[str] | list[str]":
@@ -494,6 +477,18 @@ def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
         FuncUnit(unit_map[name], _get_preds2(graph, name, unit_map))
         for name in graph
     )
+
+
+def _get_roles(
+    caps: Iterable[object], mem_acl: collections.abc.Container[object]
+) -> dict[object, bool]:
+    """Construct the unit roles.
+
+    `caps` are the unit capabilities.
+    `mem_acl` is the unit memory ACL.
+
+    """
+    return {cap: cap in mem_acl for cap in caps}
 
 
 def _get_std_edge(
@@ -573,9 +568,8 @@ def _load_caps(
     """
     cap_list: list[ICaseString] = []
     unit_cap_reg = SelfIndexSet[ICaseString]()
-    unit_caps = unit.get(UNIT_ROLES_KEY, unit[UNIT_CAPS_KEY])
 
-    for cur_cap in unit_caps:
+    for cur_cap in unit[units.UNIT_CAPS_KEY]:
         _add_capability(
             unit[UNIT_NAME_KEY],
             ICaseString(cur_cap),
@@ -597,11 +591,7 @@ def _load_mem_acl(
     The function returns a list of loaded memory ACL capabilities.
 
     """
-    mem_acl = (
-        _get_mem_acl(unit[UNIT_ROLES_KEY].items())
-        if UNIT_ROLES_KEY in unit
-        else unit.get(UNIT_MEM_KEY, [])
-    )
+    mem_acl = unit.get(units.UNIT_MEM_KEY, [])
     return [
         _get_acl_cap(unit[UNIT_NAME_KEY], cap, cap_registry) for cap in mem_acl
     ]
