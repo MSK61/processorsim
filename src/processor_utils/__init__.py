@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.87.1, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.88.1, python 3.11.9, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -582,7 +582,8 @@ def _load_caps(
 
 
 def _load_mem_acl(
-    unit: Mapping[str, Any], cap_registry: IndexedSet[_CapabilityInfo]
+    unit: Mapping[str, Iterable[str]],
+    cap_registry: IndexedSet[_CapabilityInfo],
 ) -> list[ICaseString]:
     """Load the given unit memory ACL.
 
