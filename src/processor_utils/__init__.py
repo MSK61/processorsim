@@ -38,7 +38,6 @@
 #
 ############################################################
 
-import collections.abc
 from collections.abc import (
     Collection,
     Generator,
@@ -251,17 +250,14 @@ def _add_unit(
     _chk_unit_width(unit)
     processor.add_node(
         unit_name,
-        **{UNIT_WIDTH_KEY: unit[UNIT_WIDTH_KEY]},
+        **{
+            UNIT_WIDTH_KEY: unit[UNIT_WIDTH_KEY],
+            UNIT_ROLES_KEY: _get_roles(unit, cap_registry),
+        },
         **{
             cur_attr: unit.get(cur_attr, False)
             for cur_attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]
         },
-    )
-    processor.nodes[unit_name][UNIT_ROLES_KEY] = unit.get(
-        UNIT_ROLES_KEY,
-        _get_roles(
-            _load_caps(unit, cap_registry), _load_mem_acl(unit, cap_registry)
-        ),
     )
     unit_registry.add(unit_name)
 
@@ -434,6 +430,15 @@ def _get_cap_name(capability: _T, cap_registry: SelfIndexSet[_T]) -> _T:
     return std_cap
 
 
+def _get_mem_acl(roles: Iterable[Iterable[Any]]) -> Generator[Any, None, None]:
+    """Construct the unit memory ACL.
+
+    `roles` are the unit roles.
+
+    """
+    return (cap for cap, uses_mem in roles if uses_mem)
+
+
 def _get_preds(
     processor: DiGraph, unit: object, unit_map: Any
 ) -> "map[str] | list[str]":
@@ -480,14 +485,26 @@ def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
 
 
 def _get_roles(
-    caps: Iterable[object], mem_acl: collections.abc.Container[object]
-) -> dict[object, bool]:
+    unit: Mapping[object, Mapping[str, object]],
+    cap_registry: IndexedSet[_CapabilityInfo],
+) -> dict[ICaseString, bool]:
     """Construct the unit roles.
 
-    `caps` are the unit capabilities.
-    `mem_acl` is the unit memory ACL.
+    `unit` is the unit to load whose roles.
+    `cap_registry` is the store of previously added capabilities.
 
     """
+    unit_mem_acl: Iterable[str]
+    try:
+        roles = unit[UNIT_ROLES_KEY]
+    except KeyError:
+        unit_caps, unit_mem_acl = unit[units.UNIT_CAPS_KEY], unit.get(
+            units.UNIT_MEM_KEY, []
+        )
+    else:
+        unit_caps, unit_mem_acl = roles, _get_mem_acl(roles.items())
+    caps = _load_caps(unit[UNIT_NAME_KEY], unit_caps, cap_registry)
+    mem_acl = _load_mem_acl(unit[UNIT_NAME_KEY], unit_mem_acl, cap_registry)
     return {cap: cap in mem_acl for cap in caps}
 
 
@@ -556,12 +573,14 @@ def _get_unit_name(unit: _T, unit_registry: SelfIndexSet[_T]) -> _T:
 
 
 def _load_caps(
-    unit: Mapping[object, Iterable[str]],
+    unit: object,
+    caps: Iterable[str],
     cap_registry: IndexedSet[_CapabilityInfo],
 ) -> list[ICaseString]:
     """Load the given unit capabilities.
 
-    `unit` is the unit to load whose capabilities.
+    `unit` is the unit name.
+    `caps` are the list of unit capabilities.
     `cap_registry` is the store of previously added capabilities.
     The function returns a list of loaded capabilities.
 
@@ -569,33 +588,28 @@ def _load_caps(
     cap_list: list[ICaseString] = []
     unit_cap_reg = SelfIndexSet[ICaseString]()
 
-    for cur_cap in unit[units.UNIT_CAPS_KEY]:
+    for cur_cap in caps:
         _add_capability(
-            unit[UNIT_NAME_KEY],
-            ICaseString(cur_cap),
-            cap_list,
-            unit_cap_reg,
-            cap_registry,
+            unit, ICaseString(cur_cap), cap_list, unit_cap_reg, cap_registry
         )
 
     return cap_list
 
 
 def _load_mem_acl(
-    unit: Mapping[object, Iterable[str]],
+    unit: object,
+    mem_acl: Iterable[str],
     cap_registry: IndexedSet[_CapabilityInfo],
 ) -> list[ICaseString]:
     """Load the given unit memory ACL.
 
-    `unit` is the unit to load whose memory ACL.
+    `unit` is the unit name.
+    `mem_acl` is the unit memory ACL.
     `cap_registry` is the store of valid capabilities.
     The function returns a list of loaded memory ACL capabilities.
 
     """
-    mem_acl = unit.get(units.UNIT_MEM_KEY, [])
-    return [
-        _get_acl_cap(unit[UNIT_NAME_KEY], cap, cap_registry) for cap in mem_acl
-    ]
+    return [_get_acl_cap(unit, cap, cap_registry) for cap in mem_acl]
 
 
 def _post_order(internal_units: Iterable[FuncUnit]) -> tuple[Any, ...]:
