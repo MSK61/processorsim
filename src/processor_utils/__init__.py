@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.87.0, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.88.1, python 3.11.9, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -234,7 +234,7 @@ def _add_src_path() -> None:
 
 def _add_unit(
     processor: Graph,
-    unit: Mapping[str, Any],
+    unit: Mapping[object, Any],
     unit_registry: SelfIndexSet[ICaseString],
     cap_registry: IndexedSet[_CapabilityInfo],
 ) -> None:
@@ -321,7 +321,7 @@ def _chk_unit_name(name: _T, name_registry: SelfIndexSet[_T]) -> None:
         )
 
 
-def _chk_unit_width(unit: Mapping[str, int]) -> None:
+def _chk_unit_width(unit: Mapping[object, int]) -> None:
     """Check the given unit width.
 
     `unit` is the unit to load whose width.
@@ -341,7 +341,7 @@ def _chk_unit_width(unit: Mapping[str, int]) -> None:
 
 
 def _create_graph(
-    hw_units: Iterable[Mapping[str, Any]], links: Iterable[Collection[str]]
+    hw_units: Iterable[Mapping[object, Any]], links: Iterable[Collection[str]]
 ) -> DiGraph:
     """Create a data flow graph for a processor.
 
@@ -529,7 +529,7 @@ def _get_unit_name(unit: _T, unit_registry: SelfIndexSet[_T]) -> _T:
 
 
 def _load_caps(
-    unit: Mapping[str, Iterable[str]],
+    unit: Mapping[object, Iterable[str]],
     cap_registry: IndexedSet[_CapabilityInfo],
 ) -> list[ICaseString]:
     """Load the given unit capabilities.
@@ -555,7 +555,7 @@ def _load_caps(
 
 
 def _load_mem_acl(
-    unit: Mapping[str, Iterable[str]],
+    unit: Mapping[object, Iterable[str]],
     cap_registry: IndexedSet[_CapabilityInfo],
 ) -> Generator[ICaseString, None, None]:
     """Load the given unit memory ACL.
@@ -648,7 +648,7 @@ def get_abilities(processor: ProcessorDesc) -> frozenset[ICaseString]:
     )
 
 
-def load_proc_desc(raw_desc: Any) -> ProcessorDesc:
+def load_proc_desc(raw_desc: Mapping[object, Iterable[Any]]) -> ProcessorDesc:
     """Transform the given raw description into a processor one.
 
     `raw_desc` is the raw description to extract a processor from.
@@ -664,7 +664,7 @@ def load_proc_desc(raw_desc: Any) -> ProcessorDesc:
             type_checking.map_ex(
                 ["units", "dataPath"],
                 raw_desc,
-                Iterable[Mapping[str, Any]],  # type: ignore[type-abstract]
+                Iterable[Any],  # type: ignore[type-abstract]
             )
         )
     )
