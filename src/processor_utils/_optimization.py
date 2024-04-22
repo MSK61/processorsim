@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.82.0, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.88.1, python 3.11.9, Fedora release
+#               39 (Thirty Nine)
 #
 # notes:        This is a private program.
 #
@@ -44,7 +44,7 @@ from logging import warning
 import networkx
 from networkx import DiGraph, Graph
 
-from str_utils import ICaseString
+import str_utils
 import type_checking
 from .exception import DeadInputError
 from . import _port_defs
@@ -103,7 +103,7 @@ def rm_empty_units(processor: Graph) -> None:
 
 def _chk_edge(
     processor: Graph, edge: abc.Sequence[object]
-) -> frozenset[ICaseString]:
+) -> frozenset[str_utils.ICaseString]:
     """Check if the edge is useful.
 
     `processor` is the processor containing the edge.
