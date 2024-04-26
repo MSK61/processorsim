@@ -56,6 +56,8 @@ jobs:
 
     - name: Snyk test
       run: snyk test
+    - name: Install coveralls dependencies
+      run: pip install coverage
     - name: Coveralls GitHub Action
       uses: coverallsapp/github-action@v2.2.3
     - name: Snyk monitor
