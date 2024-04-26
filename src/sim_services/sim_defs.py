@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.88.1, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -44,7 +44,7 @@ from typing import Final
 import attr
 
 
-class StallState(enum.Enum):
+class StallState(enum.StrEnum):
     """Instruction stalling state"""
 
     NO_STALL: Final = "U"

@@ -40,8 +40,8 @@ Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.88.1, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -116,7 +116,7 @@ class _InstrPosition:
         `self` is this instruction position.
 
         """
-        return f"{self._stalled.value}:{self._unit}"
+        return f"{self._stalled}:{self._unit}"
 
     _unit: object
 
