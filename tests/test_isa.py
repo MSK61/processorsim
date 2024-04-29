@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.88.1, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -100,20 +100,12 @@ class TestIsa:
         "in_file, supported_caps, exp_isa",
         [
             ("emptyISA.yaml", ["ALU"], {}),
-            (
-                "singleInstructionISA.yaml",
-                ["ALU"],
-                {"ADD": ICaseString("ALU")},
-            ),
-            (
-                "singleInstructionISA.yaml",
-                ["alu"],
-                {"ADD": ICaseString("alu")},
-            ),
+            ("singleInstructionISA.yaml", ["ALU"], [("ADD", "ALU")]),
+            ("singleInstructionISA.yaml", ["alu"], [("ADD", "alu")]),
             (
                 "dualInstructionISA.yaml",
                 ["ALU"],
-                {"ADD": ICaseString("ALU"), "SUB": ICaseString("ALU")},
+                [("ADD", "ALU"), ("SUB", "ALU")],
             ),
         ],
     )
@@ -126,9 +118,9 @@ class TestIsa:
         `exp_isa` is the expected instruction set.
 
         """
-        assert (
-            read_isa_file(in_file, map(ICaseString, supported_caps)) == exp_isa
-        )
+        assert read_isa_file(in_file, map(ICaseString, supported_caps)) == {
+            instr: ICaseString(cap) for instr, cap in exp_isa
+        }
 
 
 def main():
