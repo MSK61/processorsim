@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.88.1, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -64,58 +64,42 @@ _SIM_CASES = [
     (
         "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
         "singleALUProcessor.yaml",
-        [{ICaseString("full system"): [InstrState(0)]}],
+        [[("full system", [0])]],
     ),
     (
         "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
         "dualCoreALUProcessor.yaml",
-        [{ICaseString("core 1"): [InstrState(0)]}],
+        [[("core 1", [0])]],
     ),
     (
         "3InstructionProgram.asm",
         "dualCoreALUProcessor.yaml",
-        [
-            {
-                ICaseString("core 1"): [InstrState(0)],
-                ICaseString("core 2"): [InstrState(1)],
-            },
-            {ICaseString("core 1"): [InstrState(2)]},
-        ],
+        [[("core 1", [0]), ("core 2", [1])], [("core 1", [2])]],
     ),
     (
         "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
         "dualCoreMemALUProcessor.yaml",
-        [{ICaseString("core 2"): [InstrState(0)]}],
+        [[("core 2", [0])]],
     ),
     (
         "2InstructionProgram.asm",
         "2WideALUProcessor.yaml",
-        [{ICaseString("full system"): map(InstrState, [0, 1])}],
+        [[("full system", [0, 1])]],
     ),
     (
         "3InstructionProgram.asm",
         "2WideALUProcessor.yaml",
-        [
-            {ICaseString("full system"): map(InstrState, [0, 1])},
-            {ICaseString("full system"): [InstrState(2)]},
-        ],
+        [[("full system", [0, 1])], [("full system", [2])]],
     ),
     (
         "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
         "twoConnectedUnitsProcessor.yaml",
-        [
-            {ICaseString("input"): [InstrState(0)]},
-            {ICaseString("output"): [InstrState(0)]},
-        ],
+        [[("input", [0])], [("output", [0])]],
     ),
     (
         "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
         "3StageProcessor.yaml",
-        [
-            {ICaseString("input"): [InstrState(0)]},
-            {ICaseString("middle"): [InstrState(0)]},
-            {ICaseString("output"): [InstrState(0)]},
-        ],
+        [[("input", [0])], [("middle", [0])], [("output", [0])]],
     ),
 ]
 _UNITS_DESC = [
@@ -380,7 +364,15 @@ class TestSim:
                 ),
             ),
             HwSpec(cpu),
-        ) == [BagValDict(inst_util) for inst_util in util_info]
+        ) == [
+            BagValDict(
+                {
+                    ICaseString(unit): map(InstrState, instr_states)
+                    for unit, instr_states in inst_util
+                }
+            )
+            for inst_util in util_info
+        ]
 
     @mark.parametrize(
         "valid_prog, util_tbl",
