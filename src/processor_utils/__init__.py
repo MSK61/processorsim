@@ -32,7 +32,7 @@
 # author:       Mohammed El-Afifi (ME)
 #
 # environment:  Visual Studio Code 1.88.1, python 3.11.9, Fedora release
-#               39 (Thirty Nine)
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -269,8 +269,8 @@ def _chk_instr(instr: _T, instr_registry: SelfIndexSet[_T]) -> None:
 
     `instr` is the instruction.
     `instr_registry` is the store of previously added instructions.
-    The function raises a DupElemError if the same instruction was previously
-    added to the instruction store.
+    The function raises a DupElemError if the same instruction was
+    previously added to the instruction store.
 
     """
     old_instr = instr_registry.get(instr)
