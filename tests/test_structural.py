@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -43,13 +43,14 @@ from attr import frozen
 import more_itertools
 import pytest
 
-from container_utils import BagValDict
+import test_utils
+from test_utils import get_util_tbl
 import processor_utils
 from processor_utils import ProcessorDesc, units
 from processor_utils.units import LockInfo, UnitModel
 from program_defs import HwInstruction
 from sim_services import HwSpec, simulate
-from sim_services.sim_defs import InstrState, StallState
+from sim_services.sim_defs import StallState
 from str_utils import ICaseString
 
 
@@ -72,10 +73,7 @@ class TestMemUtil:
         assert simulate(
             [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
             HwSpec(ProcessorDesc([], [], [full_sys_unit], [])),
-        ) == [
-            BagValDict({ICaseString("full system"): [InstrState(instr)]})
-            for instr in [0, 1]
-        ]
+        ) == get_util_tbl([[("full system", [instr])] for instr in [0, 1]])
 
 
 class TestStructural:
@@ -115,10 +113,7 @@ class TestStructural:
                     }
                 )
             ),
-        ) == [
-            BagValDict({ICaseString("full system"): [InstrState(instr)]})
-            for instr in [0, 1]
-        ]
+        ) == get_util_tbl([[("full system", [instr])] for instr in [0, 1]])
 
 
 @frozen
@@ -145,25 +140,13 @@ _STRUCT_CASES = [
     (
         _TestInParams(1, ["ALU"], [("output", 1, ["ALU"])]),
         _TestExpResults(
-            1,
-            [
-                {ICaseString("output"): [InstrState(0)]},
-                {ICaseString("input"): [InstrState(1)]},
-                {ICaseString("output"): [InstrState(1)]},
-            ],
+            1, [[("output", [[0]])], [("input", [[1]])], [("output", [[1]])]]
         ),
     ),
     (
         _TestInParams(1, [], [("output", 1, ["ALU"])]),
         _TestExpResults(
-            1,
-            [
-                {
-                    ICaseString("output"): [InstrState(0)],
-                    ICaseString("input"): [InstrState(1)],
-                },
-                {ICaseString("output"): [InstrState(1)]},
-            ],
+            1, [[("output", [[0]]), ("input", [[1]])], [("output", [[1]])]]
         ),
     ),
     (
@@ -171,13 +154,8 @@ _STRUCT_CASES = [
         _TestExpResults(
             2,
             [
-                {
-                    ICaseString("output"): [InstrState(0)],
-                    ICaseString("input"): [
-                        InstrState(1, StallState.STRUCTURAL)
-                    ],
-                },
-                {ICaseString("output"): [InstrState(1)]},
+                [("output", [[0]]), ("input", [[1, StallState.STRUCTURAL]])],
+                [("output", [[1]])],
             ],
         ),
     ),
@@ -193,15 +171,7 @@ _STRUCT_CASES = [
                 ]
             ),
         ),
-        _TestExpResults(
-            2,
-            [
-                {
-                    ICaseString("output 1"): [InstrState(0)],
-                    ICaseString("output 2"): [InstrState(1)],
-                }
-            ],
-        ),
+        _TestExpResults(2, [[("output 1", [[0]]), ("output 2", [[1]])]]),
     ),
     (
         _TestInParams(
@@ -210,13 +180,8 @@ _STRUCT_CASES = [
         _TestExpResults(
             2,
             [
-                {
-                    ICaseString("output 1"): [InstrState(0)],
-                    ICaseString("input"): [
-                        InstrState(1, StallState.STRUCTURAL)
-                    ],
-                },
-                {ICaseString("output 1"): [InstrState(1)]},
+                [("output 1", [[0]]), ("input", [[1, StallState.STRUCTURAL]])],
+                [("output 1", [[1]])],
             ],
         ),
     ),
@@ -255,19 +220,14 @@ class TestHazards:
         out_units = (
             units.FuncUnit(out_unit, [in_unit]) for out_unit in out_units
         )
-        cp1_util = {
-            ICaseString("input"): map(
-                InstrState, range(exp_results.cp1_util_size)
-            )
-        }
+        cp1_util = "input", test_utils.get_lists(
+            range(exp_results.cp1_util_size)
+        )
         assert simulate(
             [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
             HwSpec(ProcessorDesc([in_unit], out_units, [], [])),
-        ) == list(
-            map(
-                BagValDict,
-                more_itertools.prepend(cp1_util, exp_results.extra_util),
-            )
+        ) == test_utils.get_util_info(
+            more_itertools.prepend([cp1_util], exp_results.extra_util)
         )
 
 
