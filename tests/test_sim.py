@@ -49,14 +49,12 @@ from pytest import mark, raises
 
 from test_type_chks import create_hw_instr
 import test_utils
-from test_utils import read_proc_file
-import container_utils
+from test_utils import get_lists, get_util_info, get_util_tbl, read_proc_file
 import processor_utils
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from program_defs import HwInstruction
 from sim_services import HwSpec, simulate, StallError
-import sim_services.sim_defs
 from sim_services.sim_defs import StallState
 from str_utils import ICaseString
 
@@ -151,7 +149,7 @@ class TestBasic:
                 for *regs, categ in prog
             ],
             HwSpec(cpu),
-        ) == _get_util_tbl(util_tbl)
+        ) == get_util_tbl(util_tbl)
 
 
 class TestFlow:
@@ -183,7 +181,7 @@ class TestFlow:
                 [[[], "R12", "MEM"], [["R11", "R15"], "R14", "ALU"]],
             ),
             HwSpec(ProcessorDesc(in_units, [out_unit], [], [])),
-        ) == _get_util_info(
+        ) == get_util_info(
             [
                 [("MEM input", [[0]]), ("ALU input", [[1]])],
                 [
@@ -233,7 +231,7 @@ class TestInSort:
         )
         assert simulate(
             [HwInstruction([], "R1", "ALU")], HwSpec(proc_desc)
-        ) == _get_util_tbl([[("input 1", [0])], [("output 1", [0])]])
+        ) == get_util_tbl([[("input 1", [0])], [("output 1", [0])]])
 
 
 class TestOutputFlush:
@@ -266,14 +264,14 @@ class TestOutputFlush:
         extra_instr_seq = range(2, last_instr)
         assert simulate(
             tuple(prog), HwSpec(ProcessorDesc([], [], cores, []))
-        ) == _get_util_info(
+        ) == get_util_info(
             [
                 [
                     ("core 1", [[0]]),
                     (
                         "core 2",
                         more_itertools.prepend(
-                            [1, StallState.DATA], _get_lists(extra_instr_seq)
+                            [1, StallState.DATA], get_lists(extra_instr_seq)
                         ),
                     ),
                 ],
@@ -297,10 +295,10 @@ class TestPipeline:
                 for out_reg in ["R1", "R2", "R3", "R4", "R5", "R6"]
             ],
             HwSpec(_make_proc_desc(_UNITS_DESC)),
-        ) == _get_util_info(
+        ) == get_util_info(
             [
                 [
-                    ("big input", _get_lists([0, 1, 2, 3])),
+                    ("big input", get_lists([0, 1, 2, 3])),
                     ("small input 1", [[4]]),
                     ("small input 2", [[5]]),
                 ],
@@ -309,15 +307,15 @@ class TestPipeline:
                         "big input",
                         ([instr, StallState.STRUCTURAL] for instr in [2, 3]),
                     ),
-                    ("output", _get_lists([0, 1])),
+                    ("output", get_lists([0, 1])),
                     ("middle 1", [[4]]),
                     ("middle 2", [[5]]),
                 ],
                 [
-                    ("output", _get_lists([2, 3])),
+                    ("output", get_lists([2, 3])),
                     ("middle 2", [[5, StallState.STRUCTURAL], [4]]),
                 ],
-                [("output", _get_lists([4, 5]))],
+                [("output", get_lists([4, 5]))],
             ]
         )
 
@@ -345,7 +343,7 @@ class TestSim:
                 ),
             ),
             HwSpec(cpu),
-        ) == _get_util_tbl(util_info)
+        ) == get_util_tbl(util_info)
 
     @mark.parametrize(
         "valid_prog, util_tbl",
@@ -379,7 +377,7 @@ class TestSim:
         test_utils.chk_error(
             [
                 test_utils.ValInStrCheck(
-                    ex_chk.value.processor_state, _get_util_tbl(util_tbl)
+                    ex_chk.value.processor_state, get_util_tbl(util_tbl)
                 )
             ],
             ex_chk.value,
@@ -418,10 +416,10 @@ class TestStall:
         assert simulate(
             [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
             HwSpec(proc_desc),
-        ) == _get_util_info(
+        ) == get_util_info(
             [
-                [("input", _get_lists([0, 1]))],
-                [("middle", _get_lists([0, 1]))],
+                [("input", get_lists([0, 1]))],
+                [("middle", get_lists([0, 1]))],
                 [("middle", [[1, StallState.STRUCTURAL]]), ("output", [[0]])],
                 [("output", [[1]])],
             ]
@@ -472,58 +470,7 @@ class TestStallErr:
                 for instr_regs in [[[], "R1"], [["R1"], "R2"]]
             ],
             HwSpec(proc_desc),
-        ).value.processor_state == _get_util_info(cp_util_lst)
-
-
-def _get_lists(elems):
-    """Generate a list for each element.
-
-    `elems` are the elements to generate lists for.
-
-    """
-    return ([cur_elem] for cur_elem in elems)
-
-
-def _get_util_info(util_records):
-    """Create a utilization table.
-
-    `util_records` are the records to create the utilization table from.
-
-    """
-    return [
-        container_utils.BagValDict(
-            {
-                ICaseString(unit): starmap(
-                    sim_services.sim_defs.InstrState, state_params
-                )
-                for unit, state_params in inst_util
-            }
-        )
-        for inst_util in util_records
-    ]
-
-
-def _get_util_rec(unit, instr_indices):
-    """Create a utilization record.
-
-    `unit` is the record unit.
-    `instr_indices` are the indices of the record instructions.
-    The returned record encodes the given instruction indices as
-    instruction state parameters.
-
-    """
-    return unit, _get_lists(instr_indices)
-
-
-def _get_util_tbl(util_records):
-    """Create a utilization table.
-
-    `util_records` are the records to create the utilization table from.
-
-    """
-    return _get_util_info(
-        starmap(_get_util_rec, inst_util) for inst_util in util_records
-    )
+        ).value.processor_state == get_util_info(cp_util_lst)
 
 
 def _make_proc_desc(units_desc):

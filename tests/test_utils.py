@@ -31,22 +31,25 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+from itertools import starmap
 from os.path import join
 
 import yaml
 
 import test_env
+import container_utils
 import processor_utils
 from processor_utils import ProcessorDesc
 from processor_utils.units import LockInfo, UnitModel
 import program_utils
+import sim_services.sim_defs
 from str_utils import ICaseString
 
 TEST_DATA_DIR = join(test_env.TEST_DIR, "data")
@@ -147,6 +150,45 @@ def compile_prog(prog_file, isa):
     return program_utils.compile_program(read_prog_file(prog_file), isa)
 
 
+def get_lists(elems):
+    """Generate a list for each element.
+
+    `elems` are the elements to generate lists for.
+
+    """
+    return ([cur_elem] for cur_elem in elems)
+
+
+def get_util_info(util_records):
+    """Create a utilization table.
+
+    `util_records` are the records to create the utilization table from.
+
+    """
+    return [
+        container_utils.BagValDict(
+            {
+                ICaseString(unit): starmap(
+                    sim_services.sim_defs.InstrState, state_params
+                )
+                for unit, state_params in inst_util
+            }
+        )
+        for inst_util in util_records
+    ]
+
+
+def get_util_tbl(util_records):
+    """Create a utilization table.
+
+    `util_records` are the records to create the utilization table from.
+
+    """
+    return get_util_info(
+        starmap(_get_util_rec, inst_util) for inst_util in util_records
+    )
+
+
 def read_isa_file(file_name, capabilities):
     """Read an instruction set file.
 
@@ -228,3 +270,15 @@ def _load_yaml(test_dir, file_name):
         join(TEST_DATA_DIR, test_dir, file_name), encoding="utf-8"
     ) as test_file:
         return yaml.safe_load(test_file)
+
+
+def _get_util_rec(unit, instr_indices):
+    """Create a utilization record.
+
+    `unit` is the record unit.
+    `instr_indices` are the indices of the record instructions.
+    The returned record encodes the given instruction indices as
+    instruction state parameters.
+
+    """
+    return unit, get_lists(instr_indices)
