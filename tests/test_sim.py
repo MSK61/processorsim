@@ -118,12 +118,12 @@ class TestBasic:
         "prog, cpu, util_tbl",
         [
             (
-                [(["R11", "R15"], "R14", "alu")],
+                [([["R11", "R15"], "R14"], "alu")],
                 read_proc_file("processors", "singleALUProcessor.yaml"),
                 [[("full system", [0])]],
             ),
             (
-                [([], "R12", "MEM"), (["R11", "R15"], "R14", "ALU")],
+                [([[], "R12"], "MEM"), ([["R11", "R15"], "R14"], "ALU")],
                 read_proc_file(
                     "processors", "multiplexedInputSplitOutputProcessor.yaml"
                 ),
@@ -146,7 +146,7 @@ class TestBasic:
         assert simulate(
             [
                 create_hw_instr(regs, ICaseString(categ))
-                for *regs, categ in prog
+                for regs, categ in prog
             ],
             HwSpec(cpu),
         ) == get_util_tbl(util_tbl)
