@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -46,7 +46,6 @@ from attr import field, frozen
 from fastcore import foundation
 
 from container_utils import sorted_tuple
-from str_utils import ICaseString
 
 # unit attributes
 UNIT_CAPS_KEY: Final = "capabilities"
@@ -98,11 +97,11 @@ class UnitModel:
         """
         return cap in self._mem_acl
 
-    name: ICaseString
+    name: str
 
     width: int
 
-    capabilities: tuple[ICaseString, ...] = field(converter=_sorted_caps)
+    capabilities: tuple[str, ...] = field(converter=_sorted_caps)
 
     lock_info: LockInfo
 

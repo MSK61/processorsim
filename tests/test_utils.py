@@ -50,7 +50,6 @@ from processor_utils import ProcessorDesc
 from processor_utils.units import LockInfo, UnitModel
 import program_utils
 import sim_services.sim_defs
-from str_utils import ICaseString
 
 TEST_DATA_DIR = join(test_env.TEST_DIR, "data")
 
@@ -81,15 +80,7 @@ def chk_one_unit(proc_dir, proc_file):
     assert read_proc_file(proc_dir, proc_file) == ProcessorDesc(
         [],
         [],
-        [
-            UnitModel(
-                ICaseString("full system"),
-                1,
-                [ICaseString("ALU")],
-                LockInfo(True, True),
-                [],
-            )
-        ],
+        [UnitModel("full system", 1, ["ALU"], LockInfo(True, True), [])],
         [],
     )
 
@@ -105,17 +96,11 @@ def chk_two_units(proc_dir, proc_file):
 
     """
     proc_desc = read_proc_file(proc_dir, proc_file)
-    alu_cap = ICaseString("ALU")
-    out_unit = ICaseString("output")
     assert proc_desc == ProcessorDesc(
-        [
-            UnitModel(
-                ICaseString("input"), 1, [alu_cap], LockInfo(True, False), []
-            )
-        ],
+        [UnitModel("input", 1, ["ALU"], LockInfo(True, False), [])],
         [
             processor_utils.units.FuncUnit(
-                UnitModel(out_unit, 1, [alu_cap], LockInfo(False, True), []),
+                UnitModel("output", 1, ["ALU"], LockInfo(False, True), []),
                 proc_desc.in_ports,
             )
         ],
@@ -168,9 +153,7 @@ def get_util_info(util_records):
     return [
         container_utils.BagValDict(
             {
-                ICaseString(unit): starmap(
-                    sim_services.sim_defs.InstrState, state_params
-                )
+                unit: starmap(sim_services.sim_defs.InstrState, state_params)
                 for unit, state_params in inst_util
             }
         )

@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -49,7 +49,6 @@ import test_utils
 from test_utils import chk_warn, read_proc_file
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
-from str_utils import ICaseString
 
 
 class TestClean:
@@ -70,22 +69,12 @@ class TestClean:
         proc_desc = read_proc_file(
             "optimization", "pathThatGetsCutOffItsOutput.yaml"
         )
-        out1_unit = ICaseString("output 1")
-        alu_cap = ICaseString("ALU")
         assert proc_desc == ProcessorDesc(
-            [
-                UnitModel(
-                    ICaseString("input"),
-                    1,
-                    [alu_cap],
-                    LockInfo(True, False),
-                    [],
-                )
-            ],
+            [UnitModel("input", 1, ["ALU"], LockInfo(True, False), [])],
             [
                 FuncUnit(
                     UnitModel(
-                        out1_unit, 1, [alu_cap], LockInfo(False, True), []
+                        "output 1", 1, ["ALU"], LockInfo(False, True), []
                     ),
                     proc_desc.in_ports,
                 )
@@ -108,15 +97,7 @@ class TestClean:
         ) == ProcessorDesc(
             [],
             [],
-            [
-                UnitModel(
-                    ICaseString("core 1"),
-                    1,
-                    [ICaseString("ALU")],
-                    LockInfo(True, True),
-                    [],
-                )
-            ],
+            [UnitModel("core 1", 1, ["ALU"], LockInfo(True, True), [])],
             [],
         )
         chk_warn(["core 2"], caplog.records)
@@ -140,10 +121,7 @@ class TestEdgeRemoval:
             lambda name, categ: UnitModel(
                 name, 1, [categ], LockInfo(True, False), []
             ),
-            (
-                map(ICaseString, unit_params)
-                for unit_params in [["input 1", "ALU"], ["input 2", "MEM"]]
-            ),
+            [["input 1", "ALU"], ["input 2", "MEM"]],
         )
         wr_lock = LockInfo(False, True)
         out_units = starmap(
@@ -156,13 +134,7 @@ class TestEdgeRemoval:
                     )
                 ],
             ),
-            (
-                map(ICaseString, unit_params)
-                for unit_params in [
-                    ["output 1", "ALU", "input 1"],
-                    ["output 2", "MEM", "input 2"],
-                ]
-            ),
+            [["output 1", "ALU", "input 1"], ["output 2", "MEM", "input 2"]],
         )
         assert proc_desc == ProcessorDesc(in_units, out_units, [], [])
         chk_warn(["input 2", "output 1"], caplog.records)

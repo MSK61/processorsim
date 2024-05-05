@@ -51,7 +51,6 @@ from processor_utils.units import LockInfo, UnitModel
 from program_defs import HwInstruction
 from sim_services import HwSpec, simulate
 from sim_services.sim_defs import StallState
-from str_utils import ICaseString
 
 
 class TestMemUtil:
@@ -64,11 +63,7 @@ class TestMemUtil:
 
         """
         full_sys_unit = UnitModel(
-            ICaseString("full system"),
-            2,
-            ["ALU"],
-            LockInfo(True, True),
-            ["ALU"],
+            "full system", 2, ["ALU"], LockInfo(True, True), ["ALU"]
         )
         assert simulate(
             [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
@@ -87,10 +82,7 @@ class TestStructural:
 
         """
         assert simulate(
-            [
-                HwInstruction([], out_reg, ICaseString("ALU"))
-                for out_reg in ["R1", "R2"]
-            ],
+            [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
             HwSpec(
                 processor_utils.load_proc_desc(
                     {
@@ -201,20 +193,14 @@ class TestHazards:
 
         """
         in_unit = UnitModel(
-            ICaseString("input"),
+            "input",
             in_params.width,
             ["ALU"],
             LockInfo(True, False),
             in_params.mem_util,
         )
         out_units = (
-            UnitModel(
-                ICaseString(name),
-                width,
-                ["ALU"],
-                LockInfo(False, True),
-                mem_access,
-            )
+            UnitModel(name, width, ["ALU"], LockInfo(False, True), mem_access)
             for name, width, mem_access in in_params.out_unit_params
         )
         out_units = (

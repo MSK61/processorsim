@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.88.1, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -66,7 +66,7 @@ class TestDupInstr:
             [ICaseString("ALU")],
         )
         chk_points = (
-            ValInStrCheck(elem_getter(ex_chk.value), ICaseString(unit))
+            ValInStrCheck(elem_getter(ex_chk.value), unit)
             for elem_getter, unit in [
                 (foundation.Self.new_element(), "add"),
                 (foundation.Self.old_element(), "ADD"),
@@ -91,22 +91,15 @@ class TestIsa:
             "singleInstructionISA.yaml",
             [ICaseString("MEM")],
         )
-        chk_error(
-            [ValInStrCheck(ex_chk.value.element, ICaseString("ALU"))],
-            ex_chk.value,
-        )
+        chk_error([ValInStrCheck(ex_chk.value.element, "ALU")], ex_chk.value)
 
     @pytest.mark.parametrize(
         "in_file, supported_caps, exp_isa",
         [
             ("emptyISA.yaml", ["ALU"], {}),
-            ("singleInstructionISA.yaml", ["ALU"], [("ADD", "ALU")]),
-            ("singleInstructionISA.yaml", ["alu"], [("ADD", "alu")]),
-            (
-                "dualInstructionISA.yaml",
-                ["ALU"],
-                [("ADD", "ALU"), ("SUB", "ALU")],
-            ),
+            ("singleInstructionISA.yaml", ["ALU"], {"ADD": "ALU"}),
+            ("singleInstructionISA.yaml", ["alu"], {"ADD": "alu"}),
+            ("dualInstructionISA.yaml", ["ALU"], {"ADD": "ALU", "SUB": "ALU"}),
         ],
     )
     def test_load_isa(self, in_file, supported_caps, exp_isa):
@@ -118,9 +111,9 @@ class TestIsa:
         `exp_isa` is the expected instruction set.
 
         """
-        assert read_isa_file(in_file, map(ICaseString, supported_caps)) == {
-            instr: ICaseString(cap) for instr, cap in exp_isa
-        }
+        assert (
+            read_isa_file(in_file, map(ICaseString, supported_caps)) == exp_isa
+        )
 
 
 def main():

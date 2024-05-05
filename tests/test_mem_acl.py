@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -56,7 +56,6 @@ from processor_utils.units import (
     UNIT_WIDTH_KEY,
     UNIT_WLOCK_KEY,
 )
-from str_utils import ICaseString
 
 
 class TestCapCase:
@@ -80,13 +79,7 @@ class TestCapCase:
         """
         caplog.set_level(WARNING)
         in_out_units = (
-            UnitModel(
-                ICaseString(name),
-                1,
-                [ICaseString("ALU")],
-                LockInfo(True, True),
-                map(ICaseString, capabilities),
-            )
+            UnitModel(name, 1, ["ALU"], LockInfo(True, True), capabilities)
             for name, capabilities in [(loaded_core, []), ("core 2", ["ALU"])]
         )
         assert load_proc_desc(
@@ -152,11 +145,11 @@ class TestPartialMem:
             [],
             [
                 UnitModel(
-                    ICaseString("full system"),
+                    "full system",
                     1,
-                    map(ICaseString, ["ALU", "MEM"]),
+                    ["ALU", "MEM"],
                     LockInfo(True, True),
-                    [ICaseString("MEM")],
+                    ["MEM"],
                 )
             ],
             [],
@@ -239,11 +232,11 @@ class TestStdCaseCap:
             [],
             [
                 UnitModel(
-                    ICaseString(exp_results.unit),
+                    exp_results.unit,
                     1,
-                    [ICaseString(exp_ref_cap)],
+                    [exp_ref_cap],
                     LockInfo(True, True),
-                    [ICaseString(exp_ref_cap)],
+                    [exp_ref_cap],
                 )
             ],
             [],

@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -59,7 +59,6 @@ from more_itertools import one
 import networkx
 from networkx import DiGraph, Graph
 
-from str_utils import ICaseString
 from . import cap_anal_utils, exception, _port_defs, units
 from .exception import BlockedCapError, ComponentInfo, PathLockError
 from .units import UNIT_CAPS_KEY, UNIT_WIDTH_KEY
@@ -78,13 +77,7 @@ def chk_caps(processor: DiGraph) -> None:
     """
     cap_checks: list[
         Callable[
-            [
-                DiGraph,
-                Iterable[object],
-                ICaseString,
-                Iterable[ICaseString],
-                Iterable[object],
-            ],
+            [DiGraph, Iterable[object], str, Iterable[str], Iterable[object]],
             None,
         ]
     ] = [
@@ -323,9 +316,9 @@ def _cap_in_unit(processor: Graph, capability: object, unit: object) -> bool:
 def _chk_cap_flow(
     anal_graph: DiGraph,
     capability_info: ComponentInfo,
-    in_ports: Iterable[ICaseString],
+    in_ports: Iterable[str],
     out_ports: Iterable[object],
-    port_name_func: Callable[[ICaseString], object],
+    port_name_func: Callable[[str], object],
 ) -> None:
     """Check the flow capacity for the given capability and ports.
 
@@ -532,7 +525,7 @@ def _do_cap_checks(
             [
                 DiGraph,
                 Generator[object, None, None],
-                ICaseString,
+                str,
                 list[Any],
                 tuple[Any, ...],
             ],
@@ -613,9 +606,7 @@ def _get_cap_edge(graph: DiGraph, node: Any) -> Any:
         return more_itertools.first(graph.out_edges(node))
 
 
-def _get_cap_units(
-    processor: DiGraph,
-) -> abc.ItemsView[ICaseString, list[Any]]:
+def _get_cap_units(processor: DiGraph) -> abc.ItemsView[str, list[Any]]:
     """Create a mapping between capabilities and supporting input ports.
 
     `processor` is the processor to create a capability-port map for.
@@ -623,7 +614,7 @@ def _get_cap_units(
     capability and its supporting units.
 
     """
-    cap_unit_map: dict[ICaseString, list[Any]] = {}
+    cap_unit_map: dict[str, list[Any]] = {}
     in_ports = _port_defs.get_in_ports(processor)
 
     for cur_port in in_ports:

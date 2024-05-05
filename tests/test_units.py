@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -46,7 +46,6 @@ import test_utils
 import processor_utils
 from processor_utils import ProcessorDesc, units
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
-from str_utils import ICaseString
 
 
 class TestDupName:
@@ -77,9 +76,7 @@ class TestDupName:
             in_file,
         )
         chk_points = (
-            test_utils.ValInStrCheck(
-                elem_getter(ex_chk.value), ICaseString(unit)
-            )
+            test_utils.ValInStrCheck(elem_getter(ex_chk.value), unit)
             for elem_getter, unit in [
                 (foundation.Self.new_element(), dup_unit),
                 (foundation.Self.old_element(), "full system"),
@@ -121,11 +118,7 @@ class TestExpAttr:
             [],
             [
                 UnitModel(
-                    ICaseString("full system"),
-                    1,
-                    [ICaseString("ALU")],
-                    LockInfo(True, True),
-                    [ICaseString("ALU")],
+                    "full system", 1, ["ALU"], LockInfo(True, True), ["ALU"]
                 )
             ],
             [],
@@ -142,9 +135,7 @@ class TestPostOrder:
 
         """
         in_unit, mid1_unit, mid2_unit, mid3_unit, out_unit = (
-            UnitModel(
-                ICaseString(name), 1, ["ALU"], LockInfo(rd_lock, wr_lock), []
-            )
+            UnitModel(name, 1, ["ALU"], LockInfo(rd_lock, wr_lock), [])
             for name, rd_lock, wr_lock in [
                 ("input", True, False),
                 ("middle 1", False, False),

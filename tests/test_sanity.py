@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -55,7 +55,6 @@ from processor_utils.units import (
     UNIT_WIDTH_KEY,
     UNIT_WLOCK_KEY,
 )
-from str_utils import ICaseString
 
 
 class TestBlocking:
@@ -86,8 +85,7 @@ class TestBlocking:
             exception.DeadInputError, read_proc_file, "blocking", in_file
         )
         chk_error(
-            [ValInStrCheck(ex_chk.value.port, ICaseString(isolated_input))],
-            ex_chk.value,
+            [ValInStrCheck(ex_chk.value.port, isolated_input)], ex_chk.value
         )
 
 
@@ -324,11 +322,9 @@ class TestMultiLock:
                 "dataPath": [[in_proc_desc.in_unit, in_proc_desc.out_unit]],
             },
         )
-        assert ex_info.value.start == ICaseString(exp_proc_desc.in_unit)
+        assert ex_info.value.start == exp_proc_desc.in_unit
         assert ex_info.value.lock_type == lock_data.lock_type
-        assert ex_info.value.capability == ICaseString(
-            exp_proc_desc.capability
-        )
+        assert ex_info.value.capability == exp_proc_desc.capability
         ex_info = str(ex_info.value)
 
         for part in [

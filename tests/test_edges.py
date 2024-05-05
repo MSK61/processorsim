@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -47,7 +47,6 @@ from pytest import mark, raises
 from test_utils import chk_error, chk_two_units, read_proc_file, ValInStrCheck
 import errors
 import processor_utils
-import str_utils
 
 
 class TestDupEdge:
@@ -137,14 +136,7 @@ class TestEdges:
             "edges",
             "edgeWithUnknownUnit.yaml",
         )
-        chk_error(
-            [
-                ValInStrCheck(
-                    ex_chk.value.element, str_utils.ICaseString("input")
-                )
-            ],
-            ex_chk.value,
-        )
+        chk_error([ValInStrCheck(ex_chk.value.element, "input")], ex_chk.value)
 
     @mark.parametrize(
         "in_file, bad_edge",

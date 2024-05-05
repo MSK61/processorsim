@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -212,7 +212,7 @@ def _get_operands(
     src_line_info: _LineInfo,
     line_num: object,
     reg_registry: IndexedSet[_OperandInfo],
-) -> list[ICaseString]:
+) -> list[str]:
     """Extract operands from the given line.
 
     `src_line_info` is the source line information.
@@ -243,7 +243,7 @@ def _get_reg_name(
     line_num: object,
     instr: object,
     reg_registry: IndexedSet[_OperandInfo],
-) -> ICaseString:
+) -> str:
     """Extract the registry name.
 
     `op_idx` is the one-based operand index.
@@ -277,4 +277,4 @@ def _get_reg_name(
             std_reg.line,
         )
 
-    return std_reg.name
+    return std_reg.name.raw_str

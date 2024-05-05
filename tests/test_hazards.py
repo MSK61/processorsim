@@ -49,7 +49,6 @@ from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from program_defs import HwInstruction
 from sim_services import HwSpec, simulate
 from sim_services.sim_defs import StallState
-from str_utils import ICaseString
 
 
 class TestDataHazards:
@@ -71,7 +70,7 @@ class TestDataHazards:
 
         """
         full_sys_unit = UnitModel(
-            ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), []
+            TEST_DIR, 2, ["ALU"], LockInfo(True, True), []
         )
         assert simulate(
             [create_hw_instr(regs, "ALU") for regs in instr_regs],
@@ -93,15 +92,11 @@ class TestInstrOffer:
 
         """
         in_unit = UnitModel(
-            ICaseString("input"), 3, ["ALU", "MEM"], LockInfo(True, False), []
+            "input", 3, ["ALU", "MEM"], LockInfo(True, False), []
         )
         out_unit = FuncUnit(
             UnitModel(
-                ICaseString("output"),
-                2,
-                ["ALU", "MEM"],
-                LockInfo(False, True),
-                ["MEM"],
+                "output", 2, ["ALU", "MEM"], LockInfo(False, True), ["MEM"]
             ),
             [in_unit],
         )
@@ -137,15 +132,11 @@ class TestMemAccess:
 
         """
         in_unit = UnitModel(
-            ICaseString("input"), 2, ["ALU", "MEM"], LockInfo(True, False), []
+            "input", 2, ["ALU", "MEM"], LockInfo(True, False), []
         )
         out_unit = FuncUnit(
             UnitModel(
-                ICaseString("output"),
-                2,
-                ["ALU", "MEM"],
-                LockInfo(False, True),
-                ["MEM"],
+                "output", 2, ["ALU", "MEM"], LockInfo(False, True), ["MEM"]
             ),
             [in_unit],
         )
@@ -168,7 +159,7 @@ class TestRar:
 
         """
         full_sys_unit = UnitModel(
-            ICaseString(TEST_DIR), 2, ["ALU"], LockInfo(True, True), []
+            TEST_DIR, 2, ["ALU"], LockInfo(True, True), []
         )
         assert simulate(
             [
@@ -189,9 +180,7 @@ class TestRaw:
 
         """
         in_unit, mid, out_unit = (
-            UnitModel(
-                ICaseString(name), 1, ["ALU"], LockInfo(rd_lock, wr_lock), []
-            )
+            UnitModel(name, 1, ["ALU"], LockInfo(rd_lock, wr_lock), [])
             for name, rd_lock, wr_lock in [
                 ("input", False, False),
                 ("middle", True, False),
@@ -231,19 +220,11 @@ class TestUnifiedMem:
 
         """
         in_unit = UnitModel(
-            ICaseString("input"),
-            1,
-            ["ALU", "MEM"],
-            LockInfo(True, False),
-            ["ALU", "MEM"],
+            "input", 1, ["ALU", "MEM"], LockInfo(True, False), ["ALU", "MEM"]
         )
         out_unit = FuncUnit(
             UnitModel(
-                ICaseString("output"),
-                1,
-                ["ALU", "MEM"],
-                LockInfo(False, True),
-                ["MEM"],
+                "output", 1, ["ALU", "MEM"], LockInfo(False, True), ["MEM"]
             ),
             [in_unit],
         )
@@ -268,13 +249,9 @@ class TestWar:
         `self` is this test case.
 
         """
-        in_unit = UnitModel(
-            ICaseString("input"), 1, ["ALU"], LockInfo(False, False), []
-        )
+        in_unit = UnitModel("input", 1, ["ALU"], LockInfo(False, False), [])
         out_unit = FuncUnit(
-            UnitModel(
-                ICaseString("output"), 1, ["ALU"], LockInfo(True, True), []
-            ),
+            UnitModel("output", 1, ["ALU"], LockInfo(True, True), []),
             [in_unit],
         )
         assert simulate(
