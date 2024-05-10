@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -45,6 +45,7 @@ from attr import frozen
 import pytest
 from pytest import mark
 
+from test_utils import chk_warn
 from processor_utils import load_proc_desc, ProcessorDesc
 from processor_utils.units import (
     LockInfo,
@@ -108,11 +109,7 @@ class TestCapCase:
                 "dataPath": [],
             }
         ) == ProcessorDesc([], [], in_out_units, [])
-        assert caplog.records
-        warn_msg = caplog.records[0].getMessage()
-
-        for token in ["alu", "core 2", "ALU", loaded_core]:
-            assert token in warn_msg
+        chk_warn(["alu", "core 2", "ALU", loaded_core], caplog.records)
 
 
 class TestPartialMem:
@@ -241,11 +238,7 @@ class TestStdCaseCap:
             ],
             [],
         )
-        assert caplog.records
-        warn_msg = caplog.records[0].getMessage()
-
-        for token in [exp_ref_cap, exp_results.unit, exp_ref_cap]:
-            assert token in warn_msg
+        chk_warn([exp_ref_cap, exp_results.unit, exp_ref_cap], caplog.records)
 
 
 def main():

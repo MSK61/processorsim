@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -47,7 +47,7 @@ import pytest
 from pytest import mark, raises
 
 import test_utils
-from test_utils import read_prog_file
+from test_utils import chk_warn, read_prog_file
 import errors
 import program_defs
 from program_defs import ProgInstruction
@@ -75,11 +75,7 @@ class TestDupOperand:
         assert read_program([f"ADD R1, {upper_reg}, {lower_reg}"]) == [
             ProgInstruction([dup_reg], "R1", "ADD", 1)
         ]
-        assert caplog.records
-        warn_msg = caplog.records[0].getMessage()
-
-        for reg in [lower_reg, upper_reg]:
-            assert reg in warn_msg
+        chk_warn([lower_reg, upper_reg], caplog.records)
 
     @mark.parametrize(
         "preamble, instr1_line, instr2_line", [(0, 1, 2), (2, 3, 4)]
@@ -110,11 +106,9 @@ class TestDupOperand:
                 (["R2", "R5"], "R4", instr2_line),
             ]
         ]
-        assert caplog.records
-        warn_msg = caplog.records[0].getMessage()
-
-        for reg in ["r2", str(instr2_line), "R2", str(instr1_line)]:
-            assert reg in warn_msg
+        chk_warn(
+            ["r2", str(instr2_line), "R2", str(instr1_line)], caplog.records
+        )
 
 
 class TestProgLoad:
