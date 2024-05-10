@@ -45,7 +45,7 @@ from attr import frozen
 import pytest
 from pytest import mark
 
-from test_utils import chk_warn
+from test_utils import chk_warnings
 from processor_utils import load_proc_desc, ProcessorDesc
 from processor_utils.units import (
     LockInfo,
@@ -109,7 +109,7 @@ class TestCapCase:
                 "dataPath": [],
             }
         ) == ProcessorDesc([], [], in_out_units, [])
-        chk_warn(["alu", "core 2", "ALU", loaded_core], caplog.records)
+        chk_warnings(["alu", "core 2", "ALU", loaded_core], caplog.records)
 
 
 class TestPartialMem:
@@ -238,7 +238,9 @@ class TestStdCaseCap:
             ],
             [],
         )
-        chk_warn([exp_ref_cap, exp_results.unit, exp_ref_cap], caplog.records)
+        chk_warnings(
+            [exp_ref_cap, exp_results.unit, exp_ref_cap], caplog.records
+        )
 
 
 def main():

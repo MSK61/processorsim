@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -109,20 +109,29 @@ def chk_two_units(proc_dir, proc_file):
     )
 
 
-def chk_warn(tokens, warn_calls):
+def chk_warn(tokens, warn_msg):
     """Verify tokens in a warning message.
 
     `tokens` are the tokens to assess.
+    `warn_msg` is the warning message.
+    The method asserts that all tokens exist in the warning message.
+
+    """
+    for token in tokens:
+        assert token in warn_msg
+
+
+def chk_warnings(tokens, warn_calls):
+    """Verify tokens in the first warning message.
+
+    `tokens` are the tokens to assess.
     `warn_calls` are the warning function mock calls.
-    The method asserts that all tokens exist in the constructed warning
-    message.
+    The method asserts that all tokens exist in the first constructed
+    warning message.
 
     """
     assert warn_calls
-    warn_msg = warn_calls[0].getMessage()
-
-    for token in tokens:
-        assert token in warn_msg
+    chk_warn(tokens, warn_calls[0].getMessage())
 
 
 def compile_prog(prog_file, isa):

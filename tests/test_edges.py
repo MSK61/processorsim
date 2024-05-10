@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -44,6 +44,7 @@ from logging import WARNING
 import pytest
 from pytest import mark, raises
 
+import test_utils
 from test_utils import chk_error, chk_two_units, read_proc_file, ValInStrCheck
 import errors
 import processor_utils
@@ -74,7 +75,7 @@ class TestDupEdge:
         )
 
         for cur_rec, edge_pair in chk_entries:
-            self._chk_edge_warn(edge_pair, cur_rec)
+            test_utils.chk_warn(map(str, edge_pair), cur_rec.getMessage())
 
     @mark.parametrize(
         "in_file, edges",
@@ -101,23 +102,7 @@ class TestDupEdge:
         """
         caplog.set_level(WARNING)
         chk_two_units("edges", in_file)
-        assert caplog.records
-        self._chk_edge_warn(edges, caplog.records[0])
-
-    @staticmethod
-    def _chk_edge_warn(edges, warn_call):
-        """Verify edges in a warning message.
-
-        `edges` are the edges to assess.
-        `warn_call` is the warning function mock call.
-        The method asserts that all edges exist in the constructed
-        warning message.
-
-        """
-        warn_msg = warn_call.getMessage()
-
-        for edge in edges:
-            assert str(edge) in warn_msg
+        test_utils.chk_warnings(map(str, edges), caplog.records)
 
 
 class TestEdges:

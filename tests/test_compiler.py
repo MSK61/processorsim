@@ -47,7 +47,7 @@ import pytest
 from pytest import mark, raises
 
 import test_utils
-from test_utils import chk_warn, read_prog_file
+from test_utils import chk_warnings, read_prog_file
 import errors
 import program_defs
 from program_defs import ProgInstruction
@@ -75,7 +75,7 @@ class TestDupOperand:
         assert read_program([f"ADD R1, {upper_reg}, {lower_reg}"]) == [
             ProgInstruction([dup_reg], "R1", "ADD", 1)
         ]
-        chk_warn([lower_reg, upper_reg], caplog.records)
+        chk_warnings([lower_reg, upper_reg], caplog.records)
 
     @mark.parametrize(
         "preamble, instr1_line, instr2_line", [(0, 1, 2), (2, 3, 4)]
@@ -106,7 +106,7 @@ class TestDupOperand:
                 (["R2", "R5"], "R4", instr2_line),
             ]
         ]
-        chk_warn(
+        chk_warnings(
             ["r2", str(instr2_line), "R2", str(instr1_line)], caplog.records
         )
 

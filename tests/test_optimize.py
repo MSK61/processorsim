@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -46,7 +46,7 @@ import more_itertools
 import pytest
 
 import test_utils
-from test_utils import chk_warn, read_proc_file
+from test_utils import chk_warnings, read_proc_file
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
 
@@ -82,7 +82,7 @@ class TestClean:
             [],
             [],
         )
-        chk_warn(["middle"], caplog.records)
+        chk_warnings(["middle"], caplog.records)
 
     def test_unit_with_empty_capabilities_is_removed(self, caplog):
         """Test loading a unit with no capabilities.
@@ -100,7 +100,7 @@ class TestClean:
             [UnitModel("core 1", 1, ["ALU"], LockInfo(True, True), [])],
             [],
         )
-        chk_warn(["core 2"], caplog.records)
+        chk_warnings(["core 2"], caplog.records)
 
 
 class TestEdgeRemoval:
@@ -137,7 +137,7 @@ class TestEdgeRemoval:
             [["output 1", "ALU", "input 1"], ["output 2", "MEM", "input 2"]],
         )
         assert proc_desc == ProcessorDesc(in_units, out_units, [], [])
-        chk_warn(["input 2", "output 1"], caplog.records)
+        chk_warnings(["input 2", "output 1"], caplog.records)
 
 
 class TestWidth:

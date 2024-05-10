@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -46,7 +46,7 @@ import pytest
 from pytest import mark, raises
 
 import test_utils
-from test_utils import chk_warn, read_proc_file
+from test_utils import chk_warnings, read_proc_file
 import processor_utils
 from processor_utils import exception, units
 from str_utils import ICaseString
@@ -137,7 +137,7 @@ class TestDupCap:
         assert read_proc_file(
             "capabilities", in_file
         ) == processor_utils.ProcessorDesc([], [], processor, [])
-        chk_warn(["ALU", "core 1", "alu", "core 2"], caplog.records)
+        chk_warnings(["ALU", "core 1", "alu", "core 2"], caplog.records)
         assert ICaseString.__name__ not in caplog.records[0].getMessage()
 
     @mark.parametrize(
@@ -163,7 +163,7 @@ class TestDupCap:
         """
         caplog.set_level(WARNING)
         test_utils.chk_one_unit("capabilities", in_file)
-        chk_warn(capabilities, caplog.records)
+        chk_warnings(capabilities, caplog.records)
 
 
 def main():
