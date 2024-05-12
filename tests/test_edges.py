@@ -109,7 +109,7 @@ class TestEdges:
     """Test case for loading edges"""
 
     # pylint: disable=invalid-name
-    def test_edge_with_unknown_unit_raises_UndefElemError(self):
+    def test_unknown_unit_raises_UndefElemError(self):
         """Test loading an edge involving an unknown unit.
 
         `self` is this test case.
@@ -130,7 +130,7 @@ class TestEdges:
             ("3UnitEdge.yaml", ["input", "middle", "output"]),
         ],
     )
-    def test_edge_with_wrong_number_of_units_raises_BadEdgeError(
+    def test_wrong_number_of_units_raises_BadEdgeError(
         self, in_file, bad_edge
     ):
         """Test loading an edge with wrong number of units.
