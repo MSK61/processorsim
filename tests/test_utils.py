@@ -96,11 +96,12 @@ def chk_two_units(proc_dir, proc_file):
 
     """
     proc_desc = read_proc_file(proc_dir, proc_file)
+    wr_lock = LockInfo(False, True)
     assert proc_desc == ProcessorDesc(
         [UnitModel("input", 1, ["ALU"], LockInfo(True, False), [])],
         [
             processor_utils.units.FuncUnit(
-                UnitModel("output", 1, ["ALU"], LockInfo(False, True), []),
+                UnitModel("output", 1, ["ALU"], wr_lock, []),
                 proc_desc.in_ports,
             )
         ],
