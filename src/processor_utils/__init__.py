@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -427,6 +427,14 @@ def _get_cap_name(
     if not std_cap:
         raise UndefElemError(
             f"Unsupported capability ${UndefElemError.ELEM_KEY}", capability
+        )
+
+    if std_cap.raw_str != capability:
+        warning(
+            "Capability %s previously defined as %s, using original "
+            "definition...",
+            capability,
+            std_cap,
         )
 
     return std_cap.raw_str
