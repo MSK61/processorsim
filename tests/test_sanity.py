@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -347,13 +347,13 @@ def _get_test_units(proc_desc, lock_prop):
             UNIT_NAME_KEY: proc_desc.in_unit,
             UNIT_WIDTH_KEY: 1,
             UNIT_CAPS_KEY: [proc_desc.capability],
-            **{lock_prop: True for lock_prop in [UNIT_RLOCK_KEY, lock_prop]},
+            **{prop: True for prop in [UNIT_RLOCK_KEY, lock_prop]},
         },
         {
             UNIT_NAME_KEY: proc_desc.out_unit,
             UNIT_WIDTH_KEY: 1,
             UNIT_CAPS_KEY: [proc_desc.capability],
-            **{lock_prop: True for lock_prop in [UNIT_WLOCK_KEY, lock_prop]},
+            **{prop: True for prop in [UNIT_WLOCK_KEY, lock_prop]},
         },
     ]
 
