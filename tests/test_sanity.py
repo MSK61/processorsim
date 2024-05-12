@@ -185,36 +185,28 @@ class TestPerCap:
             {
                 "units": [
                     {
-                        UNIT_NAME_KEY: "ALU input",
+                        UNIT_NAME_KEY: name,
                         UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["ALU"],
-                        UNIT_RLOCK_KEY: True,
-                    },
-                    {
-                        UNIT_NAME_KEY: "MEM input",
-                        UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["MEM"],
-                    },
-                    {
-                        UNIT_NAME_KEY: "center",
-                        UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["ALU", "MEM"],
-                    },
-                    {
-                        UNIT_NAME_KEY: "ALU output",
-                        UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["ALU"],
-                        UNIT_WLOCK_KEY: True,
-                    },
-                    {
-                        UNIT_NAME_KEY: "MEM output",
-                        UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["MEM"],
-                        **{
-                            lock_prop: True
-                            for lock_prop in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]
-                        },
-                    },
+                        UNIT_CAPS_KEY: caps,
+                        **locks,
+                    }
+                    for name, caps, locks in [
+                        ("ALU input", ["ALU"], {UNIT_RLOCK_KEY: True}),
+                        ("MEM input", ["MEM"], {}),
+                        ("center", ["ALU", "MEM"], {}),
+                        ("ALU output", ["ALU"], {UNIT_WLOCK_KEY: True}),
+                        (
+                            "MEM output",
+                            ["MEM"],
+                            {
+                                lock_prop: True
+                                for lock_prop in [
+                                    UNIT_RLOCK_KEY,
+                                    UNIT_WLOCK_KEY,
+                                ]
+                            },
+                        ),
+                    ]
                 ],
                 "dataPath": [
                     ["ALU input", "center"],
@@ -344,17 +336,15 @@ def _get_test_units(proc_desc, lock_prop):
     """
     return [
         {
-            UNIT_NAME_KEY: proc_desc.in_unit,
+            UNIT_NAME_KEY: unit_getter(proc_desc),
             UNIT_WIDTH_KEY: 1,
             UNIT_CAPS_KEY: [proc_desc.capability],
-            **{prop: True for prop in [UNIT_RLOCK_KEY, lock_prop]},
-        },
-        {
-            UNIT_NAME_KEY: proc_desc.out_unit,
-            UNIT_WIDTH_KEY: 1,
-            UNIT_CAPS_KEY: [proc_desc.capability],
-            **{prop: True for prop in [UNIT_WLOCK_KEY, lock_prop]},
-        },
+            **{prop: True for prop in [unit_lock, lock_prop]},
+        }
+        for unit_getter, unit_lock in [
+            (foundation.Self.in_unit(), UNIT_RLOCK_KEY),
+            (foundation.Self.out_unit(), UNIT_WLOCK_KEY),
+        ]
     ]
 
 

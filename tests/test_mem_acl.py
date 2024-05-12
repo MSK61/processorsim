@@ -87,24 +87,19 @@ class TestCapCase:
             {
                 "units": [
                     {
-                        UNIT_NAME_KEY: ref_cap_unit,
+                        UNIT_NAME_KEY: name,
                         UNIT_WIDTH_KEY: 1,
                         UNIT_CAPS_KEY: ["ALU"],
                         **{
                             attr: True
                             for attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]
                         },
-                    },
-                    {
-                        UNIT_NAME_KEY: "core 2",
-                        UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["ALU"],
-                        **{
-                            attr: True
-                            for attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]
-                        },
-                        UNIT_MEM_KEY: ["alu"],
-                    },
+                        **mem_access,
+                    }
+                    for name, mem_access in [
+                        (ref_cap_unit, {}),
+                        ("core 2", {UNIT_MEM_KEY: ["alu"]}),
+                    ]
                 ],
                 "dataPath": [],
             }
