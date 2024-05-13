@@ -39,10 +39,11 @@
 #
 ############################################################
 
+import itertools
 from logging import WARNING
 
 import pytest
-from pytest import mark, raises
+from pytest import raises
 
 import test_utils
 from test_utils import chk_error, chk_two_units, read_proc_file, ValInStrCheck
@@ -53,8 +54,8 @@ import processor_utils
 class TestDupEdge:
     """Test case for loading duplicate edges"""
 
-    def test_three_identical_edges_are_detected(self, caplog):
-        """Test loading three identical edges with the same units.
+    def test_two_edges_different_by_case_are_detected(self, caplog):
+        """Test loading two edges in different cases.
 
         `self` is this test case.
         `caplog` is the log capture fixture.
@@ -62,47 +63,34 @@ class TestDupEdge:
         """
         caplog.set_level(WARNING)
         chk_two_units(
-            "edges",
-            "3EdgesWithSameUnitNamesAndLowerThenUpperThenMixedCase.yaml",
+            "edges", "twoEdgesWithSameUnitNamesAndDifferentCases.yaml"
         )
-        assert len(caplog.records) == 2
-        chk_entries = zip(
-            caplog.records,
-            [
-                [["input", "output"], ["INPUT", "OUTPUT"]],
-                [["input", "output"], ["Input", "Output"]],
-            ],
+        assert len(caplog.records) == 3
+        warn_records = itertools.chain(
+            (
+                [src_unit, str(["INPUT", "OUTPUT"]), dst_unit]
+                for src_unit, dst_unit in [
+                    ("INPUT", "input"),
+                    ("OUTPUT", "output"),
+                ]
+            ),
+            itertools.repeat(str(["input", "output"]), 2),
         )
+        chk_entries = zip(caplog.records, warn_records)
 
-        for cur_rec, edge_pair in chk_entries:
-            test_utils.chk_warn(map(str, edge_pair), cur_rec.getMessage())
+        for cur_rec, warn_parts in chk_entries:
+            test_utils.chk_warn(warn_parts, cur_rec.getMessage())
 
-    @mark.parametrize(
-        "in_file, edges",
-        [
-            ("twoEdgesWithSameUnitNamesAndCase.yaml", [["input", "output"]]),
-            (
-                "twoEdgesWithSameUnitNamesAndLowerThenUpperCase.yaml",
-                [["input", "output"], ["INPUT", "OUTPUT"]],
-            ),
-            (
-                "twoEdgesWithSameUnitNamesAndUpperThenLowerCase.yaml",
-                [["INPUT", "OUTPUT"], ["input", "output"]],
-            ),
-        ],
-    )
-    def test_two_identical_edges_are_detected(self, caplog, in_file, edges):
+    def test_two_identical_edges_are_detected(self, caplog):
         """Test loading two identical edges with the same units.
 
         `self` is this test case.
         `caplog` is the log capture fixture.
-        `in_file` is the processor description file.
-        `edges` are the identical edges.
 
         """
         caplog.set_level(WARNING)
-        chk_two_units("edges", in_file)
-        test_utils.chk_warnings(map(str, edges), caplog.records)
+        chk_two_units("edges", "twoEdgesWithSameUnitNamesAndCase.yaml")
+        test_utils.chk_warnings([str(["input", "output"])], caplog.records)
 
 
 class TestEdges:
@@ -123,7 +111,7 @@ class TestEdges:
         )
         chk_error([ValInStrCheck(ex_chk.value.element, "input")], ex_chk.value)
 
-    @mark.parametrize(
+    @pytest.mark.parametrize(
         "in_file, bad_edge",
         [
             ("emptyEdge.yaml", []),

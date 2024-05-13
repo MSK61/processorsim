@@ -52,7 +52,7 @@ import operator
 import os
 import sys
 import typing
-from typing import Any
+from typing import Any, Sequence
 
 from attr import field, frozen
 from fastcore import foundation
@@ -139,7 +139,7 @@ def _add_capability(
 
 def _add_edge(
     processor: Graph,
-    edge: Collection[str],
+    edge: Sequence[str],
     unit_registry: SelfIndexSet[ICaseString],
     edge_registry: IndexedSet[Collection[str]],
 ) -> None:
@@ -343,7 +343,7 @@ def _chk_unit_width(unit: Mapping[object, int]) -> None:
 
 
 def _create_graph(
-    hw_units: Iterable[Mapping[object, Any]], links: Iterable[Collection[str]]
+    hw_units: Iterable[Mapping[object, Any]], links: Iterable[Sequence[str]]
 ) -> DiGraph:
     """Create a data flow graph for a processor.
 
@@ -472,7 +472,7 @@ def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
 
 
 def _get_std_edge(
-    edge: Iterable[str], unit_registry: SelfIndexSet[ICaseString]
+    edge: Sequence[str], unit_registry: SelfIndexSet[ICaseString]
 ) -> Generator[str, None, None]:
     """Return a validated edge.
 
@@ -482,7 +482,10 @@ def _get_std_edge(
     encountered.
 
     """
-    return (_get_unit_name(unit, unit_registry) for unit in edge)
+    return (
+        _get_unit_name(edge, unit_idx, unit_registry)
+        for unit_idx in range(len(edge))
+    )
 
 
 def _get_unit_entry(name: str, attrs: Mapping[str, Any]) -> UnitModel:
@@ -517,20 +520,35 @@ def _get_unit_graph(internal_units: Iterable[FuncUnit]) -> DiGraph:
     return rev_graph
 
 
-def _get_unit_name(unit: str, unit_registry: SelfIndexSet[ICaseString]) -> str:
+def _get_unit_name(
+    edge: Sequence[str],
+    unit_idx: int,
+    unit_registry: SelfIndexSet[ICaseString],
+) -> str:
     """Return a validated unit name.
 
-    `unit` is the name of the unit to validate.
+    `edge` is the edge containing the unit.
+    `unit_idx` is the index of the unit in the edge.
     `unit_registry` is the store of defined units.
     The function raises an UndefElemError if no unit exists with this
     name, otherwise returns the validated unit name.
 
     """
-    std_name = unit_registry.get(ICaseString(unit))
+    std_name = unit_registry.get(ICaseString(edge[unit_idx]))
 
     if not std_name:
         raise UndefElemError(
-            f"Undefined functional unit ${UndefElemError.ELEM_KEY}", unit
+            f"Undefined functional unit ${UndefElemError.ELEM_KEY}",
+            edge[unit_idx],
+        )
+
+    if std_name.raw_str != edge[unit_idx]:
+        warning(
+            "Unit %s in edge %s previously defined as %s, using original "
+            "definition...",
+            edge[unit_idx],
+            edge,
+            std_name,
         )
 
     return std_name.raw_str
