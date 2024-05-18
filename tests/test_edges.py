@@ -66,17 +66,17 @@ class TestDupEdge:
             "edges", "twoEdgesWithSameUnitNamesAndDifferentCases.yaml"
         )
         assert len(caplog.records) == 3
-        warn_records = itertools.chain(
-            (
-                [src_unit, str(["INPUT", "OUTPUT"]), dst_unit]
-                for src_unit, dst_unit in [
-                    ("INPUT", "input"),
-                    ("OUTPUT", "output"),
-                ]
-            ),
-            itertools.repeat(str(["input", "output"]), 2),
+        unit_warnings = (
+            [src_unit, str(["INPUT", "OUTPUT"]), dst_unit]
+            for src_unit, dst_unit in [
+                ("INPUT", "input"),
+                ("OUTPUT", "output"),
+            ]
         )
-        chk_entries = zip(caplog.records, warn_records)
+        chk_entries = zip(
+            caplog.records,
+            itertools.chain(unit_warnings, [str(["input", "output"])]),
+        )
 
         for cur_rec, warn_parts in chk_entries:
             test_utils.chk_warn(warn_parts, cur_rec.getMessage())
