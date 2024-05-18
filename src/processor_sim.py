@@ -40,7 +40,7 @@ Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.88.1, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -67,7 +67,6 @@ import type_checking
 import hw_loading
 import program_utils
 import sim_services
-from sim_services.sim_defs import StallState
 
 if typing.TYPE_CHECKING:
     import _typeshed
@@ -120,7 +119,7 @@ class _InstrPosition:
 
     _unit: object
 
-    _stalled: StallState
+    _stalled: sim_services.sim_defs.StallState
 
 
 @frozen
