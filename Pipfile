@@ -15,6 +15,7 @@ flake8 = "<5"
 rope = "*"
 pyright = "==1.1.336"
 black = {extras = ["jupyter"], version = "*"}
+types-tabulate = "*"
 
 [packages]
 networkx = "*"
@@ -23,6 +24,7 @@ more-itertools = "*"
 fastcore = "*"
 pydash = "*"
 typer = "*"
+tabulate = "*"
 
 [requires]
 python_version = "3.11"
