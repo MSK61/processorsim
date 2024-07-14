@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -70,15 +70,6 @@ class ICaseString:
 
         """
         return _GET_CANONICAL(item) in _GET_CANONICAL(self.raw_str)
-
-    def __radd__(self, other: str) -> str:
-        """Return the reflected concatenation result.
-
-        `self` is this case-insensitive string.
-        `other` is the other string.
-
-        """
-        return other + self.raw_str
 
     def __str__(self) -> str:
         """Return the printable string of this case-insensitive string.

@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -47,13 +47,12 @@ import pytest
 from pytest import mark, raises
 
 import test_utils
-from test_utils import read_prog_file
+from test_utils import chk_warnings, read_prog_file
 import errors
 import program_defs
 from program_defs import ProgInstruction
 import program_utils
 from program_utils import CodeError, read_program
-from str_utils import ICaseString
 
 
 class TestDupOperand:
@@ -74,15 +73,9 @@ class TestDupOperand:
         upper_reg = dup_reg.upper()
         caplog.set_level(WARNING)
         assert read_program([f"ADD R1, {upper_reg}, {lower_reg}"]) == [
-            ProgInstruction(
-                [ICaseString(dup_reg)], ICaseString("R1"), "ADD", 1
-            )
+            ProgInstruction([dup_reg], "R1", "ADD", 1)
         ]
-        assert caplog.records
-        warn_msg = caplog.records[0].getMessage()
-
-        for reg in [lower_reg, upper_reg]:
-            assert reg in warn_msg
+        chk_warnings([lower_reg, upper_reg], caplog.records)
 
     @mark.parametrize(
         "preamble, instr1_line, instr2_line", [(0, 1, 2), (2, 3, 4)]
@@ -107,19 +100,15 @@ class TestDupOperand:
                 ["ADD R1, R2, R3", "ADD R4, r2, R5"],
             )
         ) == [
-            ProgInstruction(
-                map(ICaseString, in_regs), ICaseString(out_reg), "ADD", line_no
-            )
+            ProgInstruction(in_regs, out_reg, "ADD", line_no)
             for in_regs, out_reg, line_no in [
                 (["R2", "R3"], "R1", instr1_line),
-                (["r2", "R5"], "R4", instr2_line),
+                (["R2", "R5"], "R4", instr2_line),
             ]
         ]
-        assert caplog.records
-        warn_msg = caplog.records[0].getMessage()
-
-        for reg in ["r2", str(instr2_line), "R2", str(instr1_line)]:
-            assert reg in warn_msg
+        chk_warnings(
+            ["r2", str(instr2_line), "R2", str(instr1_line)], caplog.records
+        )
 
 
 class TestProgLoad:
@@ -140,14 +129,8 @@ class TestProgLoad:
         `inputs` are the instruction inputs.
 
         """
-        assert test_utils.compile_prog(
-            prog_file, {"ADD": ICaseString("ALU")}
-        ) == [
-            program_defs.HwInstruction(
-                map(ICaseString, inputs),
-                ICaseString("R14"),
-                ICaseString("ALU"),
-            )
+        assert test_utils.compile_prog(prog_file, {"ADD": "ALU"}) == [
+            program_defs.HwInstruction(inputs, "R14", "ALU")
         ]
 
     @mark.parametrize(
@@ -175,7 +158,7 @@ class TestProgLoad:
             errors.UndefElemError,
             program_utils.compile_program,
             read_prog_file(prog_file),
-            {"ADD": ICaseString("ALU")},
+            {"ADD": "ALU"},
         )
         assert ex_chk.value.element == instr
         ex_chk = str(ex_chk.value)
@@ -295,15 +278,7 @@ class TestValidSyntax:
         """
         caplog.set_level(WARNING)
         self._test_program(
-            prog_file,
-            [
-                ProgInstruction(
-                    map(ICaseString, ["R11", "R15"]),
-                    ICaseString("R14"),
-                    "ADD",
-                    1,
-                )
-            ],
+            prog_file, [ProgInstruction(["R11", "R15"], "R14", "ADD", 1)]
         )
         assert not caplog.records
 

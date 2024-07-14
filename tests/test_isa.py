@@ -32,20 +32,22 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import logging
 from fastcore import foundation
 import pytest
 from pytest import raises
 
+import test_utils
 from test_utils import chk_error, read_isa_file, ValInStrCheck
 import errors
-import processor_utils.exception
+import processor_utils
 from str_utils import ICaseString
 
 
@@ -66,7 +68,7 @@ class TestDupInstr:
             [ICaseString("ALU")],
         )
         chk_points = (
-            ValInStrCheck(elem_getter(ex_chk.value), ICaseString(unit))
+            ValInStrCheck(elem_getter(ex_chk.value), unit)
             for elem_getter, unit in [
                 (foundation.Self.new_element(), "add"),
                 (foundation.Self.old_element(), "ADD"),
@@ -77,6 +79,21 @@ class TestDupInstr:
 
 class TestIsa:
     """Test case for loading instruction sets"""
+
+    def test_isa_with_capability_in_case_different_from_capabilities_list(
+        self, caplog
+    ):
+        """Test loading an ISA with a capability in a different case.
+
+        `self` is this test case.
+        `caplog` is the log capture fixture.
+
+        """
+        caplog.set_level(logging.WARNING)
+        assert processor_utils.load_isa(
+            [("ADD", "alu")], [ICaseString("ALU")]
+        ) == {"ADD": "ALU"}
+        test_utils.chk_warnings(["alu", "ALU"], caplog.records)
 
     # pylint: disable-next=invalid-name
     def test_isa_with_unsupported_capabilitiy_raises_UndefElemError(self):
@@ -91,30 +108,15 @@ class TestIsa:
             "singleInstructionISA.yaml",
             [ICaseString("MEM")],
         )
-        chk_error(
-            [ValInStrCheck(ex_chk.value.element, ICaseString("ALU"))],
-            ex_chk.value,
-        )
+        chk_error([ValInStrCheck(ex_chk.value.element, "ALU")], ex_chk.value)
 
     @pytest.mark.parametrize(
         "in_file, supported_caps, exp_isa",
         [
             ("emptyISA.yaml", ["ALU"], {}),
-            (
-                "singleInstructionISA.yaml",
-                ["ALU"],
-                {"ADD": ICaseString("ALU")},
-            ),
-            (
-                "singleInstructionISA.yaml",
-                ["alu"],
-                {"ADD": ICaseString("alu")},
-            ),
-            (
-                "dualInstructionISA.yaml",
-                ["ALU"],
-                {"ADD": ICaseString("ALU"), "SUB": ICaseString("ALU")},
-            ),
+            ("singleInstructionISA.yaml", ["ALU"], {"ADD": "ALU"}),
+            ("singleInstructionISA.yaml", ["alu"], {"ADD": "alu"}),
+            ("dualInstructionISA.yaml", ["ALU"], {"ADD": "ALU", "SUB": "ALU"}),
         ],
     )
     def test_load_isa(self, in_file, supported_caps, exp_isa):

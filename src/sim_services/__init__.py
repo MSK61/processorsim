@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -64,7 +64,6 @@ from processor_utils import units
 from processor_utils.units import LockInfo, UnitModel
 from program_defs import HwInstruction
 from reg_access import AccessType, RegAccessQueue, RegAccQBuilder
-from str_utils import ICaseString
 from . import _instr_sinks, _utils
 from ._instr_sinks import IInstrSink
 from .sim_defs import InstrState, StallState
@@ -106,12 +105,12 @@ class HwSpec:
 
     processor_desc: ProcessorDesc
 
-    name_unit_map: dict[ICaseString, UnitModel] = field(init=False)
+    name_unit_map: dict[str, UnitModel] = field(init=False)
 
     # Casting to typing.Any because pylance can't detect default as a
     # member of attr.field.
     @typing.cast(Any, name_unit_map).default
-    def _(self) -> dict[ICaseString, UnitModel]:
+    def _(self) -> dict[str, UnitModel]:
         """Build the name-to-unit mapping.
 
         `self` is this hardware specification.
@@ -133,7 +132,7 @@ class HwSpec:
 
 def simulate(
     program: Sequence[HwInstruction], hw_info: HwSpec
-) -> list[BagValDict[ICaseString, InstrState]]:
+) -> list[BagValDict[str, InstrState]]:
     """Run the given program on the processor.
 
     `program` is the program to run.
@@ -141,7 +140,7 @@ def simulate(
     The function returns the pipeline diagram.
 
     """
-    util_tbl: list[BagValDict[ICaseString, InstrState]] = []
+    util_tbl: list[BagValDict[str, InstrState]] = []
     acc_queues = _build_acc_plan(enumerate(program))
     issue_rec = _IssueInfo()
     prog_len = len(program)
@@ -225,9 +224,9 @@ class _TransitionUtil:
 
 def _accept_instr(
     issue_rec: _IssueInfo,
-    instr_categ: ICaseString,
+    instr_categ: str,
     input_iter: Iterator[UnitModel],
-    util_info: BagValDict[ICaseString, InstrState],
+    util_info: BagValDict[str, InstrState],
     accept_res: _AcceptStatus,
 ) -> None:
     """Try to accept the next instruction to an input unit.
@@ -255,9 +254,9 @@ def _accept_instr(
 
 def _accept_in_unit(
     input_iter: Iterator[UnitModel],
-    instr_categ: ICaseString,
+    instr_categ: str,
     accept_res: _AcceptStatus,
-    util_info: BagValDict[ICaseString, InstrState],
+    util_info: BagValDict[str, InstrState],
     issue_rec: _IssueInfo,
 ) -> bool:
     """Try to accept the next instruction to the given unit.
@@ -492,7 +491,7 @@ def _chk_avail_regs(
 
 def _clr_src_units(
     instructions: Iterable[_instr_sinks.HostedInstr],
-    util_info: BagValDict[ICaseString, _ObjT],
+    util_info: BagValDict[str, _ObjT],
 ) -> None:
     """Clear the utilization of units releasing instructions.
 
@@ -509,8 +508,7 @@ def _clr_src_units(
 
 
 def _count_outputs(
-    outputs: Iterable[ICaseString],
-    util_info: BagValDict[ICaseString, InstrState],
+    outputs: Iterable[str], util_info: BagValDict[str, InstrState]
 ) -> int:
     """Count the number of unstalled outputs.
 
@@ -524,7 +522,7 @@ def _count_outputs(
 def _fill_cp_util(
     processor: ProcessorDesc,
     program: Sequence[HwInstruction],
-    util_info: BagValDict[ICaseString, InstrState],
+    util_info: BagValDict[str, InstrState],
     issue_rec: _IssueInfo,
 ) -> None:
     """Calculate the utilization of a new clock pulse.
@@ -558,7 +556,7 @@ def _fill_cp_util(
 def _fill_inputs(
     cap_unit_map: Mapping[object, Iterable[UnitModel]],
     program: Sequence[HwInstruction],
-    util_info: BagValDict[ICaseString, InstrState],
+    util_info: BagValDict[str, InstrState],
     mem_busy: object,
     issue_rec: _IssueInfo,
 ) -> None:
@@ -586,9 +584,7 @@ def _fill_inputs(
 
 
 def _fill_unit(
-    unit: IInstrSink,
-    util_info: BagValDict[ICaseString, InstrState],
-    mem_busy: object,
+    unit: IInstrSink, util_info: BagValDict[str, InstrState], mem_busy: object
 ) -> object:
     """Fill an output with instructions from its predecessors.
 
@@ -609,7 +605,7 @@ def _fill_unit(
     return mov_res.mem_used
 
 
-def _get_out_ports(processor: ProcessorDesc) -> "map[ICaseString]":
+def _get_out_ports(processor: ProcessorDesc) -> "map[str]":
     """Find all units at the processor output boundary.
 
     `processor` is the processor to find whose output ports.
@@ -648,8 +644,7 @@ def _issue_instr(
 
 
 def _mov_flights(
-    dst_units: Iterable[IInstrSink],
-    util_info: BagValDict[ICaseString, InstrState],
+    dst_units: Iterable[IInstrSink], util_info: BagValDict[str, InstrState]
 ) -> bool:
     """Move the instructions inside the pipeline.
 
@@ -728,7 +723,7 @@ def _run_cycle(
     program: Sequence[HwInstruction],
     acc_queues: Mapping[object, RegAccessQueue],
     hw_info: HwSpec,
-    util_tbl: MutableSequence[BagValDict[ICaseString, InstrState]],
+    util_tbl: MutableSequence[BagValDict[str, InstrState]],
     issue_rec: _IssueInfo,
 ) -> None:
     """Run a single clock cycle.

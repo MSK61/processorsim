@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -50,7 +50,6 @@ import test_utils
 import hw_loading
 import processor_utils
 from processor_utils import units
-from str_utils import ICaseString
 
 
 @frozen
@@ -101,8 +100,6 @@ class TestHwDescLoad:
         processor and ISA descriptions.
 
         """
-        full_sys_unit = ICaseString("full system")
-        icase_cap = ICaseString(in_params.capability)
         lock_info = units.LockInfo(True, True)
         with open(
             os.path.join(
@@ -116,17 +113,20 @@ class TestHwDescLoad:
                 [],
                 [
                     units.UnitModel(
-                        full_sys_unit, 1, {icase_cap: False}, lock_info
+                        "full system",
+                        1,
+                        {in_params.capability: False},
+                        lock_info,
                     )
                 ],
                 [],
             ),
         ) as proc_mock, patch(
             "processor_utils.get_abilities",
-            return_value=frozenset([icase_cap]),
+            return_value=frozenset([in_params.capability]),
         ) as ability_mock, patch(
             "processor_utils.load_isa",
-            return_value={in_params.instr: icase_cap},
+            return_value={in_params.instr: in_params.capability},
         ) as isa_mock:
             assert hw_loading.read_processor(hw_src) == hw_loading.HwDesc(
                 proc_mock.return_value, isa_mock.return_value

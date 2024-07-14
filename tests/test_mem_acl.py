@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.88.1, python 3.11.9, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -45,6 +45,7 @@ from attr import frozen
 import pytest
 from pytest import mark
 
+from test_utils import chk_warnings
 from processor_utils import load_proc_desc, ProcessorDesc
 import processor_utils.units
 from processor_utils.units import (
@@ -57,7 +58,6 @@ from processor_utils.units import (
     UNIT_WIDTH_KEY,
     UNIT_WLOCK_KEY,
 )
-from str_utils import ICaseString
 
 
 class TestCapCase:
@@ -81,45 +81,40 @@ class TestCapCase:
         """
         caplog.set_level(WARNING)
         in_out_units = (
-            UnitModel(
-                ICaseString(name),
-                1,
-                {ICaseString("ALU"): uses_mem},
-                LockInfo(True, True),
-            )
+            UnitModel(name, 1, {"ALU": uses_mem}, LockInfo(True, True))
             for name, uses_mem in [(loaded_core, False), ("core 2", True)]
         )
         assert load_proc_desc(
             {
                 "units": [
                     {
-                        UNIT_NAME_KEY: ref_cap_unit,
+                        UNIT_NAME_KEY: name,
                         UNIT_WIDTH_KEY: 1,
-                        processor_utils.units.UNIT_ROLES_KEY: {"ALU": False},
+                        **cap_attrs,
                         **{
                             attr: True
                             for attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]
                         },
-                    },
-                    {
-                        UNIT_NAME_KEY: "core 2",
-                        UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["ALU"],
-                        **{
-                            attr: True
-                            for attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]
-                        },
-                        UNIT_MEM_KEY: ["alu"],
-                    },
+                    }
+                    for name, cap_attrs in [
+                        (
+                            ref_cap_unit,
+                            {
+                                processor_utils.units.UNIT_ROLES_KEY: {
+                                    "ALU": False
+                                }
+                            },
+                        ),
+                        (
+                            "core 2",
+                            {UNIT_CAPS_KEY: ["ALU"], UNIT_MEM_KEY: ["alu"]},
+                        ),
+                    ]
                 ],
                 "dataPath": [],
             }
         ) == ProcessorDesc([], [], in_out_units, [])
-        assert caplog.records
-        warn_msg = caplog.records[0].getMessage()
-
-        for token in ["alu", "core 2", "ALU", loaded_core]:
-            assert token in warn_msg
+        chk_warnings(["alu", "core 2", "ALU", loaded_core], caplog.records)
 
 
 class TestPartialMem:
@@ -152,12 +147,9 @@ class TestPartialMem:
             [],
             [
                 UnitModel(
-                    ICaseString("full system"),
+                    "full system",
                     1,
-                    {
-                        ICaseString(cap): uses_mem
-                        for cap, uses_mem in [("ALU", False), ("MEM", True)]
-                    },
+                    {"ALU": False, "MEM": True},
                     LockInfo(True, True),
                 )
             ],
@@ -241,19 +233,17 @@ class TestStdCaseCap:
             [],
             [
                 UnitModel(
-                    ICaseString(exp_results.unit),
+                    exp_results.unit,
                     1,
-                    {ICaseString(exp_ref_cap): True},
+                    {exp_ref_cap: True},
                     LockInfo(True, True),
                 )
             ],
             [],
         )
-        assert caplog.records
-        warn_msg = caplog.records[0].getMessage()
-
-        for token in [exp_ref_cap, exp_results.unit, exp_ref_cap]:
-            assert token in warn_msg
+        chk_warnings(
+            [exp_ref_cap, exp_results.unit, exp_ref_cap], caplog.records
+        )
 
 
 def main():

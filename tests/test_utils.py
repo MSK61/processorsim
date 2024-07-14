@@ -31,23 +31,25 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+from itertools import starmap
 from os.path import join
 
 import yaml
 
 import test_env
+import container_utils
 import processor_utils
 from processor_utils import ProcessorDesc
 from processor_utils.units import LockInfo, UnitModel
 import program_utils
-from str_utils import ICaseString
+import sim_services.sim_defs
 
 TEST_DATA_DIR = join(test_env.TEST_DIR, "data")
 
@@ -78,14 +80,7 @@ def chk_one_unit(proc_dir, proc_file):
     assert read_proc_file(proc_dir, proc_file) == ProcessorDesc(
         [],
         [],
-        [
-            UnitModel(
-                ICaseString("full system"),
-                1,
-                {ICaseString("ALU"): False},
-                LockInfo(True, True),
-            )
-        ],
+        [UnitModel("full system", 1, {"ALU": False}, LockInfo(True, True))],
         [],
     )
 
@@ -101,22 +96,12 @@ def chk_two_units(proc_dir, proc_file):
 
     """
     proc_desc = read_proc_file(proc_dir, proc_file)
-    alu_cap = ICaseString("ALU")
-    out_unit = ICaseString("output")
+    wr_lock = LockInfo(False, True)
     assert proc_desc == ProcessorDesc(
-        [
-            UnitModel(
-                ICaseString("input"),
-                1,
-                {alu_cap: False},
-                LockInfo(True, False),
-            )
-        ],
+        [UnitModel("input", 1, {"ALU": False}, LockInfo(True, False))],
         [
             processor_utils.units.FuncUnit(
-                UnitModel(
-                    out_unit, 1, {alu_cap: False}, LockInfo(False, True)
-                ),
+                UnitModel("output", 1, {"ALU": False}, wr_lock),
                 proc_desc.in_ports,
             )
         ],
@@ -125,20 +110,29 @@ def chk_two_units(proc_dir, proc_file):
     )
 
 
-def chk_warn(tokens, warn_calls):
+def chk_warn(tokens, warn_msg):
     """Verify tokens in a warning message.
 
     `tokens` are the tokens to assess.
+    `warn_msg` is the warning message.
+    The method asserts that all tokens exist in the warning message.
+
+    """
+    for token in tokens:
+        assert token in warn_msg
+
+
+def chk_warnings(tokens, warn_calls):
+    """Verify tokens in the first warning message.
+
+    `tokens` are the tokens to assess.
     `warn_calls` are the warning function mock calls.
-    The method asserts that all tokens exist in the constructed warning
-    message.
+    The method asserts that all tokens exist in the first constructed
+    warning message.
 
     """
     assert warn_calls
-    warn_msg = warn_calls[0].getMessage()
-
-    for token in tokens:
-        assert token in warn_msg
+    chk_warn(tokens, warn_calls[0].getMessage())
 
 
 def compile_prog(prog_file, isa):
@@ -149,6 +143,43 @@ def compile_prog(prog_file, isa):
 
     """
     return program_utils.compile_program(read_prog_file(prog_file), isa)
+
+
+def get_lists(elems):
+    """Generate a list for each element.
+
+    `elems` are the elements to generate lists for.
+
+    """
+    return ([cur_elem] for cur_elem in elems)
+
+
+def get_util_info(util_records):
+    """Create a utilization table.
+
+    `util_records` are the records to create the utilization table from.
+
+    """
+    return [
+        container_utils.BagValDict(
+            {
+                unit: starmap(sim_services.sim_defs.InstrState, state_params)
+                for unit, state_params in inst_util
+            }
+        )
+        for inst_util in util_records
+    ]
+
+
+def get_util_tbl(util_records):
+    """Create a utilization table.
+
+    `util_records` are the records to create the utilization table from.
+
+    """
+    return get_util_info(
+        starmap(_get_util_rec, inst_util) for inst_util in util_records
+    )
 
 
 def read_isa_file(file_name, capabilities):
@@ -232,3 +263,15 @@ def _load_yaml(test_dir, file_name):
         join(TEST_DATA_DIR, test_dir, file_name), encoding="utf-8"
     ) as test_file:
         return yaml.safe_load(test_file)
+
+
+def _get_util_rec(unit, instr_indices):
+    """Create a utilization record.
+
+    `unit` is the record unit.
+    `instr_indices` are the indices of the record instructions.
+    The returned record encodes the given instruction indices as
+    instruction state parameters.
+
+    """
+    return unit, get_lists(instr_indices)

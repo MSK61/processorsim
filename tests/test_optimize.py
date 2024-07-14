@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -46,10 +46,9 @@ import more_itertools
 import pytest
 
 import test_utils
-from test_utils import chk_warn, read_proc_file
+from test_utils import chk_warnings, read_proc_file
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
-from str_utils import ICaseString
 
 
 class TestClean:
@@ -70,29 +69,19 @@ class TestClean:
         proc_desc = read_proc_file(
             "optimization", "pathThatGetsCutOffItsOutput.yaml"
         )
-        out1_unit = ICaseString("output 1")
-        alu_cap = ICaseString("ALU")
+        wr_lock = LockInfo(False, True)
         assert proc_desc == ProcessorDesc(
-            [
-                UnitModel(
-                    ICaseString("input"),
-                    1,
-                    {alu_cap: False},
-                    LockInfo(True, False),
-                )
-            ],
+            [UnitModel("input", 1, {"ALU": False}, LockInfo(True, False))],
             [
                 FuncUnit(
-                    UnitModel(
-                        out1_unit, 1, {alu_cap: False}, LockInfo(False, True)
-                    ),
+                    UnitModel("output 1", 1, {"ALU": False}, wr_lock),
                     proc_desc.in_ports,
                 )
             ],
             [],
             [],
         )
-        chk_warn(["middle"], caplog.records)
+        chk_warnings(["middle"], caplog.records)
 
     def test_unit_with_empty_capabilities_is_removed(self, caplog):
         """Test loading a unit with no capabilities.
@@ -107,17 +96,10 @@ class TestClean:
         ) == ProcessorDesc(
             [],
             [],
-            [
-                UnitModel(
-                    ICaseString("core 1"),
-                    1,
-                    {ICaseString("ALU"): False},
-                    LockInfo(True, True),
-                )
-            ],
+            [UnitModel("core 1", 1, {"ALU": False}, LockInfo(True, True))],
             [],
         )
-        chk_warn(["core 2"], caplog.records)
+        chk_warnings(["core 2"], caplog.records)
 
 
 class TestEdgeRemoval:
@@ -138,10 +120,7 @@ class TestEdgeRemoval:
             lambda name, categ: UnitModel(
                 name, 1, {categ: False}, LockInfo(True, False)
             ),
-            (
-                map(ICaseString, unit_params)
-                for unit_params in [["input 1", "ALU"], ["input 2", "MEM"]]
-            ),
+            [["input 1", "ALU"], ["input 2", "MEM"]],
         )
         wr_lock = LockInfo(False, True)
         out_units = starmap(
@@ -154,16 +133,10 @@ class TestEdgeRemoval:
                     )
                 ],
             ),
-            (
-                map(ICaseString, unit_params)
-                for unit_params in [
-                    ["output 1", "ALU", "input 1"],
-                    ["output 2", "MEM", "input 2"],
-                ]
-            ),
+            [["output 1", "ALU", "input 1"], ["output 2", "MEM", "input 2"]],
         )
         assert proc_desc == ProcessorDesc(in_units, out_units, [], [])
-        chk_warn(["input 2", "output 1"], caplog.records)
+        chk_warnings(["input 2", "output 1"], caplog.records)
 
 
 class TestWidth:

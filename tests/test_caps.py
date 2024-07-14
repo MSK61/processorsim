@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
+# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
 #               39 (Thirty Nine)
 #
 # notes:        This is a private program.
@@ -46,7 +46,7 @@ import pytest
 from pytest import mark, raises
 
 import test_utils
-from test_utils import chk_warn, read_proc_file
+from test_utils import chk_warnings, read_proc_file
 import processor_utils
 from processor_utils import exception, units
 from str_utils import ICaseString
@@ -130,17 +130,14 @@ class TestDupCap:
         in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits.yaml"
         processor = (
             units.UnitModel(
-                ICaseString(unit_name),
-                1,
-                {ICaseString("ALU"): False},
-                units.LockInfo(True, True),
+                unit_name, 1, {"ALU": False}, units.LockInfo(True, True)
             )
             for unit_name in ["core 1", "core 2"]
         )
         assert read_proc_file(
             "capabilities", in_file
         ) == processor_utils.ProcessorDesc([], [], processor, [])
-        chk_warn(["ALU", "core 1", "alu", "core 2"], caplog.records)
+        chk_warnings(["ALU", "core 1", "alu", "core 2"], caplog.records)
         assert ICaseString.__name__ not in caplog.records[0].getMessage()
 
     @mark.parametrize(
@@ -166,7 +163,7 @@ class TestDupCap:
         """
         caplog.set_level(WARNING)
         test_utils.chk_one_unit("capabilities", in_file)
-        chk_warn(capabilities, caplog.records)
+        chk_warnings(capabilities, caplog.records)
 
 
 def main():

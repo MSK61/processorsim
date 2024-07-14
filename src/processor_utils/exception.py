@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -47,7 +47,6 @@ from fastcore.foundation import mapt
 from pydash import spread
 
 from errors import ElementValue, ErrorElement, EXCEPTION, SimErrorBase
-from str_utils import ICaseString
 
 
 @EXCEPTION
@@ -223,7 +222,7 @@ class PathLockError(SimErrorBase):
 class ComponentInfo:
     """Component information"""
 
-    std_name: ICaseString
+    std_name: str
 
     reporting_name: object
 
@@ -286,9 +285,9 @@ class BlockedCapError(SimErrorBase):
         )
 
     # error parameters
-    capability: ICaseString = field()
+    capability: str = field()
 
-    port: ICaseString = field()
+    port: str = field()
 
     # parameter keys in message format
     CAPABILITY_KEY: Final = "capability"

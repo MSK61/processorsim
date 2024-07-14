@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.88.1, python 3.11.9, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -52,7 +52,7 @@ import operator
 import os
 import sys
 import typing
-from typing import Any, TypeVar
+from typing import Any, Sequence
 
 from attr import field, frozen
 from fastcore import foundation
@@ -77,15 +77,12 @@ from .units import (
     UNIT_WLOCK_KEY,
 )
 
-_CapT = TypeVar("_CapT")
-_InstrT = TypeVar("_InstrT")
-_T = TypeVar("_T")
 _UNIT_KEY: typing.Final = "unit"
 
 
 def load_isa(
     raw_isa: Iterable[Iterable[str]], capabilities: Iterable[ICaseString]
-) -> dict[str, ICaseString]:
+) -> dict[str, str]:
     """Transform the given raw description into an instruction set.
 
     `raw_isa` is the raw description to extract an instruction set from.
@@ -109,7 +106,7 @@ class _CapabilityInfo:
 def _add_capability(
     unit: object,
     cap: ICaseString,
-    cap_list: MutableSequence[ICaseString],
+    cap_list: MutableSequence[str],
     unit_cap_reg: SelfIndexSet[ICaseString],
     global_cap_reg: IndexedSet[_CapabilityInfo],
 ) -> None:
@@ -141,7 +138,7 @@ def _add_capability(
 
 def _add_edge(
     processor: Graph,
-    edge: Collection[str],
+    edge: Sequence[str],
     unit_registry: SelfIndexSet[ICaseString],
     edge_registry: IndexedSet[Collection[str]],
 ) -> None:
@@ -175,11 +172,11 @@ def _add_edge(
 
 
 def _add_instr(
-    instr_registry: SelfIndexSet[_InstrT],
-    cap_registry: SelfIndexSet[_CapT],
-    instr: _InstrT,
-    cap: _CapT,
-) -> _CapT:
+    instr_registry: SelfIndexSet[ICaseString],
+    cap_registry: SelfIndexSet[ICaseString],
+    instr: str,
+    cap: str,
+) -> str:
     """Add an instruction to the instruction set.
 
     `instr_registry` is the store of previously added instructions.
@@ -190,13 +187,12 @@ def _add_instr(
 
     """
     _chk_instr(instr, instr_registry)
-    instr_registry.add(instr)
     return _get_cap_name(cap, cap_registry)
 
 
 def _add_new_cap(
     cap: _CapabilityInfo,
-    cap_list: MutableSequence[ICaseString],
+    cap_list: MutableSequence[str],
     unit_cap_reg: SelfIndexSet[ICaseString],
     global_cap_reg: IndexedSet[_CapabilityInfo],
 ) -> None:
@@ -222,7 +218,7 @@ def _add_new_cap(
             std_cap.unit,
         )
 
-    cap_list.append(std_cap.name)
+    cap_list.append(std_cap.name.raw_str)
     unit_cap_reg.add(cap.name)
 
 
@@ -249,7 +245,7 @@ def _add_unit(
     _chk_unit_name(unit_name, unit_registry)
     _chk_unit_width(unit)
     processor.add_node(
-        unit_name,
+        unit[UNIT_NAME_KEY],
         **{
             UNIT_WIDTH_KEY: unit[UNIT_WIDTH_KEY],
             UNIT_ROLES_KEY: _get_roles(unit, cap_registry),
@@ -262,24 +258,28 @@ def _add_unit(
     unit_registry.add(unit_name)
 
 
-def _chk_instr(instr: _T, instr_registry: SelfIndexSet[_T]) -> None:
+def _chk_instr(instr: str, instr_registry: SelfIndexSet[ICaseString]) -> None:
     """Check the given instruction.
 
     `instr` is the instruction.
     `instr_registry` is the store of previously added instructions.
-    The function raises a DupElemError if the same instruction was previously
-    added to the instruction store.
+    The function raises a DupElemError if the same instruction was
+    previously added to the instruction store, otherwise it adds the new
+    instruction to the store.
 
     """
-    old_instr = instr_registry.get(instr)
+    new_instr = ICaseString(instr)
+    old_instr = instr_registry.get(new_instr)
 
     if old_instr:
         raise DupElemError(
             f"Instruction ${DupElemError.NEW_ELEM_KEY} previously added as "
             f"${DupElemError.OLD_ELEM_KEY}",
-            old_instr,
+            old_instr.raw_str,
             instr,
         )
+
+    instr_registry.add(new_instr)
 
 
 def _add_rev_edges(graph: Graph) -> None:
@@ -299,7 +299,9 @@ def _add_rev_edges(graph: Graph) -> None:
     graph.add_edges_from(chain.from_iterable(edges))
 
 
-def _chk_unit_name(name: _T, name_registry: SelfIndexSet[_T]) -> None:
+def _chk_unit_name(
+    name: ICaseString, name_registry: SelfIndexSet[ICaseString]
+) -> None:
     """Check the given unit name.
 
     `name` is the unit name.
@@ -314,8 +316,8 @@ def _chk_unit_name(name: _T, name_registry: SelfIndexSet[_T]) -> None:
         raise DupElemError(
             f"Functional unit ${DupElemError.NEW_ELEM_KEY} previously added as"
             f" ${DupElemError.OLD_ELEM_KEY}",
-            old_name,
-            name,
+            old_name.raw_str,
+            name.raw_str,
         )
 
 
@@ -339,7 +341,7 @@ def _chk_unit_width(unit: Mapping[object, int]) -> None:
 
 
 def _create_graph(
-    hw_units: Iterable[Mapping[object, Any]], links: Iterable[Collection[str]]
+    hw_units: Iterable[Mapping[object, Any]], links: Iterable[Sequence[str]]
 ) -> DiGraph:
     """Create a data flow graph for a processor.
 
@@ -367,7 +369,7 @@ def _create_graph(
 
 def _create_isa(
     isa_spec: Iterable[Iterable[str]], cap_registry: SelfIndexSet[ICaseString]
-) -> dict[str, ICaseString]:
+) -> dict[str, str]:
     """Create an instruction set of the given ISA dictionary.
 
     `isa_spec` is the ISA specification to normalize.
@@ -378,18 +380,14 @@ def _create_isa(
     """
     instr_registry = SelfIndexSet[ICaseString]()
     return {
-        instr.upper(): _add_instr(
-            instr_registry,
-            cap_registry,
-            *(ICaseString(prop) for prop in [instr, cap]),
-        )
+        instr.upper(): _add_instr(instr_registry, cap_registry, instr, cap)
         for instr, cap in isa_spec
     }
 
 
 def _get_acl_cap(
     unit: object, cap: str, global_cap_reg: IndexedSet[_CapabilityInfo]
-) -> ICaseString:
+) -> str:
     """Return a supported ACL capability name.
 
     `unit` is the unit to get a capability from whose memory ACL.
@@ -408,10 +406,12 @@ def _get_acl_cap(
             "definition..."
         )
 
-    return std_cap.name
+    return std_cap.name.raw_str
 
 
-def _get_cap_name(capability: _T, cap_registry: SelfIndexSet[_T]) -> _T:
+def _get_cap_name(
+    capability: str, cap_registry: SelfIndexSet[ICaseString]
+) -> str:
     """Return a supported capability name.
 
     `capability` is the name of the capability to validate.
@@ -420,14 +420,22 @@ def _get_cap_name(capability: _T, cap_registry: SelfIndexSet[_T]) -> _T:
     name is supported, otherwise returns the supported capability name.
 
     """
-    std_cap = cap_registry.get(capability)
+    std_cap = cap_registry.get(ICaseString(capability))
 
     if not std_cap:
         raise UndefElemError(
             f"Unsupported capability ${UndefElemError.ELEM_KEY}", capability
         )
 
-    return std_cap
+    if std_cap.raw_str != capability:
+        warning(
+            "Capability %s previously defined as %s, using original "
+            "definition...",
+            capability,
+            std_cap,
+        )
+
+    return std_cap.raw_str
 
 
 def _get_mem_acl(roles: Iterable[Iterable[Any]]) -> Generator[Any, None, None]:
@@ -479,7 +487,12 @@ def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
         unit: _get_unit_entry(unit, graph.nodes[unit]) for unit in graph
     }
     return (
-        FuncUnit(unit_map[name], _get_preds2(graph, name, unit_map))
+        FuncUnit(
+            unit_map[name],
+            _get_preds2(
+                graph, name, unit_map
+            ),  # type: ignore[reportArgumentType]
+        )
         for name in graph
     )
 
@@ -487,7 +500,7 @@ def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
 def _get_roles(
     unit: Mapping[object, Mapping[str, object]],
     cap_registry: IndexedSet[_CapabilityInfo],
-) -> dict[ICaseString, bool]:
+) -> dict[str, bool]:
     """Construct the unit roles.
 
     `unit` is the unit to load whose roles.
@@ -509,8 +522,8 @@ def _get_roles(
 
 
 def _get_std_edge(
-    edge: Iterable[str], unit_registry: SelfIndexSet[ICaseString]
-) -> Generator[ICaseString, None, None]:
+    edge: Sequence[str], unit_registry: SelfIndexSet[ICaseString]
+) -> Generator[str, None, None]:
     """Return a validated edge.
 
     `edge` is the edge to validate.
@@ -519,10 +532,13 @@ def _get_std_edge(
     encountered.
 
     """
-    return (_get_unit_name(ICaseString(unit), unit_registry) for unit in edge)
+    return (
+        _get_unit_name(edge, unit_idx, unit_registry)
+        for unit_idx in range(len(edge))
+    )
 
 
-def _get_unit_entry(name: ICaseString, attrs: Mapping[str, Any]) -> UnitModel:
+def _get_unit_entry(name: str, attrs: Mapping[str, Any]) -> UnitModel:
     """Create a unit map entry from the given attributes.
 
     `name` is the unit name.
@@ -553,30 +569,45 @@ def _get_unit_graph(internal_units: Iterable[FuncUnit]) -> DiGraph:
     return rev_graph
 
 
-def _get_unit_name(unit: _T, unit_registry: SelfIndexSet[_T]) -> _T:
+def _get_unit_name(
+    edge: Sequence[str],
+    unit_idx: int,
+    unit_registry: SelfIndexSet[ICaseString],
+) -> str:
     """Return a validated unit name.
 
-    `unit` is the name of the unit to validate.
+    `edge` is the edge containing the unit.
+    `unit_idx` is the index of the unit in the edge.
     `unit_registry` is the store of defined units.
     The function raises an UndefElemError if no unit exists with this
     name, otherwise returns the validated unit name.
 
     """
-    std_name = unit_registry.get(unit)
+    std_name = unit_registry.get(ICaseString(edge[unit_idx]))
 
     if not std_name:
         raise UndefElemError(
-            f"Undefined functional unit ${UndefElemError.ELEM_KEY}", unit
+            f"Undefined functional unit ${UndefElemError.ELEM_KEY}",
+            edge[unit_idx],
         )
 
-    return std_name
+    if std_name.raw_str != edge[unit_idx]:
+        warning(
+            "Unit %s in edge %s previously defined as %s, using original "
+            "definition...",
+            edge[unit_idx],
+            edge,
+            std_name,
+        )
+
+    return std_name.raw_str
 
 
 def _load_caps(
     unit: object,
     caps: Iterable[str],
     cap_registry: IndexedSet[_CapabilityInfo],
-) -> list[ICaseString]:
+) -> list[str]:
     """Load the given unit capabilities.
 
     `unit` is the unit name.
@@ -585,7 +616,7 @@ def _load_caps(
     The function returns a list of loaded capabilities.
 
     """
-    cap_list: list[ICaseString] = []
+    cap_list: list[str] = []
     unit_cap_reg = SelfIndexSet[ICaseString]()
 
     for cur_cap in caps:
@@ -600,7 +631,7 @@ def _load_mem_acl(
     unit: object,
     mem_acl: Iterable[str],
     cap_registry: IndexedSet[_CapabilityInfo],
-) -> list[ICaseString]:
+) -> list[str]:
     """Load the given unit memory ACL.
 
     `unit` is the unit name.
@@ -683,7 +714,9 @@ def get_abilities(processor: ProcessorDesc) -> frozenset[ICaseString]:
 
     """
     in_units = chain(processor.in_out_ports, processor.in_ports)
-    return frozenset(chain.from_iterable(port.roles for port in in_units))
+    return frozenset(
+        chain.from_iterable(map(ICaseString, port.roles) for port in in_units)
+    )
 
 
 def load_proc_desc(raw_desc: Mapping[object, Iterable[Any]]) -> ProcessorDesc:
@@ -742,7 +775,12 @@ def _make_processor(proc_graph: DiGraph) -> ProcessorDesc:
             case _:
                 in_out_ports.append(unit.model)
 
-    return ProcessorDesc(in_ports, out_ports, in_out_ports, internal_units)
+    return ProcessorDesc(
+        in_ports,  # type: ignore[reportArgumentType]
+        out_ports,  # type: ignore[reportArgumentType]
+        in_out_ports,  # type: ignore[reportArgumentType]
+        internal_units,  # type: ignore[reportArgumentType]
+    )
 
 
 _add_src_path()

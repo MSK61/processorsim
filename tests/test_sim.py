@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -47,73 +47,55 @@ from pytest import mark, raises
 
 from test_type_chks import create_hw_instr
 import test_utils
-from test_utils import read_proc_file
-from container_utils import BagValDict
+from test_utils import get_lists, get_util_info, get_util_tbl, read_proc_file
 import processor_utils
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from program_defs import HwInstruction
 from sim_services import HwSpec, simulate, StallError
-from sim_services.sim_defs import InstrState, StallState
-from str_utils import ICaseString
+from sim_services.sim_defs import StallState
 
 _SIM_CASES = [
     ("empty.asm", "singleALUProcessor.yaml", []),
     (
         "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
         "singleALUProcessor.yaml",
-        [{ICaseString("full system"): [InstrState(0)]}],
+        [[("full system", [0])]],
     ),
     (
         "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
         "dualCoreALUProcessor.yaml",
-        [{ICaseString("core 1"): [InstrState(0)]}],
+        [[("core 1", [0])]],
     ),
     (
         "3InstructionProgram.asm",
         "dualCoreALUProcessor.yaml",
-        [
-            {
-                ICaseString("core 1"): [InstrState(0)],
-                ICaseString("core 2"): [InstrState(1)],
-            },
-            {ICaseString("core 1"): [InstrState(2)]},
-        ],
+        [[("core 1", [0]), ("core 2", [1])], [("core 1", [2])]],
     ),
     (
         "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
         "dualCoreMemALUProcessor.yaml",
-        [{ICaseString("core 2"): [InstrState(0)]}],
+        [[("core 2", [0])]],
     ),
     (
         "2InstructionProgram.asm",
         "2WideALUProcessor.yaml",
-        [{ICaseString("full system"): map(InstrState, [0, 1])}],
+        [[("full system", [0, 1])]],
     ),
     (
         "3InstructionProgram.asm",
         "2WideALUProcessor.yaml",
-        [
-            {ICaseString("full system"): map(InstrState, [0, 1])},
-            {ICaseString("full system"): [InstrState(2)]},
-        ],
+        [[("full system", [0, 1])], [("full system", [2])]],
     ),
     (
         "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
         "twoConnectedUnitsProcessor.yaml",
-        [
-            {ICaseString("input"): [InstrState(0)]},
-            {ICaseString("output"): [InstrState(0)]},
-        ],
+        [[("input", [0])], [("output", [0])]],
     ),
     (
         "instructionWithOneSpaceBeforeOperandsAndNoSpacesAroundComma.asm",
         "3StageProcessor.yaml",
-        [
-            {ICaseString("input"): [InstrState(0)]},
-            {ICaseString("middle"): [InstrState(0)]},
-            {ICaseString("output"): [InstrState(0)]},
-        ],
+        [[("input", [0])], [("middle", [0])], [("output", [0])]],
     ),
 ]
 _UNITS_DESC = [
@@ -133,21 +115,18 @@ class TestBasic:
         "prog, cpu, util_tbl",
         [
             (
-                [(["R11", "R15"], "R14", "alu")],
+                [([["R11", "R15"], "R14"], "ALU")],
                 read_proc_file("processors", "singleALUProcessor.yaml"),
-                [{ICaseString("full system"): [InstrState(0)]}],
+                [[("full system", [0])]],
             ),
             (
-                [([], "R12", "MEM"), (["R11", "R15"], "R14", "ALU")],
+                [([[], "R12"], "MEM"), ([["R11", "R15"], "R14"], "ALU")],
                 read_proc_file(
                     "processors", "multiplexedInputSplitOutputProcessor.yaml"
                 ),
                 [
-                    {ICaseString("input"): map(InstrState, [1, 0])},
-                    {
-                        ICaseString("ALU output"): [InstrState(1)],
-                        ICaseString("MEM output"): [InstrState(0)],
-                    },
+                    [("input", [1, 0])],
+                    [("ALU output", [1]), ("MEM output", [0])],
                 ],
             ),
         ],
@@ -162,9 +141,8 @@ class TestBasic:
 
         """
         assert simulate(
-            [create_hw_instr(regs, categ) for *regs, categ in prog],
-            HwSpec(cpu),
-        ) == [BagValDict(inst_util) for inst_util in util_tbl]
+            tuple(starmap(create_hw_instr, prog)), HwSpec(cpu)
+        ) == get_util_tbl(util_tbl)
 
 
 class TestFlow:
@@ -177,19 +155,14 @@ class TestFlow:
 
         """
         in_units = [
-            UnitModel(
-                ICaseString(name),
-                1,
-                {ICaseString(categ): False},
-                LockInfo(True, False),
-            )
+            UnitModel(name, 1, {categ: False}, LockInfo(True, False))
             for name, categ in [("ALU input", "ALU"), ("MEM input", "MEM")]
         ]
         out_unit = FuncUnit(
             UnitModel(
-                ICaseString("output"),
+                "output",
                 1,
-                {ICaseString(cap): False for cap in ["ALU", "MEM"]},
+                {cap: False for cap in ["ALU", "MEM"]},
                 LockInfo(False, True),
             ),
             in_units,
@@ -203,22 +176,16 @@ class TestFlow:
                 ]
             ],
             HwSpec(ProcessorDesc(in_units, [out_unit], [], [])),
-        ) == [
-            BagValDict(inst_util)
-            for inst_util in [
-                {
-                    ICaseString("MEM input"): [InstrState(0)],
-                    ICaseString("ALU input"): [InstrState(1)],
-                },
-                {
-                    ICaseString("output"): [InstrState(0)],
-                    ICaseString("ALU input"): [
-                        InstrState(1, StallState.STRUCTURAL)
-                    ],
-                },
-                {ICaseString("output"): [InstrState(1)]},
+        ) == get_util_info(
+            [
+                [("MEM input", [[0]]), ("ALU input", [[1]])],
+                [
+                    ("output", [[0]]),
+                    ("ALU input", [[1, StallState.STRUCTURAL]]),
+                ],
+                [("output", [[1]])],
             ]
-        ]
+        )
 
 
 class TestInSort:
@@ -231,12 +198,7 @@ class TestInSort:
 
         """
         in_unit, out_unit = (
-            UnitModel(
-                ICaseString(name),
-                1,
-                {ICaseString("ALU"): uses_mem},
-                LockInfo(rd_lock, wr_lock),
-            )
+            UnitModel(name, 1, {"ALU": uses_mem}, LockInfo(rd_lock, wr_lock))
             for name, rd_lock, wr_lock, uses_mem in [
                 ("input 1", True, False, False),
                 ("output 1", False, True, True),
@@ -245,25 +207,12 @@ class TestInSort:
         proc_desc = ProcessorDesc(
             [in_unit],
             [FuncUnit(out_unit, [in_unit])],
-            [
-                UnitModel(
-                    ICaseString("input 2"),
-                    1,
-                    {ICaseString("ALU"): False},
-                    LockInfo(True, False),
-                )
-            ],
+            [UnitModel("input 2", 1, {"ALU": False}, LockInfo(True, False))],
             [],
         )
         assert simulate(
-            [HwInstruction([], "R1", ICaseString("ALU"))], HwSpec(proc_desc)
-        ) == [
-            BagValDict(cp_util)
-            for cp_util in [
-                {ICaseString("input 1"): [InstrState(0)]},
-                {ICaseString("output 1"): [InstrState(0)]},
-            ]
-        ]
+            [HwInstruction([], "R1", "ALU")], HwSpec(proc_desc)
+        ) == get_util_tbl([[("input 1", [0])], [("output 1", [0])]])
 
 
 class TestOutputFlush:
@@ -291,32 +240,27 @@ class TestOutputFlush:
         )
         cores = starmap(
             lambda name, width: UnitModel(
-                ICaseString(name),
-                width,
-                {ICaseString("ALU"): False},
-                LockInfo(True, True),
+                name, width, {"ALU": False}, LockInfo(True, True)
             ),
             [("core 1", 1), ("core 2", 1 + len(extra_instr_lst))],
         )
         extra_instr_seq = range(2, last_instr)
         assert simulate(
             tuple(prog), HwSpec(ProcessorDesc([], [], cores, []))
-        ) == [
-            BagValDict(cp_util)
-            for cp_util in [
-                {
-                    ICaseString("core 1"): [InstrState(0)],
-                    ICaseString("core 2"): starmap(
-                        InstrState,
+        ) == get_util_info(
+            [
+                [
+                    ("core 1", [[0]]),
+                    (
+                        "core 2",
                         more_itertools.prepend(
-                            [1, StallState.DATA],
-                            ([instr] for instr in extra_instr_seq),
+                            [1, StallState.DATA], get_lists(extra_instr_seq)
                         ),
                     ),
-                },
-                {ICaseString("core 2"): [InstrState(1)]},
+                ],
+                [("core 2", [[1]])],
             ]
-        ]
+        )
 
 
 class TestPipeline:
@@ -330,36 +274,33 @@ class TestPipeline:
         """
         assert simulate(
             [
-                HwInstruction([], out_reg, ICaseString("ALU"))
+                HwInstruction([], out_reg, "ALU")
                 for out_reg in ["R1", "R2", "R3", "R4", "R5", "R6"]
             ],
             HwSpec(_make_proc_desc(_UNITS_DESC)),
-        ) == [
-            BagValDict(cp_util)
-            for cp_util in [
-                {
-                    ICaseString("big input"): map(InstrState, [0, 1, 2, 3]),
-                    ICaseString("small input 1"): [InstrState(4)],
-                    ICaseString("small input 2"): [InstrState(5)],
-                },
-                {
-                    ICaseString("big input"): (
-                        InstrState(instr, StallState.STRUCTURAL)
-                        for instr in [2, 3]
+        ) == get_util_info(
+            [
+                [
+                    ("big input", get_lists([0, 1, 2, 3])),
+                    ("small input 1", [[4]]),
+                    ("small input 2", [[5]]),
+                ],
+                [
+                    (
+                        "big input",
+                        ([instr, StallState.STRUCTURAL] for instr in [2, 3]),
                     ),
-                    ICaseString("output"): map(InstrState, [0, 1]),
-                    ICaseString("middle 1"): [InstrState(4)],
-                    ICaseString("middle 2"): [InstrState(5)],
-                },
-                {
-                    ICaseString("output"): map(InstrState, [2, 3]),
-                    ICaseString("middle 2"): starmap(
-                        InstrState, [[5, StallState.STRUCTURAL], [4]]
-                    ),
-                },
-                {ICaseString("output"): map(InstrState, [4, 5])},
+                    ("output", get_lists([0, 1])),
+                    ("middle 1", [[4]]),
+                    ("middle 2", [[5]]),
+                ],
+                [
+                    ("output", get_lists([2, 3])),
+                    ("middle 2", [[5, StallState.STRUCTURAL], [4]]),
+                ],
+                [("output", get_lists([4, 5]))],
             ]
-        ]
+        )
 
 
 class TestSim:
@@ -385,16 +326,13 @@ class TestSim:
                 ),
             ),
             HwSpec(cpu),
-        ) == [BagValDict(inst_util) for inst_util in util_info]
+        ) == get_util_tbl(util_info)
 
     @mark.parametrize(
         "valid_prog, util_tbl",
         [
             ([], []),
-            (
-                [(["R11", "R15"], "R14", "ALU")],
-                [{ICaseString("full system"): [InstrState(0)]}, {}],
-            ),
+            ([(["R11", "R15"], "R14", "ALU")], [[("full system", [0])], {}]),
         ],
     )
     def test_unsupported_instruction_stalls_pipeline(
@@ -407,12 +345,7 @@ class TestSim:
         `util_tbl` is the utilization table.
 
         """
-        prog = starmap(
-            lambda in_regs, out_reg, categ: HwInstruction(
-                in_regs, out_reg, ICaseString(categ)
-            ),
-            chain(valid_prog, [([], "R14", "MEM")]),
-        )
+        prog = starmap(HwInstruction, chain(valid_prog, [([], "R14", "MEM")]))
         ex_chk = raises(
             StallError,
             simulate,
@@ -422,8 +355,7 @@ class TestSim:
         test_utils.chk_error(
             [
                 test_utils.ValInStrCheck(
-                    ex_chk.value.processor_state,
-                    [BagValDict(cp_util) for cp_util in util_tbl],
+                    ex_chk.value.processor_state, get_util_tbl(util_tbl)
                 )
             ],
             ex_chk.value,
@@ -440,12 +372,7 @@ class TestStall:
 
         """
         in_unit, mid, out_unit = (
-            UnitModel(
-                ICaseString(name),
-                width,
-                {ICaseString("ALU"): False},
-                LockInfo(rd_lock, wr_lock),
-            )
+            UnitModel(name, width, {"ALU": False}, LockInfo(rd_lock, wr_lock))
             for name, width, rd_lock, wr_lock in [
                 ("input", 2, True, False),
                 ("middle", 2, False, False),
@@ -459,25 +386,16 @@ class TestStall:
             [FuncUnit(mid, [in_unit])],
         )
         assert simulate(
-            [
-                HwInstruction([], out_reg, ICaseString("ALU"))
-                for out_reg in ["R1", "R2"]
-            ],
+            [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
             HwSpec(proc_desc),
-        ) == [
-            BagValDict(cp_util)
-            for cp_util in [
-                {ICaseString("input"): map(InstrState, [0, 1])},
-                {ICaseString("middle"): map(InstrState, [0, 1])},
-                {
-                    ICaseString("middle"): [
-                        InstrState(1, StallState.STRUCTURAL)
-                    ],
-                    ICaseString("output"): [InstrState(0)],
-                },
-                {ICaseString("output"): [InstrState(1)]},
+        ) == get_util_info(
+            [
+                [("input", get_lists([0, 1]))],
+                [("middle", get_lists([0, 1]))],
+                [("middle", [[1, StallState.STRUCTURAL]]), ("output", [[0]])],
+                [("output", [[1]])],
             ]
-        ]
+        )
 
 
 class TestStallErr:
@@ -492,12 +410,7 @@ class TestStallErr:
 
         """
         long_input, mid, short_input, out_unit = (
-            UnitModel(
-                ICaseString(name),
-                1,
-                {ICaseString("ALU"): False},
-                LockInfo(rd_lock, wr_lock),
-            )
+            UnitModel(name, 1, {"ALU": False}, LockInfo(rd_lock, wr_lock))
             for name, rd_lock, wr_lock in [
                 ("long input", False, False),
                 ("middle", False, False),
@@ -512,18 +425,12 @@ class TestStallErr:
             [FuncUnit(mid, [long_input])],
         )
         cp_util_lst = [
-            {
-                ICaseString("long input"): [InstrState(0)],
-                ICaseString("short input"): [InstrState(1)],
-            },
-            {
-                ICaseString("middle"): [InstrState(0)],
-                ICaseString("output"): [InstrState(1, StallState.DATA)],
-            },
-            {
-                ICaseString("middle"): [InstrState(0, StallState.STRUCTURAL)],
-                ICaseString("output"): [InstrState(1, StallState.DATA)],
-            },
+            [("long input", [[0]]), ("short input", [[1]])],
+            [("middle", [[0]]), ("output", [[1, StallState.DATA]])],
+            [
+                ("middle", [[0, StallState.STRUCTURAL]]),
+                ("output", [[1, StallState.DATA]]),
+            ],
         ]
         assert raises(
             StallError,
@@ -533,7 +440,7 @@ class TestStallErr:
                 for instr_regs in [[[], "R1"], [["R1"], "R2"]]
             ],
             HwSpec(proc_desc),
-        ).value.processor_state == list(map(BagValDict, cp_util_lst))
+        ).value.processor_state == get_util_info(cp_util_lst)
 
 
 def _make_proc_desc(units_desc):
@@ -543,12 +450,7 @@ def _make_proc_desc(units_desc):
 
     """
     big_input, small_input1, mid1, small_input2, mid2, out_unit = (
-        UnitModel(
-            ICaseString(name),
-            width,
-            {ICaseString("ALU"): False},
-            LockInfo(rd_lock, wr_lock),
-        )
+        UnitModel(name, width, {"ALU": False}, LockInfo(rd_lock, wr_lock))
         for name, width, rd_lock, wr_lock in units_desc
     )
     return ProcessorDesc(

@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -46,7 +46,6 @@ import test_utils
 from test_utils import read_proc_file
 import processor_utils
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
-from str_utils import ICaseString
 
 
 class TestNoError:
@@ -81,26 +80,22 @@ class TestProcessors:
         proc_desc = read_proc_file(
             "processors", "4ConnectedUnitsProcessor.yaml"
         )
-        alu_cap = ICaseString("ALU")
         wr_lock = LockInfo(False, True)
         out_ports = tuple(
-            FuncUnit(
-                UnitModel(name, 1, {alu_cap: False}, wr_lock), predecessors
-            )
+            FuncUnit(UnitModel(name, 1, {"ALU": False}, wr_lock), predecessors)
             for name, predecessors in [
-                (ICaseString("output 1"), proc_desc.in_ports),
+                ("output 1", proc_desc.in_ports),
                 (
-                    ICaseString("output 2"),
+                    "output 2",
                     (unit.model for unit in proc_desc.internal_units),
                 ),
             ]
         )
-        in_unit = ICaseString("input")
         internal_unit = UnitModel(
-            ICaseString("middle"), 1, {alu_cap: False}, LockInfo(False, False)
+            "middle", 1, {"ALU": False}, LockInfo(False, False)
         )
         assert proc_desc == processor_utils.ProcessorDesc(
-            [UnitModel(in_unit, 1, {alu_cap: False}, LockInfo(True, False))],
+            [UnitModel("input", 1, {"ALU": False}, LockInfo(True, False))],
             out_ports,
             [],
             [FuncUnit(internal_unit, proc_desc.in_ports)],

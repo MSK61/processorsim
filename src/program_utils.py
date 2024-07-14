@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -92,7 +92,7 @@ class CodeError(errors.SimErrorBase):
 
 
 def compile_program(
-    prog: Iterable[ProgInstruction], isa: Mapping[str, ICaseString]
+    prog: Iterable[ProgInstruction], isa: Mapping[str, str]
 ) -> list[HwInstruction]:
     """Compile the program using the given instruction set.
 
@@ -162,7 +162,12 @@ def _create_instr(
     """
     src_line_info = _get_line_parts(line_num, line_txt)
     dst, *sources = _get_operands(src_line_info, line_num, reg_registry)
-    return ProgInstruction(sources, dst, src_line_info.instruction, line_num)
+    return ProgInstruction(
+        sources,  # type: ignore[reportArgumentType]
+        dst,
+        src_line_info.instruction,
+        line_num,
+    )
 
 
 def _get_cap(isa: Mapping[str, _T], instr: ProgInstruction) -> _T:
@@ -212,7 +217,7 @@ def _get_operands(
     src_line_info: _LineInfo,
     line_num: object,
     reg_registry: IndexedSet[_OperandInfo],
-) -> list[ICaseString]:
+) -> list[str]:
     """Extract operands from the given line.
 
     `src_line_info` is the source line information.
@@ -243,7 +248,7 @@ def _get_reg_name(
     line_num: object,
     instr: object,
     reg_registry: IndexedSet[_OperandInfo],
-) -> ICaseString:
+) -> str:
     """Extract the registry name.
 
     `op_idx` is the one-based operand index.
@@ -277,4 +282,4 @@ def _get_reg_name(
             std_reg.line,
         )
 
-    return std_reg.name
+    return std_reg.name.raw_str

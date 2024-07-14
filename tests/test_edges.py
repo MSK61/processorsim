@@ -32,29 +32,30 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import itertools
 from logging import WARNING
 
 import pytest
-from pytest import mark, raises
+from pytest import raises
 
+import test_utils
 from test_utils import chk_error, chk_two_units, read_proc_file, ValInStrCheck
 import errors
 import processor_utils
-import str_utils
 
 
 class TestDupEdge:
     """Test case for loading duplicate edges"""
 
-    def test_three_identical_edges_are_detected(self, caplog):
-        """Test loading three identical edges with the same units.
+    def test_two_edges_different_by_case_are_detected(self, caplog):
+        """Test loading two edges in different cases.
 
         `self` is this test case.
         `caplog` is the log capture fixture.
@@ -62,70 +63,41 @@ class TestDupEdge:
         """
         caplog.set_level(WARNING)
         chk_two_units(
-            "edges",
-            "3EdgesWithSameUnitNamesAndLowerThenUpperThenMixedCase.yaml",
+            "edges", "twoEdgesWithSameUnitNamesAndDifferentCases.yaml"
         )
-        assert len(caplog.records) == 2
+        assert len(caplog.records) == 3
+        unit_warnings = (
+            [src_unit, str(["INPUT", "OUTPUT"]), dst_unit]
+            for src_unit, dst_unit in [
+                ("INPUT", "input"),
+                ("OUTPUT", "output"),
+            ]
+        )
         chk_entries = zip(
             caplog.records,
-            [
-                [["input", "output"], ["INPUT", "OUTPUT"]],
-                [["input", "output"], ["Input", "Output"]],
-            ],
+            itertools.chain(unit_warnings, [str(["input", "output"])]),
         )
 
-        for cur_rec, edge_pair in chk_entries:
-            self._chk_edge_warn(edge_pair, cur_rec)
+        for cur_rec, warn_parts in chk_entries:
+            test_utils.chk_warn(warn_parts, cur_rec.getMessage())
 
-    @mark.parametrize(
-        "in_file, edges",
-        [
-            ("twoEdgesWithSameUnitNamesAndCase.yaml", [["input", "output"]]),
-            (
-                "twoEdgesWithSameUnitNamesAndLowerThenUpperCase.yaml",
-                [["input", "output"], ["INPUT", "OUTPUT"]],
-            ),
-            (
-                "twoEdgesWithSameUnitNamesAndUpperThenLowerCase.yaml",
-                [["INPUT", "OUTPUT"], ["input", "output"]],
-            ),
-        ],
-    )
-    def test_two_identical_edges_are_detected(self, caplog, in_file, edges):
+    def test_two_identical_edges_are_detected(self, caplog):
         """Test loading two identical edges with the same units.
 
         `self` is this test case.
         `caplog` is the log capture fixture.
-        `in_file` is the processor description file.
-        `edges` are the identical edges.
 
         """
         caplog.set_level(WARNING)
-        chk_two_units("edges", in_file)
-        assert caplog.records
-        self._chk_edge_warn(edges, caplog.records[0])
-
-    @staticmethod
-    def _chk_edge_warn(edges, warn_call):
-        """Verify edges in a warning message.
-
-        `edges` are the edges to assess.
-        `warn_call` is the warning function mock call.
-        The method asserts that all edges exist in the constructed
-        warning message.
-
-        """
-        warn_msg = warn_call.getMessage()
-
-        for edge in edges:
-            assert str(edge) in warn_msg
+        chk_two_units("edges", "twoEdgesWithSameUnitNamesAndCase.yaml")
+        test_utils.chk_warnings([str(["input", "output"])], caplog.records)
 
 
 class TestEdges:
     """Test case for loading edges"""
 
     # pylint: disable=invalid-name
-    def test_edge_with_unknown_unit_raises_UndefElemError(self):
+    def test_unknown_unit_raises_UndefElemError(self):
         """Test loading an edge involving an unknown unit.
 
         `self` is this test case.
@@ -137,23 +109,16 @@ class TestEdges:
             "edges",
             "edgeWithUnknownUnit.yaml",
         )
-        chk_error(
-            [
-                ValInStrCheck(
-                    ex_chk.value.element, str_utils.ICaseString("input")
-                )
-            ],
-            ex_chk.value,
-        )
+        chk_error([ValInStrCheck(ex_chk.value.element, "input")], ex_chk.value)
 
-    @mark.parametrize(
+    @pytest.mark.parametrize(
         "in_file, bad_edge",
         [
             ("emptyEdge.yaml", []),
             ("3UnitEdge.yaml", ["input", "middle", "output"]),
         ],
     )
-    def test_edge_with_wrong_number_of_units_raises_BadEdgeError(
+    def test_wrong_number_of_units_raises_BadEdgeError(
         self, in_file, bad_edge
     ):
         """Test loading an edge with wrong number of units.

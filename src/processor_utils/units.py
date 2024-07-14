@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.87.0, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -48,7 +48,6 @@ from attr import frozen
 from fastcore import foundation
 
 import container_utils
-from str_utils import ICaseString
 
 _T = typing.TypeVar("_T")
 # unit attributes
@@ -84,7 +83,7 @@ class LockInfo:
 class UnitModel:
     """Functional unit model"""
 
-    def needs_mem(self, cap: ICaseString) -> bool:
+    def needs_mem(self, cap: str) -> bool:
         """Test if the given capability will require memory access.
 
         `self` is this unit model.
@@ -93,11 +92,11 @@ class UnitModel:
         """
         return typing.cast(bool, self.roles[cap])
 
-    name: ICaseString
+    name: str
 
     width: int
 
-    roles: abc.Mapping[ICaseString, object]
+    roles: abc.Mapping[str, object]
 
     lock_info: LockInfo
 
