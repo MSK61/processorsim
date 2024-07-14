@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.88.1, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -39,7 +39,6 @@
 ############################################################
 
 import enum
-from typing import Final
 
 import attr
 
@@ -47,11 +46,11 @@ import attr
 class StallState(enum.StrEnum):
     """Instruction stalling state"""
 
-    NO_STALL: Final = "U"
+    NO_STALL = "U"
 
-    STRUCTURAL: Final = "S"
+    STRUCTURAL = "S"
 
-    DATA: Final = "D"
+    DATA = "D"
 
 
 @attr.mutable(order=True)

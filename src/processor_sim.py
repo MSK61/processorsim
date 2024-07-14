@@ -40,7 +40,7 @@ Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -100,9 +100,9 @@ def run(processor_file: IO[str], program_file: IO[str]) -> None:
 
     """
     with processor_file, program_file:
-        ResultWriter(sys.stdout).print_sim_res(
-            _get_sim_res(processor_file, program_file)
-        )
+        ResultWriter(
+            sys.stdout  # type: ignore[reportArgumentType]
+        ).print_sim_res(_get_sim_res(processor_file, program_file))
 
 
 @frozen

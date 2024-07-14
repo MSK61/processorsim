@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -42,7 +42,6 @@ from collections import abc
 import enum
 from enum import auto
 import typing
-from typing import Final
 
 from attr import field, frozen
 
@@ -50,9 +49,9 @@ from attr import field, frozen
 class AccessType(enum.Enum):
     """Access type"""
 
-    READ: Final = auto()
+    READ = auto()
 
-    WRITE: Final = auto()
+    WRITE = auto()
 
 
 @frozen

@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -466,7 +466,12 @@ def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
         unit: _get_unit_entry(unit, graph.nodes[unit]) for unit in graph
     }
     return (
-        FuncUnit(unit_map[name], _get_preds(graph, name, unit_map))
+        FuncUnit(
+            unit_map[name],
+            _get_preds(
+                graph, name, unit_map
+            ),  # type: ignore[reportArgumentType]
+        )
         for name in graph
     )
 
@@ -732,7 +737,12 @@ def _make_processor(proc_graph: DiGraph) -> ProcessorDesc:
             case _:
                 in_out_ports.append(unit.model)
 
-    return ProcessorDesc(in_ports, out_ports, in_out_ports, internal_units)
+    return ProcessorDesc(
+        in_ports,  # type: ignore[reportArgumentType]
+        out_ports,  # type: ignore[reportArgumentType]
+        in_out_ports,  # type: ignore[reportArgumentType]
+        internal_units,  # type: ignore[reportArgumentType]
+    )
 
 
 _add_src_path()

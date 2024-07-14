@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -162,7 +162,12 @@ def _create_instr(
     """
     src_line_info = _get_line_parts(line_num, line_txt)
     dst, *sources = _get_operands(src_line_info, line_num, reg_registry)
-    return ProgInstruction(sources, dst, src_line_info.instruction, line_num)
+    return ProgInstruction(
+        sources,  # type: ignore[reportArgumentType]
+        dst,
+        src_line_info.instruction,
+        line_num,
+    )
 
 
 def _get_cap(isa: Mapping[str, _T], instr: ProgInstruction) -> _T:

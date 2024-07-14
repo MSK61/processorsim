@@ -22,3 +22,4 @@ line-length = 79
 skip-magic-trailing-comma = true
 
 [tool.pyright]
+ignore = ["tests"]
