@@ -39,7 +39,7 @@
 #
 ############################################################
 
-import collections.abc
+from collections import abc
 from typing import Any, cast, TypeVar
 
 import fastcore.foundation
@@ -48,6 +48,16 @@ from networkx.classes import reportviews
 
 _AnyT = TypeVar("_AnyT", bound=Any)
 _T = TypeVar("_T")
+
+
+def call(func: abc.Callable[..., _T], *args: object) -> _T:
+    """Call the given functor with arguments.
+
+    `func` is the function to call.
+    `args` are the arguments to call the function with.
+
+    """
+    return func(*args)
 
 
 def map_ex(seq: Any, map_func: Any, _: type[_T]) -> "map[_T]":
@@ -79,7 +89,7 @@ def nodes(
     return graph.nodes(cast(bool, data))  # type: ignore[reportArgumentType]
 
 
-def sorted_lst(seq: collections.abc.Iterable[_AnyT]) -> list[_AnyT]:
+def sorted_lst(seq: abc.Iterable[_AnyT]) -> list[_AnyT]:
     """Create a sorted list of the given iterable.
 
     `seq` is the iterable to sort.
