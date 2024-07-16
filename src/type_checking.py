@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.82.0, python 3.11.4, Fedora release
-#               38 (Thirty Eight)
+# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -76,7 +76,7 @@ def nodes(
     what the default value for that parameter implies).
 
     """
-    return graph.nodes(cast(bool, data))
+    return graph.nodes(cast(bool, data))  # type: ignore[reportArgumentType]
 
 
 def sorted_lst(seq: collections.abc.Iterable[_AnyT]) -> list[_AnyT]:

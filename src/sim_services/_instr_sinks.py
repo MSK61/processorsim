@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -188,11 +188,12 @@ class IInstrSink(abc.ABC):
 class OutSink(IInstrSink):
     """Dummy sink for flushing output ports"""
 
-    def _accepts_cap(self, _: int) -> typing.Literal[True]:
+    def _accepts_cap(self, instr: int) -> typing.Literal[True]:
         """Always accept all instructions.
 
         `self` is this output sink.
-        `_` is unused.
+        `instr` is the instruction to evaluate the acceptance of whose
+                capability, unused.
 
         """
         return True
@@ -214,13 +215,15 @@ class OutSink(IInstrSink):
         return InstrMovStatus(list(candidates))
 
     def _pick_guests(
-        self, candidates: Iterable[HostedInstr], _: BagValDict[str, InstrState]
+        self,
+        candidates: Iterable[HostedInstr],
+        util_info: BagValDict[str, InstrState],
     ) -> Iterable[HostedInstr]:
         """Pick all prospective instructions unconditionally.
 
         `self` is this output sink.
         `candidates` are a list of candidate instructions.
-        `_` is unused.
+        `util_info` is the unit utilization information, unused.
 
         """
         return tuple(candidates)
