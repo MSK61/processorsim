@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -93,7 +93,7 @@ def rm_empty_units(processor: Graph) -> None:
     The function removes units with no capabilities from the processor.
 
     """
-    unit_entries = tuple(type_checking.nodes(processor, UNIT_ROLES_KEY))
+    unit_entries = tuple(type_checking.call(processor.nodes, UNIT_ROLES_KEY))
 
     for unit, capabilities in unit_entries:
         if not capabilities:

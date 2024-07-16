@@ -39,22 +39,22 @@
 #
 ############################################################
 
-from collections import abc
-from typing import Any, cast, TypeVar
+import collections.abc
+import typing
+from typing import Any
 
 import fastcore.foundation
-import networkx
-from networkx.classes import reportviews
 
-_AnyT = TypeVar("_AnyT", bound=Any)
-_T = TypeVar("_T")
+_T = typing.TypeVar("_T")
 
 
-def call(func: abc.Callable[..., _T], *args: object) -> _T:
+def call(func: collections.abc.Callable[..., _T], *args: object) -> _T:
     """Call the given functor with arguments.
 
     `func` is the function to call.
     `args` are the arguments to call the function with.
+    This function is used whenever pylance can't match arguments with
+    the inferred types of parameters.
 
     """
     return func(*args)
@@ -70,31 +70,6 @@ def map_ex(seq: Any, map_func: Any, _: type[_T]) -> "map[_T]":
     return type of the fastcore.foundation.map_ex function.
 
     """
-    return cast("map[_T]", fastcore.foundation.map_ex(seq, map_func, gen=True))
-
-
-def nodes(
-    graph: networkx.Graph, data: Any
-) -> reportviews.NodeDataView | reportviews.NodeView:
-    """Retrieve the node data view of the given graph.
-
-    `graph` is the graph to retrieve whose node data view.
-    `data` is the data to fill in the node data view.
-    I'm casting data to bool due to a missing explicit type hint for the
-    Graph.nodes function. The type inferred by pylance for the first
-    parameter to networkx.Graph.nodes is(wrongfully) bool(because that's
-    what the default value for that parameter implies).
-
-    """
-    return graph.nodes(cast(bool, data))  # type: ignore[reportArgumentType]
-
-
-def sorted_lst(seq: abc.Iterable[_AnyT]) -> list[_AnyT]:
-    """Create a sorted list of the given iterable.
-
-    `seq` is the iterable to sort.
-    As I don't want to rely on unstable API from typeshed, I'm just
-    relaxing the checks against the item type of the given iterable.
-
-    """
-    return sorted(seq)
+    return typing.cast(
+        "map[_T]", fastcore.foundation.map_ex(seq, map_func, gen=True)
+    )
