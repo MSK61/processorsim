@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.2, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -186,7 +186,7 @@ class BagValDict(Generic[_KT, _VT]):
         assert type(other) is type(self)
         other_items = tuple(other.items())
         lst_pairs = (
-            map(type_checking.sorted_lst, [val_lst, self[key]])
+            (type_checking.call(sorted, lst) for lst in [val_lst, self[key]])
             for key, val_lst in other_items
         )
         item_lst_pair: list[collections.abc.Sized] = [self, other_items]

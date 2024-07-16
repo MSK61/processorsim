@@ -297,7 +297,7 @@ def _add_rev_edges(graph: Graph) -> None:
             for pred in unit.predecessors
             if pred.name in graph
         ),
-        type_checking.nodes(graph, _UNIT_KEY),
+        call(graph.nodes, _UNIT_KEY),
     )
     graph.add_edges_from(chain.from_iterable(edges))
 
