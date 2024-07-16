@@ -40,11 +40,11 @@
 ############################################################
 
 from collections import abc
-from typing import Any, cast, TypeVar
+import typing
+from typing import Any, TypeVar
 
 import fastcore.foundation
 import networkx
-from networkx.classes import reportviews
 
 _AnyT = TypeVar("_AnyT", bound=Any)
 _T = TypeVar("_T")
@@ -70,12 +70,12 @@ def map_ex(seq: Any, map_func: Any, _: type[_T]) -> "map[_T]":
     return type of the fastcore.foundation.map_ex function.
 
     """
-    return cast("map[_T]", fastcore.foundation.map_ex(seq, map_func, gen=True))
+    return typing.cast(
+        "map[_T]", fastcore.foundation.map_ex(seq, map_func, gen=True)
+    )
 
 
-def nodes(
-    graph: networkx.Graph, data: Any
-) -> reportviews.NodeDataView | reportviews.NodeView:
+def nodes(graph: networkx.Graph, data: Any) -> abc.Iterator[Any]:
     """Retrieve the node data view of the given graph.
 
     `graph` is the graph to retrieve whose node data view.
@@ -86,7 +86,7 @@ def nodes(
     what the default value for that parameter implies).
 
     """
-    return graph.nodes(cast(bool, data))  # type: ignore[reportArgumentType]
+    return graph.nodes(data)
 
 
 def sorted_lst(seq: abc.Iterable[_AnyT]) -> list[_AnyT]:
