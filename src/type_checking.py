@@ -53,6 +53,8 @@ def call(func: collections.abc.Callable[..., _T], *args: object) -> _T:
 
     `func` is the function to call.
     `args` are the arguments to call the function with.
+    This function is used whenever pylance can't match arguments with
+    the inferred types of parameters.
 
     """
     return func(*args)
