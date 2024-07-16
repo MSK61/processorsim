@@ -100,9 +100,9 @@ def run(processor_file: IO[str], program_file: IO[str]) -> None:
 
     """
     with processor_file, program_file:
-        ResultWriter(
-            sys.stdout  # type: ignore[reportArgumentType]
-        ).print_sim_res(_get_sim_res(processor_file, program_file))
+        type_checking.call(ResultWriter, sys.stdout).print_sim_res(
+            _get_sim_res(processor_file, program_file)
+        )
 
 
 @frozen

@@ -54,6 +54,7 @@ import errors
 from errors import UndefElemError
 from program_defs import HwInstruction, ProgInstruction
 from str_utils import ICaseString
+import type_checking
 
 _T = typing.TypeVar("_T")
 
@@ -162,11 +163,8 @@ def _create_instr(
     """
     src_line_info = _get_line_parts(line_num, line_txt)
     dst, *sources = _get_operands(src_line_info, line_num, reg_registry)
-    return ProgInstruction(
-        sources,  # type: ignore[reportArgumentType]
-        dst,
-        src_line_info.instruction,
-        line_num,
+    return type_checking.call(
+        ProgInstruction, sources, dst, src_line_info.instruction, line_num
     )
 
 

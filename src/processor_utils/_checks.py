@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -178,7 +178,7 @@ class _PathLockCalc:
 
     def calc_lock(
         self,
-        lock_key: object,
+        lock_key: str,
         path_desc_fact: Callable[[object, object], _PathDescriptor],
     ) -> int:
         """Calculate the path lock.
@@ -237,7 +237,7 @@ class _PathLockCalc:
         _chk_seg_lock(path_lock, path_desc)
         return path_lock
 
-    _start_unit: Mapping[object, object]
+    _start_unit: Mapping[str, object]
 
     _succ_lst: abc.Collection[object]
 
@@ -585,7 +585,8 @@ def _get_anal_graph(processor: Graph) -> DiGraph:
         _update_graph(idx, unit, processor, width_graph, new_nodes)
 
     width_graph.add_edges_from(
-        foundation.map_ex(edge, new_nodes) for edge in processor.edges
+        foundation.map_ex(edge, new_nodes)  # type: ignore[reportArgumentType]
+        for edge in processor.edges
     )
     return width_graph
 
