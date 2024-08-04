@@ -6,7 +6,7 @@ A simulator for program execution on pipelined processors
 
 ## Badges
 
-[![Build Status](https://app.travis-ci.com/MSK61/processorsim.svg?branch=master)](https://app.travis-ci.com/MSK61/processorsim)
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/MSK61/processorsim/.github%2Fworkflows%2FCI.yml)](https://github.com/MSK61/processorsim/actions/workflows/CI.yml)
 [![Coverage Status](https://coveralls.io/repos/github/MSK61/processorsim/badge.svg?branch=master)](https://coveralls.io/github/MSK61/processorsim?branch=master)
 [![license](https://img.shields.io/github/license/MSK61/processorsim)](https://www.gnu.org/licenses/lgpl-3.0)
 ![Written in Python](https://img.shields.io/static/v1?label=&message=Python&color=3C78A9&logo=python&logoColor=FFFFFF)

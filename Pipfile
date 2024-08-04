@@ -11,7 +11,7 @@ pytest-flake8 = "*"
 nbconvert = "*"
 ipykernel = "*"
 types-pyyaml = "*"
-flake8 = "<5"
+flake8 = "*"
 rope = "*"
 pyright = "==1.1.369"
 black = {extras = ["jupyter"], version = "*"}
