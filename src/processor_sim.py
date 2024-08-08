@@ -40,7 +40,7 @@ Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.92.0, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.92.0, python 3.12.4, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -59,6 +59,7 @@ import _csv
 
 import attr
 from attr import frozen
+from fastcore import foundation
 import more_itertools
 import typer
 from typer import FileText
@@ -115,7 +116,25 @@ class _InstrPosition:
         `self` is this instruction position.
 
         """
-        return f"{self._stalled}:{self._unit}"
+        # Flake8 has a problem with a colon in an f-string not followed by a
+        # space.
+        return ":".join(
+            map(
+                self._get_attr_str,
+                [foundation.Self._stalled(), foundation.Self._unit()],
+            )
+        )
+
+    def _get_attr_str(
+        self, attr_getter: abc.Callable[[typing.Self], object]
+    ) -> str:
+        """Return the string representation of an attribute.
+
+        `self` is this instruction position.
+        `attr_getter` is the attribute getter function.
+
+        """
+        return str(attr_getter(self))
 
     _unit: object
 
