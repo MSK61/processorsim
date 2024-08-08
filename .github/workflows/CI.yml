@@ -40,6 +40,8 @@ jobs:
         python-version: "3.12.4"
     - name: Python Pipenv Action
       uses: tiagovrtr/actions-pipenv@v1
+      with:
+        pipenv-version: "2024.0.1"
     - name: Install dependencies
       run: pipenv sync -d
     - name: Set up Snyk CLI to check for security issues
