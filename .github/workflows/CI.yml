@@ -37,7 +37,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4.7.1
       with:
-        python-version: "3.11.9"
+        python-version: "3.12.4"
     - name: Python Pipenv Action
       uses: tiagovrtr/actions-pipenv@v1
     - name: Install dependencies
