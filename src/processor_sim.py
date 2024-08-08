@@ -40,7 +40,7 @@ Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.92.0, python 3.12.4, Fedora release
+# environment:  Visual Studio Code 1.92.1, python 3.12.4, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -120,21 +120,19 @@ class _InstrPosition:
         # space.
         return ":".join(
             map(
-                self._get_attr_str,
+                self._get_res_str,
                 [foundation.Self._stalled(), foundation.Self._unit()],
             )
         )
 
-    def _get_attr_str(
-        self, attr_getter: abc.Callable[[typing.Self], object]
-    ) -> str:
-        """Return the string representation of an attribute.
+    def _get_res_str(self, func: abc.Callable[[typing.Self], object]) -> str:
+        """Return the string representation of the function result.
 
         `self` is this instruction position.
-        `attr_getter` is the attribute getter function.
+        `func` is the function to execute.
 
         """
-        return str(attr_getter(self))
+        return str(func(self))
 
     _unit: object
 
