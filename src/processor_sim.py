@@ -40,14 +40,14 @@ Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.92.0, python 3.11.9, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import collections.abc
+from collections import abc
 from collections.abc import Collection, Iterable, Mapping, Sized
 import csv
 import itertools
@@ -261,9 +261,7 @@ def _cui_to_icu(
 def _fill_cp_util(
     clock_pulse: int,
     cp_util: Iterable[Iterable[Iterable[sim_services.InstrState]]],
-    ixcxu: collections.abc.Sequence[
-        collections.abc.MutableMapping[int, _InstrPosition]
-    ],
+    ixcxu: abc.Sequence[abc.MutableMapping[int, _InstrPosition]],
 ) -> None:
     """Fill the given clock utilization into the IxCxU map.
 
