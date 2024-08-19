@@ -32,13 +32,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.92.2, python 3.12.4, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import contextlib
 import io
 import os.path
 
@@ -113,7 +114,8 @@ def _assert_res(actual_res, exp_res_stream, exp_res):
     `exp_res` are the expected simulation results.
 
     """
-    processor_sim.ResultWriter(exp_res_stream).print_sim_res(exp_res)
+    with contextlib.redirect_stdout(exp_res_stream):
+        processor_sim.ResultWriter.print_sim_res(exp_res)
     assert actual_res == exp_res_stream.getvalue()
 
 
