@@ -40,7 +40,7 @@ Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.92.1, python 3.12.4, Fedora release
+# environment:  Visual Studio Code 1.92.2, python 3.12.4, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -55,9 +55,7 @@ import logging
 import sys
 import typing
 from typing import Annotated, Any, IO
-import _csv
 
-import attr
 from attr import frozen
 from fastcore import foundation
 import more_itertools
@@ -68,9 +66,6 @@ import type_checking
 import hw_loading
 import program_utils
 import sim_services
-
-if typing.TYPE_CHECKING:
-    import _typeshed
 
 
 def main(
@@ -101,9 +96,7 @@ def run(processor_file: IO[str], program_file: IO[str]) -> None:
 
     """
     with processor_file, program_file:
-        type_checking.call(ResultWriter, sys.stdout).print_sim_res(
-            _get_sim_res(processor_file, program_file)
-        )
+        ResultWriter.print_sim_res(_get_sim_res(processor_file, program_file))
 
 
 @frozen
@@ -166,30 +159,19 @@ def _create_flight(instr_util: Mapping[int, _InstrPosition]) -> _InstrFlight:
     )
 
 
-def _create_writer(
-    out_stream: "_typeshed.SupportsWrite[str]",
-) -> "_csv._writer":
-    """Create a CSV writer with the given backend stream.
-
-    `out_stream` is the backend stream.
-
-    """
-    return csv.writer(out_stream, "excel-tab", lineterminator="\n")
-
-
-@frozen
 class ResultWriter:
     """Simulation result writer"""
 
-    def print_sim_res(self, sim_res: Collection[Collection[Any]]) -> None:
+    @classmethod
+    def print_sim_res(cls, sim_res: Collection[Collection[Any]]) -> None:
         """Print the simulation result.
 
-        `self` is this writer.
+        `cls` is the writer class.
         `sim_res` is the simulation result to print.
 
         """
-        self._print_tbl_hdr(sim_res)
-        self._print_tbl_data(enumerate(sim_res, 1))
+        cls._print_tbl_hdr(sim_res)
+        cls._print_tbl_data(enumerate(sim_res, 1))
 
     @staticmethod
     def _get_last_tick(sim_res: Iterable[Sized]) -> int:
@@ -212,36 +194,39 @@ class ResultWriter:
         """
         return range(1, cls._get_last_tick(sim_res) + 1)
 
-    def _print_res_row(self, row_key: Any, res_row: Iterable[Any]) -> None:
+    @classmethod
+    def _print_res_row(cls, row_key: Any, res_row: Iterable[Any]) -> None:
         """Print the given simulation row.
 
-        `self` is this writer.
+        `cls` is the writer class.
         `row_key` is the row key.
         `res_row` is the simulation row.
 
         """
-        self._writer.writerow(more_itertools.prepend(row_key, res_row))
+        cls._writer.writerow(more_itertools.prepend(row_key, res_row))
 
-    def _print_tbl_data(self, sim_res: Iterable[Iterable[Any]]) -> None:
+    @classmethod
+    def _print_tbl_data(cls, sim_res: Iterable[Iterable[Any]]) -> None:
         """Print the simulation table rows.
 
-        `self` is this writer.
+        `cls` is the writer class.
         `sim_res` is the simulation result.
 
         """
         for row_idx, fields in sim_res:
-            self._print_res_row("I" + str(row_idx), fields)
+            cls._print_res_row("I" + str(row_idx), fields)
 
-    def _print_tbl_hdr(self, sim_res: Iterable[Sized]) -> None:
+    @classmethod
+    def _print_tbl_hdr(cls, sim_res: Iterable[Sized]) -> None:
         """Print the simulation table header.
 
-        `self` is this writer.
+        `cls` is the writer class.
         `sim_res` is the simulation result.
 
         """
-        self._print_res_row("", self._get_ticks(sim_res))
+        cls._print_res_row("", cls._get_ticks(sim_res))
 
-    _writer: "_csv._writer" = attr.field(converter=_create_writer)
+    _writer = csv.writer(sys.stdout, "excel-tab", lineterminator="\n")
 
 
 def _cui_to_flights(
