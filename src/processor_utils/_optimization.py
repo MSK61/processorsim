@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.93.1, python 3.12.6, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -109,10 +109,10 @@ def _chk_edge(processor: Graph, edge: abc.Sequence[object]) -> frozenset[str]:
     the common capabilities between the units connected by the edge.
 
     """
-    common_caps = (
-        processor.nodes[edge[1]][UNIT_ROLES_KEY]
-        & processor.nodes[edge[0]][UNIT_ROLES_KEY].keys()
+    dst_roles, src_roles = (
+        processor.nodes[edge[unit_idx]][UNIT_ROLES_KEY] for unit_idx in [1, 0]
     )
+    common_caps = dst_roles & src_roles.keys()
 
     if not common_caps:
         _rm_dummy_edge(processor, edge)
