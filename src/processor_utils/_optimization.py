@@ -40,6 +40,7 @@
 
 from collections import abc
 from logging import warning
+import operator
 
 import networkx
 from networkx import DiGraph, Graph
@@ -109,10 +110,14 @@ def _chk_edge(processor: Graph, edge: abc.Sequence[object]) -> frozenset[str]:
     the common capabilities between the units connected by the edge.
 
     """
-    dst_roles, src_roles = (
-        processor.nodes[edge[unit_idx]][UNIT_ROLES_KEY] for unit_idx in [1, 0]
+    dst_caps, src_caps = (
+        map(
+            operator.itemgetter("name"),
+            processor.nodes[edge[unit_idx]][UNIT_ROLES_KEY],
+        )
+        for unit_idx in [1, 0]
     )
-    common_caps = dst_roles & src_roles.keys()
+    common_caps = frozenset(dst_caps).intersection(src_caps)
 
     if not common_caps:
         _rm_dummy_edge(processor, edge)
@@ -135,10 +140,11 @@ def _clean_unit(processor: DiGraph, unit: object) -> None:
         _chk_edge(processor, edge) for edge in tuple(processor.in_edges(unit))
     )
     unit_caps = frozenset().union(*pred_caps)
-    processor.nodes[unit][UNIT_ROLES_KEY] = {
-        cap: processor.nodes[unit][UNIT_ROLES_KEY].get(cap, False)
-        for cap in unit_caps
-    }
+    processor.nodes[unit][UNIT_ROLES_KEY] = [
+        role
+        for role in processor.nodes[unit][UNIT_ROLES_KEY]
+        if role["name"] in unit_caps
+    ]
 
 
 def _rm_dead_end(

@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.93.1, python 3.12.6, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -311,7 +311,10 @@ def _cap_in_unit(processor: Graph, capability: object, unit: object) -> bool:
     `unit` is the unit to check.
 
     """
-    return capability in processor.nodes[unit][UNIT_ROLES_KEY]
+    return any(
+        role["name"] == capability
+        for role in processor.nodes[unit][UNIT_ROLES_KEY]
+    )
 
 
 def _chk_cap_flow(
@@ -621,7 +624,7 @@ def _get_cap_units(processor: DiGraph) -> abc.ItemsView[str, list[Any]]:
 
     for cur_port in in_ports:
         for cur_cap in processor.nodes[cur_port][UNIT_ROLES_KEY]:
-            cap_unit_map.setdefault(cur_cap, []).append(cur_port)
+            cap_unit_map.setdefault(cur_cap["name"], []).append(cur_port)
 
     return cap_unit_map.items()
 

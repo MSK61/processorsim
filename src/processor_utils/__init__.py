@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.93.1, python 3.12.6, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -249,7 +249,7 @@ def _add_unit(
         unit[UNIT_NAME_KEY],
         **{
             UNIT_WIDTH_KEY: unit[UNIT_WIDTH_KEY],
-            UNIT_ROLES_KEY: _get_roles(unit, cap_registry),
+            UNIT_ROLES_KEY: tuple(_get_roles(unit, cap_registry)),
         },
         **{
             cur_attr: unit.get(cur_attr, False)
@@ -496,7 +496,7 @@ def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
 def _get_roles(
     unit: Mapping[object, Mapping[str, object]],
     cap_registry: IndexedSet[_CapabilityInfo],
-) -> dict[str, bool]:
+) -> Generator[dict[str, object], None, None]:
     """Construct the unit roles.
 
     `unit` is the unit to load whose roles.
@@ -514,7 +514,7 @@ def _get_roles(
         unit_caps, unit_mem_acl = roles, _get_mem_acl(roles.items())
     caps = _load_caps(unit[UNIT_NAME_KEY], unit_caps, cap_registry)
     mem_acl = _load_mem_acl(unit[UNIT_NAME_KEY], unit_mem_acl, cap_registry)
-    return {cap: cap in mem_acl for cap in caps}
+    return ({"name": cap, "usesMem": cap in mem_acl} for cap in caps)
 
 
 def _get_std_edge(
@@ -546,7 +546,7 @@ def _get_unit_entry(name: str, attrs: Mapping[str, Any]) -> UnitModel:
     return UnitModel(
         name,
         attrs[UNIT_WIDTH_KEY],
-        attrs[UNIT_ROLES_KEY],
+        {role["name"]: role["usesMem"] for role in attrs[UNIT_ROLES_KEY]},
         units.LockInfo(*lock_attrs),
     )
 
