@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.93.1, python 3.12.6, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -41,7 +41,9 @@
 
 from itertools import chain, starmap
 
+import fastcore.foundation
 import more_itertools
+import pydash
 import pytest
 from pytest import mark, raises
 
@@ -168,13 +170,10 @@ class TestFlow:
             in_units,
         )
         assert simulate(
-            [
-                create_hw_instr(regs, categ)
-                for *regs, categ in [
-                    [[], "R12", "MEM"],
-                    [["R11", "R15"], "R14", "ALU"],
-                ]
-            ],
+            fastcore.foundation.mapt(
+                pydash.spread(HwInstruction),
+                [[[], "R12", "MEM"], [["R11", "R15"], "R14", "ALU"]],
+            ),
             HwSpec(ProcessorDesc(in_units, [out_unit], [], [])),
         ) == get_util_info(
             [
@@ -219,7 +218,7 @@ class TestOutputFlush:
     """Test case for flushing instructions at output ports"""
 
     @mark.parametrize(
-        "extra_instr_lst, last_instr", [([], 2), ([[[[], "R3"], "ALU"]], 3)]
+        "extra_instr_lst, last_instr", [([], 2), ([[[], "R3", "ALU"]], 3)]
     )
     def test_stalled_outputs_are_not_flushed(
         self, extra_instr_lst, last_instr
@@ -233,10 +232,8 @@ class TestOutputFlush:
 
         """
         prog = starmap(
-            create_hw_instr,
-            chain(
-                [[[[], "R1"], "ALU"], [[["R1"], "R2"], "ALU"]], extra_instr_lst
-            ),
+            HwInstruction,
+            chain([[[], "R1", "ALU"], [["R1"], "R2", "ALU"]], extra_instr_lst),
         )
         cores = starmap(
             lambda name, width: UnitModel(
