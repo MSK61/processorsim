@@ -110,12 +110,9 @@ def _chk_edge(processor: Graph, edge: abc.Sequence[object]) -> frozenset[str]:
     the common capabilities between the units connected by the edge.
 
     """
-    dst_caps, src_caps = (
-        map(
-            operator.itemgetter("name"),
-            processor.nodes[edge[unit_idx]][UNIT_ROLES_KEY],
-        )
-        for unit_idx in [1, 0]
+    src_caps, dst_caps = (
+        map(operator.itemgetter("name"), processor.nodes[unit][UNIT_ROLES_KEY])
+        for unit in edge
     )
     common_caps = frozenset(dst_caps).intersection(src_caps)
 
