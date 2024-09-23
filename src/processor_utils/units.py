@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.93.1, python 3.12.6, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -49,7 +49,6 @@ from fastcore import foundation
 
 import container_utils
 
-_T = typing.TypeVar("_T")
 # unit attributes
 UNIT_CAPS_KEY: Final = "capabilities"
 UNIT_MEM_KEY: Final = "memoryAccess"
