@@ -48,7 +48,7 @@ from networkx import DiGraph, Graph
 import type_checking
 from .exception import DeadInputError
 from . import _port_defs
-from .units import UNIT_ROLES_KEY
+from .units import ROLE_NAME_KEY, UNIT_ROLES_KEY
 
 
 def chk_terminals(
@@ -111,7 +111,10 @@ def _chk_edge(processor: Graph, edge: abc.Sequence[object]) -> frozenset[str]:
 
     """
     src_caps, dst_caps = (
-        map(operator.itemgetter("name"), processor.nodes[unit][UNIT_ROLES_KEY])
+        map(
+            operator.itemgetter(ROLE_NAME_KEY),
+            processor.nodes[unit][UNIT_ROLES_KEY],
+        )
         for unit in edge
     )
     common_caps = frozenset(dst_caps).intersection(src_caps)
@@ -140,7 +143,7 @@ def _clean_unit(processor: DiGraph, unit: object) -> None:
     processor.nodes[unit][UNIT_ROLES_KEY] = [
         role
         for role in processor.nodes[unit][UNIT_ROLES_KEY]
-        if role["name"] in unit_caps
+        if role[ROLE_NAME_KEY] in unit_caps
     ]
 
 

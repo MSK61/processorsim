@@ -70,6 +70,8 @@ from . import _checks, _optimization, _port_defs, units
 from .exception import BadEdgeError, BadWidthError, DupElemError
 from .units import (
     FuncUnit,
+    ROLE_MEM_KEY,
+    ROLE_NAME_KEY,
     UnitModel,
     UNIT_NAME_KEY,
     UNIT_RLOCK_KEY,
@@ -514,7 +516,7 @@ def _get_roles(
         unit_caps, unit_mem_acl = roles, _get_mem_acl(roles.items())
     caps = _load_caps(unit[UNIT_NAME_KEY], unit_caps, cap_registry)
     mem_acl = _load_mem_acl(unit[UNIT_NAME_KEY], unit_mem_acl, cap_registry)
-    return ({"name": cap, "usesMem": cap in mem_acl} for cap in caps)
+    return ({ROLE_NAME_KEY: cap, ROLE_MEM_KEY: cap in mem_acl} for cap in caps)
 
 
 def _get_std_edge(
@@ -546,7 +548,10 @@ def _get_unit_entry(name: str, attrs: Mapping[str, Any]) -> UnitModel:
     return UnitModel(
         name,
         attrs[UNIT_WIDTH_KEY],
-        {role["name"]: role["usesMem"] for role in attrs[UNIT_ROLES_KEY]},
+        {
+            role[ROLE_NAME_KEY]: role[ROLE_MEM_KEY]
+            for role in attrs[UNIT_ROLES_KEY]
+        },
         units.LockInfo(*lock_attrs),
     )
 

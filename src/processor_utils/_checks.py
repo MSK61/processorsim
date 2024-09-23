@@ -62,7 +62,7 @@ from networkx import DiGraph, Graph
 import type_checking
 from . import cap_anal_utils, exception, _port_defs, units
 from .exception import BlockedCapError, ComponentInfo, PathLockError
-from .units import UNIT_ROLES_KEY, UNIT_WIDTH_KEY
+from .units import ROLE_NAME_KEY, UNIT_ROLES_KEY, UNIT_WIDTH_KEY
 
 _OLD_NODE_KEY: typing.Final = "old_node"
 _KT = TypeVar("_KT")
@@ -312,7 +312,7 @@ def _cap_in_unit(processor: Graph, capability: object, unit: object) -> bool:
 
     """
     return any(
-        role["name"] == capability
+        role[ROLE_NAME_KEY] == capability
         for role in processor.nodes[unit][UNIT_ROLES_KEY]
     )
 
@@ -624,7 +624,9 @@ def _get_cap_units(processor: DiGraph) -> abc.ItemsView[str, list[Any]]:
 
     for cur_port in in_ports:
         for cur_cap in processor.nodes[cur_port][UNIT_ROLES_KEY]:
-            cap_unit_map.setdefault(cur_cap["name"], []).append(cur_port)
+            cap_unit_map.setdefault(cur_cap[ROLE_NAME_KEY], []).append(
+                cur_port
+            )
 
     return cap_unit_map.items()
 

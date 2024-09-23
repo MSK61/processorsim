@@ -49,6 +49,9 @@ from fastcore import foundation
 
 import container_utils
 
+# role attributes
+ROLE_MEM_KEY: Final = "usesMem"
+ROLE_NAME_KEY: Final = "name"
 # unit attributes
 UNIT_CAPS_KEY: Final = "capabilities"
 UNIT_MEM_KEY: Final = "memoryAccess"
