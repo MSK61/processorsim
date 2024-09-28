@@ -44,6 +44,7 @@ from collections.abc import (
     Iterable,
     Mapping,
     MutableSequence,
+    Sequence,
 )
 import itertools
 from itertools import chain
@@ -52,7 +53,7 @@ import operator
 import os
 import sys
 import typing
-from typing import Any, Sequence
+from typing import Any
 
 from attr import field, frozen
 from fastcore import foundation
