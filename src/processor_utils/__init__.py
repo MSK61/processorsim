@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.93.1, python 3.12.6, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -44,6 +44,7 @@ from collections.abc import (
     Iterable,
     Mapping,
     MutableSequence,
+    Sequence,
 )
 import itertools
 from itertools import chain
@@ -52,7 +53,7 @@ import operator
 import os
 import sys
 import typing
-from typing import Any, Sequence
+from typing import Any
 
 from attr import field, frozen
 from fastcore import foundation
