@@ -41,6 +41,8 @@
 from collections import abc
 from logging import warning
 import operator
+import typing
+from typing import Any
 
 import networkx
 from networkx import DiGraph, Graph
@@ -87,6 +89,15 @@ def clean_struct(processor: DiGraph) -> None:
             _clean_unit(processor, unit)
 
 
+def get_caps(roles: typing.Iterable[typing.Mapping[Any, Any]]) -> "map[Any]":
+    """Construct the unit capabilities.
+
+    `roles` are the unit roles.
+
+    """
+    return map(operator.itemgetter(ROLE_NAME_KEY), roles)
+
+
 def rm_empty_units(processor: Graph) -> None:
     """Remove empty units from the given processor.
 
@@ -111,11 +122,7 @@ def _chk_edge(processor: Graph, edge: abc.Sequence[object]) -> frozenset[str]:
 
     """
     src_caps, dst_caps = (
-        map(
-            operator.itemgetter(ROLE_NAME_KEY),
-            processor.nodes[unit][UNIT_ROLES_KEY],
-        )
-        for unit in edge
+        get_caps(processor.nodes[unit][UNIT_ROLES_KEY]) for unit in edge
     )
     common_caps = frozenset(dst_caps).intersection(src_caps)
 

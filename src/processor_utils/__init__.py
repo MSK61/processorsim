@@ -81,6 +81,7 @@ from .units import (
     UNIT_WLOCK_KEY,
 )
 
+_T = typing.TypeVar("_T")
 _UNIT_KEY: typing.Final = "unit"
 
 
@@ -442,13 +443,15 @@ def _get_cap_name(
     return std_cap.raw_str
 
 
-def _get_mem_acl(roles: Iterable[Iterable[Any]]) -> Generator[Any, None, None]:
+def _get_mem_acl(
+    roles: Iterable[Mapping[object, _T]]
+) -> Generator[_T, None, None]:
     """Construct the unit memory ACL.
 
     `roles` are the unit roles.
 
     """
-    return (cap for cap, uses_mem in roles if uses_mem)
+    return (role[ROLE_NAME_KEY] for role in roles if role[ROLE_MEM_KEY])
 
 
 def _get_preds(
@@ -497,7 +500,7 @@ def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
 
 
 def _get_roles(
-    unit: Mapping[object, Mapping[str, object]],
+    unit: Mapping[object, Iterable[Any]],
     cap_registry: IndexedSet[_CapabilityInfo],
 ) -> Generator[dict[str, object], None, None]:
     """Construct the unit roles.
@@ -506,7 +509,6 @@ def _get_roles(
     `cap_registry` is the store of previously added capabilities.
 
     """
-    unit_mem_acl: Iterable[str]
     try:
         roles = unit[UNIT_ROLES_KEY]
     except KeyError:
@@ -514,7 +516,9 @@ def _get_roles(
             units.UNIT_MEM_KEY, []
         )
     else:
-        unit_caps, unit_mem_acl = roles, _get_mem_acl(roles.items())
+        unit_caps, unit_mem_acl = (
+            getter(roles) for getter in [_optimization.get_caps, _get_mem_acl]
+        )
     caps = _load_caps(unit[UNIT_NAME_KEY], unit_caps, cap_registry)
     mem_acl = _load_mem_acl(unit[UNIT_NAME_KEY], unit_mem_acl, cap_registry)
     return ({ROLE_NAME_KEY: cap, ROLE_MEM_KEY: cap in mem_acl} for cap in caps)

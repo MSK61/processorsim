@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.93.1, python 3.12.6, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -47,7 +47,7 @@ from pytest import mark
 
 from test_utils import chk_warnings
 from processor_utils import load_proc_desc, ProcessorDesc
-import processor_utils.units
+from processor_utils import units
 from processor_utils.units import (
     LockInfo,
     UNIT_CAPS_KEY,
@@ -100,9 +100,12 @@ class TestCapCase:
                         (
                             ref_cap_unit,
                             {
-                                processor_utils.units.UNIT_ROLES_KEY: {
-                                    "ALU": False
-                                }
+                                units.UNIT_ROLES_KEY: [
+                                    {
+                                        units.ROLE_NAME_KEY: "ALU",
+                                        units.ROLE_MEM_KEY: False,
+                                    }
+                                ]
                             },
                         ),
                         (
