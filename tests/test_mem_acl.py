@@ -47,7 +47,6 @@ from pytest import mark
 
 from test_utils import chk_warnings
 from processor_utils import load_proc_desc, ProcessorDesc
-from processor_utils import units
 from processor_utils.units import (
     LockInfo,
     UNIT_CAPS_KEY,
@@ -90,28 +89,16 @@ class TestCapCase:
                     {
                         UNIT_NAME_KEY: name,
                         UNIT_WIDTH_KEY: 1,
-                        **cap_attrs,
+                        UNIT_CAPS_KEY: ["ALU"],
                         **{
                             attr: True
                             for attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]
                         },
+                        UNIT_MEM_KEY: mem_acc_units,
                     }
-                    for name, cap_attrs in [
-                        (
-                            ref_cap_unit,
-                            {
-                                units.UNIT_ROLES_KEY: [
-                                    {
-                                        units.ROLE_NAME_KEY: "ALU",
-                                        units.ROLE_MEM_KEY: False,
-                                    }
-                                ]
-                            },
-                        ),
-                        (
-                            "core 2",
-                            {UNIT_CAPS_KEY: ["ALU"], UNIT_MEM_KEY: ["alu"]},
-                        ),
+                    for name, mem_acc_units in [
+                        (ref_cap_unit, []),
+                        ("core 2", ["alu"]),
                     ]
                 ],
                 "dataPath": [],

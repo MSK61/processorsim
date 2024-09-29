@@ -443,17 +443,6 @@ def _get_cap_name(
     return std_cap.raw_str
 
 
-def _get_mem_acl(
-    roles: Iterable[Mapping[object, _T]]
-) -> Generator[_T, None, None]:
-    """Construct the unit memory ACL.
-
-    `roles` are the unit roles.
-
-    """
-    return (role[ROLE_NAME_KEY] for role in roles if role[ROLE_MEM_KEY])
-
-
 def _get_preds(
     processor: DiGraph, unit: object, unit_map: Any
 ) -> "map[str] | list[str]":
@@ -500,27 +489,27 @@ def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
 
 
 def _get_roles(
-    unit: Mapping[object, Iterable[Any]],
+    unit: Mapping[object, Iterable[str]],
     cap_registry: IndexedSet[_CapabilityInfo],
-) -> Generator[dict[str, object], None, None]:
+) -> Iterable[object]:
     """Construct the unit roles.
 
     `unit` is the unit to load whose roles.
     `cap_registry` is the store of previously added capabilities.
 
     """
+    # It isn't possible to use contextlib.suppress here since snyk code
+    # analysis dislikes code after a return statement.
     try:
-        roles = unit[UNIT_ROLES_KEY]
+        return unit[UNIT_ROLES_KEY]
     except KeyError:
-        unit_caps, unit_mem_acl = unit[units.UNIT_CAPS_KEY], unit.get(
-            units.UNIT_MEM_KEY, []
-        )
-    else:
-        unit_caps, unit_mem_acl = (
-            getter(roles) for getter in [_optimization.get_caps, _get_mem_acl]
-        )
-    caps = _load_caps(unit[UNIT_NAME_KEY], unit_caps, cap_registry)
-    mem_acl = _load_mem_acl(unit[UNIT_NAME_KEY], unit_mem_acl, cap_registry)
+        pass
+    caps = _load_caps(
+        unit[UNIT_NAME_KEY], unit[units.UNIT_CAPS_KEY], cap_registry
+    )
+    mem_acl = _load_mem_acl(
+        unit[UNIT_NAME_KEY], unit.get(units.UNIT_MEM_KEY, []), cap_registry
+    )
     return ({ROLE_NAME_KEY: cap, ROLE_MEM_KEY: cap in mem_acl} for cap in caps)
 
 
