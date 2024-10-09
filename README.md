@@ -31,7 +31,7 @@ Install processorsim with pipenv.
 
 ## Running Tests
 
-To run tests, run the following command(inside the local repo directory)
+To run tests, run the following command(inside the local repo directory).
 
 ```bash
   pipenv run ./test.sh
