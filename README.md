@@ -10,7 +10,6 @@ A simulator for program execution on pipelined processors
 [![Coverage Status](https://coveralls.io/repos/github/MSK61/processorsim/badge.svg?branch=master)](https://coveralls.io/github/MSK61/processorsim?branch=master)
 [![license](https://img.shields.io/github/license/MSK61/processorsim)](https://www.gnu.org/licenses/lgpl-3.0)
 ![Written in Python](https://img.shields.io/static/v1?label=&message=Python&color=3C78A9&logo=python&logoColor=FFFFFF)
-[![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/MSK61/processorsim)
 
 
 ## Usage/Examples
