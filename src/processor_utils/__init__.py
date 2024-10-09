@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.93.1, python 3.12.6, Fedora release
+# environment:  Visual Studio Code 1.94.1, python 3.12.6, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -401,17 +401,8 @@ def _get_acl_cap(
                      units.
 
     """
-    std_cap = global_cap_reg.get(_CapabilityInfo(ICaseString(cap), unit))
-    assert std_cap
-
-    if std_cap.name.raw_str != cap:
-        warning(
-            f"Capability {cap} in unit {unit} memory ACL previously defined as"
-            f" {std_cap.name} in unit {std_cap.unit}, using original "
-            "definition..."
-        )
-
-    return std_cap.name.raw_str
+    assert global_cap_reg.get(_CapabilityInfo(ICaseString(cap), unit))
+    return cap
 
 
 def _get_cap_name(

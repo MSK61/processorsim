@@ -39,21 +39,17 @@
 #
 ############################################################
 
-from logging import WARNING
-
-from attr import frozen
 import pytest
-from pytest import mark
 
-from test_utils import chk_warnings
 from processor_utils import load_proc_desc, ProcessorDesc
 from processor_utils.units import (
     LockInfo,
-    UNIT_CAPS_KEY,
-    UNIT_MEM_KEY,
+    ROLE_MEM_KEY,
+    ROLE_NAME_KEY,
     UnitModel,
     UNIT_NAME_KEY,
     UNIT_RLOCK_KEY,
+    UNIT_ROLES_KEY,
     UNIT_WIDTH_KEY,
     UNIT_WLOCK_KEY,
 )
@@ -62,23 +58,21 @@ from processor_utils.units import (
 class TestCapCase:
     """Test case for checking ACL capability cases"""
 
-    @mark.parametrize(
+    @pytest.mark.parametrize(
         "ref_cap_unit, loaded_core",
         [("core 1", "core 1"), ("core 0", "core 0")],
     )
     def test_capability_case_is_checked_across_all_units(
-        self, caplog, ref_cap_unit, loaded_core
+        self, ref_cap_unit, loaded_core
     ):
         """Test ACL capability cases are checked across all units.
 
         `self` is this test case.
-        `caplog` is the log capture fixture.
         `ref_cap_unit` is the unit containing the reference capability
                        name.
         `loaded_core` is the loaded core unit name.
 
         """
-        caplog.set_level(WARNING)
         in_out_units = (
             UnitModel(name, 1, {"ALU": uses_mem}, LockInfo(True, True))
             for name, uses_mem in [(loaded_core, False), ("core 2", True)]
@@ -89,22 +83,22 @@ class TestCapCase:
                     {
                         UNIT_NAME_KEY: name,
                         UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["ALU"],
+                        UNIT_ROLES_KEY: [
+                            {ROLE_NAME_KEY: "ALU", ROLE_MEM_KEY: uses_mem}
+                        ],
                         **{
                             attr: True
                             for attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]
                         },
-                        UNIT_MEM_KEY: mem_acc_units,
                     }
-                    for name, mem_acc_units in [
-                        (ref_cap_unit, []),
-                        ("core 2", ["alu"]),
+                    for name, uses_mem in [
+                        (ref_cap_unit, False),
+                        ("core 2", True),
                     ]
                 ],
                 "dataPath": [],
             }
         ) == ProcessorDesc([], [], in_out_units, [])
-        chk_warnings(["alu", "core 2", "ALU", loaded_core], caplog.records)
 
 
 class TestPartialMem:
@@ -122,12 +116,17 @@ class TestPartialMem:
                     {
                         UNIT_NAME_KEY: "full system",
                         UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["ALU", "MEM"],
+                        UNIT_ROLES_KEY: [
+                            {ROLE_NAME_KEY: name, ROLE_MEM_KEY: uses_mem}
+                            for name, uses_mem in [
+                                ("ALU", False),
+                                ("MEM", True),
+                            ]
+                        ],
                         **{
                             attr: True
                             for attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]
                         },
-                        UNIT_MEM_KEY: ["MEM"],
                     }
                 ],
                 "dataPath": [],
@@ -144,95 +143,6 @@ class TestPartialMem:
                 )
             ],
             [],
-        )
-
-
-@frozen
-class _TestExpResults:
-    """Non-standard capability loading test expected results"""
-
-    unit: object
-
-    ref_cap: object
-
-
-@frozen
-class _TestInParams:
-    """Non-standard capability loading test input results"""
-
-    core_unit: object
-
-    ref_cap: object
-
-
-_STD_CAP_CASES = [
-    (
-        _TestInParams("full system", "alu"),
-        _TestExpResults("full system", "alu"),
-    ),
-    (
-        _TestInParams("single core", "alu"),
-        _TestExpResults("single core", "alu"),
-    ),
-    (
-        _TestInParams("full system", "Alu"),
-        _TestExpResults("full system", "Alu"),
-    ),
-    (
-        _TestInParams("full system", "mem"),
-        _TestExpResults("full system", "mem"),
-    ),
-]
-
-
-class TestStdCaseCap:
-    """Test case for loading a non-standard capability case"""
-
-    @mark.parametrize("in_params, exp_results", _STD_CAP_CASES)
-    def test_capability_with_nonstandard_case_is_detected(
-        self, caplog, in_params, exp_results
-    ):
-        """Test loading an ACL with a non-standard capability case.
-
-        `self` is this test case.
-        `caplog` is the log capture fixture.
-        `in_params` are the test input parameters.
-        `exp_results` are the test expected results.
-
-        """
-        caplog.set_level(WARNING)
-        exp_ref_cap = exp_results.ref_cap.upper()
-        assert load_proc_desc(
-            {
-                "units": [
-                    {
-                        UNIT_NAME_KEY: in_params.core_unit,
-                        UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: [in_params.ref_cap.upper()],
-                        **{
-                            attr: True
-                            for attr in [UNIT_RLOCK_KEY, UNIT_WLOCK_KEY]
-                        },
-                        UNIT_MEM_KEY: [in_params.ref_cap],
-                    }
-                ],
-                "dataPath": [],
-            }
-        ) == ProcessorDesc(
-            [],
-            [],
-            [
-                UnitModel(
-                    exp_results.unit,
-                    1,
-                    {exp_ref_cap: True},
-                    LockInfo(True, True),
-                )
-            ],
-            [],
-        )
-        chk_warnings(
-            [exp_ref_cap, exp_results.unit, exp_ref_cap], caplog.records
         )
 
 
