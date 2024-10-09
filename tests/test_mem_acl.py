@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""tests loading edges"""
+"""tests loading memory ACL"""
 
 ############################################################
 #
@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.93.1, python 3.12.6, Fedora release
+# environment:  Visual Studio Code 1.94.1, python 3.12.6, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
