@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -201,7 +201,9 @@ class BagValDict(Generic[_KT, _VT]):
         `key` is the key to retrieve whose list.
 
         """
-        return self._dict[key]
+        # Pylance isn't smart enough to figure out that self._dict[key]
+        # has the same type as list[_VT].
+        return typing.cast(list[_VT], self._dict[key])
 
     def __len__(self) -> int:
         """Count the number of elements in this dictionary.
