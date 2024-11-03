@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -41,6 +41,7 @@
 from itertools import starmap
 from os.path import join
 
+import attr
 import yaml
 
 import test_env
@@ -50,6 +51,7 @@ from processor_utils import ProcessorDesc
 from processor_utils.units import LockInfo, UnitModel
 import program_utils
 import sim_services.sim_defs
+import type_checking
 
 TEST_DATA_DIR = join(test_env.TEST_DIR, "data")
 
@@ -221,6 +223,7 @@ def read_prog_file(file_name):
         return program_utils.read_program(prog_file)
 
 
+@attr.frozen
 class ValInStrCheck:
     """Verification point for checking a string contains a value"""
 
@@ -234,7 +237,7 @@ class ValInStrCheck:
 
         """
         assert real_val == exp_val
-        self._value = exp_val
+        type_checking.attrs_init(self, exp_val)
 
     def check(self, msg, start_index):
         """Check that the message contains the associated value.
@@ -249,6 +252,8 @@ class ValInStrCheck:
         start_index = msg.find(str(self._value), start_index + 1)
         assert start_index >= 0
         return start_index
+
+    _value: object
 
 
 def _load_yaml(test_dir, file_name):
