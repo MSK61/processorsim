@@ -31,14 +31,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-from collections import abc
+import collections.abc
 import enum
 from enum import auto
 import typing
@@ -60,10 +60,12 @@ class AccessGroup:
 
     access_type: object
 
-    reqs: abc.MutableSet[object] = field(converter=set, factory=set)
+    reqs: set[object] = field(converter=set, factory=set)
 
 
-def _rev_groups(lst: abc.Reversible[AccessGroup]) -> list[AccessGroup]:
+def _rev_groups(
+    lst: collections.abc.Reversible[AccessGroup],
+) -> list[AccessGroup]:
     """Return the reversed list of the given one.
 
     `lst` is the list to reverse.
