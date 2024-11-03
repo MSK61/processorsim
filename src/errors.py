@@ -49,6 +49,8 @@ import attr
 from attr import frozen
 import fastcore.basics
 
+import type_checking
+
 # Attrs doesn't honor class variables annotated with typing.Final(albeit
 # being mandated by PEP-591) and instead still treats them as instance
 # attributes. That's why I'm using auto_attribs=False and marking the
@@ -119,12 +121,7 @@ class SimErrorBase(abc.ABC, RuntimeError):
             )
         )
         val_extractor = fastcore.basics.Self.val().stored()
-        # Pylance and pylint can't detect __attrs_init__ as an injected
-        # method.
-        # pylint: disable-next=no-member
-        self.__attrs_init__(  # type: ignore[attr-defined]
-            *(map(val_extractor, elems))
-        )
+        type_checking.attrs_init(self, *(map(val_extractor, elems)))
 
     def _init_simple(
         self,

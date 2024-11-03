@@ -47,6 +47,8 @@ import attr
 import fastcore.basics
 from networkx import DiGraph
 
+import type_checking
+
 _T = typing.TypeVar("_T")
 
 
@@ -82,10 +84,8 @@ class PortGroup:
                         with a pre-configured processor.
 
         """
-        # Pylance and pylint can't detect __attrs_init__ as an injected
-        # method.
-        # pylint: disable-next=no-member
-        self.__attrs_init__(  # type: ignore[attr-defined]
+        type_checking.attrs_init(
+            self,
             *(
                 fastcore.basics.maps(
                     proc_supplier, tuple, [get_in_ports, get_out_ports]

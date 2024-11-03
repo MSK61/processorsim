@@ -48,6 +48,18 @@ import fastcore.basics
 _T = typing.TypeVar("_T")
 
 
+def attrs_init(attrs_obj: Any, *attr_vals: object) -> None:
+    """Initialize the attributes of an object.
+
+    `attrs_obj` is an attrs-defined object.
+    `attr_vals` are the desired values of the object attributes.
+    Pylance and pylint can't detect __attrs_init__ as an injected
+    method.
+
+    """
+    attrs_obj.__attrs_init__(*attr_vals)
+
+
 def call(func: collections.abc.Callable[..., _T], *args: object) -> _T:
     """Call the given functor with arguments.
 
