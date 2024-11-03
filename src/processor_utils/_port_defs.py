@@ -42,7 +42,7 @@ from collections.abc import Generator, Iterable
 import typing
 from typing import Any
 
-from fastcore import basics
+import fastcore.basics
 from networkx import DiGraph
 
 _T = typing.TypeVar("_T")
@@ -71,16 +71,16 @@ def get_out_ports(processor: DiGraph) -> Generator[Any, None, None]:
 class PortGroup:
     """Port group information"""
 
-    def __init__(self, processor: DiGraph) -> None:
-        """Extract port information from the given processor.
+    def __init__(self, proc_supplier: object) -> None:
+        """Extract port information from the indicated processor.
 
         `self` is this port group.
-        `processor` is the processor to extract port group information
-                    from.
+        `proc_supplier` is a functor that takes a function and calls it
+                        with a pre-configured processor.
 
         """
-        self._in_ports, self._out_ports = basics.maps(
-            basics.Self(processor), tuple, [get_in_ports, get_out_ports]
+        self._in_ports, self._out_ports = fastcore.basics.maps(
+            proc_supplier, tuple, [get_in_ports, get_out_ports]
         )
 
     @property

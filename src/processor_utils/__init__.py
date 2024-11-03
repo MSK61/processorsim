@@ -626,7 +626,7 @@ def _prep_proc_desc(processor: DiGraph) -> None:
 
     """
     _checks.chk_cycles(processor)
-    port_info = _port_defs.PortGroup(processor)
+    port_info = _port_defs.PortGroup(basics.Self(processor))
     _optimization.clean_struct(processor)
     _optimization.rm_empty_units(processor)
     _optimization.chk_terminals(processor, port_info)
