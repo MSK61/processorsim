@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -53,7 +53,7 @@ import typing
 from typing import Any, TypeVar
 
 from attr import frozen
-from fastcore import foundation
+from fastcore import basics
 import more_itertools
 from more_itertools import one
 import networkx
@@ -151,7 +151,7 @@ class _PathDescriptor:
         `start` is the path start unit.
 
         """
-        return cls(foundation.Self.read_lock(), "read", capability, start)
+        return cls(basics.Self.read_lock(), "read", capability, start)
 
     @classmethod
     def make_write_desc(cls, capability: object, start: object) -> typing.Self:
@@ -162,7 +162,7 @@ class _PathDescriptor:
         `start` is the path start unit.
 
         """
-        return cls(foundation.Self.write_lock(), "write", capability, start)
+        return cls(basics.Self.write_lock(), "write", capability, start)
 
     selector: Callable[[_SatInfo], int]
 
@@ -587,7 +587,7 @@ def _get_anal_graph(processor: Graph) -> DiGraph:
 
     type_checking.call(
         width_graph.add_edges_from,
-        (foundation.map_ex(edge, new_nodes) for edge in processor.edges),
+        (basics.map_ex(edge, new_nodes) for edge in processor.edges),
     )
     return width_graph
 

@@ -32,14 +32,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-from fastcore import foundation
+from fastcore import basics
 import pytest
 
 import test_utils
@@ -78,8 +78,8 @@ class TestDupName:
         chk_points = (
             test_utils.ValInStrCheck(elem_getter(ex_chk.value), unit)
             for elem_getter, unit in [
-                (foundation.Self.new_element(), dup_unit),
-                (foundation.Self.old_element(), "full system"),
+                (basics.Self.new_element(), dup_unit),
+                (basics.Self.old_element(), "full system"),
             ]
         )
         test_utils.chk_error(chk_points, ex_chk.value)

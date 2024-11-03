@@ -43,7 +43,7 @@ import operator
 from typing import Any, Final
 
 from attr import field, frozen
-from fastcore import foundation
+from fastcore import basics
 
 from container_utils import sorted_tuple
 
@@ -63,7 +63,7 @@ def sorted_models(models: Iterable[Any]) -> tuple[Any, ...]:
     `models` are the models to sort.
 
     """
-    return sorted_tuple(models, key=foundation.Self.name())
+    return sorted_tuple(models, key=basics.Self.name())
 
 
 @frozen
@@ -123,8 +123,8 @@ class FuncUnit:
             (
                 attr_get_func(unit)
                 for attr_get_func in [
-                    foundation.Self.model(),
-                    foundation.Self.predecessors(),
+                    basics.Self.model(),
+                    basics.Self.predecessors(),
                 ]
             )
             for unit in [self, other]

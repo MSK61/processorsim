@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -42,7 +42,7 @@ from collections.abc import Generator, Iterable
 import typing
 from typing import Any
 
-from fastcore import foundation
+from fastcore import basics
 from networkx import DiGraph
 
 _T = typing.TypeVar("_T")
@@ -79,8 +79,8 @@ class PortGroup:
                     from.
 
         """
-        self._in_ports, self._out_ports = foundation.maps(
-            foundation.Self(processor), tuple, [get_in_ports, get_out_ports]
+        self._in_ports, self._out_ports = basics.maps(
+            basics.Self(processor), tuple, [get_in_ports, get_out_ports]
         )
 
     @property

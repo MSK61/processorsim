@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -40,7 +40,7 @@
 ############################################################
 
 import logging
-from fastcore import foundation
+from fastcore import basics
 import pytest
 from pytest import raises
 
@@ -70,8 +70,8 @@ class TestDupInstr:
         chk_points = (
             ValInStrCheck(elem_getter(ex_chk.value), unit)
             for elem_getter, unit in [
-                (foundation.Self.new_element(), "add"),
-                (foundation.Self.old_element(), "ADD"),
+                (basics.Self.new_element(), "add"),
+                (basics.Self.old_element(), "ADD"),
             ]
         )
         chk_error(chk_points, ex_chk.value)

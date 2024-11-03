@@ -40,7 +40,7 @@ Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.92.2, python 3.12.4, Fedora release
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -57,7 +57,7 @@ import typing
 from typing import Annotated, Any, IO
 
 from attr import frozen
-from fastcore import foundation
+from fastcore import basics
 import more_itertools
 import typer
 from typer import FileText
@@ -114,7 +114,7 @@ class _InstrPosition:
         return ":".join(
             map(
                 self._get_res_str,
-                [foundation.Self._stalled(), foundation.Self._unit()],
+                [basics.Self._stalled(), basics.Self._unit()],
             )
         )
 

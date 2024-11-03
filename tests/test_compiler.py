@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -42,7 +42,7 @@
 import itertools
 from logging import WARNING
 
-from fastcore import foundation
+from fastcore import basics
 import pytest
 from pytest import mark, raises
 
@@ -234,8 +234,8 @@ class TestSynErrors:
         chk_points = (
             test_utils.ValInStrCheck(val_getter(syn_err), exp_val)
             for val_getter, exp_val in [
-                (foundation.Self.instr(), instr),
-                (foundation.Self.line(), line_num),
+                (basics.Self.instr(), instr),
+                (basics.Self.line(), line_num),
             ]
         )
         test_utils.chk_error(chk_points, syn_err)

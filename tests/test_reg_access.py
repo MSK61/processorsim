@@ -32,14 +32,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-from fastcore.foundation import mapt
+from fastcore.basics import mapt
 import pydash
 import pytest
 from pytest import mark
