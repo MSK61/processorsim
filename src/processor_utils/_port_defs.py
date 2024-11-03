@@ -38,10 +38,12 @@
 #
 ############################################################
 
+import collections.abc
 from collections.abc import Generator, Iterable
 import typing
 from typing import Any
 
+import attr
 import fastcore.basics
 from networkx import DiGraph
 
@@ -68,6 +70,7 @@ def get_out_ports(processor: DiGraph) -> Generator[Any, None, None]:
     return _get_ports(processor.out_degree)
 
 
+@attr.frozen
 class PortGroup:
     """Port group information"""
 
@@ -79,27 +82,20 @@ class PortGroup:
                         with a pre-configured processor.
 
         """
-        self._in_ports, self._out_ports = fastcore.basics.maps(
-            proc_supplier, tuple, [get_in_ports, get_out_ports]
+        # Pylance and pylint can't detect __attrs_init__ as an injected
+        # method.
+        # pylint: disable-next=no-member
+        self.__attrs_init__(  # type: ignore[attr-defined]
+            *(
+                fastcore.basics.maps(
+                    proc_supplier, tuple, [get_in_ports, get_out_ports]
+                )
+            )
         )
 
-    @property
-    def in_ports(self) -> Any:
-        """Input ports
+    in_ports: collections.abc.Collection[object]
 
-        `self` is this port group.
-
-        """
-        return self._in_ports
-
-    @property
-    def out_ports(self) -> Any:
-        """Output ports
-
-        `self` is this port group.
-
-        """
-        return self._out_ports
+    out_ports: Iterable[object]
 
 
 def _get_ports(degrees: Iterable[Iterable[_T]]) -> Generator[_T, None, None]:
