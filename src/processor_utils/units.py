@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -136,6 +136,6 @@ class FuncUnit:
             map(operator.is_, self.predecessors, other.predecessors)
         )
 
-    model: UnitModel = field()
+    model: UnitModel
 
     predecessors: tuple[UnitModel, ...] = field(converter=sorted_models)
