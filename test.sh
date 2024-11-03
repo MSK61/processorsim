@@ -27,7 +27,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, Fedora release 39 (Thirty Nine)
+# environment:  Visual Studio Code 1.95.1, Fedora release 40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -36,7 +36,7 @@ set -e
 # just running a sample test module to make sure test modules are executable on
 # their own
 tests/test_containers.py
-pytest --cov src --flake8 --pylint $*
+pytest --cov src --cov-fail-under 100 --flake8 --pylint $*
 black --check .
 PYRIGHT_PYTHON_IGNORE_WARNINGS=1 pyright
 cd src
