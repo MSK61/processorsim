@@ -31,19 +31,23 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import collections.abc
 from collections.abc import Generator, Iterable
 import typing
 from typing import Any
 
-from fastcore import foundation
+import attr
+import fastcore.basics
 from networkx import DiGraph
+
+import type_checking
 
 _T = typing.TypeVar("_T")
 
@@ -68,38 +72,30 @@ def get_out_ports(processor: DiGraph) -> Generator[Any, None, None]:
     return _get_ports(processor.out_degree)
 
 
+@attr.frozen
 class PortGroup:
     """Port group information"""
 
-    def __init__(self, processor: DiGraph) -> None:
-        """Extract port information from the given processor.
+    def __init__(self, proc_supplier: object) -> None:
+        """Extract port information from the indicated processor.
 
         `self` is this port group.
-        `processor` is the processor to extract port group information
-                    from.
+        `proc_supplier` is a functor that takes a function and calls it
+                        with a pre-configured processor.
 
         """
-        self._in_ports, self._out_ports = foundation.maps(
-            foundation.Self(processor), tuple, [get_in_ports, get_out_ports]
+        type_checking.attrs_init(
+            self,
+            *(
+                fastcore.basics.maps(
+                    proc_supplier, tuple, [get_in_ports, get_out_ports]
+                )
+            )
         )
 
-    @property
-    def in_ports(self) -> Any:
-        """Input ports
+    in_ports: collections.abc.Collection[object]
 
-        `self` is this port group.
-
-        """
-        return self._in_ports
-
-    @property
-    def out_ports(self) -> Any:
-        """Output ports
-
-        `self` is this port group.
-
-        """
-        return self._out_ports
+    out_ports: Iterable[object]
 
 
 def _get_ports(degrees: Iterable[Iterable[_T]]) -> Generator[_T, None, None]:

@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.93.1, python 3.12.6, Fedora release
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -45,7 +45,7 @@ from typing import Any, Final
 
 import attr
 from attr import frozen
-from fastcore import foundation
+from fastcore import basics
 
 import container_utils
 
@@ -69,7 +69,7 @@ def sorted_models(models: abc.Iterable[Any]) -> tuple[Any, ...]:
     `models` are the models to sort.
 
     """
-    return container_utils.sorted_tuple(models, key=foundation.Self.name())
+    return container_utils.sorted_tuple(models, key=basics.Self.name())
 
 
 @frozen
@@ -118,8 +118,8 @@ class FuncUnit:
             (
                 attr_get_func(unit)
                 for attr_get_func in [
-                    foundation.Self.model(),
-                    foundation.Self.predecessors(),
+                    basics.Self.model(),
+                    basics.Self.predecessors(),
                 ]
             )
             for unit in [self, other]

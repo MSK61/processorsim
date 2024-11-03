@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.94.1, python 3.12.6, Fedora release
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -56,8 +56,8 @@ import typing
 from typing import Any
 
 from attr import field, frozen
-from fastcore import foundation
-from fastcore.foundation import compose, mapt
+from fastcore import basics
+from fastcore.basics import compose, mapt
 import networkx
 from networkx import DiGraph, Graph
 
@@ -66,7 +66,6 @@ from container_utils import IndexedSet, SelfIndexSet
 from errors import UndefElemError
 from str_utils import ICaseString
 import type_checking
-from type_checking import call
 from . import _checks, _optimization, _port_defs, units
 from .exception import BadEdgeError, BadWidthError, DupElemError
 from .units import (
@@ -299,7 +298,7 @@ def _add_rev_edges(graph: Graph) -> None:
             for pred in unit.predecessors
             if pred.name in graph
         ),
-        call(graph.nodes, _UNIT_KEY),
+        basics.Self(_UNIT_KEY)(graph.nodes),
     )
     graph.add_edges_from(chain.from_iterable(edges))
 
@@ -337,11 +336,7 @@ def _chk_unit_width(unit: Mapping[object, int]) -> None:
         raise BadWidthError(
             f"Functional unit ${BadWidthError.UNIT_KEY} has a bad width "
             f"${BadWidthError.WIDTH_KEY}.",
-            *(
-                foundation.map_ex(
-                    [UNIT_NAME_KEY, UNIT_WIDTH_KEY], unit, gen=True
-                )
-            ),
+            *(basics.map_ex([UNIT_NAME_KEY, UNIT_WIDTH_KEY], unit, gen=True)),
         )
 
 
@@ -361,7 +356,7 @@ def _create_graph(
     edge_registry = IndexedSet[Collection[str]](
         lambda edge: mapt(compose(ICaseString, unit_registry.get), edge)
     )
-    cap_registry = IndexedSet[_CapabilityInfo](foundation.Self.name())
+    cap_registry = IndexedSet[_CapabilityInfo](basics.Self.name())
 
     for cur_unit in hw_units:
         _add_unit(flow_graph, cur_unit, unit_registry, cap_registry)
@@ -445,7 +440,7 @@ def _get_preds(
     The function returns an iterator over predecessor units.
 
     """
-    return foundation.map_ex(processor.predecessors(unit), unit_map, gen=True)
+    return basics.map_ex(processor.predecessors(unit), unit_map, gen=True)
 
 
 def _get_preds2(
@@ -474,7 +469,9 @@ def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
         unit: _get_unit_entry(unit, graph.nodes[unit]) for unit in graph
     }
     return (
-        call(FuncUnit, unit_map[name], _get_preds2(graph, name, unit_map))
+        basics.Self(unit_map[name], _get_preds2(graph, name, unit_map))(
+            FuncUnit
+        )
         for name in graph
     )
 
@@ -529,7 +526,7 @@ def _get_unit_entry(name: str, attrs: Mapping[str, Any]) -> UnitModel:
     The function returns the unit model.
 
     """
-    lock_attrs = foundation.map_ex([UNIT_RLOCK_KEY, UNIT_WLOCK_KEY], attrs)
+    lock_attrs = basics.map_ex([UNIT_RLOCK_KEY, UNIT_WLOCK_KEY], attrs)
     return UnitModel(
         name,
         attrs[UNIT_WIDTH_KEY],
@@ -659,7 +656,9 @@ def _prep_proc_desc(processor: DiGraph) -> None:
 
     """
     _checks.chk_cycles(processor)
-    port_info = _port_defs.PortGroup(processor)
+    port_info = _port_defs.PortGroup(  # type: ignore[call-arg]
+        basics.Self(processor)
+    )
     _optimization.clean_struct(processor)
     _optimization.rm_empty_units(processor)
     _optimization.chk_terminals(processor, port_info)
@@ -673,9 +672,7 @@ def _sorted_units(hw_units: Iterable[Any]) -> tuple[Any, ...]:
     `hw_units` are the units to sort.
 
     """
-    return container_utils.sorted_tuple(
-        hw_units, key=foundation.Self.model.name()
-    )
+    return container_utils.sorted_tuple(hw_units, key=basics.Self.model.name())
 
 
 @frozen
@@ -761,8 +758,8 @@ def _make_processor(proc_graph: DiGraph) -> ProcessorDesc:
             case _:
                 in_out_ports.append(unit.model)
 
-    return call(
-        ProcessorDesc, in_ports, out_ports, in_out_ports, internal_units
+    return basics.Self(in_ports, out_ports, in_out_ports, internal_units)(
+        ProcessorDesc
     )
 
 

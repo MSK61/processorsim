@@ -32,32 +32,31 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import collections.abc
 import typing
 from typing import Any
 
-import fastcore.foundation
+import fastcore.basics
 
 _T = typing.TypeVar("_T")
 
 
-def call(func: collections.abc.Callable[..., _T], *args: object) -> _T:
-    """Call the given functor with arguments.
+def attrs_init(attrs_obj: Any, *attr_vals: object) -> None:
+    """Initialize the attributes of an object.
 
-    `func` is the function to call.
-    `args` are the arguments to call the function with.
-    This function is used whenever pylance can't match arguments with
-    the inferred types of parameters.
+    `attrs_obj` is an attrs-defined object.
+    `attr_vals` are the desired values of the object attributes.
+    Pylance and pylint can't detect __attrs_init__ as an injected
+    method.
 
     """
-    return func(*args)
+    attrs_obj.__attrs_init__(*attr_vals)
 
 
 def map_ex(seq: Any, map_func: Any, _: type[_T]) -> "map[_T]":
@@ -67,9 +66,9 @@ def map_ex(seq: Any, map_func: Any, _: type[_T]) -> "map[_T]":
     `map_func` is the mapping function.
     `_` is the type of elements in the resulting mapped generator.
     I'm casting to map[_T] due to a missing explicit type hint for the
-    return type of the fastcore.foundation.map_ex function.
+    return type of the fastcore.basics.map_ex function.
 
     """
     return typing.cast(
-        "map[_T]", fastcore.foundation.map_ex(seq, map_func, gen=True)
+        "map[_T]", fastcore.basics.map_ex(seq, map_func, gen=True)
     )

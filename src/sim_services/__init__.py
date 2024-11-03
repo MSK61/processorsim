@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -54,7 +54,7 @@ import typing
 from typing import Any, TypeVar
 
 from attr import field, frozen, mutable
-from fastcore import foundation
+from fastcore import basics
 import more_itertools
 
 from container_utils import BagValDict
@@ -120,7 +120,7 @@ class HwSpec:
             self.processor_desc.in_ports,
             self.processor_desc.in_out_ports,
             map(
-                foundation.Self.model(),
+                basics.Self.model(),
                 chain(
                     self.processor_desc.out_ports,
                     self.processor_desc.internal_units,
@@ -597,9 +597,7 @@ def _fill_unit(
     """
     mov_res = unit.fill_unit(util_info, mem_busy)
     _clr_src_units(
-        sorted(
-            mov_res.moved, key=foundation.Self.index_in_host(), reverse=True
-        ),
+        sorted(mov_res.moved, key=basics.Self.index_in_host(), reverse=True),
         util_info,
     )
     return mov_res.mem_used
@@ -614,7 +612,7 @@ def _get_out_ports(processor: ProcessorDesc) -> "map[str]":
 
     """
     return map(
-        foundation.Self.name(),
+        basics.Self.name(),
         chain(
             processor.in_out_ports,
             (port.model for port in processor.out_ports),

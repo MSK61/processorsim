@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -47,7 +47,7 @@ import typing
 
 import attr
 from attr import field, frozen
-import fastcore.foundation
+import fastcore.basics
 import more_itertools
 
 from container_utils import BagValDict
@@ -311,7 +311,7 @@ class UnitSink(IInstrSink):
         `self` is this unit sink.
 
         """
-        return map(fastcore.foundation.Self.name(), self.unit.predecessors)
+        return map(fastcore.basics.Self.name(), self.unit.predecessors)
 
     unit: processor_utils.units.FuncUnit
 

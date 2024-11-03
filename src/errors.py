@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -47,7 +47,9 @@ from typing import Final
 
 import attr
 from attr import frozen
-import fastcore.foundation
+import fastcore.basics
+
+import type_checking
 
 # Attrs doesn't honor class variables annotated with typing.Final(albeit
 # being mandated by PEP-591) and instead still treats them as instance
@@ -118,13 +120,8 @@ class SimErrorBase(abc.ABC, RuntimeError):
                 {elem.key: elem.val.displayed for elem in elems}
             )
         )
-        val_extractor = fastcore.foundation.Self.val().stored()
-        # Pylance and pylint can't detect __attrs_init__ as an injected
-        # method.
-        # pylint: disable-next=no-member
-        self.__attrs_init__(  # type: ignore[attr-defined]
-            *(map(val_extractor, elems))
-        )
+        val_extractor = fastcore.basics.Self.val().stored()
+        type_checking.attrs_init(self, *(map(val_extractor, elems)))
 
     def _init_simple(
         self,

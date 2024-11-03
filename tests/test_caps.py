@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.86.1, python 3.11.7, Fedora release
-#               39 (Thirty Nine)
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
+#               40 (Forty)
 #
 # notes:        This is a private program.
 #
@@ -41,7 +41,7 @@
 
 from logging import WARNING
 
-from fastcore import foundation
+from fastcore import basics
 import pytest
 from pytest import mark, raises
 
@@ -107,8 +107,8 @@ class TestCaps:
         chk_points = (
             test_utils.ValInStrCheck(val_getter(ex_chk.value), exp_val)
             for val_getter, exp_val in [
-                (foundation.Self.unit(), "full system"),
-                (foundation.Self.width(), bad_width),
+                (basics.Self.unit(), "full system"),
+                (basics.Self.width(), bad_width),
             ]
         )
         test_utils.chk_error(chk_points, ex_chk.value)

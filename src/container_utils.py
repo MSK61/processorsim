@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -48,11 +48,11 @@ import typing
 from typing import Any, Generic, Optional, TypeVar
 
 from attr import field, frozen
+import fastcore.basics
 import more_itertools
 import pydash
 
 from str_utils import format_obj
-import type_checking
 
 _KT = TypeVar("_KT")
 _T = TypeVar("_T")
@@ -186,7 +186,7 @@ class BagValDict(Generic[_KT, _VT]):
         assert type(other) is type(self)
         other_items = tuple(other.items())
         lst_pairs = (
-            (type_checking.call(sorted, lst) for lst in [val_lst, self[key]])
+            (fastcore.basics.Self(lst)(sorted) for lst in [val_lst, self[key]])
             for key, val_lst in other_items
         )
         item_lst_pair: list[collections.abc.Sized] = [self, other_items]
@@ -201,7 +201,9 @@ class BagValDict(Generic[_KT, _VT]):
         `key` is the key to retrieve whose list.
 
         """
-        return self._dict[key]
+        # Pylance isn't smart enough to figure out that self._dict[key]
+        # has the same type as list[_VT].
+        return typing.cast(list[_VT], self._dict[key])
 
     def __len__(self) -> int:
         """Count the number of elements in this dictionary.
@@ -251,6 +253,9 @@ class BagValDict(Generic[_KT, _VT]):
             starmap(lambda key, val_lst: f"{key!r}: {val_lst}", elems)
         )
 
+    # defaultdict isn't strictly required here, but pylance can't
+    # understand that factory products are passed anyway to the
+    # converter.
     _dict: defaultdict[_KT, list[_VT]] = field(
-        converter=_val_lst_dict, factory=dict
+        converter=_val_lst_dict, factory=defaultdict
     )

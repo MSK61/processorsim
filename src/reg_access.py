@@ -31,14 +31,14 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.91.1, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-from collections import abc
+import collections.abc
 import enum
 from enum import auto
 import typing
@@ -60,10 +60,12 @@ class AccessGroup:
 
     access_type: object
 
-    reqs: abc.MutableSet[object] = field(converter=set, factory=set)
+    reqs: set[object] = field(converter=set, factory=set)
 
 
-def _rev_groups(lst: abc.Reversible[AccessGroup]) -> list[AccessGroup]:
+def _rev_groups(
+    lst: collections.abc.Reversible[AccessGroup],
+) -> list[AccessGroup]:
     """Return the reversed list of the given one.
 
     `lst` is the list to reverse.
@@ -109,16 +111,9 @@ class RegAccessQueue:
     _queue: list[AccessGroup] = field(converter=_rev_groups)
 
 
+@frozen
 class RegAccQBuilder:
     """Access request queue builder"""
-
-    def __init__(self) -> None:
-        """Create an access queue builder.
-
-        `self` is this access queue builder.
-
-        """
-        self._queue: list[AccessGroup] = []
 
     def append(self, req_type: AccessType, req_owner: int) -> None:
         """Append a new read request to the built queue.
@@ -153,3 +148,5 @@ class RegAccQBuilder:
             and typing.cast(bool, self._queue)
             and self._queue[-1].access_type == AccessType.READ
         )
+
+    _queue: list[AccessGroup] = field(factory=list, init=False)

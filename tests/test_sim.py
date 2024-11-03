@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.93.1, python 3.12.6, Fedora release
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -41,7 +41,7 @@
 
 from itertools import chain, starmap
 
-import fastcore.foundation
+import fastcore.basics
 import more_itertools
 import pydash
 import pytest
@@ -170,7 +170,7 @@ class TestFlow:
             in_units,
         )
         assert simulate(
-            fastcore.foundation.mapt(
+            fastcore.basics.mapt(
                 pydash.spread(HwInstruction),
                 [[[], "R12", "MEM"], [["R11", "R15"], "R14", "ALU"]],
             ),

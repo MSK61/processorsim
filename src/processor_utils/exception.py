@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -42,8 +42,8 @@
 from typing import Final
 
 from attr import field, frozen
-from fastcore import foundation
-from fastcore.foundation import mapt
+from fastcore import basics
+from fastcore.basics import mapt
 from pydash import spread
 
 from errors import ElementValue, ErrorElement, EXCEPTION, SimErrorBase
@@ -278,8 +278,8 @@ class BlockedCapError(SimErrorBase):
             *(
                 attr_getter(comp)
                 for attr_getter in [
-                    foundation.Self.reporting_name(),
-                    foundation.Self.std_name(),
+                    basics.Self.reporting_name(),
+                    basics.Self.std_name(),
                 ]
             )
         )
