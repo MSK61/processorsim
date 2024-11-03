@@ -111,16 +111,9 @@ class RegAccessQueue:
     _queue: list[AccessGroup] = field(converter=_rev_groups)
 
 
+@frozen
 class RegAccQBuilder:
     """Access request queue builder"""
-
-    def __init__(self) -> None:
-        """Create an access queue builder.
-
-        `self` is this access queue builder.
-
-        """
-        self._queue: list[AccessGroup] = []
 
     def append(self, req_type: AccessType, req_owner: int) -> None:
         """Append a new read request to the built queue.
@@ -155,3 +148,5 @@ class RegAccQBuilder:
             and typing.cast(bool, self._queue)
             and self._queue[-1].access_type == AccessType.READ
         )
+
+    _queue: list[AccessGroup] = field(factory=list, init=False)
