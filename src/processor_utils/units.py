@@ -38,7 +38,7 @@
 #
 ############################################################
 
-from collections.abc import Iterable
+import collections.abc
 import operator
 from typing import Any, Final
 
@@ -57,7 +57,7 @@ UNIT_WLOCK_KEY: Final = "writeLock"
 UNIT_WIDTH_KEY: Final = "width"
 
 
-def sorted_models(models: Iterable[Any]) -> tuple[Any, ...]:
+def sorted_models(models: collections.abc.Iterable[Any]) -> tuple[Any, ...]:
     """Create a sorted list of the given models.
 
     `models` are the models to sort.
@@ -73,15 +73,6 @@ class LockInfo:
     rd_lock: object
 
     wr_lock: object
-
-
-def _sorted_caps(caps: Iterable[Any]) -> tuple[Any, ...]:
-    """Create a sorted list of the given capabilities.
-
-    `caps` are the capabilities to sort.
-
-    """
-    return sorted_tuple(caps)
 
 
 @frozen
@@ -101,7 +92,7 @@ class UnitModel:
 
     width: int
 
-    capabilities: tuple[str, ...] = field(converter=_sorted_caps)
+    capabilities: tuple[str, ...] = field(converter=sorted_tuple)
 
     lock_info: LockInfo
 

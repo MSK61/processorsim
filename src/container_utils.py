@@ -253,6 +253,9 @@ class BagValDict(Generic[_KT, _VT]):
             starmap(lambda key, val_lst: f"{key!r}: {val_lst}", elems)
         )
 
+    # defaultdict isn't strictly required here, but pylance can't
+    # understand that factory products are passed anyway to the
+    # converter.
     _dict: defaultdict[_KT, list[_VT]] = field(
-        converter=_val_lst_dict, factory=dict
+        converter=_val_lst_dict, factory=defaultdict
     )
