@@ -39,7 +39,6 @@
 #
 ############################################################
 
-import collections.abc
 import typing
 from typing import Any
 
@@ -58,18 +57,6 @@ def attrs_init(attrs_obj: Any, *attr_vals: object) -> None:
 
     """
     attrs_obj.__attrs_init__(*attr_vals)
-
-
-def call(func: collections.abc.Callable[..., _T], *args: object) -> _T:
-    """Call the given functor with arguments.
-
-    `func` is the function to call.
-    `args` are the arguments to call the function with.
-    This function is used whenever pylance can't match arguments with
-    the inferred types of parameters.
-
-    """
-    return func(*args)
 
 
 def map_ex(seq: Any, map_func: Any, _: type[_T]) -> "map[_T]":

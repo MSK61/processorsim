@@ -66,7 +66,6 @@ from container_utils import IndexedSet, SelfIndexSet
 from errors import UndefElemError
 from str_utils import ICaseString
 import type_checking
-from type_checking import call
 from . import _checks, _optimization, _port_defs, units
 from .exception import BadEdgeError, BadWidthError, DupElemError
 from .units import (
@@ -298,7 +297,7 @@ def _add_rev_edges(graph: Graph) -> None:
             for pred in unit.predecessors
             if pred.name in graph
         ),
-        call(graph.nodes, _UNIT_KEY),
+        basics.Self(_UNIT_KEY)(graph.nodes),
     )
     graph.add_edges_from(chain.from_iterable(edges))
 
@@ -464,7 +463,9 @@ def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
         unit: _get_unit_entry(unit, graph.nodes[unit]) for unit in graph
     }
     return (
-        call(FuncUnit, unit_map[name], _get_preds(graph, name, unit_map))
+        basics.Self(unit_map[name], _get_preds(graph, name, unit_map))(
+            FuncUnit
+        )
         for name in graph
     )
 
@@ -730,8 +731,8 @@ def _make_processor(proc_graph: DiGraph) -> ProcessorDesc:
             case _:
                 in_out_ports.append(unit.model)
 
-    return call(
-        ProcessorDesc, in_ports, out_ports, in_out_ports, internal_units
+    return basics.Self(in_ports, out_ports, in_out_ports, internal_units)(
+        ProcessorDesc
     )
 
 

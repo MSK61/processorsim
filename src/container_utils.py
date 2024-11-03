@@ -48,11 +48,11 @@ import typing
 from typing import Any, Generic, Optional, TypeVar
 
 from attr import field, frozen
+import fastcore.basics
 import more_itertools
 import pydash
 
 from str_utils import format_obj
-import type_checking
 
 _KT = TypeVar("_KT")
 _T = TypeVar("_T")
@@ -186,7 +186,7 @@ class BagValDict(Generic[_KT, _VT]):
         assert type(other) is type(self)
         other_items = tuple(other.items())
         lst_pairs = (
-            (type_checking.call(sorted, lst) for lst in [val_lst, self[key]])
+            (fastcore.basics.Self(lst)(sorted) for lst in [val_lst, self[key]])
             for key, val_lst in other_items
         )
         item_lst_pair: list[collections.abc.Sized] = [self, other_items]

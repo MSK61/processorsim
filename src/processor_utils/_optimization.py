@@ -31,7 +31,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.93.1, python 3.12.6, Fedora release
+# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
 #               40 (Forty)
 #
 # notes:        This is a private program.
@@ -41,10 +41,10 @@
 from collections import abc
 from logging import warning
 
+import fastcore.basics
 import networkx
 from networkx import DiGraph, Graph
 
-import type_checking
 from .exception import DeadInputError
 from . import _port_defs
 from .units import UNIT_CAPS_KEY
@@ -93,7 +93,7 @@ def rm_empty_units(processor: Graph) -> None:
     The function removes units with no capabilities from the processor.
 
     """
-    unit_entries = tuple(type_checking.call(processor.nodes, UNIT_CAPS_KEY))
+    unit_entries = tuple(fastcore.basics.Self(UNIT_CAPS_KEY)(processor.nodes))
 
     for unit, capabilities in unit_entries:
         if not capabilities:

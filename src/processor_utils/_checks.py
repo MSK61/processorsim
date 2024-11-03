@@ -59,7 +59,6 @@ from more_itertools import one
 import networkx
 from networkx import DiGraph, Graph
 
-import type_checking
 from . import cap_anal_utils, exception, _port_defs, units
 from .exception import BlockedCapError, ComponentInfo, PathLockError
 from .units import UNIT_CAPS_KEY, UNIT_WIDTH_KEY
@@ -585,9 +584,8 @@ def _get_anal_graph(processor: Graph) -> DiGraph:
     for idx, unit in hw_units:
         _update_graph(idx, unit, processor, width_graph, new_nodes)
 
-    type_checking.call(
-        width_graph.add_edges_from,
-        (basics.map_ex(edge, new_nodes) for edge in processor.edges),
+    basics.Self(basics.map_ex(edge, new_nodes) for edge in processor.edges)(
+        width_graph.add_edges_from
     )
     return width_graph
 
