@@ -299,7 +299,7 @@ class TestMultiLock:
         `exp_proc_desc` is the expected processor description.
 
         """
-        with raises(PathLockError) as ex_info:
+        with raises(PathLockError) as ex_chk:
             load_proc_desc(
                 {
                     "units": _get_test_units(
@@ -311,17 +311,17 @@ class TestMultiLock:
                 }
             )
 
-        assert ex_info.value.start == exp_proc_desc.in_unit
-        assert ex_info.value.lock_type == lock_data.lock_type
-        assert ex_info.value.capability == exp_proc_desc.capability
-        ex_info = str(ex_info.value)
+        assert ex_chk.value.start == exp_proc_desc.in_unit
+        assert ex_chk.value.lock_type == lock_data.lock_type
+        assert ex_chk.value.capability == exp_proc_desc.capability
+        ex_chk = str(ex_chk.value)
 
         for part in [
             lock_data.lock_type,
             exp_proc_desc.capability,
             exp_proc_desc.in_unit,
         ]:
-            assert part in ex_info
+            assert part in ex_chk
 
 
 def _get_test_units(proc_desc, lock_prop):
