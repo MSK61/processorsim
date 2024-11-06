@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
-#               40 (Forty)
+# environment:  Visual Studio Code 1.95.1, python 3.13.0, Fedora release
+#               41 (Forty One)
 #
 # notes:        This is a private program.
 #
@@ -154,12 +154,10 @@ class TestProgLoad:
                    unknown instruction missing operands.
 
         """
-        ex_chk = raises(
-            errors.UndefElemError,
-            program_utils.compile_program,
-            read_prog_file(prog_file),
-            {"ADD": "ALU"},
-        )
+        with raises(errors.UndefElemError) as ex_chk:
+            program_utils.compile_program(
+                read_prog_file(prog_file), {"ADD": "ALU"}
+            )
         assert ex_chk.value.element == instr
         ex_chk = str(ex_chk.value)
         err_contents = [instr, str(line_num)]
@@ -192,7 +190,8 @@ class TestSynErrors:
         `operand` is the one-based index of the empty operand.
 
         """
-        ex_chk = raises(CodeError, read_prog_file, prog_file)
+        with raises(CodeError) as ex_chk:
+            read_prog_file(prog_file)
         self._chk_syn_err(ex_chk.value, line_num, instr)
         assert str(operand) in str(ex_chk.value)
 
@@ -215,9 +214,9 @@ class TestSynErrors:
         `instr` is the instruction missing operands.
 
         """
-        self._chk_syn_err(
-            raises(CodeError, read_prog_file, prog_file).value, line_num, instr
-        )
+        with raises(CodeError) as ex_chk:
+            read_prog_file(prog_file)
+        self._chk_syn_err(ex_chk.value, line_num, instr)
 
     # pylint: enable=invalid-name
 

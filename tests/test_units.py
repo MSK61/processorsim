@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
-#               40 (Forty)
+# environment:  Visual Studio Code 1.95.1, python 3.13.0, Fedora release
+#               41 (Forty One)
 #
 # notes:        This is a private program.
 #
@@ -69,12 +69,8 @@ class TestDupName:
         `dup_unit` is the duplicate unit.
 
         """
-        ex_chk = pytest.raises(
-            processor_utils.exception.DupElemError,
-            test_utils.read_proc_file,
-            "units",
-            in_file,
-        )
+        with pytest.raises(processor_utils.exception.DupElemError) as ex_chk:
+            test_utils.read_proc_file("units", in_file)
         chk_points = (
             test_utils.ValInStrCheck(elem_getter(ex_chk.value), unit)
             for elem_getter, unit in [

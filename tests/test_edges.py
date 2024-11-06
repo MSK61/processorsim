@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.1, python 3.11.9, Fedora release
-#               40 (Forty)
+# environment:  Visual Studio Code 1.95.1, python 3.13.0, Fedora release
+#               41 (Forty One)
 #
 # notes:        This is a private program.
 #
@@ -103,12 +103,8 @@ class TestEdges:
         `self` is this test case.
 
         """
-        ex_chk = raises(
-            errors.UndefElemError,
-            read_proc_file,
-            "edges",
-            "edgeWithUnknownUnit.yaml",
-        )
+        with raises(errors.UndefElemError) as ex_chk:
+            read_proc_file("edges", "edgeWithUnknownUnit.yaml")
         chk_error([ValInStrCheck(ex_chk.value.element, "input")], ex_chk.value)
 
     @pytest.mark.parametrize(
@@ -128,12 +124,8 @@ class TestEdges:
         `bad_edge` is the bad edge.
 
         """
-        ex_chk = raises(
-            processor_utils.exception.BadEdgeError,
-            read_proc_file,
-            "edges",
-            in_file,
-        )
+        with raises(processor_utils.exception.BadEdgeError) as ex_chk:
+            read_proc_file("edges", in_file)
         chk_error([ValInStrCheck(ex_chk.value.edge, bad_edge)], ex_chk.value)
 
 

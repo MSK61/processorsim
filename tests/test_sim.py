@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
-#               40 (Forty)
+# environment:  Visual Studio Code 1.95.1, python 3.13.0, Fedora release
+#               41 (Forty One)
 #
 # notes:        This is a private program.
 #
@@ -343,12 +343,13 @@ class TestSim:
 
         """
         prog = starmap(HwInstruction, chain(valid_prog, [([], "R14", "MEM")]))
-        ex_chk = raises(
-            StallError,
-            simulate,
-            tuple(prog),
-            HwSpec(read_proc_file("processors", "singleALUProcessor.yaml")),
-        )
+        with raises(StallError) as ex_chk:
+            simulate(
+                tuple(prog),
+                HwSpec(
+                    read_proc_file("processors", "singleALUProcessor.yaml")
+                ),
+            )
         test_utils.chk_error(
             [
                 test_utils.ValInStrCheck(
@@ -429,15 +430,15 @@ class TestStallErr:
                 ("output", [[1, StallState.DATA]]),
             ],
         ]
-        assert raises(
-            StallError,
-            simulate,
-            [
-                create_hw_instr(instr_regs, "ALU")
-                for instr_regs in [[[], "R1"], [["R1"], "R2"]]
-            ],
-            HwSpec(proc_desc),
-        ).value.processor_state == get_util_info(cp_util_lst)
+        with raises(StallError) as ex_chk:
+            simulate(
+                [
+                    create_hw_instr(instr_regs, "ALU")
+                    for instr_regs in [[[], "R1"], [["R1"], "R2"]]
+                ],
+                HwSpec(proc_desc),
+            )
+        assert ex_chk.value.processor_state == get_util_info(cp_util_lst)
 
 
 def _make_proc_desc(units_desc):
