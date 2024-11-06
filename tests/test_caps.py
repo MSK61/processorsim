@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
-#               40 (Forty)
+# environment:  Visual Studio Code 1.95.1, python 3.13.0, Fedora release
+#               41 (Forty One)
 #
 # notes:        This is a private program.
 #
@@ -73,16 +73,9 @@ class TestCaps:
         `in_file` is the processor description file.
 
         """
-        assert "input" in ICaseString(
-            str(
-                raises(
-                    exception.EmptyProcError,
-                    read_proc_file,
-                    "capabilities",
-                    in_file,
-                ).value
-            )
-        )
+        with raises(exception.EmptyProcError) as ex_chk:
+            read_proc_file("capabilities", in_file)
+        assert "input" in ICaseString(str(ex_chk.value))
 
     @mark.parametrize(
         "in_file, bad_width",
@@ -101,9 +94,8 @@ class TestCaps:
         `bad_width` is the non-positive width.
 
         """
-        ex_chk = raises(
-            exception.BadWidthError, read_proc_file, "capabilities", in_file
-        )
+        with raises(exception.BadWidthError) as ex_chk:
+            read_proc_file("capabilities", in_file)
         chk_points = (
             test_utils.ValInStrCheck(val_getter(ex_chk.value), exp_val)
             for val_getter, exp_val in [

@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
-#               40 (Forty)
+# environment:  Visual Studio Code 1.95.1, python 3.13.0, Fedora release
+#               41 (Forty One)
 #
 # notes:        This is a private program.
 #
@@ -61,12 +61,10 @@ class TestDupInstr:
         `self` is this test case.
 
         """
-        ex_chk = raises(
-            processor_utils.exception.DupElemError,
-            read_isa_file,
-            "twoInstructionsWithSameNameAndCase.yaml",
-            [ICaseString("ALU")],
-        )
+        with raises(processor_utils.exception.DupElemError) as ex_chk:
+            read_isa_file(
+                "twoInstructionsWithSameNameAndCase.yaml", [ICaseString("ALU")]
+            )
         chk_points = (
             ValInStrCheck(elem_getter(ex_chk.value), unit)
             for elem_getter, unit in [
@@ -102,12 +100,8 @@ class TestIsa:
         `self` is this test case.
 
         """
-        ex_chk = raises(
-            errors.UndefElemError,
-            read_isa_file,
-            "singleInstructionISA.yaml",
-            [ICaseString("MEM")],
-        )
+        with raises(errors.UndefElemError) as ex_chk:
+            read_isa_file("singleInstructionISA.yaml", [ICaseString("MEM")])
         chk_error([ValInStrCheck(ex_chk.value.element, "ALU")], ex_chk.value)
 
     @pytest.mark.parametrize(

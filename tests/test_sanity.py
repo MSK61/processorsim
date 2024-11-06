@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
-#               40 (Forty)
+# environment:  Visual Studio Code 1.95.1, python 3.13.0, Fedora release
+#               41 (Forty One)
 #
 # notes:        This is a private program.
 #
@@ -81,9 +81,8 @@ class TestBlocking:
         successor unit with no capabilities in common.
 
         """
-        ex_chk = raises(
-            exception.DeadInputError, read_proc_file, "blocking", in_file
-        )
+        with raises(exception.DeadInputError) as ex_chk:
+            read_proc_file("blocking", in_file)
         chk_error(
             [ValInStrCheck(ex_chk.value.port, isolated_input)], ex_chk.value
         )
@@ -109,7 +108,8 @@ class TestLoop:
         `in_file` is the processor description file.
 
         """
-        raises(networkx.NetworkXUnfeasible, read_proc_file, "loops", in_file)
+        with raises(networkx.NetworkXUnfeasible):
+            read_proc_file("loops", in_file)
 
 
 class TestNoLock:
@@ -162,11 +162,8 @@ class TestNoLock:
         `data_path` is the data path between units.
 
         """
-        raises(
-            PathLockError,
-            load_proc_desc,
-            {"units": units, "dataPath": data_path},
-        )
+        with raises(PathLockError):
+            load_proc_desc({"units": units, "dataPath": data_path})
 
 
 class TestPerCap:
@@ -228,12 +225,8 @@ class TestWidth:
         `self` is this test case.
 
         """
-        ex_chk = raises(
-            exception.BlockedCapError,
-            read_proc_file,
-            "widths",
-            "inputPortWithUnconsumedCapability.yaml",
-        )
+        with raises(exception.BlockedCapError) as ex_chk:
+            read_proc_file("widths", "inputPortWithUnconsumedCapability.yaml")
         chk_params = [
             ("Capability", basics.Self.capability(), "Capability MEM"),
             ("port", basics.Self.port(), "port input"),
@@ -306,14 +299,18 @@ class TestMultiLock:
         `exp_proc_desc` is the expected processor description.
 
         """
-        ex_info = raises(
-            PathLockError,
-            load_proc_desc,
-            {
-                "units": _get_test_units(in_proc_desc, lock_data.prop_name),
-                "dataPath": [[in_proc_desc.in_unit, in_proc_desc.out_unit]],
-            },
-        )
+        with raises(PathLockError) as ex_info:
+            load_proc_desc(
+                {
+                    "units": _get_test_units(
+                        in_proc_desc, lock_data.prop_name
+                    ),
+                    "dataPath": [
+                        [in_proc_desc.in_unit, in_proc_desc.out_unit]
+                    ],
+                }
+            )
+
         assert ex_info.value.start == exp_proc_desc.in_unit
         assert ex_info.value.lock_type == lock_data.lock_type
         assert ex_info.value.capability == exp_proc_desc.capability
