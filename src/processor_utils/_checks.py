@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
-#               40 (Forty)
+# environment:  Visual Studio Code 1.95.2, python 3.13.0, Fedora release
+#               41 (Forty One)
 #
 # notes:        This is a private program.
 #
@@ -123,7 +123,7 @@ def chk_non_empty(
 
     """
     if not more_itertools.first_true(
-        in_ports, pred=lambda port: port in processor
+        in_ports, pred=basics.Self(processor)(basics.in_)
     ):
         raise exception.EmptyProcError("No input ports found")
 
@@ -525,14 +525,7 @@ def _do_cap_checks(
     processor: DiGraph,
     cap_checks: Iterable[
         Callable[
-            [
-                DiGraph,
-                Generator[object, None, None],
-                str,
-                list[Any],
-                tuple[Any, ...],
-            ],
-            None,
+            [DiGraph, Generator[object], str, list[Any], tuple[Any, ...]], None
         ]
     ],
 ) -> None:
@@ -559,7 +552,7 @@ def _do_cap_checks(
 
 def _filter_by_cap(
     post_ord: Iterable[_T], capability: object, processor: Graph
-) -> Generator[_T, None, None]:
+) -> Generator[_T]:
     """Filter the given units by the specified capability.
 
     `post_ord` is the post-order of the processor functional units.

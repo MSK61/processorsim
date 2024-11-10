@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.95.1, python 3.13.0, Fedora release
+# environment:  Visual Studio Code 1.95.2, python 3.13.0, Fedora release
 #               41 (Forty One)
 #
 # notes:        This is a private program.
@@ -236,8 +236,8 @@ class TestOutputFlush:
             chain([[[], "R1", "ALU"], [["R1"], "R2", "ALU"]], extra_instr_lst),
         )
         cores = starmap(
-            lambda name, width: UnitModel(
-                name, width, {"ALU": False}, LockInfo(True, True)
+            lambda *unit_params: UnitModel(
+                *unit_params, {"ALU": False}, LockInfo(True, True)
             ),
             [("core 1", 1), ("core 2", 1 + len(extra_instr_lst))],
         )

@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
-#               40 (Forty)
+# environment:  Visual Studio Code 1.95.2, python 3.13.0, Fedora release
+#               41 (Forty One)
 #
 # notes:        This is a private program.
 #
@@ -457,7 +457,7 @@ def _get_preds2(
     return _get_preds(processor, unit, unit_map)
 
 
-def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
+def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit]:
     """Create units for the given processor graph.
 
     `graph` is the processor.
@@ -503,7 +503,7 @@ def _get_roles(
 
 def _get_std_edge(
     edge: Sequence[str], unit_registry: SelfIndexSet[ICaseString]
-) -> Generator[str, None, None]:
+) -> Generator[str]:
     """Return a validated edge.
 
     `edge` is the edge to validate.
