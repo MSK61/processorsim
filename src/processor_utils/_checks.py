@@ -522,14 +522,7 @@ def _do_cap_checks(
     processor: DiGraph,
     cap_checks: Iterable[
         Callable[
-            [
-                DiGraph,
-                Generator[object, None, None],
-                str,
-                list[Any],
-                tuple[Any, ...],
-            ],
-            None,
+            [DiGraph, Generator[object], str, list[Any], tuple[Any, ...]], None
         ]
     ],
 ) -> None:
@@ -556,7 +549,7 @@ def _do_cap_checks(
 
 def _filter_by_cap(
     post_ord: Iterable[_T], capability: object, processor: Graph
-) -> Generator[_T, None, None]:
+) -> Generator[_T]:
     """Filter the given units by the specified capability.
 
     `post_ord` is the post-order of the processor functional units.

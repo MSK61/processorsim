@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
-#               40 (Forty)
+# environment:  Visual Studio Code 1.95.2, python 3.13.0, Fedora release
+#               41 (Forty One)
 #
 # notes:        This is a private program.
 #
@@ -451,7 +451,7 @@ def _get_preds(
     return basics.map_ex(processor.predecessors(unit), unit_map, gen=True)
 
 
-def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
+def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit]:
     """Create units for the given processor graph.
 
     `graph` is the processor.
@@ -472,7 +472,7 @@ def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit, None, None]:
 
 def _get_std_edge(
     edge: Sequence[str], unit_registry: SelfIndexSet[ICaseString]
-) -> Generator[str, None, None]:
+) -> Generator[str]:
     """Return a validated edge.
 
     `edge` is the edge to validate.
@@ -582,7 +582,7 @@ def _load_caps(
 def _load_mem_acl(
     unit: Mapping[object, Iterable[str]],
     cap_registry: IndexedSet[_CapabilityInfo],
-) -> Generator[str, None, None]:
+) -> Generator[str]:
     """Load the given unit memory ACL.
 
     `unit` is the unit to load whose memory ACL.

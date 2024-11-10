@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
-#               40 (Forty)
+# environment:  Visual Studio Code 1.95.2, python 3.13.0, Fedora release
+#               41 (Forty One)
 #
 # notes:        This is a private program.
 #
@@ -114,7 +114,7 @@ class IInstrSink(abc.ABC):
     @staticmethod
     def _get_new_guests(
         src_unit: str, instructions: Iterable[int]
-    ) -> collections.abc.Generator[HostedInstr, None, None]:
+    ) -> collections.abc.Generator[HostedInstr]:
         """Prepare new hosted instructions.
 
         `src_unit` is the old host of instructions.

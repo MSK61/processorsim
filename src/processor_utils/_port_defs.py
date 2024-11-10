@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
-#               40 (Forty)
+# environment:  Visual Studio Code 1.95.2, python 3.13.0, Fedora release
+#               41 (Forty One)
 #
 # notes:        This is a private program.
 #
@@ -52,7 +52,7 @@ import type_checking
 _T = typing.TypeVar("_T")
 
 
-def get_in_ports(processor: DiGraph) -> Generator[Any, None, None]:
+def get_in_ports(processor: DiGraph) -> Generator[Any]:
     """Find the input ports.
 
     `processor` is the processor to find whose input ports.
@@ -62,7 +62,7 @@ def get_in_ports(processor: DiGraph) -> Generator[Any, None, None]:
     return _get_ports(processor.in_degree)
 
 
-def get_out_ports(processor: DiGraph) -> Generator[Any, None, None]:
+def get_out_ports(processor: DiGraph) -> Generator[Any]:
     """Find the output ports.
 
     `processor` is the processor to find whose output ports.
@@ -98,7 +98,7 @@ class PortGroup:
     out_ports: Iterable[object]
 
 
-def _get_ports(degrees: Iterable[Iterable[_T]]) -> Generator[_T, None, None]:
+def _get_ports(degrees: Iterable[Iterable[_T]]) -> Generator[_T]:
     """Find the ports with respect to the given degrees.
 
     `degrees` are the degrees of all units.
