@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Disabling then immediately enabling again the invalid-name pylint
-# check allows to skip pylint checking for the module name.
-# pylint: disable=invalid-name
-# pylint: enable=invalid-name
 
 """
 simulates running a program through a processor architecture
@@ -40,8 +36,8 @@ Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.95.1, python 3.12.7, Fedora release
-#               40 (Forty)
+# environment:  Visual Studio Code 1.95.2, python 3.13.0, Fedora release
+#               41 (Forty One)
 #
 # notes:        This is a private program.
 #
