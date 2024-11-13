@@ -70,7 +70,7 @@ class HostedInstr:
 class InstrMovStatus:
     """Status of moving instructions"""
 
-    moved: list[HostedInstr] = field(factory=list)
+    moved: list[HostedInstr] = attr.Factory(list)
 
     mem_used: object = field(default=False, init=False)
 

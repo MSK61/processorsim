@@ -31,18 +31,17 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
-#               40 (Forty)
+# environment:  Visual Studio Code 1.95.2, python 3.13.0, Fedora release
+#               41 (Forty One)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
 import collections.abc
+import typing
 
 import attr
-
-_GET_CANONICAL = str.lower
 
 
 def format_obj(
@@ -58,7 +57,7 @@ def format_obj(
     return f"{cls_name}({sep.join(field_strings)})"
 
 
-@attr.frozen(order=True)
+@attr.frozen(auto_attribs=False, order=True)
 class ICaseString:
     """Case-insensitive string"""
 
@@ -69,7 +68,7 @@ class ICaseString:
         `item` is the substring to search for.
 
         """
-        return _GET_CANONICAL(item) in _GET_CANONICAL(self.raw_str)
+        return self._GET_CANONICAL(item) in self._GET_CANONICAL(self.raw_str)
 
     def __str__(self) -> str:
         """Return the printable string of this case-insensitive string.
@@ -78,5 +77,7 @@ class ICaseString:
 
         """
         return self.raw_str
+
+    _GET_CANONICAL: typing.Final = staticmethod(str.lower)
 
     raw_str: str = attr.field(eq=_GET_CANONICAL, order=_GET_CANONICAL)
