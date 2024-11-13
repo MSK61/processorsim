@@ -43,8 +43,6 @@ import typing
 
 import attr
 
-_GET_CANONICAL: typing.Final = str.lower
-
 
 def format_obj(
     cls_name: object, field_strings: collections.abc.Iterable[str]
@@ -59,7 +57,7 @@ def format_obj(
     return f"{cls_name}({sep.join(field_strings)})"
 
 
-@attr.frozen(order=True)
+@attr.frozen(auto_attribs=False, order=True)
 class ICaseString:
     """Case-insensitive string"""
 
@@ -70,7 +68,7 @@ class ICaseString:
         `item` is the substring to search for.
 
         """
-        return _GET_CANONICAL(item) in _GET_CANONICAL(self.raw_str)
+        return self._GET_CANONICAL(item) in self._GET_CANONICAL(self.raw_str)
 
     def __str__(self) -> str:
         """Return the printable string of this case-insensitive string.
@@ -79,5 +77,7 @@ class ICaseString:
 
         """
         return self.raw_str
+
+    _GET_CANONICAL: typing.Final = staticmethod(str.lower)
 
     raw_str: str = attr.field(eq=_GET_CANONICAL, order=_GET_CANONICAL)
