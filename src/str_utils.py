@@ -31,18 +31,19 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.89.0, python 3.11.9, Fedora release
-#               40 (Forty)
+# environment:  Visual Studio Code 1.95.2, python 3.13.0, Fedora release
+#               41 (Forty One)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
 import collections.abc
+import typing
 
 import attr
 
-_GET_CANONICAL = str.lower
+_GET_CANONICAL: typing.Final = str.lower
 
 
 def format_obj(
