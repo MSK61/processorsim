@@ -9,7 +9,7 @@ Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 
 ############################################################
 #
-# Copyright 2017, 2019, 2020, 2021, 2022, 2023, 2024 Mohammed El-Afifi
+# Copyright 2017, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Mohammed El-Afifi
 # This file is part of processorSim.
 #
 # processorSim is free software: you can redistribute it and/or modify
@@ -36,7 +36,7 @@ Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.95.2, python 3.13.0, Fedora release
+# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
 #               41 (Forty One)
 #
 # notes:        This is a private program.

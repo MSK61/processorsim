@@ -1,6 +1,6 @@
 ############################################################
 #
-# Copyright 2017, 2019, 2020, 2021, 2022, 2023, 2024 Mohammed El-Afifi
+# Copyright 2017, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Mohammed El-Afifi
 # This file is part of processorSim.
 #
 # processorSim is free software: you can redistribute it and/or modify
@@ -37,7 +37,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4.7.1
       with:
-        python-version: 3.13.0
+        python-version: 3.13.1
     - name: Python Pipenv Action
       uses: tiagovrtr/actions-pipenv@v1
       with:
