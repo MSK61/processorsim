@@ -159,7 +159,7 @@ class SelfIndexSet(_IndexedSetBase[_T]):
 
 
 def _val_lst_dict(
-    val_iter_dict: collections.abc.Mapping[Any, Iterable[Any]]
+    val_iter_dict: collections.abc.Mapping[Any, Iterable[Any]],
 ) -> defaultdict[Any, list[Any]]:
     """Convert the given value iterable dictionary to a value list one.
 
