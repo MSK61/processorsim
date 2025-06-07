@@ -322,7 +322,7 @@ def _get_sim_rows(
 
 
 def _icu_to_flights(
-    ixcxu: Iterable[Mapping[int, _InstrPosition]]
+    ixcxu: Iterable[Mapping[int, _InstrPosition]],
 ) -> "map[_InstrFlight]":
     """Convert a IxCxU utilization map to instruction flights.
 
