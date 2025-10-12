@@ -21,9 +21,9 @@ pip = ">=25.2"
 networkx = "*"
 pyyaml = "*"
 more-itertools = "*"
+fastcore = "*"
 pydash = "*"
 typer = "*"
-fastcore = ">1.5.27"
 
 [requires]
 python_version = "3.13"
