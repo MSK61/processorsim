@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.0, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
@@ -196,7 +196,7 @@ def _get_line_parts(line_num: object, line_txt: str) -> _LineInfo:
 
     """
     sep_pat = "\\s+"
-    line_parts = split(sep_pat, line_txt, 1)
+    line_parts = split(sep_pat, line_txt, maxsplit=1)
     assert line_parts
 
     if len(line_parts) == 1:
