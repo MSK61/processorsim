@@ -17,10 +17,48 @@
 # along with processorSim.  If not, see <http://www.gnu.org/licenses/>.
 #
 ############################################################
+[project]
+name = "processorsim"
+version = "0.1.0"
+description = "A simulator for program execution on pipelined processors"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "networkx",
+    "pyyaml",
+    "more-itertools",
+    "fastcore",
+    "pydash",
+    "typer",
+]
+
 [tool.black]
 line-length = 79
 skip-magic-trailing-comma = true
 
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
 [tool.pyright]
 ignore = ["tests"]
 typeCheckingMode = "basic"
+
+[dependency-groups]
+test = [
+    "pytest-cov",
+    "pytest-pylint",
+    "pytest-mypy",
+    "pytest-flake8",
+    "nbconvert",
+    "types-pyyaml",
+    "pyright==1.1.386",
+    "black[jupyter]",
+]
+dev = [
+    { include-group = "test" },
+    "ipykernel",
+    "rope",
+]
+
+[tool.uv]
+package = true

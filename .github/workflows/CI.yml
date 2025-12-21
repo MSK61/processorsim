@@ -22,8 +22,6 @@ on: [push]
 jobs:
   build:
     env:
-      PIPENV_VERBOSITY: -1
-
       # This is where you will need to introduce the Snyk API token created with your Snyk account
       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
@@ -38,17 +36,17 @@ jobs:
       uses: actions/setup-python@v4.7.1
       with:
         python-version: 3.14.2
-    - name: Python Pipenv Action
-      uses: tiagovrtr/actions-pipenv@v1
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7.1.6
       with:
-        pipenv-version: 2024.0.1
+        version: 0.9.17
     - name: Install dependencies
-      run: pipenv sync -d
+      run: uv sync --locked --only-group test
     - name: Set up Snyk CLI to check for security issues
       # Snyk can be used to break the build when it detects security issues.
       # In this case we want to upload the SAST issues to GitHub Code Scanning
       uses: snyk/actions/setup@0.4.0
-    - run: pipenv run ./test.sh
+    - run: uv run ./test.sh
 
     # Runs Snyk Code (SAST) analysis and uploads result into GitHub.
     # Use || true to not fail the pipeline

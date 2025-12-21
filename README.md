@@ -19,14 +19,14 @@ Check the [examples](examples) directory for how to use the API. [tests/test_who
 
 ## Requirements
 
-Please refer to [Pipfile](Pipfile) for the list of dependency packages.
+Please refer to [pyproject.toml](pyproject.toml) for the list of dependency packages.
 ## Installation
 
-Install processorsim with pipenv.
+Install processorsim with uv.
 
 ```bash
   cd processorsim # local repo directory
-  pipenv sync
+  uv sync --locked --no-dev
 ```
 
 ## Running Tests
@@ -34,5 +34,5 @@ Install processorsim with pipenv.
 To run tests, run the following command(inside the local repo directory).
 
 ```bash
-  pipenv run ./test.sh
+  uv run ./test.sh
 ```
