@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
@@ -101,30 +101,39 @@ class TestHwDescLoad:
 
         """
         lock_info = units.LockInfo(True, True)
-        with open(
-            os.path.join(
-                test_utils.TEST_DATA_DIR, "fullHwDesc", in_params.hw_file
-            ),
-            encoding="utf-8",
-        ) as hw_src, patch(
-            "processor_utils.load_proc_desc",
-            return_value=processor_utils.ProcessorDesc(
-                [],
-                [],
-                [
-                    units.UnitModel(
-                        "full system", 1, [in_params.capability], lock_info, []
-                    )
-                ],
-                [],
-            ),
-        ) as proc_mock, patch(
-            "processor_utils.get_abilities",
-            return_value=frozenset([in_params.capability]),
-        ) as ability_mock, patch(
-            "processor_utils.load_isa",
-            return_value={in_params.instr: in_params.capability},
-        ) as isa_mock:
+        with (
+            open(
+                os.path.join(
+                    test_utils.TEST_DATA_DIR, "fullHwDesc", in_params.hw_file
+                ),
+                encoding="utf-8",
+            ) as hw_src,
+            patch(
+                "processor_utils.load_proc_desc",
+                return_value=processor_utils.ProcessorDesc(
+                    [],
+                    [],
+                    [
+                        units.UnitModel(
+                            "full system",
+                            1,
+                            [in_params.capability],
+                            lock_info,
+                            [],
+                        )
+                    ],
+                    [],
+                ),
+            ) as proc_mock,
+            patch(
+                "processor_utils.get_abilities",
+                return_value=frozenset([in_params.capability]),
+            ) as ability_mock,
+            patch(
+                "processor_utils.load_isa",
+                return_value={in_params.instr: in_params.capability},
+            ) as isa_mock,
+        ):
             assert hw_loading.read_processor(hw_src) == hw_loading.HwDesc(
                 proc_mock.return_value, isa_mock.return_value
             )
