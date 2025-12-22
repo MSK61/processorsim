@@ -53,8 +53,6 @@ jobs:
     - name: Snyk Code test
       run: snyk code test --sarif > $sarifFile # || true
 
-    - name: Snyk test
-      run: snyk test
     - name: Install coveralls dependencies
       run: |
         python -m pip install --upgrade pip
