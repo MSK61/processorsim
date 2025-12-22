@@ -41,7 +41,7 @@ jobs:
       with:
         version: 0.9.17
     - name: Install dependencies
-      run: uv sync --locked --only-group ci
+      run: uv sync --locked --only-group test
     - name: Set up Snyk CLI to check for security issues
       # Snyk can be used to break the build when it detects security issues.
       # In this case we want to upload the SAST issues to GitHub Code Scanning

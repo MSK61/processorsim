@@ -54,10 +54,6 @@ test = [
     "pyright==1.1.386",
     "black[jupyter]",
 ]
-ci = [
-    { include-group = "test" },
-    "setuptools",
-]
 dev = [
     { include-group = "test" },
     "ipykernel",
