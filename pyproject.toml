@@ -32,10 +32,6 @@ dependencies = [
     "typer",
 ]
 
-[tool.black]
-line-length = 79
-skip-magic-trailing-comma = true
-
 [tool.hatch.build.targets.wheel]
 packages = ["src"]
 
@@ -52,13 +48,20 @@ test = [
     "nbconvert",
     "types-pyyaml",
     "pyright==1.1.386",
-    "black[jupyter]",
+    "ruff>=0.14.10",
 ]
 dev = [
     { include-group = "test" },
     "ipykernel",
     "rope",
 ]
+
+[tool.ruff]
+# Global setting for line length
+line-length = 79
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
 
 [tool.uv]
 package = true

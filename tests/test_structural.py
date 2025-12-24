@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
@@ -206,8 +206,9 @@ class TestHazards:
         out_units = (
             units.FuncUnit(out_unit, [in_unit]) for out_unit in out_units
         )
-        cp1_util = "input", test_utils.get_lists(
-            range(exp_results.cp1_util_size)
+        cp1_util = (
+            "input",
+            test_utils.get_lists(range(exp_results.cp1_util_size)),
         )
         assert simulate(
             [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
