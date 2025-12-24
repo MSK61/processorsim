@@ -26,5 +26,6 @@
         ".coverage": true,
         ".venv": true,
         "**/.pytest_cache": true
-    }
+    },
+    "ruff.lint.enable": false
 }
