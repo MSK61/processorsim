@@ -56,10 +56,10 @@ import more_itertools
 import typer
 from typer import FileText
 
-import type_checking
 import hw_loading
 import program_utils
 import sim_services
+import type_checking
 
 
 def main(
