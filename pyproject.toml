@@ -44,7 +44,6 @@ test = [
     "pytest-cov",
     "pytest-pylint",
     "pytest-mypy",
-    "pytest-flake8",
     "nbconvert",
     "types-pyyaml",
     "pyright==1.1.386",

@@ -36,8 +36,8 @@ Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
@@ -49,11 +49,9 @@ import csv
 import itertools
 import logging
 import sys
-import typing
 from typing import Annotated, Any, IO
 
 from attr import frozen
-from fastcore import basics
 import more_itertools
 import typer
 from typer import FileText
@@ -105,23 +103,7 @@ class _InstrPosition:
         `self` is this instruction position.
 
         """
-        # Flake8 has a problem with a colon in an f-string not followed by a
-        # space.
-        return ":".join(
-            map(
-                self._get_res_str,
-                [basics.Self._stalled(), basics.Self._unit()],
-            )
-        )
-
-    def _get_res_str(self, func: abc.Callable[[typing.Self], object]) -> str:
-        """Return the string representation of the function result.
-
-        `self` is this instruction position.
-        `func` is the function to execute.
-
-        """
-        return str(func(self))
+        return f"{self._stalled}:{self._unit}"
 
     _unit: object
 
