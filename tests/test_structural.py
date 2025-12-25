@@ -39,12 +39,12 @@
 #
 ############################################################
 
-from attr import frozen
 import more_itertools
 import pytest
-
 import test_utils
+from attr import frozen
 from test_utils import get_util_tbl
+
 import processor_utils
 from processor_utils import ProcessorDesc, units
 from processor_utils.units import LockInfo, UnitModel
@@ -74,7 +74,6 @@ class TestMemUtil:
 class TestStructural:
     """Test case for structural hazards"""
 
-    # pylint: disable-next=invalid-name
     def test_mem_ACL_is_correctly_matched_against_instructions(self):
         """Test comparing memory ACL against instructions.
 

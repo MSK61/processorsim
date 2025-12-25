@@ -31,15 +31,17 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-from collections import defaultdict
 import collections.abc
+import copy
+import typing
+from collections import defaultdict
 from collections.abc import (
     Iterable,
     Iterator,
@@ -48,22 +50,21 @@ from collections.abc import (
     MutableSequence,
     Sequence,
 )
-import copy
 from itertools import chain
-import typing
 from typing import Any, TypeVar
 
+import more_itertools
 from attr import field, frozen, mutable
 from fastcore import basics
-import more_itertools
 
-from container_utils import BagValDict
 import errors
-from processor_utils import ProcessorDesc
 import processor_utils.units
+from container_utils import BagValDict
+from processor_utils import ProcessorDesc
 from processor_utils.units import LockInfo, UnitModel
 from program_defs import HwInstruction
 from reg_access import AccessType, RegAccessQueue, RegAccQBuilder
+
 from . import _instr_sinks, _utils
 from ._instr_sinks import IInstrSink
 from .sim_defs import InstrState, StallState

@@ -31,30 +31,31 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
 import abc
-from abc import abstractmethod
 import collections.abc
-from collections.abc import Iterable, Iterator
 import itertools
 import typing
+from abc import abstractmethod
+from collections.abc import Iterable, Iterator
 
 import attr
-from attr import field, frozen
 import fastcore.basics
 import more_itertools
+from attr import field, frozen
 
-from container_utils import BagValDict
 import processor_utils.units
 import program_defs
-from .sim_defs import InstrState, StallState
+from container_utils import BagValDict
+
 from . import _utils
+from .sim_defs import InstrState, StallState
 
 
 @frozen

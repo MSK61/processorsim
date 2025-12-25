@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
@@ -45,16 +45,16 @@ import fastcore.basics
 import more_itertools
 import pydash
 import pytest
-from pytest import mark, raises
-
-from test_type_chks import create_hw_instr
 import test_utils
+from pytest import mark, raises
+from test_type_chks import create_hw_instr
 from test_utils import get_lists, get_util_info, get_util_tbl, read_proc_file
+
 import processor_utils
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from program_defs import HwInstruction
-from sim_services import HwSpec, simulate, StallError
+from sim_services import HwSpec, StallError, simulate
 from sim_services.sim_defs import StallState
 
 _SIM_CASES = [
@@ -394,9 +394,7 @@ class TestStall:
 class TestStallErr:
     """Test case for stall error details"""
 
-    def test_util_tbl_exists_in_StallError(  # pylint: disable=invalid-name
-        self,
-    ):
+    def test_util_tbl_exists_in_StallError(self):
         """Test dumping the utilizaiton table in stall errors.
 
         `self` is this test case.

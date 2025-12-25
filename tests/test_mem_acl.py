@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
@@ -41,21 +41,21 @@
 
 from logging import WARNING
 
-from attr import frozen
 import pytest
+from attr import frozen
 from pytest import mark
-
 from test_utils import chk_warnings
-from processor_utils import load_proc_desc, ProcessorDesc
+
+from processor_utils import ProcessorDesc, load_proc_desc
 from processor_utils.units import (
-    LockInfo,
     UNIT_CAPS_KEY,
     UNIT_MEM_KEY,
-    UnitModel,
     UNIT_NAME_KEY,
     UNIT_RLOCK_KEY,
     UNIT_WIDTH_KEY,
     UNIT_WLOCK_KEY,
+    LockInfo,
+    UnitModel,
 )
 
 

@@ -42,7 +42,6 @@ typeCheckingMode = "basic"
 [dependency-groups]
 test = [
     "pytest-cov",
-    "pytest-pylint",
     "pytest-mypy",
     "nbconvert",
     "types-pyyaml",
@@ -58,9 +57,31 @@ dev = [
 [tool.ruff]
 # Global setting for line length
 line-length = 79
+# Tells Ruff where your source code lives for import resolution
+src = ["src"]
 
 [tool.ruff.format]
 skip-magic-trailing-comma = true
+
+[tool.ruff.lint]
+# 1. Enable Pylint (PL) and isort (I) rules
+# 'E' and 'F' are Ruff's defaults; we add 'PL' and 'I' for your import needs.
+select = ["E", "F", "PL", "I"]
+
+# 2. Directory-specific overrides
+# In Ruff, we use per-file-ignores to suppress everything EXCEPT your enabled rules.
+[tool.ruff.lint.per-file-ignores]
+"src/**" = [
+    "F", "E", # Disable default Flake8 checks in src/
+]
+"tests/**" = [
+    "PLR2004",
+]
+
+[tool.ruff.lint.isort]
+# Configures the 'wrong-import-order' replacement
+known-first-party = ["src"]
+split-on-trailing-comma = false
 
 [tool.uv]
 package = true

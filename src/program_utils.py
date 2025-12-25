@@ -31,26 +31,26 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.107.0, python 3.14.2, Fedora
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
 #               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-from collections.abc import Iterable, Mapping
 import logging
-from re import split
 import typing
+from collections.abc import Iterable, Mapping
+from re import split
 from typing import Final
 
+import pydash
 from attr import field, frozen
 from fastcore import basics
-import pydash
 
 import container_utils
-from container_utils import IndexedSet
 import errors
+from container_utils import IndexedSet
 from errors import UndefElemError
 from program_defs import HwInstruction, ProgInstruction
 from str_utils import ICaseString

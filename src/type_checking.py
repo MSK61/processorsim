@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
@@ -52,8 +52,7 @@ def attrs_init(attrs_obj: Any, *attr_vals: object) -> None:
 
     `attrs_obj` is an attrs-defined object.
     `attr_vals` are the desired values of the object attributes.
-    Pylance and pylint can't detect __attrs_init__ as an injected
-    method.
+    Pylance can't detect __attrs_init__ as an injected method.
 
     """
     attrs_obj.__attrs_init__(*attr_vals)

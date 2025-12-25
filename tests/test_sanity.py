@@ -32,20 +32,20 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-from attr import frozen
-from fastcore import basics
 import networkx
 import pytest
+from attr import frozen
+from fastcore import basics
 from pytest import mark, raises
+from test_utils import ValInStrCheck, chk_error, read_proc_file
 
-from test_utils import chk_error, read_proc_file, ValInStrCheck
 from processor_utils import exception, load_proc_desc
 from processor_utils.exception import PathLockError
 from processor_utils.units import (
@@ -67,7 +67,6 @@ class TestBlocking:
             ("processorWithNoCapableOutputs.yaml", "input"),
         ],
     )
-    # pylint: disable-next=invalid-name
     def test_in_port_with_no_compatible_out_links_raises_DeadInputError(
         self, in_file, isolated_input
     ):
@@ -99,9 +98,7 @@ class TestLoop:
             "bigLoopProcessor.yaml",
         ],
     )
-    def test_loop_raises_NetworkXUnfeasible(  # pylint: disable=invalid-name
-        self, in_file
-    ):
+    def test_loop_raises_NetworkXUnfeasible(self, in_file):
         """Test loading a processor with a loop.
 
         `self` is this test case.
@@ -153,7 +150,6 @@ class TestNoLock:
             ),
         ],
     )
-    # pylint: disable-next=invalid-name
     def test_path_with_no_locks_raises_PathLockError(self, units, data_path):
         """Test loading a processor with no locks in paths.
 
@@ -218,7 +214,6 @@ class TestPerCap:
 class TestWidth:
     """Test case for checking data path width"""
 
-    # pylint: disable-next=invalid-name
     def test_unconsumed_capabilitiy_raises_BlockedCapError(self):
         """Test an input with a capability not consumed at all.
 
@@ -287,7 +282,6 @@ class TestMultiLock:
             ),
         ],
     )
-    # pylint: disable-next=invalid-name
     def test_path_with_multiple_locks_raises_PathLockError(
         self, in_proc_desc, lock_data, exp_proc_desc
     ):

@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
@@ -126,6 +126,14 @@ class FuncUnit:
         return operator.eq(*criteria) and all(
             map(operator.is_, self.predecessors, other.predecessors)
         )
+
+    def __hash__(self) -> int:
+        """Return the hash of this functional unit.
+
+        `self` is this functional unit.
+
+        """
+        return hash((self.model, self.predecessors))
 
     model: UnitModel
 

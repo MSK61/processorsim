@@ -43,17 +43,17 @@ Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 #
 ############################################################
 
-from collections import abc
-from collections.abc import Collection, Iterable, Mapping, Sized
 import csv
 import itertools
 import logging
 import sys
-from typing import Annotated, Any, IO
+from collections import abc
+from collections.abc import Collection, Iterable, Mapping, Sized
+from typing import IO, Annotated, Any
 
-from attr import frozen
 import more_itertools
 import typer
+from attr import frozen
 from typer import FileText
 
 import hw_loading

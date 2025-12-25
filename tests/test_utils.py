@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
@@ -42,16 +42,16 @@ from itertools import starmap
 from os.path import join
 
 import attr
+import test_env
 import yaml
 
-import test_env
 import container_utils
 import processor_utils
-from processor_utils import ProcessorDesc
-from processor_utils.units import LockInfo, UnitModel
 import program_utils
 import sim_services.sim_defs
 import type_checking
+from processor_utils import ProcessorDesc
+from processor_utils.units import LockInfo, UnitModel
 
 TEST_DATA_DIR = join(test_env.TEST_DIR, "data")
 

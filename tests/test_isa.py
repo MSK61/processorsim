@@ -32,20 +32,21 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
 import logging
-from fastcore import basics
-import pytest
-from pytest import raises
 
+import pytest
 import test_utils
-from test_utils import chk_error, read_isa_file, ValInStrCheck
+from fastcore import basics
+from pytest import raises
+from test_utils import ValInStrCheck, chk_error, read_isa_file
+
 import errors
 import processor_utils
 from str_utils import ICaseString
@@ -54,7 +55,6 @@ from str_utils import ICaseString
 class TestDupInstr:
     """Test case for loading duplicate instructions"""
 
-    # pylint: disable-next=invalid-name
     def test_two_instructions_with_same_name_raise_DupElemError(self):
         """Test loading two instructions with the same name.
 
@@ -93,7 +93,6 @@ class TestIsa:
         ) == {"ADD": "ALU"}
         test_utils.chk_warnings(["alu", "ALU"], caplog.records)
 
-    # pylint: disable-next=invalid-name
     def test_isa_with_unsupported_capabilitiy_raises_UndefElemError(self):
         """Test loading an instruction set with an unknown capability.
 

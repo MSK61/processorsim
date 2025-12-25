@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
@@ -42,16 +42,16 @@
 import itertools
 from logging import WARNING
 
-from fastcore import basics
 import pytest
-from pytest import mark, raises
-
 import test_utils
+from fastcore import basics
+from pytest import mark, raises
 from test_utils import chk_warnings, read_prog_file
+
 import errors
 import program_defs
-from program_defs import ProgInstruction
 import program_utils
+from program_defs import ProgInstruction
 from program_utils import CodeError, read_program
 
 
@@ -141,7 +141,6 @@ class TestProgLoad:
             ("lowerCaseSubtractProgram.asm", "sub", 1),
         ],
     )
-    # pylint: disable-next=invalid-name
     def test_unsupported_instruction_raises_UndefElemError(
         self, prog_file, instr, line_num
     ):
@@ -169,7 +168,6 @@ class TestProgLoad:
 class TestSynErrors:
     """Test case for syntax errors"""
 
-    # pylint: disable=invalid-name
     @mark.parametrize(
         "prog_file, line_num, instr, operand",
         [
@@ -217,8 +215,6 @@ class TestSynErrors:
         with raises(CodeError) as ex_chk:
             read_prog_file(prog_file)
         self._chk_syn_err(ex_chk.value, line_num, instr)
-
-    # pylint: enable=invalid-name
 
     @staticmethod
     def _chk_syn_err(syn_err, line_num, instr):

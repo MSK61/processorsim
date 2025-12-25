@@ -31,8 +31,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
@@ -45,8 +45,8 @@ import fastcore.basics
 import networkx
 from networkx import DiGraph, Graph
 
-from .exception import DeadInputError
 from . import _port_defs
+from .exception import DeadInputError
 from .units import UNIT_CAPS_KEY
 
 

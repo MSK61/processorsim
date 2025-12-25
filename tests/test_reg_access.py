@@ -32,19 +32,19 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-from fastcore.basics import mapt
 import pydash
 import pytest
+from fastcore.basics import mapt
 from pytest import mark
-
 from test_env import TEST_DIR
+
 import reg_access
 from reg_access import AccessGroup, AccessType, RegAccessQueue
 

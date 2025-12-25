@@ -31,26 +31,26 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
 import abc
-from collections import defaultdict
 import collections.abc
+import typing
+from collections import defaultdict
 from collections.abc import Callable, Iterable
 from itertools import starmap
 from operator import eq, itemgetter
-import typing
 from typing import Any, Generic, Optional, TypeVar
 
-from attr import field, frozen
 import fastcore.basics
 import more_itertools
 import pydash
+from attr import field, frozen
 
 from str_utils import format_obj
 
@@ -204,6 +204,14 @@ class BagValDict(Generic[_KT, _VT]):
         # Pylance isn't smart enough to figure out that self._dict[key]
         # has the same type as list[_VT].
         return typing.cast(list[_VT], self._dict[key])
+
+    def __hash__(self) -> int:
+        """Return the hash of this dictionary.
+
+        `self` is this dictionary.
+
+        """
+        return hash(self.items())
 
     def __len__(self) -> int:
         """Count the number of elements in this dictionary.

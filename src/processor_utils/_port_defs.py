@@ -39,8 +39,8 @@
 ############################################################
 
 import collections.abc
-from collections.abc import Generator, Iterable
 import typing
+from collections.abc import Generator, Iterable
 from typing import Any
 
 import attr

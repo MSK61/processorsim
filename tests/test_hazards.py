@@ -32,18 +32,18 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
 import pytest
-
 from test_env import TEST_DIR
 from test_type_chks import create_hw_instr
 from test_utils import get_lists, get_util_info, get_util_tbl
+
 from processor_utils import ProcessorDesc
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
 from program_defs import HwInstruction
@@ -173,7 +173,7 @@ class TestRar:
 class TestRaw:
     """Test case for RAW hazards"""
 
-    def test_RLock_in_unit_before_WLock(self):  # pylint: disable=invalid-name
+    def test_RLock_in_unit_before_WLock(self):
         """Test detecting RAW hazards with read locks in earlier units.
 
         `self` is this test case.

@@ -37,9 +37,9 @@ set -e
 # just running a sample test module to make sure test modules are executable on
 # their own
 tests/test_containers.py
-pytest --cov src --cov-fail-under 100 --pylint $*
+pytest --cov src --cov-fail-under 100 $*
 ruff format --check
 ruff check
 PYRIGHT_PYTHON_IGNORE_WARNINGS=1 pyright
 cd src
-pytest -m "mypy or pylint" --mypy --pylint $*
+pytest -m "mypy" --mypy $*

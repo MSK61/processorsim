@@ -43,10 +43,10 @@ import os.path
 import unittest.mock
 from unittest.mock import patch
 
-from attr import frozen
 import pytest
-
 import test_utils
+from attr import frozen
+
 import hw_loading
 import processor_utils
 from processor_utils import units

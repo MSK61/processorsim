@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
@@ -41,15 +41,23 @@
 
 import pydash
 import pytest
-
 import test_env
+
 import container_utils
 
 
 class TestCoverage:
     """Test case for fulfilling complete code coverage"""
 
-    def test_IndexedSet_repr(self):  # pylint: disable=invalid-name
+    def test_BagValDict_hash(self):
+        """Test BagValDict hashing.
+
+        `self` is this test case.
+
+        """
+        hash(container_utils.BagValDict())
+
+    def test_IndexedSet_repr(self):
         """Test IndexedSet representation.
 
         `self` is this test case.

@@ -32,8 +32,8 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
@@ -41,12 +41,12 @@
 
 from logging import WARNING
 
-from fastcore import basics
 import pytest
-from pytest import mark, raises
-
 import test_utils
+from fastcore import basics
+from pytest import mark, raises
 from test_utils import chk_warnings, read_proc_file
+
 import processor_utils
 from processor_utils import exception, units
 from str_utils import ICaseString
@@ -55,7 +55,6 @@ from str_utils import ICaseString
 class TestCaps:
     """Test case for loading capabilities"""
 
-    # pylint: disable=invalid-name
     @mark.parametrize(
         "in_file",
         [

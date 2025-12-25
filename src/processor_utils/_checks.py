@@ -32,13 +32,15 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
+import itertools
+import typing
 from collections import abc
 from collections.abc import (
     Callable,
@@ -48,18 +50,16 @@ from collections.abc import (
     MutableMapping,
     Sequence,
 )
-import itertools
-import typing
 from typing import Any, TypeVar
 
+import more_itertools
+import networkx
 from attr import frozen
 from fastcore import basics
-import more_itertools
 from more_itertools import one
-import networkx
 from networkx import DiGraph, Graph
 
-from . import cap_anal_utils, exception, _port_defs, units
+from . import _port_defs, cap_anal_utils, exception, units
 from .exception import BlockedCapError, ComponentInfo, PathLockError
 from .units import UNIT_CAPS_KEY, UNIT_WIDTH_KEY
 

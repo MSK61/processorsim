@@ -32,20 +32,33 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.96.2, python 3.13.1, Fedora release
-#               41 (Forty One)
+# environment:  Visual Studio Code 1.107.1, python 3.14.2, Fedora
+#               release 43 (Forty Three)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-from fastcore import basics
 import pytest
-
 import test_utils
+from fastcore import basics
+
 import processor_utils
 from processor_utils import ProcessorDesc, units
 from processor_utils.units import FuncUnit, LockInfo, UnitModel
+
+
+class TestCoverage:
+    """Test case for fulfilling complete code coverage"""
+
+    def test_FuncUnit_hash(self):
+        """Test FuncUnit hashing.
+
+        `self` is this test case.
+
+        """
+        lock_info = LockInfo(False, False)
+        hash(FuncUnit(UnitModel("", 1, [""], lock_info, []), []))
 
 
 class TestDupName:
@@ -58,7 +71,6 @@ class TestDupName:
             ("twoUnitsWithSameNameAndDifferentCase.yaml", "FULL SYSTEM"),
         ],
     )
-    # pylint: disable-next=invalid-name
     def test_two_units_with_same_name_raise_DupElemError(
         self, in_file, dup_unit
     ):
