@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.133.0, python 3.14.6, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -121,7 +121,7 @@ class SimErrorBase(abc.ABC, RuntimeError):
                 {elem.key: elem.val.displayed for elem in elems}
             )
         )
-        val_extractor = fastcore.basics.Self.val().stored()
+        val_extractor = ~(fastcore.basics.Self.val.stored)
         type_checking.attrs_init(self, *(map(val_extractor, elems)))
 
     def _init_simple(

@@ -33,7 +33,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.133.0, python 3.14.6, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -151,7 +151,7 @@ class _PathDescriptor:
         `start` is the path start unit.
 
         """
-        return cls(basics.Self.read_lock(), "read", capability, start)
+        return cls(~(basics.Self.read_lock), "read", capability, start)
 
     @classmethod
     def make_write_desc(cls, capability: object, start: object) -> typing.Self:
@@ -162,7 +162,7 @@ class _PathDescriptor:
         `start` is the path start unit.
 
         """
-        return cls(basics.Self.write_lock(), "write", capability, start)
+        return cls(~(basics.Self.write_lock), "write", capability, start)
 
     selector: Callable[[_SatInfo], int]
 

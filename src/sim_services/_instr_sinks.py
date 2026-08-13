@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.133.0, python 3.14.6, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -301,9 +301,9 @@ class UnitSink(IInstrSink):
         # Earlier instructions in the program are selected first.
         return sorted(
             candidates,
-            key=lambda instr_info: util_info[instr_info.host][
-                instr_info.index_in_host
-            ].instr,
+            key=lambda instr_info: (
+                util_info[instr_info.host][instr_info.index_in_host].instr
+            ),
         )
 
     @property
@@ -313,7 +313,7 @@ class UnitSink(IInstrSink):
         `self` is this unit sink.
 
         """
-        return map(fastcore.basics.Self.name(), self.unit.predecessors)
+        return map(~(fastcore.basics.Self.name), self.unit.predecessors)
 
     unit: processor_utils.units.FuncUnit
 

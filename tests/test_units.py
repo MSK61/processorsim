@@ -33,7 +33,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.133.0, python 3.14.6, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -87,8 +87,8 @@ class TestDupName:
         chk_points = (
             test_utils.ValInStrCheck(elem_getter(ex_chk.value), unit)
             for elem_getter, unit in [
-                (basics.Self.new_element(), dup_unit),
-                (basics.Self.old_element(), "full system"),
+                (~(basics.Self.new_element), dup_unit),
+                (~(basics.Self.old_element), "full system"),
             ]
         )
         test_utils.chk_error(chk_points, ex_chk.value)

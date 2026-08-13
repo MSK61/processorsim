@@ -33,7 +33,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.133.0, python 3.14.6, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -224,8 +224,8 @@ class TestWidth:
         with raises(exception.BlockedCapError) as ex_chk:
             read_proc_file("widths", "inputPortWithUnconsumedCapability.yaml")
         chk_params = [
-            ("Capability", basics.Self.capability(), "Capability MEM"),
-            ("port", basics.Self.port(), "port input"),
+            ("Capability", ~(basics.Self.capability), "Capability MEM"),
+            ("port", ~(basics.Self.port), "port input"),
         ]
         chk_error(
             (
@@ -334,8 +334,8 @@ def _get_test_units(proc_desc, lock_prop):
             **{prop: True for prop in [unit_lock, lock_prop]},
         }
         for unit_getter, unit_lock in [
-            (basics.Self.in_unit(), UNIT_RLOCK_KEY),
-            (basics.Self.out_unit(), UNIT_WLOCK_KEY),
+            (~(basics.Self.in_unit), UNIT_RLOCK_KEY),
+            (~(basics.Self.out_unit), UNIT_WLOCK_KEY),
         ]
     ]
 

@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.133.0, python 3.14.6, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -123,7 +123,7 @@ def read_program(prog_file: Iterable[str]) -> list[ProgInstruction]:
 
     """
     prog = enumerate(map(str.strip, prog_file), 1)
-    reg_registry = IndexedSet[_OperandInfo](basics.Self.name())
+    reg_registry = IndexedSet[_OperandInfo](~(basics.Self.name))
     return [
         _create_instr(line_no, line, reg_registry)
         for line_no, line in prog
@@ -163,9 +163,7 @@ def _create_instr(
     """
     src_line_info = _get_line_parts(line_num, line_txt)
     dst, *sources = _get_operands(src_line_info, line_num, reg_registry)
-    return basics.Self(sources, dst, src_line_info.instruction, line_num)(
-        ProgInstruction
-    )
+    return ProgInstruction(sources, dst, src_line_info.instruction, line_num)
 
 
 def _get_cap(isa: Mapping[str, _T], instr: ProgInstruction) -> _T:

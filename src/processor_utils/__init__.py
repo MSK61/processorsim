@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.133.0, python 3.14.6, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -299,7 +299,7 @@ def _add_rev_edges(graph: Graph) -> None:
             for pred in unit.predecessors
             if pred.name in graph
         ),
-        basics.Self(_UNIT_KEY)(graph.nodes),
+        graph.nodes(_UNIT_KEY),
     )
     graph.add_edges_from(chain.from_iterable(edges))
 
@@ -357,7 +357,7 @@ def _create_graph(
     edge_registry = IndexedSet[Collection[str]](
         lambda edge: mapt(compose(ICaseString, unit_registry.get), edge)
     )
-    cap_registry = IndexedSet[_CapabilityInfo](basics.Self.name())
+    cap_registry = IndexedSet[_CapabilityInfo](~(basics.Self.name))
 
     for cur_unit in hw_units:
         _add_unit(flow_graph, cur_unit, unit_registry, cap_registry)
@@ -465,9 +465,7 @@ def _get_proc_units(graph: DiGraph) -> Generator[FuncUnit]:
         unit: _get_unit_entry(unit, graph.nodes[unit]) for unit in graph
     }
     return (
-        basics.Self(unit_map[name], _get_preds(graph, name, unit_map))(
-            FuncUnit
-        )
+        FuncUnit(unit_map[name], _get_preds(graph, name, unit_map))
         for name in graph
     )
 
@@ -645,7 +643,9 @@ def _sorted_units(hw_units: Iterable[Any]) -> tuple[Any, ...]:
     `hw_units` are the units to sort.
 
     """
-    return container_utils.sorted_tuple(hw_units, key=basics.Self.model.name())
+    return container_utils.sorted_tuple(
+        hw_units, key=~(basics.Self.model.name)
+    )
 
 
 @frozen
@@ -733,9 +733,7 @@ def _make_processor(proc_graph: DiGraph) -> ProcessorDesc:
             case _:
                 in_out_ports.append(unit.model)
 
-    return basics.Self(in_ports, out_ports, in_out_ports, internal_units)(
-        ProcessorDesc
-    )
+    return ProcessorDesc(in_ports, out_ports, in_out_ports, internal_units)
 
 
 _add_src_path()

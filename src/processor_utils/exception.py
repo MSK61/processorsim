@@ -33,7 +33,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.133.0, python 3.14.6, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -279,8 +279,8 @@ class BlockedCapError(SimErrorBase):
             *(
                 attr_getter(comp)
                 for attr_getter in [
-                    basics.Self.reporting_name(),
-                    basics.Self.std_name(),
+                    basics.Self.reporting_name,
+                    ~(basics.Self.std_name),
                 ]
             )
         )

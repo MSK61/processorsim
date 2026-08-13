@@ -33,7 +33,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.133.0, python 3.14.6, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -230,8 +230,8 @@ class TestSynErrors:
         chk_points = (
             test_utils.ValInStrCheck(val_getter(syn_err), exp_val)
             for val_getter, exp_val in [
-                (basics.Self.instr(), instr),
-                (basics.Self.line(), line_num),
+                (~(basics.Self.instr), instr),
+                (~(basics.Self.line), line_num),
             ]
         )
         test_utils.chk_error(chk_points, syn_err)

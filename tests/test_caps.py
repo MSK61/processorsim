@@ -33,7 +33,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.133.0, python 3.14.6, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -99,8 +99,8 @@ class TestCaps:
         chk_points = (
             test_utils.ValInStrCheck(val_getter(ex_chk.value), exp_val)
             for val_getter, exp_val in [
-                (basics.Self.unit(), "full system"),
-                (basics.Self.width(), bad_width),
+                (~(basics.Self.unit), "full system"),
+                (~(basics.Self.width), bad_width),
             ]
         )
         test_utils.chk_error(chk_points, ex_chk.value)

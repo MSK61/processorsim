@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.133.0, python 3.14.6, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -122,7 +122,7 @@ class HwSpec:
             self.processor_desc.in_ports,
             self.processor_desc.in_out_ports,
             map(
-                basics.Self.model(),
+                ~(basics.Self.model),
                 chain(
                     self.processor_desc.out_ports,
                     self.processor_desc.internal_units,
@@ -597,7 +597,7 @@ def _fill_unit(
     """
     mov_res = unit.fill_unit(util_info, mem_busy)
     _clr_src_units(
-        sorted(mov_res.moved, key=basics.Self.index_in_host(), reverse=True),
+        sorted(mov_res.moved, key=~(basics.Self.index_in_host), reverse=True),
         util_info,
     )
     return mov_res.mem_used
@@ -612,7 +612,7 @@ def _get_out_ports(processor: ProcessorDesc) -> "map[str]":
 
     """
     return map(
-        basics.Self.name(),
+        ~(basics.Self.name),
         chain(
             processor.in_out_ports,
             (port.model for port in processor.out_ports),
@@ -712,8 +712,9 @@ def _regs_loaded(
     """
     return more_itertools.first_true(
         old_unit_util,
-        pred=lambda old_instr: old_instr.instr == instr
-        and old_instr.stalled != StallState.DATA,
+        pred=lambda old_instr: (
+            old_instr.instr == instr and old_instr.stalled != StallState.DATA
+        ),
     )
 
 

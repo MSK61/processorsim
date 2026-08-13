@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.133.0, python 3.14.6, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -64,7 +64,7 @@ def sorted_models(models: collections.abc.Iterable[Any]) -> tuple[Any, ...]:
     `models` are the models to sort.
 
     """
-    return sorted_tuple(models, key=basics.Self.name())
+    return sorted_tuple(models, key=~(basics.Self.name))
 
 
 @frozen
@@ -115,8 +115,8 @@ class FuncUnit:
             (
                 attr_get_func(unit)
                 for attr_get_func in [
-                    basics.Self.model(),
-                    basics.Self.predecessors(),
+                    ~(basics.Self.model),
+                    ~(basics.Self.predecessors),
                 ]
             )
             for unit in [self, other]
