@@ -33,7 +33,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.133.0, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.137.0, python 3.14.7, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -56,6 +56,12 @@ from processor_utils.units import (
     UNIT_WIDTH_KEY,
     UNIT_WLOCK_KEY,
 )
+
+_DIFF_LOCK_UNITS = [
+    ("input", {UNIT_WLOCK_KEY: True}),
+    ("output 1", {}),
+    ("output 2", {UNIT_RLOCK_KEY: True}),
+]
 
 
 class TestBlocking:
@@ -117,25 +123,15 @@ class TestNoLock:
         "units, data_path",
         [
             (
-                [
+                (
                     {
-                        UNIT_NAME_KEY: "input",
+                        UNIT_NAME_KEY: name,
                         UNIT_WIDTH_KEY: 1,
                         UNIT_CAPS_KEY: ["ALU"],
-                        UNIT_WLOCK_KEY: True,
-                    },
-                    {
-                        UNIT_NAME_KEY: "output 1",
-                        UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["ALU"],
-                    },
-                    {
-                        UNIT_NAME_KEY: "output 2",
-                        UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["ALU"],
-                        UNIT_RLOCK_KEY: True,
-                    },
-                ],
+                        **lock_info,
+                    }
+                    for name, lock_info in _DIFF_LOCK_UNITS
+                ),
                 [["input", "output 1"], ["input", "output 2"]],
             ),
             (
