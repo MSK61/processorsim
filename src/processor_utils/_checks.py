@@ -33,7 +33,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.133.0, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.137.0, python 3.14.7, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -82,7 +82,7 @@ def chk_caps(processor: DiGraph) -> None:
             None,
         ]
     ] = [
-        lambda cap_graph, post_ord, cap, in_ports, _: _chk_multilock(
+        lambda cap_graph, post_ord, cap, in_ports, _: _chk_cap_locks(
             cap_graph, post_ord, cap, in_ports
         )
     ]
@@ -353,13 +353,37 @@ def _chk_cap_flow(
         )
 
 
+def _chk_cap_locks(
+    processor: DiGraph,
+    post_ord: Iterable[object],
+    capability: object,
+    in_ports: Iterable[object],
+) -> None:
+    """Check if the processor has paths with locks problems.
+
+    `processor` is the processor to check for probelmatic paths.
+    `post_ord` is the post-order of the processor functional units.
+    `capability` is the capability of lock paths under consideration.
+    `in_ports` are the input ports supporting the given capability.
+    The function raises a PathLockError if any paths with locks problems
+    exist.
+
+    """
+    path_locks: dict[object, _SatInfo] = {}
+
+    for unit in post_ord:
+        _chk_path_locks(unit, processor, path_locks, capability)
+
+    _chk_in_locks(in_ports, path_locks, capability)
+
+
 def _chk_in_lock(in_lock_info: _SatInfo, path_desc: _PathDescriptor) -> None:
     """Check if paths from the input port don't have exactly one lock.
 
     `in_lock_info` is the input lock information.
     `path_desc` is the path descriptor.
-    The function raises a PathLockError if any paths with multiple locks
-    exist at the given port.
+    The function raises a PathLockError if the paths at the given port
+    have no locks.
 
     """
     if not path_desc.selector(in_lock_info):
@@ -384,8 +408,8 @@ def _chk_in_locks(
     `path_locks` are the map from a unit to the information of the path
                  with maximum locks.
     `capability` is the capability for which input paths are inspected.
-    The function raises a PathLockError if any paths with multiple locks
-    exist at any port.
+    The function raises a PathLockError if the paths at any port have no
+    locks.
 
     """
     for cur_port in in_ports:
@@ -396,30 +420,6 @@ def _chk_in_locks(
             _chk_in_lock(
                 path_locks[cur_port], path_desc_fact(capability, cur_port)
             )
-
-
-def _chk_multilock(
-    processor: DiGraph,
-    post_ord: Iterable[object],
-    capability: object,
-    in_ports: Iterable[object],
-) -> None:
-    """Check if the processor has paths with multiple locks.
-
-    `processor` is the processor to check for multi-lock paths.
-    `post_ord` is the post-order of the processor functional units.
-    `capability` is the capability of lock paths under consideration.
-    `in_ports` are the input ports supporting the given capability.
-    The function raises a PathLockError if any paths with multiple locks
-    exist.
-
-    """
-    path_locks: dict[object, _SatInfo] = {}
-
-    for unit in post_ord:
-        _chk_path_locks(unit, processor, path_locks, capability)
-
-    _chk_in_locks(in_ports, path_locks, capability)
 
 
 def _chk_path_locks(
