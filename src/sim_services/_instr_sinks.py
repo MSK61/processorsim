@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.133.0, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.137.0, python 3.14.7, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -307,7 +307,7 @@ class UnitSink(IInstrSink):
         )
 
     @property
-    def _donors(self) -> "map[str]":
+    def _donors(self) -> map[str]:
         """Retrieve the predecessor names.
 
         `self` is this unit sink.

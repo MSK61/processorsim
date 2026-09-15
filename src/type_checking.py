@@ -33,7 +33,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.137.0, python 3.14.7, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -59,7 +59,7 @@ def attrs_init(attrs_obj: Any, *attr_vals: object) -> None:
     attrs_obj.__attrs_init__(*attr_vals)
 
 
-def map_ex(seq: Any, map_func: Any, _: type[_T]) -> "map[_T]":
+def map_ex(seq: Any, map_func: Any, _: type[_T]) -> map[_T]:
     """Map an iterable using a mapping function.
 
     `seq` is the iterable to map.

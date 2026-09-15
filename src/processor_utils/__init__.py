@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.133.0, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.137.0, python 3.14.7, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -441,7 +441,7 @@ def _get_cap_name(
 
 def _get_preds(
     processor: DiGraph, unit: object, unit_map: Any
-) -> "map[str] | list[str]":
+) -> map[str] | list[str]:
     """Retrieve the predecessor units of the given unit.
 
     `processor` is the processor containing the unit.

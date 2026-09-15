@@ -37,7 +37,7 @@ Usage: processor_sim.py --processor PROCESSORFILE PROGRAMFILE
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.137.0, python 3.14.7, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -210,7 +210,7 @@ class ResultWriter:
 
 def _cui_to_flights(
     cxuxi: Iterable[Iterable[Any]], instructions: int
-) -> "map[_InstrFlight]":
+) -> map[_InstrFlight]:
     """Convert a CxUxI utilization map to instruction flights.
 
     `cxuxi` is the ClockxUnitxInstruction utilization map to convert.
@@ -306,7 +306,7 @@ def _get_sim_rows(
 
 def _icu_to_flights(
     ixcxu: Iterable[Mapping[int, _InstrPosition]],
-) -> "map[_InstrFlight]":
+) -> map[_InstrFlight]:
     """Convert a IxCxU utilization map to instruction flights.
 
     `ixcxu` is the InstructionxClockxUnit utilization map to convert.
