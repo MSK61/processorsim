@@ -33,7 +33,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.133.0, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.137.0, python 3.14.7, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -42,6 +42,7 @@
 
 from logging import WARNING
 
+import more_itertools
 import pytest
 import test_utils
 from fastcore import basics
@@ -130,7 +131,10 @@ class TestDupCap:
             "capabilities", in_file
         ) == processor_utils.ProcessorDesc([], [], processor, [])
         chk_warnings(["ALU", "core 1", "alu", "core 2"], caplog.records)
-        assert ICaseString.__name__ not in caplog.records[0].getMessage()
+        assert (
+            ICaseString.__name__
+            not in more_itertools.first(caplog.records).getMessage()
+        )
 
     @mark.parametrize(
         "in_file, capabilities",

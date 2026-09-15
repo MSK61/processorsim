@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.137.0, python 3.14.7, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -43,6 +43,7 @@ from itertools import starmap
 from os.path import join
 
 import attr
+import more_itertools
 import test_env
 import yaml
 
@@ -135,7 +136,7 @@ def chk_warnings(tokens, warn_calls):
 
     """
     assert warn_calls
-    chk_warn(tokens, warn_calls[0].getMessage())
+    chk_warn(tokens, more_itertools.first(warn_calls).getMessage())
 
 
 def compile_prog(prog_file, isa):

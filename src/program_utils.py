@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.133.0, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.137.0, python 3.14.7, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -45,6 +45,7 @@ from collections.abc import Iterable, Mapping
 from re import split
 from typing import Final
 
+import more_itertools
 import pydash
 from attr import field, frozen
 from fastcore import basics
@@ -203,7 +204,7 @@ def _get_line_parts(line_num: object, line_txt: str) -> _LineInfo:
             f"No operands provided for instruction ${CodeError.INSTR_KEY} at "
             f"line ${CodeError.LINE_NUM_KEY}",
             line_num,
-            line_parts[0],
+            more_itertools.first(line_parts),
         )
 
     return _LineInfo(*line_parts)
