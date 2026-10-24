@@ -1,13 +1,13 @@
 units:
-    - name: core 1
-      width: 1
-      capabilities:
-        - ALU
-      readLock: True
-      writeLock: True
-    - name: core 2
-      width: 1
-      capabilities: []
-      readLock: True
-      writeLock: True
+  - name: core 1
+    width: 1
+    capabilities:
+      - ALU
+    readLock: True
+    writeLock: True
+  - name: core 2
+    width: 1
+    capabilities: []
+    readLock: True
+    writeLock: True
 dataPath: []

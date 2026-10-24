@@ -1,11 +1,11 @@
 microarch:
-    units:
-        - name: full system
-          width: 1
-          capabilities:
-            - MEM
-          readLock: True
-          writeLock: True
-    dataPath: []
+  units:
+    - name: full system
+      width: 1
+      capabilities:
+        - MEM
+      readLock: True
+      writeLock: True
+  dataPath: []
 ISA:
-    LW: MEM
+  LW: MEM

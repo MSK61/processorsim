@@ -1,25 +1,25 @@
 units:
-    - name: input 1
-      width: 1
-      capabilities:
-        - ALU
-      readLock: True
-    - name: output 1
-      width: 1
-      capabilities:
-        - ALU
-      writeLock: True
-    - name: input 2
-      width: 1
-      capabilities:
-        - MEM
-      readLock: True
-    - name: output 2
-      width: 1
-      capabilities:
-        - MEM
-      writeLock: True
+  - name: input 1
+    width: 1
+    capabilities:
+      - ALU
+    readLock: True
+  - name: output 1
+    width: 1
+    capabilities:
+      - ALU
+    writeLock: True
+  - name: input 2
+    width: 1
+    capabilities:
+      - MEM
+    readLock: True
+  - name: output 2
+    width: 1
+    capabilities:
+      - MEM
+    writeLock: True
 dataPath:
-    - [input 1, output 1]
-    - [input 2, output 2]
-    - [input 2, output 1]
+  - [input 1, output 1]
+  - [input 2, output 2]
+  - [input 2, output 1]

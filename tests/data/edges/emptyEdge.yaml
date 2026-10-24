@@ -1,6 +1,6 @@
 units:
-    - name: full system
-      width: 1
-      capabilities: []
+  - name: full system
+    width: 1
+    capabilities: []
 dataPath:
-    - []
+  - []

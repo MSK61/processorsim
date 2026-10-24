@@ -1,9 +1,9 @@
 units:
-    - name: full system
-      width: 1
-      capabilities: []
-    - name: FULL SYSTEM
-      width: 2
-      capabilities:
-        - ALU
+  - name: full system
+    width: 1
+    capabilities: []
+  - name: FULL SYSTEM
+    width: 2
+    capabilities:
+      - ALU
 dataPath: []

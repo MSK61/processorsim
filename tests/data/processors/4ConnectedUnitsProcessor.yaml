@@ -1,24 +1,24 @@
 units:
-    - name: input
-      width: 1
-      capabilities:
-        - ALU
-      readLock: True
-    - name: output 1
-      width: 1
-      capabilities:
-        - ALU
-      writeLock: True
-    - name: middle
-      width: 1
-      capabilities:
-        - ALU
-    - name: output 2
-      width: 1
-      capabilities:
-        - ALU
-      writeLock: True
+  - name: input
+    width: 1
+    capabilities:
+      - ALU
+    readLock: True
+  - name: output 1
+    width: 1
+    capabilities:
+      - ALU
+    writeLock: True
+  - name: middle
+    width: 1
+    capabilities:
+      - ALU
+  - name: output 2
+    width: 1
+    capabilities:
+      - ALU
+    writeLock: True
 dataPath:
-    - [input, output 1]
-    - [input, middle]
-    - [middle, output 2]
+  - [input, output 1]
+  - [input, middle]
+  - [middle, output 2]
