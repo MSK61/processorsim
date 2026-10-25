@@ -1,16 +1,19 @@
 units:
   - name: input 1
     width: 1
-    capabilities:
-      - ALU
+    roles:
+      - name: ALU
+        usesMem: False
   - name: output
     width: 1
-    capabilities:
-      - ALU
+    roles:
+      - name: ALU
+        usesMem: False
   - name: input 2
     width: 1
-    capabilities:
-      - MEM
+    roles:
+      - name: MEM
+        usesMem: False
 dataPath:
   - [input 1, output]
   - [input 2, output]

@@ -33,7 +33,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.137.0, python 3.14.7, Fedora
+# environment:  Visual Studio Code 1.143.1, python 3.14.8, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -62,7 +62,7 @@ from networkx import DiGraph, Graph
 
 from . import _port_defs, cap_anal_utils, exception, units
 from .exception import BlockedCapError, ComponentInfo, PathLockError
-from .units import UNIT_CAPS_KEY, UNIT_WIDTH_KEY
+from .units import ROLE_NAME_KEY, UNIT_ROLES_KEY, UNIT_WIDTH_KEY
 
 _OLD_NODE_KEY: typing.Final = "old_node"
 _KT = TypeVar("_KT")
@@ -311,7 +311,10 @@ def _cap_in_unit(processor: Graph, capability: object, unit: object) -> bool:
     `unit` is the unit to check.
 
     """
-    return capability in processor.nodes[unit][UNIT_CAPS_KEY]
+    return any(
+        role[ROLE_NAME_KEY] == capability
+        for role in processor.nodes[unit][UNIT_ROLES_KEY]
+    )
 
 
 def _chk_cap_flow(
@@ -612,8 +615,10 @@ def _get_cap_units(processor: DiGraph) -> abc.ItemsView[str, list[Any]]:
     in_ports = _port_defs.get_in_ports(processor)
 
     for cur_port in in_ports:
-        for cur_cap in processor.nodes[cur_port][UNIT_CAPS_KEY]:
-            cap_unit_map.setdefault(cur_cap, []).append(cur_port)
+        for cur_role in processor.nodes[cur_port][UNIT_ROLES_KEY]:
+            cap_unit_map.setdefault(cur_role[ROLE_NAME_KEY], []).append(
+                cur_port
+            )
 
     return cap_unit_map.items()
 

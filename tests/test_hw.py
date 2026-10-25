@@ -33,7 +33,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.143.1, python 3.14.8, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -118,9 +118,8 @@ class TestHwDescLoad:
                         units.UnitModel(
                             "full system",
                             1,
-                            [in_params.capability],
+                            {in_params.capability: False},
                             lock_info,
-                            [],
                         )
                     ],
                     [],
@@ -165,7 +164,12 @@ def _get_checks(proc_mock, ability_mock, capability):
                     {
                         units.UNIT_NAME_KEY: "full system",
                         units.UNIT_WIDTH_KEY: 1,
-                        units.UNIT_CAPS_KEY: [capability],
+                        units.UNIT_ROLES_KEY: [
+                            {
+                                units.ROLE_NAME_KEY: capability,
+                                units.ROLE_MEM_KEY: False,
+                            }
+                        ],
                         units.UNIT_RLOCK_KEY: True,
                         units.UNIT_WLOCK_KEY: True,
                     }

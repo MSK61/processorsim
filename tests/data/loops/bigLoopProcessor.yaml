@@ -1,13 +1,13 @@
 units:
   - name: input
     width: 1
-    capabilities: []
+    roles: []
   - name: middle
     width: 1
-    capabilities: []
+    roles: []
   - name: output
     width: 1
-    capabilities: []
+    roles: []
 dataPath:
   - [input, middle]
   - [middle, output]

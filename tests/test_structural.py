@@ -33,7 +33,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.143.1, python 3.14.8, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -64,7 +64,7 @@ class TestMemUtil:
 
         """
         full_sys_unit = UnitModel(
-            "full system", 2, ["ALU"], LockInfo(True, True), ["ALU"]
+            "full system", 2, {"ALU": True}, LockInfo(True, True)
         )
         assert simulate(
             [HwInstruction([], out_reg, "ALU") for out_reg in ["R1", "R2"]],
@@ -90,7 +90,12 @@ class TestStructural:
                             {
                                 units.UNIT_NAME_KEY: "full system",
                                 units.UNIT_WIDTH_KEY: 2,
-                                units.UNIT_CAPS_KEY: ["ALU"],
+                                units.UNIT_ROLES_KEY: [
+                                    {
+                                        units.ROLE_NAME_KEY: "ALU",
+                                        units.ROLE_MEM_KEY: True,
+                                    }
+                                ],
                                 **{
                                     attr: True
                                     for attr in [
@@ -98,7 +103,6 @@ class TestStructural:
                                         units.UNIT_WLOCK_KEY,
                                     ]
                                 },
-                                units.UNIT_MEM_KEY: ["ALU"],
                             }
                         ],
                         "dataPath": [],
@@ -123,26 +127,26 @@ class _TestInParams:
 
     width: object
 
-    mem_util: object
-
     out_unit_params: object
+
+    uses_mem: object
 
 
 _STRUCT_CASES = [
     (
-        _TestInParams(1, ["ALU"], [("output", 1, ["ALU"])]),
+        _TestInParams(1, [("output", 1, True)], True),
         _TestExpResults(
             1, [[("output", [[0]])], [("input", [[1]])], [("output", [[1]])]]
         ),
     ),
     (
-        _TestInParams(1, [], [("output", 1, ["ALU"])]),
+        _TestInParams(1, [("output", 1, True)], False),
         _TestExpResults(
             1, [[("output", [[0]]), ("input", [[1]])], [("output", [[1]])]]
         ),
     ),
     (
-        _TestInParams(2, [], [("output", 2, ["ALU"])]),
+        _TestInParams(2, [("output", 2, True)], False),
         _TestExpResults(
             2,
             [
@@ -154,20 +158,17 @@ _STRUCT_CASES = [
     (
         _TestInParams(
             2,
-            [],
             (
-                (name, 1, mem_access)
-                for name, mem_access in [
-                    ("output 1", ["ALU"]),
-                    ("output 2", []),
-                ]
+                (name, 1, uses_mem)
+                for name, uses_mem in [("output 1", True), ("output 2", False)]
             ),
+            False,
         ),
         _TestExpResults(2, [[("output 1", [[0]]), ("output 2", [[1]])]]),
     ),
     (
         _TestInParams(
-            2, [], ((name, 1, ["ALU"]) for name in ["output 1", "output 2"])
+            2, ((name, 1, True) for name in ["output 1", "output 2"]), False
         ),
         _TestExpResults(
             2,
@@ -195,13 +196,12 @@ class TestHazards:
         in_unit = UnitModel(
             "input",
             in_params.width,
-            ["ALU"],
+            {"ALU": in_params.uses_mem},
             LockInfo(True, False),
-            in_params.mem_util,
         )
         out_units = (
-            UnitModel(name, width, ["ALU"], LockInfo(False, True), mem_access)
-            for name, width, mem_access in in_params.out_unit_params
+            UnitModel(name, width, {"ALU": uses_mem}, LockInfo(False, True))
+            for name, width, uses_mem in in_params.out_unit_params
         )
         out_units = (
             units.FuncUnit(out_unit, [in_unit]) for out_unit in out_units

@@ -33,7 +33,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.143.1, python 3.14.8, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -72,10 +72,10 @@ class TestClean:
         )
         wr_lock = LockInfo(False, True)
         assert proc_desc == ProcessorDesc(
-            [UnitModel("input", 1, ["ALU"], LockInfo(True, False), [])],
+            [UnitModel("input", 1, {"ALU": False}, LockInfo(True, False))],
             [
                 FuncUnit(
-                    UnitModel("output 1", 1, ["ALU"], wr_lock, []),
+                    UnitModel("output 1", 1, {"ALU": False}, wr_lock),
                     proc_desc.in_ports,
                 )
             ],
@@ -97,7 +97,7 @@ class TestClean:
         ) == ProcessorDesc(
             [],
             [],
-            [UnitModel("core 1", 1, ["ALU"], LockInfo(True, True), [])],
+            [UnitModel("core 1", 1, {"ALU": False}, LockInfo(True, True))],
             [],
         )
         chk_warnings(["core 2"], caplog.records)
@@ -119,14 +119,14 @@ class TestEdgeRemoval:
         )
         in_units = starmap(
             lambda name, categ: UnitModel(
-                name, 1, [categ], LockInfo(True, False), []
+                name, 1, {categ: False}, LockInfo(True, False)
             ),
             [["input 1", "ALU"], ["input 2", "MEM"]],
         )
         wr_lock = LockInfo(False, True)
         out_units = starmap(
             lambda name, categ, in_unit: FuncUnit(
-                UnitModel(name, 1, [categ], wr_lock, []),
+                UnitModel(name, 1, {categ: False}, wr_lock),
                 [
                     more_itertools.first_true(
                         proc_desc.in_ports,

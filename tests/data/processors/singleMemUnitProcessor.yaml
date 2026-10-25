@@ -1,8 +1,9 @@
 units:
   - name: full system
     width: 1
-    capabilities:
-      - MEM
+    roles:
+      - name: MEM
+        usesMem: False
     readLock: True
     writeLock: True
 dataPath: []

@@ -33,7 +33,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.143.1, python 3.14.8, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -71,7 +71,7 @@ class TestDataHazards:
 
         """
         full_sys_unit = UnitModel(
-            TEST_DIR, 2, ["ALU"], LockInfo(True, True), []
+            TEST_DIR, 2, {"ALU": False}, LockInfo(True, True)
         )
         assert simulate(
             [create_hw_instr(regs, "ALU") for regs in instr_regs],
@@ -93,11 +93,14 @@ class TestInstrOffer:
 
         """
         in_unit = UnitModel(
-            "input", 3, ["ALU", "MEM"], LockInfo(True, False), []
+            "input",
+            3,
+            {cap: False for cap in ["ALU", "MEM"]},
+            LockInfo(True, False),
         )
         out_unit = FuncUnit(
             UnitModel(
-                "output", 2, ["ALU", "MEM"], LockInfo(False, True), ["MEM"]
+                "output", 2, {"ALU": False, "MEM": True}, LockInfo(False, True)
             ),
             [in_unit],
         )
@@ -133,11 +136,14 @@ class TestMemAccess:
 
         """
         in_unit = UnitModel(
-            "input", 2, ["ALU", "MEM"], LockInfo(True, False), []
+            "input",
+            2,
+            {cap: False for cap in ["ALU", "MEM"]},
+            LockInfo(True, False),
         )
         out_unit = FuncUnit(
             UnitModel(
-                "output", 2, ["ALU", "MEM"], LockInfo(False, True), ["MEM"]
+                "output", 2, {"ALU": False, "MEM": True}, LockInfo(False, True)
             ),
             [in_unit],
         )
@@ -160,7 +166,7 @@ class TestRar:
 
         """
         full_sys_unit = UnitModel(
-            TEST_DIR, 2, ["ALU"], LockInfo(True, True), []
+            TEST_DIR, 2, {"ALU": False}, LockInfo(True, True)
         )
         assert simulate(
             [
@@ -181,7 +187,7 @@ class TestRaw:
 
         """
         in_unit, mid, out_unit = (
-            UnitModel(name, 1, ["ALU"], LockInfo(rd_lock, wr_lock), [])
+            UnitModel(name, 1, {"ALU": False}, LockInfo(rd_lock, wr_lock))
             for name, rd_lock, wr_lock in [
                 ("input", False, False),
                 ("middle", True, False),
@@ -221,11 +227,14 @@ class TestUnifiedMem:
 
         """
         in_unit = UnitModel(
-            "input", 1, ["ALU", "MEM"], LockInfo(True, False), ["ALU", "MEM"]
+            "input",
+            1,
+            {cap: True for cap in ["ALU", "MEM"]},
+            LockInfo(True, False),
         )
         out_unit = FuncUnit(
             UnitModel(
-                "output", 1, ["ALU", "MEM"], LockInfo(False, True), ["MEM"]
+                "output", 1, {"ALU": False, "MEM": True}, LockInfo(False, True)
             ),
             [in_unit],
         )
@@ -250,9 +259,9 @@ class TestWar:
         `self` is this test case.
 
         """
-        in_unit = UnitModel("input", 1, ["ALU"], LockInfo(False, False), [])
+        in_unit = UnitModel("input", 1, {"ALU": False}, LockInfo(False, False))
         out_unit = FuncUnit(
-            UnitModel("output", 1, ["ALU"], LockInfo(True, True), []),
+            UnitModel("output", 1, {"ALU": False}, LockInfo(True, True)),
             [in_unit],
         )
         assert simulate(

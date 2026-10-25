@@ -33,7 +33,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.137.0, python 3.14.7, Fedora
+# environment:  Visual Studio Code 1.143.1, python 3.14.8, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -123,7 +123,7 @@ class TestDupCap:
         in_file = "twoCapabilitiesWithSameNameAndDifferentCaseInTwoUnits.yaml"
         processor = (
             units.UnitModel(
-                unit_name, 1, ["ALU"], units.LockInfo(True, True), []
+                unit_name, 1, {"ALU": False}, units.LockInfo(True, True)
             )
             for unit_name in ["core 1", "core 2"]
         )

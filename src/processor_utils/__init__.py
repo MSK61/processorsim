@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.137.0, python 3.14.7, Fedora
+# environment:  Visual Studio Code 1.143.1, python 3.14.8, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -71,10 +71,10 @@ from str_utils import ICaseString
 from . import _checks, _optimization, _port_defs, units
 from .exception import BadEdgeError, BadWidthError, DupElemError
 from .units import (
-    UNIT_CAPS_KEY,
-    UNIT_MEM_KEY,
+    ROLE_NAME_KEY,
     UNIT_NAME_KEY,
     UNIT_RLOCK_KEY,
+    UNIT_ROLES_KEY,
     UNIT_WIDTH_KEY,
     UNIT_WLOCK_KEY,
     FuncUnit,
@@ -105,39 +105,6 @@ class _CapabilityInfo:
     name: ICaseString
 
     unit: object
-
-
-def _add_capability(
-    unit: object,
-    cap: ICaseString,
-    cap_list: MutableSequence[str],
-    unit_cap_reg: SelfIndexSet[ICaseString],
-    global_cap_reg: IndexedSet[_CapabilityInfo],
-) -> None:
-    """Add a capability to the given unit.
-
-    `unit` is the unit to add the capability to.
-    `cap` is the capability to add.
-    `cap_list` is the list of capabilities in the given unit.
-    `unit_cap_reg` is the store of previously added capabilities in the
-                   given unit.
-    `global_cap_reg` is the store of added capabilities across all units
-                     so far.
-
-    """
-    old_cap = unit_cap_reg.get(cap)
-
-    if old_cap:
-        warning(
-            "Capability %s previously added as %s for unit %s, ignoring...",
-            cap,
-            old_cap,
-            unit,
-        )
-    else:
-        _add_new_cap(
-            _CapabilityInfo(cap, unit), cap_list, unit_cap_reg, global_cap_reg
-        )
 
 
 def _add_edge(
@@ -194,36 +161,73 @@ def _add_instr(
     return _get_cap_name(cap, cap_registry)
 
 
-def _add_new_cap(
-    cap: _CapabilityInfo,
-    cap_list: MutableSequence[str],
+def _add_new_role(
+    unit: object,
+    role: Mapping[object, str],
+    roles_list: MutableSequence[object],
     unit_cap_reg: SelfIndexSet[ICaseString],
     global_cap_reg: IndexedSet[_CapabilityInfo],
 ) -> None:
-    """Add a new capability to the given list and registry.
+    """Add a new role to the given list and registry.
 
-    `cap` is the capability to add.
-    `cap_list` is the list of capabilities in a unit.
+    `unit` is the unit to add the role to.
+    `role` is the role to add.
+    `roles_list` is the list of roles in a unit.
     `unit_cap_reg` is the store of previously added capabilities in the
-                   unit whose capability list is given.
+                   unit whose roles list is given.
     `global_cap_reg` is the store of added capabilities across all units
                      so far.
 
     """
-    std_cap = container_utils.get_from_set(global_cap_reg, cap)
+    cap = ICaseString(role[ROLE_NAME_KEY])
+    std_cap = container_utils.get_from_set(
+        global_cap_reg, _CapabilityInfo(cap, unit)
+    )
 
-    if std_cap.name.raw_str != cap.name.raw_str:
+    if std_cap.name.raw_str != role[ROLE_NAME_KEY]:
         warning(
             "Capability %s in unit %s previously defined as %s in unit %s, "
             "using original definition...",
-            cap.name,
-            cap.unit,
+            role[ROLE_NAME_KEY],
+            unit,
             std_cap.name,
             std_cap.unit,
         )
 
-    cap_list.append(std_cap.name.raw_str)
-    unit_cap_reg.add(cap.name)
+    roles_list.append({**role, ROLE_NAME_KEY: std_cap.name.raw_str})
+    unit_cap_reg.add(cap)
+
+
+def _add_role(
+    unit: object,
+    role: Mapping[object, str],
+    roles_list: MutableSequence[object],
+    unit_cap_reg: SelfIndexSet[ICaseString],
+    global_cap_reg: IndexedSet[_CapabilityInfo],
+) -> None:
+    """Add a role to the given unit.
+
+    `unit` is the unit to add the role to.
+    `role` is the role to add.
+    `roles_list` is the list of roles in the given unit.
+    `unit_cap_reg` is the store of previously added capabilities in the
+                   given unit.
+    `global_cap_reg` is the store of added capabilities across all units
+                     so far.
+
+    """
+    cap = ICaseString(role[ROLE_NAME_KEY])
+    old_cap = unit_cap_reg.get(cap)
+
+    if old_cap:
+        warning(
+            "Capability %s previously added as %s for unit %s, ignoring...",
+            cap,
+            old_cap,
+            unit,
+        )
+    else:
+        _add_new_role(unit, role, roles_list, unit_cap_reg, global_cap_reg)
 
 
 def _add_src_path() -> None:
@@ -252,8 +256,7 @@ def _add_unit(
         unit[UNIT_NAME_KEY],
         **{
             UNIT_WIDTH_KEY: unit[UNIT_WIDTH_KEY],
-            UNIT_CAPS_KEY: _load_caps(unit, cap_registry),
-            UNIT_MEM_KEY: _load_mem_acl(unit, cap_registry),
+            UNIT_ROLES_KEY: tuple(_load_roles(unit, cap_registry)),
         },
         **{
             cur_attr: unit.get(cur_attr, False)
@@ -386,30 +389,6 @@ def _create_isa(
     }
 
 
-def _get_acl_cap(
-    unit: object, cap: str, global_cap_reg: IndexedSet[_CapabilityInfo]
-) -> str:
-    """Return a supported ACL capability name.
-
-    `unit` is the unit to get a capability from whose memory ACL.
-    `cap` is the capability to return whose standard form.
-    `global_cap_reg` is the store of added capabilities across all
-                     units.
-
-    """
-    std_cap = global_cap_reg.get(_CapabilityInfo(ICaseString(cap), unit))
-    assert std_cap
-
-    if std_cap.name.raw_str != cap:
-        warning(
-            f"Capability {cap} in unit {unit} memory ACL previously defined as"
-            f" {std_cap.name} in unit {std_cap.unit}, using original "
-            "definition..."
-        )
-
-    return std_cap.name.raw_str
-
-
 def _get_cap_name(
     capability: str, cap_registry: SelfIndexSet[ICaseString]
 ) -> str:
@@ -499,9 +478,11 @@ def _get_unit_entry(name: str, attrs: Mapping[str, Any]) -> UnitModel:
     return UnitModel(
         name,
         attrs[UNIT_WIDTH_KEY],
-        attrs[UNIT_CAPS_KEY],
+        dict(
+            mapt(role.get, [ROLE_NAME_KEY, units.ROLE_MEM_KEY])
+            for role in attrs[UNIT_ROLES_KEY]
+        ),
         units.LockInfo(*lock_attrs),
-        attrs[UNIT_MEM_KEY],
     )
 
 
@@ -553,48 +534,30 @@ def _get_unit_name(
     return std_name.raw_str
 
 
-def _load_caps(
-    unit: Mapping[object, Iterable[str]],
+def _load_roles(
+    unit: Mapping[object, Iterable[Mapping[object, str]]],
     cap_registry: IndexedSet[_CapabilityInfo],
-) -> list[str]:
-    """Load the given unit capabilities.
+) -> list[object]:
+    """Load the given unit roles.
 
-    `unit` is the unit to load whose capabilities.
+    `unit` is the unit to load whose roles.
     `cap_registry` is the store of previously added capabilities.
-    The function returns a list of loaded capabilities.
+    The function returns a list of loaded roles.
 
     """
-    cap_list: list[str] = []
+    roles_list: list[object] = []
     unit_cap_reg = SelfIndexSet[ICaseString]()
 
-    for cur_cap in unit[UNIT_CAPS_KEY]:
-        _add_capability(
+    for cur_role in unit[UNIT_ROLES_KEY]:
+        _add_role(
             unit[UNIT_NAME_KEY],
-            ICaseString(cur_cap),
-            cap_list,
+            cur_role,
+            roles_list,
             unit_cap_reg,
             cap_registry,
         )
 
-    return cap_list
-
-
-def _load_mem_acl(
-    unit: Mapping[object, Iterable[str]],
-    cap_registry: IndexedSet[_CapabilityInfo],
-) -> Generator[str]:
-    """Load the given unit memory ACL.
-
-    `unit` is the unit to load whose memory ACL.
-    `cap_registry` is the store of valid capabilities.
-    The function returns an iterator over loaded memory ACL
-    capabilities.
-
-    """
-    mem_acl = unit.get(UNIT_MEM_KEY, [])
-    return (
-        _get_acl_cap(unit[UNIT_NAME_KEY], cap, cap_registry) for cap in mem_acl
-    )
+    return roles_list
 
 
 def _post_order(internal_units: Iterable[FuncUnit]) -> tuple[Any, ...]:
@@ -671,9 +634,7 @@ def get_abilities(processor: ProcessorDesc) -> frozenset[ICaseString]:
     """
     in_units = chain(processor.in_out_ports, processor.in_ports)
     return frozenset(
-        chain.from_iterable(
-            map(ICaseString, port.capabilities) for port in in_units
-        )
+        chain.from_iterable(map(ICaseString, port.roles) for port in in_units)
     )
 
 

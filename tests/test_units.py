@@ -33,7 +33,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.133.0, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.143.1, python 3.14.8, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -59,7 +59,7 @@ class TestCoverage:
 
         """
         lock_info = LockInfo(False, False)
-        hash(FuncUnit(UnitModel("", 1, [""], lock_info, []), []))
+        hash(FuncUnit(UnitModel("", 1, {"": False}, lock_info), []))
 
 
 class TestDupName:
@@ -109,7 +109,12 @@ class TestExpAttr:
                     {
                         units.UNIT_NAME_KEY: "full system",
                         units.UNIT_WIDTH_KEY: 1,
-                        units.UNIT_CAPS_KEY: ["ALU"],
+                        units.UNIT_ROLES_KEY: [
+                            {
+                                units.ROLE_NAME_KEY: "ALU",
+                                units.ROLE_MEM_KEY: True,
+                            }
+                        ],
                         **{
                             attr: True
                             for attr in [
@@ -117,7 +122,6 @@ class TestExpAttr:
                                 units.UNIT_WLOCK_KEY,
                             ]
                         },
-                        units.UNIT_MEM_KEY: ["ALU"],
                     }
                 ],
                 "dataPath": [],
@@ -125,11 +129,7 @@ class TestExpAttr:
         ) == ProcessorDesc(
             [],
             [],
-            [
-                UnitModel(
-                    "full system", 1, ["ALU"], LockInfo(True, True), ["ALU"]
-                )
-            ],
+            [UnitModel("full system", 1, {"ALU": True}, LockInfo(True, True))],
             [],
         )
 
@@ -144,7 +144,7 @@ class TestPostOrder:
 
         """
         in_unit, mid1_unit, mid2_unit, mid3_unit, out_unit = (
-            UnitModel(name, 1, ["ALU"], LockInfo(rd_lock, wr_lock), [])
+            UnitModel(name, 1, {"ALU": False}, LockInfo(rd_lock, wr_lock))
             for name, rd_lock, wr_lock in [
                 ("input", True, False),
                 ("middle 1", False, False),

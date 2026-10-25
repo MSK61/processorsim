@@ -39,15 +39,17 @@
 #
 ############################################################
 
+import operator
 from collections import abc
 from logging import warning
 
+import more_itertools
 import networkx
 from networkx import DiGraph, Graph
 
 from . import _port_defs
 from .exception import DeadInputError
-from .units import UNIT_CAPS_KEY
+from .units import ROLE_NAME_KEY, UNIT_ROLES_KEY
 
 
 def chk_terminals(
@@ -93,27 +95,27 @@ def rm_empty_units(processor: Graph) -> None:
     The function removes units with no capabilities from the processor.
 
     """
-    unit_entries = tuple(processor.nodes(UNIT_CAPS_KEY))
+    unit_entries = tuple(processor.nodes(UNIT_ROLES_KEY))
 
-    for unit, capabilities in unit_entries:
-        if not capabilities:
+    for unit, roles in unit_entries:
+        if not roles:
             _rm_empty_unit(processor, unit)
 
 
-def _chk_edge(processor: Graph, edge: abc.Sequence[object]) -> frozenset[str]:
+def _chk_edge(
+    processor: Graph, edge: abc.Sequence[object], dst_caps: frozenset[object]
+) -> frozenset[object]:
     """Check if the edge is useful.
 
     `processor` is the processor containing the edge.
     `edge` is the edge to check.
+    `dst_caps` is the set of capabilities of the destination unit.
     The function removes the given edge if it isn't needed. It returns
     the common capabilities between the units connected by the edge.
 
     """
-    common_caps = frozenset.intersection(
-        *(
-            processor.nodes[edge[unit_idx]][UNIT_CAPS_KEY]
-            for unit_idx in [1, 0]
-        )
+    common_caps = dst_caps.intersection(
+        _get_caps(processor.nodes[more_itertools.first(edge)][UNIT_ROLES_KEY])
     )
 
     if not common_caps:
@@ -133,14 +135,28 @@ def _clean_unit(processor: DiGraph, unit: object) -> None:
     the given unit.
 
     """
-    processor.nodes[unit][UNIT_CAPS_KEY] = frozenset(
-        processor.nodes[unit][UNIT_CAPS_KEY]
-    )
+    unit_caps = frozenset(_get_caps(processor.nodes[unit][UNIT_ROLES_KEY]))
     pred_caps = map(
-        lambda edge: _chk_edge(processor, edge),
+        lambda edge: _chk_edge(processor, edge, unit_caps),
         tuple(processor.in_edges(unit)),
     )
-    processor.nodes[unit][UNIT_CAPS_KEY] = frozenset().union(*pred_caps)
+    unit_caps = frozenset().union(*pred_caps)
+    processor.nodes[unit][UNIT_ROLES_KEY] = [
+        role
+        for role in processor.nodes[unit][UNIT_ROLES_KEY]
+        if role[ROLE_NAME_KEY] in unit_caps
+    ]
+
+
+def _get_caps(roles: abc.Iterable[abc.Mapping[object, object]]) -> map[object]:
+    """Extract the capabilities from the roles.
+
+    `roles` are the roles to extract capabilities from.
+    The function returns the capabilities corresponding to the given
+    roles.
+
+    """
+    return map(operator.itemgetter(ROLE_NAME_KEY), roles)
 
 
 def _rm_dead_end(

@@ -1,10 +1,11 @@
 units:
   - name: input
     width: 1
-    capabilities: []
+    roles: []
   - name: output
     width: 1
-    capabilities:
-      - ALU
+    roles:
+      - name: ALU
+        usesMem: False
 dataPath:
   - [input, output]

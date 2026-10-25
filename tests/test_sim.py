@@ -33,7 +33,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.143.1, python 3.14.8, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -158,11 +158,16 @@ class TestFlow:
 
         """
         in_units = [
-            UnitModel(name, 1, [categ], LockInfo(True, False), [])
+            UnitModel(name, 1, {categ: False}, LockInfo(True, False))
             for name, categ in [("ALU input", "ALU"), ("MEM input", "MEM")]
         ]
         out_unit = FuncUnit(
-            UnitModel("output", 1, ["ALU", "MEM"], LockInfo(False, True), []),
+            UnitModel(
+                "output",
+                1,
+                {cap: False for cap in ["ALU", "MEM"]},
+                LockInfo(False, True),
+            ),
             in_units,
         )
         assert simulate(
@@ -193,16 +198,16 @@ class TestInSort:
 
         """
         in_unit, out_unit = (
-            UnitModel(name, 1, ["ALU"], LockInfo(rd_lock, wr_lock), mem_acl)
-            for name, rd_lock, wr_lock, mem_acl in [
-                ("input 1", True, False, []),
-                ("output 1", False, True, ["ALU"]),
+            UnitModel(name, 1, {"ALU": uses_mem}, LockInfo(rd_lock, wr_lock))
+            for name, rd_lock, wr_lock, uses_mem in [
+                ("input 1", True, False, False),
+                ("output 1", False, True, True),
             ]
         )
         proc_desc = ProcessorDesc(
             [in_unit],
             [FuncUnit(out_unit, [in_unit])],
-            [UnitModel("input 2", 1, ["ALU"], LockInfo(True, False), [])],
+            [UnitModel("input 2", 1, {"ALU": False}, LockInfo(True, False))],
             [],
         )
         assert simulate(
@@ -233,7 +238,7 @@ class TestOutputFlush:
         )
         cores = starmap(
             lambda *unit_params: UnitModel(
-                *unit_params, ["ALU"], LockInfo(True, True), []
+                *unit_params, {"ALU": False}, LockInfo(True, True)
             ),
             [("core 1", 1), ("core 2", 1 + len(extra_instr_lst))],
         )
@@ -366,7 +371,7 @@ class TestStall:
 
         """
         in_unit, mid, out_unit = (
-            UnitModel(name, width, ["ALU"], LockInfo(rd_lock, wr_lock), [])
+            UnitModel(name, width, {"ALU": False}, LockInfo(rd_lock, wr_lock))
             for name, width, rd_lock, wr_lock in [
                 ("input", 2, True, False),
                 ("middle", 2, False, False),
@@ -402,7 +407,7 @@ class TestStallErr:
 
         """
         long_input, mid, short_input, out_unit = (
-            UnitModel(name, 1, ["ALU"], LockInfo(rd_lock, wr_lock), [])
+            UnitModel(name, 1, {"ALU": False}, LockInfo(rd_lock, wr_lock))
             for name, rd_lock, wr_lock in [
                 ("long input", False, False),
                 ("middle", False, False),
@@ -442,7 +447,7 @@ def _make_proc_desc(units_desc):
 
     """
     big_input, small_input1, mid1, small_input2, mid2, out_unit = (
-        UnitModel(name, width, ["ALU"], LockInfo(rd_lock, wr_lock), [])
+        UnitModel(name, width, {"ALU": False}, LockInfo(rd_lock, wr_lock))
         for name, width, rd_lock, wr_lock in units_desc
     )
     return ProcessorDesc(

@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.143.1, python 3.14.8, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -71,7 +71,7 @@ class _InstrBase(abc.ABC):
 class HwInstruction(_InstrBase):
     """Hardware instruction"""
 
-    categ: object
+    categ: str
 
 
 @frozen

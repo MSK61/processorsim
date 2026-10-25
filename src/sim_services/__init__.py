@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.137.0, python 3.14.7, Fedora
+# environment:  Visual Studio Code 1.143.1, python 3.14.8, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -226,7 +226,7 @@ class _TransitionUtil:
 
 def _accept_instr(
     issue_rec: _IssueInfo,
-    instr_categ: object,
+    instr_categ: str,
     input_iter: Iterator[UnitModel],
     util_info: BagValDict[str, InstrState],
     accept_res: _AcceptStatus,
@@ -256,7 +256,7 @@ def _accept_instr(
 
 def _accept_in_unit(
     input_iter: Iterator[UnitModel],
-    instr_categ: object,
+    instr_categ: str,
     accept_res: _AcceptStatus,
     util_info: BagValDict[str, InstrState],
     issue_rec: _IssueInfo,
@@ -360,7 +360,7 @@ def _build_cap_map(
     cap_map: dict[object, list[UnitModel]] = {}
 
     for unit in inputs:
-        for cap in unit.capabilities:
+        for cap in unit.roles:
             cap_map.setdefault(cap, []).append(unit)
 
     return cap_map

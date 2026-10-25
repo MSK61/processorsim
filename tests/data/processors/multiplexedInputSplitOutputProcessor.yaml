@@ -1,19 +1,23 @@
 units:
   - name: input
     width: 2
-    capabilities:
-      - ALU
-      - MEM
+    roles:
+      - name: ALU
+        usesMem: False
+      - name: MEM
+        usesMem: False
     readLock: True
   - name: ALU output
     width: 1
-    capabilities:
-      - ALU
+    roles:
+      - name: ALU
+        usesMem: False
     writeLock: True
   - name: MEM output
     width: 1
-    capabilities:
-      - MEM
+    roles:
+      - name: MEM
+        usesMem: False
     writeLock: True
 dataPath:
   - [input, ALU output]

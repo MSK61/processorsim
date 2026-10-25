@@ -32,15 +32,15 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.133.0, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.143.1, python 3.14.8, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
 #
 ############################################################
 
-import collections.abc
 import operator
+from collections import abc
 from typing import Any, Final
 
 from attr import field, frozen
@@ -48,17 +48,19 @@ from fastcore import basics
 
 from container_utils import sorted_tuple
 
+# role attributes
+ROLE_MEM_KEY: Final = "usesMem"
+ROLE_NAME_KEY: Final = "name"
 # unit attributes
-UNIT_CAPS_KEY: Final = "capabilities"
-UNIT_MEM_KEY: Final = "memoryAccess"
 UNIT_NAME_KEY: Final = "name"
 # unit lock attributes
 UNIT_RLOCK_KEY: Final = "readLock"
 UNIT_WLOCK_KEY: Final = "writeLock"
+UNIT_ROLES_KEY: Final = "roles"
 UNIT_WIDTH_KEY: Final = "width"
 
 
-def sorted_models(models: collections.abc.Iterable[Any]) -> tuple[Any, ...]:
+def sorted_models(models: abc.Iterable[Any]) -> tuple[Any, ...]:
     """Create a sorted list of the given models.
 
     `models` are the models to sort.
@@ -80,24 +82,31 @@ class LockInfo:
 class UnitModel:
     """Functional unit model"""
 
-    def needs_mem(self, cap: object) -> bool:
+    def __hash__(self) -> int:
+        """Return the hash of this unit model.
+
+        `self` is this unit model.
+
+        """
+        roles = self.roles.items()
+        return hash((self.name, self.width, frozenset(roles), self.lock_info))
+
+    def needs_mem(self, cap: str) -> object:
         """Test if the given capability will require memory access.
 
         `self` is this unit model.
         `cap` is the capabilitiy to check.
 
         """
-        return cap in self._mem_acl
+        return self.roles[cap]
 
     name: str
 
     width: int
 
-    capabilities: tuple[str, ...] = field(converter=sorted_tuple)
+    roles: abc.Mapping[str, object]
 
     lock_info: LockInfo
-
-    _mem_acl: tuple[object, ...] = field(converter=sorted_tuple)
 
 
 @frozen(eq=False)

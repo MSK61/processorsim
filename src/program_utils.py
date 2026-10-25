@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.137.0, python 3.14.7, Fedora
+# environment:  Visual Studio Code 1.143.1, python 3.14.8, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -94,7 +94,7 @@ class CodeError(errors.SimErrorBase):
 
 
 def compile_program(
-    prog: Iterable[ProgInstruction], isa: Mapping[str, object]
+    prog: Iterable[ProgInstruction], isa: Mapping[str, str]
 ) -> list[HwInstruction]:
     """Compile the program using the given instruction set.
 

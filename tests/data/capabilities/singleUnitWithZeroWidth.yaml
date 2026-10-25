@@ -1,6 +1,7 @@
 units:
   - name: full system
     width: 0
-    capabilities:
-      - ALU
+    roles:
+      - name: ALU
+        usesMem: False
 dataPath: []

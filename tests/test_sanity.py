@@ -33,7 +33,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.137.0, python 3.14.7, Fedora
+# environment:  Visual Studio Code 1.143.1, python 3.14.8, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -50,9 +50,11 @@ from test_utils import ValInStrCheck, chk_error, read_proc_file
 from processor_utils import exception, load_proc_desc
 from processor_utils.exception import PathLockError
 from processor_utils.units import (
-    UNIT_CAPS_KEY,
+    ROLE_MEM_KEY,
+    ROLE_NAME_KEY,
     UNIT_NAME_KEY,
     UNIT_RLOCK_KEY,
+    UNIT_ROLES_KEY,
     UNIT_WIDTH_KEY,
     UNIT_WLOCK_KEY,
 )
@@ -127,7 +129,9 @@ class TestNoLock:
                     {
                         UNIT_NAME_KEY: name,
                         UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["ALU"],
+                        UNIT_ROLES_KEY: [
+                            {ROLE_NAME_KEY: "ALU", ROLE_MEM_KEY: False}
+                        ],
                         **lock_info,
                     }
                     for name, lock_info in _DIFF_LOCK_UNITS
@@ -139,7 +143,9 @@ class TestNoLock:
                     {
                         UNIT_NAME_KEY: "full system",
                         UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: ["ALU"],
+                        UNIT_ROLES_KEY: [
+                            {ROLE_NAME_KEY: "ALU", ROLE_MEM_KEY: False}
+                        ],
                         UNIT_WLOCK_KEY: True,
                     }
                 ],
@@ -177,7 +183,10 @@ class TestPerCap:
                     {
                         UNIT_NAME_KEY: name,
                         UNIT_WIDTH_KEY: 1,
-                        UNIT_CAPS_KEY: caps,
+                        UNIT_ROLES_KEY: [
+                            {ROLE_NAME_KEY: cur_cap, ROLE_MEM_KEY: False}
+                            for cur_cap in caps
+                        ],
                         **locks,
                     }
                     for name, caps, locks in [
@@ -326,7 +335,9 @@ def _get_test_units(proc_desc, lock_prop):
         {
             UNIT_NAME_KEY: unit_getter(proc_desc),
             UNIT_WIDTH_KEY: 1,
-            UNIT_CAPS_KEY: [proc_desc.capability],
+            UNIT_ROLES_KEY: [
+                {ROLE_NAME_KEY: proc_desc.capability, ROLE_MEM_KEY: False}
+            ],
             **{prop: True for prop in [unit_lock, lock_prop]},
         }
         for unit_getter, unit_lock in [

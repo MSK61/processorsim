@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.137.0, python 3.14.7, Fedora
+# environment:  Visual Studio Code 1.143.1, python 3.14.8, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -84,7 +84,7 @@ def chk_one_unit(proc_dir, proc_file):
     assert read_proc_file(proc_dir, proc_file) == ProcessorDesc(
         [],
         [],
-        [UnitModel("full system", 1, ["ALU"], LockInfo(True, True), [])],
+        [UnitModel("full system", 1, {"ALU": False}, LockInfo(True, True))],
         [],
     )
 
@@ -102,10 +102,10 @@ def chk_two_units(proc_dir, proc_file):
     proc_desc = read_proc_file(proc_dir, proc_file)
     wr_lock = LockInfo(False, True)
     assert proc_desc == ProcessorDesc(
-        [UnitModel("input", 1, ["ALU"], LockInfo(True, False), [])],
+        [UnitModel("input", 1, {"ALU": False}, LockInfo(True, False))],
         [
             processor_utils.units.FuncUnit(
-                UnitModel("output", 1, ["ALU"], wr_lock, []),
+                UnitModel("output", 1, {"ALU": False}, wr_lock),
                 proc_desc.in_ports,
             )
         ],

@@ -1,13 +1,15 @@
 units:
   - name: input
     width: 2
-    capabilities:
-      - MEM
+    roles:
+      - name: MEM
+        usesMem: False
     readLock: True
   - name: output
     width: 1
-    capabilities:
-      - MEM
+    roles:
+      - name: MEM
+        usesMem: False
     writeLock: True
 dataPath:
   - [input, output]
