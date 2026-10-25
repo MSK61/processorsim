@@ -32,7 +32,7 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.133.0, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.143.1, python 3.14.8, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
@@ -136,8 +136,9 @@ def _clean_unit(processor: DiGraph, unit: object) -> None:
     processor.nodes[unit][UNIT_CAPS_KEY] = frozenset(
         processor.nodes[unit][UNIT_CAPS_KEY]
     )
-    pred_caps = (
-        _chk_edge(processor, edge) for edge in tuple(processor.in_edges(unit))
+    pred_caps = map(
+        lambda edge: _chk_edge(processor, edge),
+        tuple(processor.in_edges(unit)),
     )
     processor.nodes[unit][UNIT_CAPS_KEY] = frozenset().union(*pred_caps)
 
