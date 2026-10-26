@@ -48,6 +48,10 @@ jobs:
       # In this case we want to upload the SAST issues to GitHub Code Scanning
       uses: snyk/actions/setup@0.4.0
     - run: uv run ./test.sh
+    - name: Check YAML format
+      uses: yk-lab/yamlfmt-action@v1.0.0
+      with:
+        path: tests/data
 
     # Runs Snyk Code (SAST) analysis and uploads result into GitHub.
     # Use || true to not fail the pipeline
