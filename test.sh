@@ -39,6 +39,7 @@ set -e
 # their own
 tests/test_containers.py
 pytest --cov src --cov-fail-under 100 $*
+"$yamlfmtDir$yamlfmtArch/yamlfmt" -lint tests/data
 ruff format --check
 ruff check
 PYRIGHT_PYTHON_IGNORE_WARNINGS=1 pyright
