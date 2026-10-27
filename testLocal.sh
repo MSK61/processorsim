@@ -35,4 +35,5 @@
 #
 ############################################################
 . yamlfmt.env
+
 yamlfmtArch=$yamlfmtArch "$(dirname "$0")"/test.sh

@@ -49,6 +49,7 @@ jobs:
       - name: Load yamlfmt environement
         run: |
           . yamlfmt.env
+
           echo yamlfmtArch=$yamlfmtArch >> "$GITHUB_ENV"
           echo yamlfmtVer=$yamlfmtVer >> "$GITHUB_ENV"
       - id: dwnlYamlfmt
