@@ -34,6 +34,7 @@
 # notes:        This is a private program.
 #
 ############################################################
+. yamlfmt.env
 set -e
 # just running a sample test module to make sure test modules are executable on
 # their own

@@ -25,7 +25,7 @@ jobs:
       # This is where you will need to introduce the Snyk API token created with your Snyk account
       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       sarifFile: snyk-code.sarif
-      yamlfmtArch: yamlfmt_0.21.0_Linux_x86_64
+      yamlfmtArch:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -45,6 +45,8 @@ jobs:
         # Snyk can be used to break the build when it detects security issues.
         # In this case we want to upload the SAST issues to GitHub Code Scanning
         uses: snyk/actions/setup@0.4.0
+      - name: Load yamlfmt environement
+        run: cat yamlfmt.env >> "$GITHUB_ENV"
       - id: dwnlYamlfmt
         name: Download yamlfmt
         uses: suisei-cn/actions-download-file@v1.6.1
