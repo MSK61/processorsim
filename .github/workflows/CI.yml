@@ -19,17 +19,14 @@
 #
 ############################################################
 on: [push]
-
 jobs:
   build:
     env:
       # This is where you will need to introduce the Snyk API token created with your Snyk account
       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
       sarifFile: snyk-code.sarif
       yamlfmtArch: yamlfmt_0.21.0_Linux_x86_64
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
         with:
@@ -52,27 +49,23 @@ jobs:
         name: Download yamlfmt
         uses: suisei-cn/actions-download-file@v1.6.1
         with:
-          url: "https://github.com/google/yamlfmt/releases/download/v0.21.0/
-            ${{ env.yamlfmtArch }}.tar.gz"
+          url: "https://github.com/google/yamlfmt/releases/download/v0.21.0/ ${{ env.yamlfmtArch }}.tar.gz"
       - name: Extract yamlfmt
         uses: ihiroky/extract-action@v1
         with:
           file_path: ${{ steps.dwnlYamlfmt.outputs.filename }}
           extract_dir: ${{ env.yamlfmtArch }}
       - run: uv run ./test.sh
-
       # Runs Snyk Code (SAST) analysis and uploads result into GitHub.
       # Use || true to not fail the pipeline
       - name: Snyk Code test
         run: snyk code test --sarif > $sarifFile # || true
-
       - name: Install coveralls dependencies
         run: |
           python -m pip install --upgrade pip
           pip install coverage
       - name: Coveralls GitHub Action
         uses: coverallsapp/github-action@v2.2.3
-
       # Push the Snyk Code results into GitHub Code Scanning tab
       - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v4
