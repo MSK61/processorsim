@@ -47,7 +47,11 @@ jobs:
         # In this case we want to upload the SAST issues to GitHub Code Scanning
         uses: snyk/actions/setup@0.4.0
       - name: Load yamlfmt environement
-        run: cat yamlfmt.env >> "$GITHUB_ENV"
+        run: |
+          cd yamlfmt
+          yamlfmtVer=$(cat .version)
+          echo yamlfmtVer=$yamlfmtVer >> "$GITHUB_ENV"
+          echo yamlfmtArch=$(./getArchName.sh $yamlfmtVer) >> "$GITHUB_ENV"
       - id: dwnlYamlfmt
         name: Download yamlfmt
         uses: suisei-cn/actions-download-file@v1.6.1

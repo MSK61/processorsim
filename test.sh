@@ -28,13 +28,12 @@
 #
 # author:       Mohammed El-Afifi (ME)
 #
-# environment:  Visual Studio Code 1.132.1, python 3.14.6, Fedora
+# environment:  Visual Studio Code 1.143.1, python 3.14.8, Fedora
 #               release 44 (Forty Four)
 #
 # notes:        This is a private program.
 #
 ############################################################
-. yamlfmt.env
 set -e
 # just running a sample test module to make sure test modules are executable on
 # their own

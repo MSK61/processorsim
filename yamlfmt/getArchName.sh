@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+############################################################
+#
+# Copyright 2017, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026 Mohammed
+# El-Afifi
+# This file is part of processorSim.
+#
+# processorSim is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# processorSim is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with processorSim.  If not, see <http://www.gnu.org/licenses/>.
+#
+# program:      processor simulator
+#
+# file:         getArchName.sh
+#
+# function:     yamlfmt archive name constructor
+#
+# description:  constructs the archive name for yamlfmt froma given version
+#
+# author:       Mohammed El-Afifi (ME)
+#
+# environment:  Visual Studio Code 1.143.1, python 3.14.8, Fedora
+#               release 44 (Forty Four)
+#
+# notes:        This is a private program.
+#
+############################################################
+echo yamlfmt_$1_Linux_x86_64
