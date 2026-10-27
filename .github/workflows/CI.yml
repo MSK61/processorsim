@@ -48,10 +48,9 @@ jobs:
         uses: snyk/actions/setup@0.4.0
       - name: Load yamlfmt environement
         run: |
-          cd yamlfmt
-          yamlfmtVer=$(cat .version)
+          . yamlfmt.env
+          echo yamlfmtArch=$yamlfmtArch >> "$GITHUB_ENV"
           echo yamlfmtVer=$yamlfmtVer >> "$GITHUB_ENV"
-          echo yamlfmtArch=$(./getArchName.sh $yamlfmtVer) >> "$GITHUB_ENV"
       - id: dwnlYamlfmt
         name: Download yamlfmt
         uses: suisei-cn/actions-download-file@v1.6.1

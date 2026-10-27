@@ -34,4 +34,5 @@
 # notes:        This is a private program.
 #
 ############################################################
-yamlfmtArch=$(cd yamlfmt > /dev/null; ./getArchName.sh $(cat .version)) ./test.sh
+. yamlfmt.env
+yamlfmtArch=$yamlfmtArch ./test.sh
