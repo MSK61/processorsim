@@ -26,6 +26,7 @@ jobs:
       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       sarifFile: snyk-code.sarif
       yamlfmtArch:
+      yamlfmtVer:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -51,8 +52,8 @@ jobs:
         name: Download yamlfmt
         uses: suisei-cn/actions-download-file@v1.6.1
         with:
-          url: "https://github.com/google/yamlfmt/releases/download/v0.21.0/\
-            ${{ env.yamlfmtArch }}.tar.gz"
+          url: "https://github.com/google/yamlfmt/releases/download/\
+            v${{ env.yamlfmtVer }}/${{ env.yamlfmtArch }}.tar.gz"
       - name: Extract yamlfmt
         uses: ihiroky/extract-action@v1
         with:
